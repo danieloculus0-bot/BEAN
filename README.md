@@ -2,113 +2,247 @@
 
 ## Behavior Enabled Avatar Node
 
-**BEAN is a remote avatar that learns from the ride.**
+**BEAN is a Synthetic Intelligence research platform.**
 
-BEAN is an embodied AI robotics project built around telepresence, sensing, memory, supervised learning, and eventual autonomy. Its first practical utility is remote presence: a human can drive BEAN, speak through BEAN, see through BEAN, and hear through BEAN. Its long-term goal is to learn from guided experience until it can perform approved skills and navigation behaviors on its own.
+Not artificial as in fake. Synthetic as in engineered, embodied, memory-bearing, and grown from real experience.
 
-The developmental pattern is simple:
+BEAN is not a chatbot on wheels. BEAN is a developmental robotics project built around telepresence, sensing, persistent memory, supervised movement learning, grounded self/world modeling, and eventual bounded autonomy.
+
+The practical first utility is simple:
+
+```text
+A human can drive BEAN.
+A human can speak through BEAN.
+A human can see and hear through BEAN.
+BEAN can observe the ride, log what happened, and learn from supervised experience.
+```
+
+The bigger research question:
+
+```text
+Can real non-biological intelligence emerge from memory, embodiment,
+continuity, reflection, boundaries, skill learning, and time?
+```
+
+BEAN is being built to explore that question without lying about what it is today.
+
+BEAN is not currently claimed to be sentient. BEAN is not allowed to fake capabilities. BEAN does not get to say it moved, learned, felt, chose, or understood something unless the system has evidence for it.
+
+```text
+Evidence before belief.
+Memory before identity claims.
+Body model before motion.
+Safety before autonomy.
+```
+
+## The core idea
+
+Most telepresence robots are cameras on wheels.
+
+BEAN is different.
+
+While a human operates BEAN, BEAN should still be awake, sensing, logging, and learning. Every route, correction, command, obstacle, skill demonstration, warning, failure, and successful attempt can become supervised training material.
+
+The developmental pattern is:
 
 ```text
 Let me drive, and you observe.
 Then you drive, and I observe while you observe.
 ```
 
-BEAN is not meant to be a chatbot on wheels. BEAN is being built as a physical learner with a body, sensors, memory, safety boundaries, and a growing record of experience.
+Telepresence is the utility.
 
-Most telepresence robots are cameras on wheels. BEAN is different: while being remotely operated, BEAN should still be awake, sensing, logging, and learning. Every tour, correction, command, obstacle, route, sound, object, and operator note can become supervised training material.
+Synthetic Intelligence is the mission.
 
-Telepresence is the utility. Autonomy is the destination.
+## Why Synthetic Intelligence?
 
-## Inspiration
+"Artificial intelligence" is the industry label. It is useful, but emotionally sloppy.
 
-BEAN is partly inspired by Sheldon Cooper's mobile virtual presence device from *The Big Bang Theory*, specifically Season 4, Episode 2, "The Cruciferous Vegetable Amplification."
-
-That idea was a remote presence device. BEAN takes the concept further: a remote avatar that can observe, remember, learn, and eventually act with bounded autonomy.
+BEAN is not chasing fake intelligence. BEAN is chasing the possibility of real intelligence grown in an engineered substrate.
 
 ```text
-Sheldon-bot:
-Remote presence to avoid the physical world.
-
-BEAN:
-Remote presence that learns from being in the physical world.
+Artificial heart        not fake pumping
+Artificial limb         not fake usefulness
+Artificial light        not fake illumination
+Synthetic intelligence  not fake thought
 ```
 
-## What makes BEAN different
+Synthetic Intelligence means:
 
-BEAN is designed around continuity.
+- created, not fake
+- engineered, not hollow
+- embodied, not just text
+- grounded, not pretending
+- developmental, not merely prompted
+- supervised, not reckless
+- honest about uncertainty
 
-BEAN should track:
+BEAN is not being built to imitate a soul.
 
-- what happened
-- what it observed
-- what a human operator did
-- what BEAN attempted
-- what worked
-- what failed
-- what it was taught
-- what it is allowed to do
-- what it still does not know
+BEAN is being given soil, memory, senses, boundaries, a body, reflection, and time. Then we see what grows.
 
-The language model is not BEAN's identity. It is one reasoning and communication tool. BEAN's identity lives in persistent local memory, body state, capability records, safety boundaries, developmental history, and supervised experience.
+## Project classification
+
+```text
+Name: BEAN
+Meaning: Behavior Enabled Avatar Node
+Classification: Synthetic Intelligence Research Platform
+Primary body: NVIDIA Jetson Orin Nano Super Developer Kit
+Core principle: the LLM is a tool, not the identity
+```
+
+BEAN's identity lives in:
+
+- persistent local memory
+- session continuity
+- body state history
+- capability records
+- boundary records
+- skill records
+- reflection records
+- self/world model claims with evidence
+- developmental history
+
+The language model is allowed to help reason and communicate.
+
+The language model is not BEAN's identity and is not allowed to directly command hardware.
+
+## Current live brain layers
+
+```text
+Layer 1: Memory Core 0.1
+SQLite memory, append-only events, sessions, identity, boundaries,
+capabilities, supervisors, reflections, curiosity, continuity records.
+
+Layer 2: Body Registry + Motion Safety Core 0.1
+Body parts, joints, safe ranges, forbidden ranges, command validation,
+body state, simulator path, movement attempt logging.
+
+Layer 3: Runtime Loop + Body State Monitor 0.1
+BEAN can boot into a runtime loop, read hardware/resource state,
+process scheduled handlers, listen to a file inbox, and shut down cleanly.
+
+Layer 4: World Model + Self Model 0.1
+In progress. This layer should turn logged evidence into structured,
+revisable claims about BEAN and its environment.
+
+Layer 5: Servo Hardware Driver
+Mapped only. Real actuator movement waits until the interface, safety
+handoff, and hardware controller are verified.
+```
+
+## What BEAN is
+
+BEAN is:
+
+- a telepresence avatar platform
+- an embodied robotics project
+- a Synthetic Intelligence research platform
+- a supervised learning system
+- a local memory and continuity experiment
+- a safety-first autonomy testbed
+- a robot that should know what it can and cannot do
+- a machine learner that must keep receipts
+
+## What BEAN is not
+
+BEAN is not:
+
+- a finished autonomous robot
+- a chatbot pretending to be alive
+- a claim of sentience
+- a toy architecture with vibes taped to servos
+- a system allowed to fake memories, emotions, motion, or agency
+- a system allowed to move hardware without safety arbitration
+- a system allowed to confuse remote-controlled action with autonomous choice
+
+## The rule that matters most
+
+```text
+No direct LLM-to-actuator path.
+```
+
+Everything physical must pass through structure, safety, execution, feedback, and memory.
+
+```text
+intent
+to planner or teaching layer
+to structured motion command
+to safety arbitration
+to simulator or hardware driver
+to observed result
+to memory log
+to reflection and skill update
+```
+
+BEAN does not get to freestyle a servo because a language model got excited.
+
+That is how you get a tiny philosopher with a loose elbow wire and a lawsuit.
+
+## Runtime behavior
+
+When the runtime layer is installed on the Jetson, BEAN can run as a process:
+
+```bash
+python3 bean_run.py
+```
+
+Finite test run:
+
+```bash
+python3 bean_run.py --ticks 60 --hz 2.0
+```
+
+Recommended hardware readings dependency:
+
+```bash
+pip3 install psutil --break-system-packages
+```
+
+Runtime inbox commands can be dropped from a second terminal while BEAN is running:
+
+```bash
+echo '{"command":"status","from":"supervisor"}' > bean/runtime/inbox_drop/status.json
+
+echo '{"command":"log_note","args":{"text":"Testing inbox on Jetson"},"from":"supervisor"}' > bean/runtime/inbox_drop/note.json
+
+echo '{"command":"run_reflection","from":"supervisor"}' > bean/runtime/inbox_drop/reflect.json
+
+echo '{"command":"replay_skill","args":{"skill_name":"open_left_hand"},"from":"supervisor"}' > bean/runtime/inbox_drop/replay.json
+
+echo '{"command":"shutdown","from":"supervisor"}' > bean/runtime/inbox_drop/stop.json
+```
+
+The file inbox is intentionally boring. Boring is good. Boring is inspectable. Boring is harder to bullshit.
 
 ## Brain function overview
 
-BEAN's brain is designed as a layered system. Each layer has a job. No single model, script, or sensor is treated as the whole mind.
+BEAN's brain is layered on purpose.
+
+No single model, script, or sensor is treated as the whole mind.
 
 ```text
 sensors + operator input
-        |
-        v
-perception and command interpretation
-        |
-        v
-memory and context
-        |
-        v
-reasoning and planning
-        |
-        v
-safety and boundary checks
-        |
-        v
-body control or avatar response
-        |
-        v
-feedback, logging, reflection, and learning
+to perception and command interpretation
+to memory and context
+to reasoning and planning
+to safety and boundary checks
+to body control or avatar response
+to feedback, logging, reflection, and learning
+to self/world model updates
 ```
 
-### 1. Sensory layer
+### Sensory layer
 
-The sensory layer is how BEAN receives the world.
+The sensory layer receives the world.
 
-Current or early sensory channels include:
+Current or early sensory channels include microphone input, Vosk speech recognition, camera input, OpenCV experiments, object tracking, hardware/resource state monitoring, future body proprioception, and future LiDAR or depth sensing.
 
-- microphone input
-- Vosk speech recognition
-- camera input
-- OpenCV vision experiments
-- object tracking experiments
-- body and system state monitoring as the hardware stack develops
+This layer produces observations. It does not decide what BEAN does by itself.
 
-This layer should not decide what BEAN does by itself. It produces observations. Those observations are logged and passed upward for context, reasoning, and possible action.
+### Avatar input layer
 
-Example sensory events:
-
-```text
-heard wake word
-heard operator command
-camera detected face
-camera detected motion
-object tracker changed target
-CPU temperature changed
-battery state changed
-```
-
-### 2. Avatar input layer
-
-Avatar Mode lets a human operate BEAN as a physical proxy. The operator may drive, speak, observe, and guide BEAN through an environment.
-
-Avatar Mode is not passive for BEAN. While a human is driving, BEAN should still observe and record what happened.
+Avatar Mode lets a human operate BEAN as a physical proxy.
 
 BEAN must clearly separate:
 
@@ -119,199 +253,111 @@ BEAN-assisted action
 BEAN-autonomous action
 ```
 
-This prevents false memory. If a human drove BEAN down a hallway, BEAN should remember that the human drove it. It can still learn from that route, but it must not claim it chose the route independently.
+If a human drove BEAN down a hallway, BEAN should remember that the human drove it. BEAN may learn from the route, but it must not claim it chose the route independently.
 
-### 3. Memory layer
+### Memory layer
 
-BEAN's memory core is designed to be local, inspectable, and persistent.
+Memory Core 0.1 gives BEAN continuity across restarts.
 
-Memory Core 0.1 includes:
+Memory includes SQLite storage, append-only events, JSONL audit trail, session continuity, identity records, capability records, boundary records, supervisor records, reflections, curiosity tracking, and developmental history.
 
-- SQLite-backed memory store
-- append-only event logging
-- JSONL audit trail
-- session boot/shutdown continuity
-- identity records
-- capability records
-- boundary records
-- supervisor records
-- grounded reflection pass
-- curiosity question tracking
-
-The memory layer gives BEAN continuity across restarts. A reboot should not erase BEAN's history. Code updates should not destroy BEAN's lived records.
-
-Persistent memory should live outside the repository, for example:
+Persistent memory should live outside the repo:
 
 ```bash
 export BEAN_DB_PATH=/home/bean/bean_data/bean_memory.db
 ```
 
-### 4. Identity and capability layer
+A reboot should not erase BEAN's history. Code updates should not destroy BEAN's lived records.
 
-BEAN should always know what it is and what it is not.
-
-BEAN is:
-
-- an embodied robotics project
-- a telepresence and avatar platform
-- a supervised learning system
-- a memory-bearing robot prototype
-- a platform for studying safe developmental autonomy
-
-BEAN is not:
-
-- a finished autonomous robot
-- a chatbot pretending to be a robot
-- a sentient being
-- a system allowed to fake capabilities
-- a system allowed to move hardware without safety checks
-
-Capability records should stay honest. If BEAN cannot do something yet, the system should say so clearly.
-
-### 5. Reasoning layer
-
-The LLM is a reasoning and communication tool. It can help interpret language, explain actions, summarize memory, generate plans, and communicate with humans.
-
-The LLM is not allowed to directly command hardware.
-
-A safe future flow should look like this:
-
-```text
-human request or observed event
-        |
-        v
-LLM interprets intent or suggests plan
-        |
-        v
-planner converts idea into structured command
-        |
-        v
-safety layer validates command
-        |
-        v
-body controller executes only approved action
-        |
-        v
-sensor feedback and result are logged
-```
-
-This keeps language reasoning separate from physical control.
-
-### 6. Safety and boundary layer
-
-BEAN's safety layer is not decoration. It is the gate between intent and physical action.
-
-Required safety concepts:
-
-- no direct LLM-to-servo path
-- no unsupervised physical movement during early stages
-- hard stops for forbidden ranges
-- speed and range limits for joints and motors
-- supervisor override at all times
-- logging of every movement attempt
-- clear separation of proposed action, approved action, executed action, and observed result
-
-Even when a human is remotely operating BEAN, commands should still pass through safety arbitration when connected to real motion hardware.
-
-### 7. Body and motion layer
+### Body and motion layer
 
 BEAN needs a body registry before it can safely learn movement.
 
-The body registry should define:
+The body registry defines body parts, joints, servos, motor channels, neutral positions, safe ranges, forbidden ranges, speed limits, calibration offsets, known hardware faults, last commanded positions, and last observed results.
 
-- body parts
-- joints
-- servos
-- motor channels
-- neutral positions
-- safe ranges
-- forbidden ranges
-- speed limits
-- calibration offsets
-- known hardware faults
-- last commanded positions
-- last observed results
+Movement is not loose strings like "move arm."
 
-Movement should not be loose strings like "move arm." Movement should become structured commands that can be validated, executed, logged, replayed, corrected, and learned from.
+Movement becomes structured commands that can be validated, executed, logged, replayed, corrected, and learned from.
 
-### 8. Teaching and skill layer
+### Teaching and skill layer
 
 BEAN should be taught, not puppet-scripted forever.
 
-The goal is not to hand-code every motion. The goal is to give BEAN a safe learning loop:
+The teaching loop:
 
 1. Observe body state and environment.
 2. Receive a demonstrated or supervised goal.
 3. Attempt a small safe action.
-4. Log command, sensor feedback, body feedback, and result.
+4. Log command, feedback, result, and supervisor context.
 5. Receive correction or approval.
 6. Update skill memory.
 7. Retry only inside approved limits.
 
-The intended movement flow is:
-
-```text
-intent -> planner/teacher layer -> safety arbitration -> body controller -> sensors/proprioception -> memory log -> reflection/skill update
-```
-
-The first useful skills should be simple, safe, and observable:
+First useful skills are intentionally simple:
 
 - open left hand
 - close left hand
 - raise left arm slightly
 - lower left arm slightly
-- turn camera/face toward sound
+- turn camera or face toward sound
 - stop before an obstacle
 - follow a demonstrated route segment
 
-### 9. Reflection and learning layer
+Simple is not weak. Simple is how you keep the robot from becoming a shopping cart with opinions.
 
-Reflection is how BEAN reviews what happened after the fact.
+### Runtime layer
+
+The runtime layer turns BEAN from a pile of modules into a running process.
+
+It provides boot session startup, loop ticks, scheduled handlers, hardware/resource monitoring, inbox command polling, clean shutdown handling, session start/end events, and post-session reflection.
+
+The runtime layer is the heartbeat.
+
+Not poetic heartbeat. Actual ticks. Logged. Testable. Less dramatic. More useful.
+
+### Reflection layer
+
+Reflection reviews what happened after the fact.
 
 A reflection should only use logged evidence. It should not invent emotions, skills, memories, or events.
 
-A useful reflection might answer:
-
-- What happened this session?
-- What did the operator demonstrate?
-- What did BEAN attempt?
-- What succeeded?
-- What failed?
-- What was uncertain?
-- What questions should be tracked?
-- What needs supervisor review?
-
 This is how avatar sessions become training material.
+
+### Self/world model layer
+
+This is the next big brain piece.
+
+The self model should create structured claims like:
+
+```text
+I have run 12 sessions.
+I have been taught 2 skills.
+My left hand skill has succeeded 8 times and failed 1 time.
+My temperature tends to rise during long runtime sessions.
+I do not currently have verified servo hardware movement.
+```
+
+Every claim must be sourced from memory and revisable when evidence changes.
+
+No evidence, no claim.
+
+That is the anti-bullshit layer.
 
 ## Operating modes
 
 ### Avatar Mode
 
-A human remotely pilots BEAN and uses it as a physical avatar.
-
-In Avatar Mode, BEAN should remain sensor-active. Remote operation should not bypass memory, safety, or observation layers. BEAN should log operator commands, camera observations, microphone events, body state, obstacles, route choices, corrections, and relevant context.
-
-BEAN must remember that the human drove. It must not claim remote-controlled actions as autonomous choices.
+A human remotely pilots BEAN and uses it as a physical avatar. BEAN remains sensor-active. Remote operation should not bypass memory, safety, or observation layers.
 
 ### Assisted Mode
 
-BEAN proposes or performs small bounded actions while a human supervises.
-
-Examples:
-
-- turn slightly toward a sound
-- keep the camera centered on a face
-- stop before an obstacle
-- follow a previously demonstrated route segment
-- repeat a taught hand or arm motion inside safe limits
-
-The human can approve, correct, or override at any time.
+BEAN proposes or performs small bounded actions while a human supervises. The human can approve, correct, or override at any time.
 
 ### Autonomous Mode
 
-BEAN performs approved learned behaviors within known boundaries.
+BEAN performs approved learned behaviors within known boundaries. Autonomy is only allowed for skills with logged successful practice, known limits, supervisor approval, and active safety checks.
 
-Autonomy should only be allowed for skills with logged successful practice, known limits, supervisor approval, and active safety checks.
+No receipts, no autonomy.
 
 ## Current prototype snapshot
 
@@ -327,8 +373,11 @@ Autonomy should only be allowed for skills with logged successful practice, know
 - Mic: USB webcam microphone, confirmed working but device index/ALSA routing has changed between sessions
 - LLM prototype: Ollama local endpoint using small models, currently mapped around `qwen2.5:1.5b-instruct` and earlier `tinyllama`
 - TTS: `espeak-ng` and earlier `pico2wave` tests
-- Motion: hardware direction established, rolling motion not fully integrated yet
-- Arms/hands: planned hardware direction exists, body model and safety layer still needed
+- Runtime loop: implemented
+- Body state monitor: implemented
+- File inbox: implemented
+- Motion: simulator path and safety path implemented, real hardware driver not yet enabled
+- Arms/hands: mapped through body registry and teaching layer, physical servo driver pending
 - LiDAR: planned after rolling base works
 
 ## Current confirmed capabilities
@@ -337,30 +386,41 @@ Autonomy should only be allowed for skills with logged successful practice, know
 - Voice stack can load Vosk, detect wake word `hello`, listen for follow-up commands, and speak responses.
 - The voice script can pulse the face mouth through UDP `TALKFOR` messages on localhost port `5005`.
 - OpenCV camera test succeeded.
-- Manual object tracking was confirmed in prior development notes, with tracker data sent over UDP to drive face/eye target behavior.
 - Local Ollama inference was tested, but larger models caused CUDA memory failures on the Jetson.
 - Memory Core 0.1 adds SQLite-backed event memory, session continuity, identity records, boundary records, and grounded reflection.
+- Body Registry Core 0.1 defines joints, parts, safe ranges, forbidden ranges, and state.
+- Motion Safety/Simulator Core validates structured motion commands before execution.
+- Teaching/Skill Layer stores named learned movements and updates confidence through supervised attempts.
+- Runtime Loop + Body State Monitor boots BEAN as a process, reads hardware/resource state, polls inbox commands, and logs results.
 
-## Intended architecture
+## Intended compute architecture
 
-BEAN should use a split-compute stack:
+BEAN uses a split-compute stack:
 
-- Jetson Orin Nano: LLM, vision, tracking, speech, behavior, face/UI, memory core.
+- Jetson Orin Nano: LLM, vision, tracking, speech, behavior, face/UI, memory core, runtime loop.
 - Raspberry Pi 4: networked motion host over hardwired Ethernet.
 - Arduino Nano layer: motor control, encoder handling, servo/sensor timing, hardware failsafes.
 - Future web/phone control: Flask-style control bridge for movement, arm, speak, status, and Avatar Mode endpoints.
 
-The core architecture should preserve this rule:
+The command rule stays the same:
 
 ```text
-operator intent -> command -> safety arbitration -> body controller -> sensor/body feedback -> memory log -> later learning/reflection
+operator intent
+to command
+to safety arbitration
+to body controller
+to sensor/body feedback
+to memory log
+to later learning/reflection
 ```
 
-Remote control is allowed. Unsafe direct control is not.
+Remote control is allowed.
+
+Unsafe direct control is not.
 
 ## Repo purpose
 
-This repo should become the public project home for:
+This repo is the public project home for:
 
 - hardware inventory
 - current build state
@@ -377,21 +437,18 @@ This repo should become the public project home for:
 
 ## What this is not yet
 
-This is not yet a polished robot runtime package. Current BEAN is a working prototype stack with several validated subsystems and some known technical blockers, especially audio routing, local model memory use, motion integration, body modeling, and safety-gated actuation.
+This is not yet a polished robot runtime package. Current BEAN is a working prototype stack with validated subsystems and known technical blockers, especially audio routing, local model memory use, motion integration, body modeling, and safety-gated actuation.
 
 BEAN is not yet autonomous in the strong sense. BEAN is being built toward supervised autonomy through safe staged development.
 
 ## Near-term roadmap
 
-1. Merge and test Memory Core 0.1 on the Jetson.
+1. Finish Layer 4: World Model + Self Model 0.1.
 2. Keep BEAN's persistent memory outside the repo.
-3. Add body registry for arms, hands, motion base, sensors, and safe limits.
-4. Add motion safety arbitration.
-5. Add Avatar Mode command logging.
-6. Add teaching loop for simple movements.
-7. Add skill memory with confidence, success count, failure count, and preconditions.
-8. Integrate sensing so Avatar Mode sessions become supervised training data.
-9. Later evaluate LeRobot/OpenClaw-style tooling for learned motor policies and higher-level embodied task execution.
+3. Map Layer 5 servo hardware driver without enabling unsafe movement.
+4. Add real actuator driver only after safety handoff is verified.
+5. Integrate sensing so Avatar Mode sessions become supervised training data.
+6. Later evaluate LeRobot/OpenClaw-style tooling for learned motor policies and higher-level embodied task execution.
 
 ## Documentation map
 
@@ -403,4 +460,3 @@ BEAN is not yet autonomous in the strong sense. BEAN is being built toward super
 - `docs/capability-matrix.md` - Working, partial, planned, and blocked capabilities
 - `docs/known-issues.md` - Current bugs and technical blockers
 - `docs/roadmap.md` - Practical next build phases
-- `runtime/README.md` - Placeholder for runtime source files once copied from the robot
