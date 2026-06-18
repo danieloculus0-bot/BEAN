@@ -1,0 +1,102 @@
+{
+  "_comment": "BEAN body registry example. Copy to body_registry.json and edit for real hardware.",
+  "_version": "0.1.0",
+  "joints": [
+    {
+      "joint_id": "left_shoulder_pitch",
+      "label": "Left Shoulder Pitch",
+      "servo_channel": null,
+      "neutral_pos": 90.0,
+      "hardware_connected": false,
+      "notes": "Primary left arm elevation joint. 90 = arm at side. Lower = raised.",
+      "limits": {
+        "min_pos": 30.0,
+        "max_pos": 150.0,
+        "safe_min": 60.0,
+        "safe_max": 120.0,
+        "max_speed": 20.0,
+        "forbidden_ranges": [
+          {"min_pos": 30.0, "max_pos": 45.0, "reason": "Cable strain at extreme raise."}
+        ]
+      }
+    },
+    {
+      "joint_id": "left_shoulder_roll",
+      "label": "Left Shoulder Roll",
+      "servo_channel": null,
+      "neutral_pos": 90.0,
+      "hardware_connected": false,
+      "notes": "Rotates left arm inward/outward.",
+      "limits": {"min_pos": 45.0, "max_pos": 135.0, "safe_min": 60.0, "safe_max": 120.0, "max_speed": 15.0, "forbidden_ranges": []}
+    },
+    {
+      "joint_id": "left_elbow",
+      "label": "Left Elbow",
+      "servo_channel": null,
+      "neutral_pos": 160.0,
+      "hardware_connected": false,
+      "notes": "Left elbow. 160 = nearly straight. 60 = strongly flexed.",
+      "limits": {"min_pos": 60.0, "max_pos": 170.0, "safe_min": 70.0, "safe_max": 165.0, "max_speed": 25.0, "forbidden_ranges": [{"min_pos": 165.0, "max_pos": 170.0, "reason": "Hyperextension risk."}]}
+    },
+    {
+      "joint_id": "left_wrist_pitch",
+      "label": "Left Wrist Pitch",
+      "servo_channel": null,
+      "neutral_pos": 90.0,
+      "hardware_connected": false,
+      "notes": "Left wrist up/down flex.",
+      "limits": {"min_pos": 50.0, "max_pos": 130.0, "safe_min": 60.0, "safe_max": 120.0, "max_speed": 20.0, "forbidden_ranges": []}
+    },
+    {
+      "joint_id": "left_finger_curl",
+      "label": "Left Hand Finger Curl",
+      "servo_channel": null,
+      "neutral_pos": 30.0,
+      "hardware_connected": false,
+      "notes": "Single servo driving left fingers. 10 = open, 60 = closed grip.",
+      "limits": {"min_pos": 5.0, "max_pos": 70.0, "safe_min": 10.0, "safe_max": 60.0, "max_speed": 15.0, "forbidden_ranges": [{"min_pos": 60.0, "max_pos": 70.0, "reason": "Over-grip range."}]}
+    },
+    {
+      "joint_id": "right_shoulder_pitch",
+      "label": "Right Shoulder Pitch",
+      "servo_channel": null,
+      "neutral_pos": 90.0,
+      "hardware_connected": false,
+      "notes": "Right arm elevation.",
+      "limits": {"min_pos": 30.0, "max_pos": 150.0, "safe_min": 60.0, "safe_max": 120.0, "max_speed": 20.0, "forbidden_ranges": [{"min_pos": 30.0, "max_pos": 45.0, "reason": "Cable strain at extreme raise."}]}
+    },
+    {
+      "joint_id": "right_finger_curl",
+      "label": "Right Hand Finger Curl",
+      "servo_channel": null,
+      "neutral_pos": 30.0,
+      "hardware_connected": false,
+      "notes": "Single servo, right hand fingers.",
+      "limits": {"min_pos": 5.0, "max_pos": 70.0, "safe_min": 10.0, "safe_max": 60.0, "max_speed": 15.0, "forbidden_ranges": [{"min_pos": 60.0, "max_pos": 70.0, "reason": "Over-grip range."}]}
+    },
+    {
+      "joint_id": "head_yaw",
+      "label": "Head Yaw",
+      "servo_channel": null,
+      "neutral_pos": 90.0,
+      "hardware_connected": false,
+      "notes": "Head turn. 90 = center.",
+      "limits": {"min_pos": 30.0, "max_pos": 150.0, "safe_min": 45.0, "safe_max": 135.0, "max_speed": 20.0, "forbidden_ranges": []}
+    },
+    {
+      "joint_id": "head_pitch",
+      "label": "Head Pitch",
+      "servo_channel": null,
+      "neutral_pos": 90.0,
+      "hardware_connected": false,
+      "notes": "Head nod. 90 = level.",
+      "limits": {"min_pos": 60.0, "max_pos": 120.0, "safe_min": 70.0, "safe_max": 110.0, "max_speed": 15.0, "forbidden_ranges": []}
+    }
+  ],
+  "limbs": [
+    {"limb_id": "left_arm", "label": "Left Arm", "joint_ids": ["left_shoulder_pitch", "left_shoulder_roll", "left_elbow", "left_wrist_pitch", "left_finger_curl"], "notes": "Full left arm chain."},
+    {"limb_id": "left_hand", "label": "Left Hand", "joint_ids": ["left_finger_curl"], "notes": "Single-servo finger curl."},
+    {"limb_id": "right_arm", "label": "Right Arm", "joint_ids": ["right_shoulder_pitch", "right_finger_curl"], "notes": "Partial right arm definition."},
+    {"limb_id": "head", "label": "Head", "joint_ids": ["head_yaw", "head_pitch"], "notes": "Head yaw and pitch."}
+  ]
+}
