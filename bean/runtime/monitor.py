@@ -13,6 +13,7 @@ import subprocess
 import time
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
+from pathlib import Path
 from typing import Optional
 
 try:
@@ -52,20 +53,7 @@ class BodyStateReading:
     read_errors: list[str] = field(default_factory=list)
 
     def to_dict(self) -> dict:
-        return {
-            "timestamp": self.timestamp,
-            "cpu_percent": self.cpu_percent,
-            "ram_percent": self.ram_percent,
-            "ram_used_mb": self.ram_used_mb,
-            "ram_total_mb": self.ram_total_mb,
-            "gpu_percent": self.gpu_percent,
-            "disk_percent": self.disk_percent,
-            "disk_free_gb": self.disk_free_gb,
-            "temperature_c": self.temperature_c,
-            "uptime_seconds": self.uptime_seconds,
-            "power_mode": self.power_mode,
-            "read_errors": self.read_errors,
-        }
+        return {"timestamp": self.timestamp, "cpu_percent": self.cpu_percent, "ram_percent": self.ram_percent, "ram_used_mb": self.ram_used_mb, "ram_total_mb": self.ram_total_mb, "gpu_percent": self.gpu_percent, "disk_percent": self.disk_percent, "disk_free_gb": self.disk_free_gb, "temperature_c": self.temperature_c, "uptime_seconds": self.uptime_seconds, "power_mode": self.power_mode, "read_errors": self.read_errors}
 
     def anomalies(self) -> list[tuple[str, str]]:
         found: list[tuple[str, str]] = []
@@ -92,7 +80,6 @@ class SystemMonitor:
         cpu = ram_percent = ram_used = ram_total = None
         disk_percent = disk_free = None
         uptime = None
-
         if _PSUTIL_AVAILABLE:
             try:
                 cpu = float(psutil.cpu_percent(interval=None))
@@ -122,39 +109,18 @@ class SystemMonitor:
             except Exception as e:
                 errors.append(f"cpu_fallback: {e}")
             try:
-                uptime = float(PathLike.read_text('/proc/uptime').split()[0])  # type: ignore[name-defined]
-            except Exception:
-                uptime = None
-
-        temp = self._read_temperature(errors)
-        gpu = self._read_gpu_percent(errors)
-        power_mode = self._read_power_mode(errors)
-
-        reading = BodyStateReading(
-            timestamp=_now(),
-            cpu_percent=cpu,
-            ram_percent=ram_percent,
-            ram_used_mb=ram_used,
-            ram_total_mb=ram_total,
-            gpu_percent=gpu,
-            disk_percent=disk_percent,
-            disk_free_gb=disk_free,
-            temperature_c=temp,
-            uptime_seconds=uptime,
-            power_mode=power_mode,
-            read_errors=errors,
-        )
+                uptime = float(Path("/proc/uptime").read_text(encoding="utf-8").split()[0])
+            except Exception as e:
+                errors.append(f"uptime_fallback: {e}")
+        reading = BodyStateReading(_now(), cpu, ram_percent, ram_used, ram_total, self._read_gpu_percent(errors), disk_percent, disk_free, self._read_temperature(errors), uptime, self._read_power_mode(errors), errors)
         self.last_reading = reading
         return reading
 
     def _read_temperature(self, errors: list[str]) -> Optional[float]:
-        for path in (
-            "/sys/devices/virtual/thermal/thermal_zone0/temp",
-            "/sys/class/thermal/thermal_zone0/temp",
-        ):
+        for path in ("/sys/devices/virtual/thermal/thermal_zone0/temp", "/sys/class/thermal/thermal_zone0/temp"):
             try:
                 if os.path.exists(path):
-                    raw = open(path, "r", encoding="utf-8").read().strip()
+                    raw = Path(path).read_text(encoding="utf-8").strip()
                     value = float(raw)
                     return value / 1000.0 if value > 200 else value
             except Exception as e:
@@ -173,9 +139,8 @@ class SystemMonitor:
         try:
             out = subprocess.run(["tegrastats", "--interval", "100", "--count", "1"], capture_output=True, text=True, timeout=1.5)
             text = out.stdout + out.stderr
-            marker = "GR3D_FREQ"
-            if marker in text:
-                chunk = text.split(marker, 1)[1]
+            if "GR3D_FREQ" in text:
+                chunk = text.split("GR3D_FREQ", 1)[1]
                 digits = "".join(ch for ch in chunk if ch.isdigit() or ch == "%")
                 if "%" in digits:
                     return float(digits.split("%", 1)[0])
@@ -200,45 +165,14 @@ class SystemMonitor:
     def read_and_log(self, session_uuid: str) -> BodyStateReading:
         reading = self.read()
         store = get_store()
-        store.execute(
-            """
+        store.execute("""
             INSERT INTO body_state
                 (session_uuid, cpu_percent, ram_percent, gpu_percent, disk_percent,
                  temperature_c, power_state, motor_state, uptime_seconds, notes)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            """,
-            (
-                session_uuid,
-                reading.cpu_percent,
-                reading.ram_percent,
-                reading.gpu_percent,
-                reading.disk_percent,
-                reading.temperature_c,
-                reading.power_mode,
-                None,
-                reading.uptime_seconds,
-                "runtime_monitor",
-            ),
-        )
+        """, (session_uuid, reading.cpu_percent, reading.ram_percent, reading.gpu_percent, reading.disk_percent, reading.temperature_c, reading.power_mode, None, reading.uptime_seconds, "runtime_monitor"))
         store.commit()
-
-        log_event(
-            session_uuid=session_uuid,
-            event_type=EventType.BODY_STATE,
-            subtype="system_monitor_reading",
-            summary="Runtime system monitor reading recorded.",
-            source=Source.SENSOR,
-            data=reading.to_dict(),
-        )
-
+        log_event(session_uuid=session_uuid, event_type=EventType.BODY_STATE, subtype="system_monitor_reading", summary="Runtime system monitor reading recorded.", source=Source.SENSOR, data=reading.to_dict())
         for severity, message in reading.anomalies():
-            log_event(
-                session_uuid=session_uuid,
-                event_type=EventType.WARNING if severity == "warn" else EventType.ERROR,
-                subtype="hardware_anomaly",
-                summary=message,
-                source=Source.SENSOR,
-                severity=Severity.WARN if severity == "warn" else Severity.ERROR,
-                data=reading.to_dict(),
-            )
+            log_event(session_uuid=session_uuid, event_type=EventType.WARNING if severity == "warn" else EventType.ERROR, subtype="hardware_anomaly", summary=message, source=Source.SENSOR, severity=Severity.WARN if severity == "warn" else Severity.ERROR, data=reading.to_dict())
         return reading
