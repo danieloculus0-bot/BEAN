@@ -58,25 +58,34 @@ class TickHandlerRegistry:
                 log_event(session_uuid, EventType.ERROR, f"Tick handler '{handler.name}' failed: {e}", Source.SYSTEM, subtype="tick_handler_error", severity=Severity.ERROR, data={"handler": handler.name, "tick": tick, "error": str(e)})
 
     def summary(self) -> list[dict]:
-        return [
-            {"name": h.name, "interval": h.interval, "enabled": h.enabled, "run_count": h.run_count, "error_count": h.error_count, "last_tick": h.last_tick}
-            for h in self._handlers
-        ]
+        return [{"name": h.name, "interval": h.interval, "enabled": h.enabled, "run_count": h.run_count, "error_count": h.error_count, "last_tick": h.last_tick} for h in self._handlers]
 
 
-def build_default_handlers(monitor=None, inbox=None, reflection_interval: int = 300, monitor_interval: int = 10, inbox_interval: int = 1) -> TickHandlerRegistry:
+def build_default_handlers(
+    monitor=None,
+    inbox=None,
+    teaching_layer=None,
+    *,
+    model_updater=None,
+    reflection_interval: int = 300,
+    monitor_interval: int = 10,
+    inbox_interval: int = 1,
+    model_update_interval: int = 60,
+) -> TickHandlerRegistry:
     registry = TickHandlerRegistry()
-
     if inbox is not None:
         registry.register("inbox", lambda tick, session_uuid, ctx: inbox.poll(session_uuid), interval=inbox_interval)
-
     if monitor is not None:
         registry.register("system_monitor", lambda tick, session_uuid, ctx: monitor.read_and_log(session_uuid), interval=monitor_interval)
+    if model_updater is not None:
+        registry.register("model_update", lambda tick, session_uuid, ctx: model_updater.run(session_uuid, trigger="tick"), interval=model_update_interval)
 
     def scheduled_reflection(tick: int, session_uuid: str, ctx: dict):
         from ..reflection.reflect import run_reflection
         result = run_reflection(session_uuid, trigger_type="scheduled")
         log_event(session_uuid, EventType.REFLECTION, "Scheduled runtime reflection complete.", Source.SYSTEM, subtype="scheduled_reflection", data=result)
+        if model_updater is not None:
+            model_updater.run(session_uuid, trigger="post_reflection")
 
     registry.register("scheduled_reflection", scheduled_reflection, interval=reflection_interval)
     return registry

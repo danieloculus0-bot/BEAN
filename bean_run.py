@@ -1,13 +1,12 @@
 #!/usr/bin/env python3
 """
-Start BEAN's runtime loop on the Jetson.
-"""
+bean_run.py
 
-from __future__ import annotations
+Start BEAN. This is the entry point for the Jetson.
+"""
 
 import argparse
 import os
-import signal
 import sys
 from pathlib import Path
 
@@ -20,6 +19,10 @@ from bean.motion.safety import MotionSafety
 from bean.motion.simulator import MotionSimulator
 from bean.motion.skills import SkillLibrary, seed_initial_skills
 from bean.motion.teaching import TeachingLayer
+from bean.world.model_store import ModelStore
+from bean.world.self_model import SelfModel
+from bean.world.world_model import WorldModel
+from bean.world.updater import ModelUpdater
 from bean.runtime.monitor import SystemMonitor
 from bean.runtime.inbox import CommandInbox
 from bean.runtime.inbox_handlers import register_all
@@ -28,47 +31,57 @@ from bean.runtime.loop import BeanLoop
 from bean.memory.event_logger import log_event, EventType, Source
 
 
-def main() -> int:
+def main():
     parser = argparse.ArgumentParser(description="Start BEAN runtime loop.")
-    parser.add_argument("--ticks", type=int, default=None)
-    parser.add_argument("--hz", type=float, default=float(os.environ.get("BEAN_TICK_HZ", "1.0")))
-    parser.add_argument("--db", type=str, default=os.environ.get("BEAN_DB_PATH"))
-    parser.add_argument("--inbox", type=str, default=os.environ.get("BEAN_INBOX_DIR", "bean/runtime/inbox_drop"))
-    parser.add_argument("--no-seed", action="store_true")
+    parser.add_argument("--ticks", type=int, default=None, help="Stop after N ticks")
+    parser.add_argument("--hz", type=float, default=1.0, help="Tick rate in Hz")
+    parser.add_argument("--db", type=str, default=None, help="Path to SQLite memory DB")
+    parser.add_argument("--no-seed", action="store_true", help="Skip seeding initial skills")
     args = parser.parse_args()
 
-    ctx = start_bean(db_path=args.db)
+    tick_rate = float(os.environ.get("BEAN_TICK_HZ", args.hz))
+    db_path = os.environ.get("BEAN_DB_PATH", args.db)
+    inbox_dir = os.environ.get("BEAN_INBOX_DIR", None)
+
+    ctx = start_bean(db_path=db_path)
     session_uuid = ctx["session_uuid"]
-    loop = None
+
     try:
         registry = load_registry()
         body_state = BodyState(registry=registry)
         safety = MotionSafety(registry=registry)
         simulator = MotionSimulator(body_state=body_state)
         library = SkillLibrary()
-        teaching = TeachingLayer(safety=safety, simulator=simulator, library=library, body_state=body_state)
+        teaching = TeachingLayer(safety, simulator, library, body_state)
+
         if not args.no_seed:
             result = seed_initial_skills(library)
             if result.get("seeded"):
                 log_event(session_uuid, EventType.CAPABILITY_CHANGE, f"Seeded initial skills: {result['seeded']}", Source.SYSTEM, data=result)
 
+        body_state.write_to_memory(session_uuid)
+
+        model_store = ModelStore()
+        self_model = SelfModel(store=model_store)
+        world_model = WorldModel(store=model_store)
+        model_updater = ModelUpdater(self_model, world_model, model_store)
+        model_updater.run(session_uuid, trigger="session_start")
+
         monitor = SystemMonitor()
-        inbox = CommandInbox(args.inbox)
-        handlers = build_default_handlers(monitor=monitor, inbox=inbox, monitor_interval=10, reflection_interval=300, inbox_interval=1)
-        loop = BeanLoop(ctx, handlers, tick_rate_hz=args.hz, max_ticks=args.ticks)
-        register_all(inbox, loop=loop, teaching_layer=teaching, monitor=monitor, ctx=ctx)
-
-        def _signal_shutdown(signum, frame):
-            loop.request_shutdown(reason=f"signal_{signum}")
-        signal.signal(signal.SIGINT, _signal_shutdown)
-        signal.signal(signal.SIGTERM, _signal_shutdown)
-
-        print(f"BEAN runtime started. session={session_uuid} inbox={Path(args.inbox).resolve()}")
+        inbox = CommandInbox(inbox_dir=inbox_dir) if inbox_dir else CommandInbox()
+        handlers = build_default_handlers(monitor, inbox, teaching, model_updater=model_updater)
+        loop = BeanLoop(ctx, handlers, tick_rate_hz=tick_rate, max_ticks=args.ticks)
+        register_all(inbox, loop, teaching, monitor, ctx, model_updater=model_updater)
         loop.run()
-        return 0
+    except KeyboardInterrupt:
+        pass
+    except Exception as e:
+        import traceback
+        log_event(session_uuid, EventType.ERROR, f"Unhandled exception in bean_run.py: {e}", Source.SYSTEM, data={"traceback": traceback.format_exc()})
+        raise
     finally:
-        shutdown_bean(reason="runtime_exit")
+        shutdown_bean(ctx, reason="clean")
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    main()
