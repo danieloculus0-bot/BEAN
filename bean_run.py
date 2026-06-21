@@ -23,6 +23,16 @@ from bean.world.model_store import ModelStore
 from bean.world.self_model import SelfModel
 from bean.world.world_model import WorldModel
 from bean.world.updater import ModelUpdater
+from bean.cognition.significance import SignificanceScorer
+from bean.cognition.significance_weights import SignificanceWeightManager
+from bean.cognition.surprise import SurpriseDetector
+from bean.cognition.preference import PreferenceEngine
+from bean.cognition.drive import DriveEvaluator
+from bean.cognition.goal_state import GoalStateEngine
+from bean.cognition.consolidation import ConsolidationEngine
+from bean.cognition.state_collapse import StateCollapseManager
+from bean.cognition.coherence import CoherenceEngine
+from bean.cognition.entropy import EntropySource
 from bean.runtime.monitor import SystemMonitor
 from bean.runtime.inbox import CommandInbox
 from bean.runtime.inbox_handlers import register_all
@@ -67,11 +77,49 @@ def main():
         model_updater = ModelUpdater(self_model, world_model, model_store)
         model_updater.run(session_uuid, trigger="session_start")
 
+        weight_mgr = SignificanceWeightManager()
+        weights = weight_mgr.load_or_create()
+        scorer = SignificanceScorer(
+            type_scores=weights.event_type_weights,
+            severity_modifiers=weights.severity_modifiers,
+            subtype_modifiers=weights.subtype_modifiers,
+        )
+        state_mgr = StateCollapseManager()
+        state_mgr.seed_initial_states()
+        entropy = EntropySource()
+        entropy.seed_from_event_log(session_uuid)
+        consolidation = ConsolidationEngine(
+            scorer=scorer,
+            surprise_detector=SurpriseDetector(model_store=model_store),
+            preference_engine=PreferenceEngine(),
+            drive_evaluator=DriveEvaluator(),
+            goal_engine=GoalStateEngine(),
+            model_updater=model_updater,
+        )
+        coherence = CoherenceEngine(state_manager=state_mgr, entropy=entropy)
+
         monitor = SystemMonitor()
         inbox = CommandInbox(inbox_dir=inbox_dir) if inbox_dir else CommandInbox()
-        handlers = build_default_handlers(monitor, inbox, teaching, model_updater=model_updater)
+        handlers = build_default_handlers(
+            monitor,
+            inbox,
+            teaching,
+            model_updater=model_updater,
+            consolidation_engine=consolidation,
+            coherence_engine=coherence,
+        )
         loop = BeanLoop(ctx, handlers, tick_rate_hz=tick_rate, max_ticks=args.ticks)
-        register_all(inbox, loop, teaching, monitor, ctx, model_updater=model_updater)
+        register_all(
+            inbox,
+            loop,
+            teaching,
+            monitor,
+            ctx,
+            model_updater=model_updater,
+            consolidation_engine=consolidation,
+            coherence_engine=coherence,
+            state_manager=state_mgr,
+        )
         loop.run()
     except KeyboardInterrupt:
         pass
