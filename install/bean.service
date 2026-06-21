@@ -1,0 +1,23 @@
+[Unit]
+Description=BEAN Brain Runtime
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=bean
+Group=bean
+WorkingDirectory=/home/bean/BEAN
+EnvironmentFile=/etc/bean/bean.env
+ExecStart=/home/bean/BEAN/.venv/bin/python3 /home/bean/BEAN/bean_run.py
+ExecStop=/bin/kill -SIGINT $MAINPID
+Restart=on-failure
+RestartSec=10
+TimeoutStopSec=30
+KillSignal=SIGINT
+
+# Safety posture: this service starts the brain/runtime only.
+# Motion hardware remains disabled until a verified hardware driver is added.
+
+[Install]
+WantedBy=multi-user.target
