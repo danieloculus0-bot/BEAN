@@ -10,14 +10,25 @@ from ..memory.event_logger import log_event, EventType, Source
 from .inbox import InboxMessage
 
 
-def make_handlers(loop=None, teaching_layer=None, monitor=None, ctx: dict | None = None, *, model_updater=None) -> dict:
+def make_handlers(
+    loop=None,
+    teaching_layer=None,
+    monitor=None,
+    ctx: dict | None = None,
+    *,
+    model_updater=None,
+    consolidation_engine=None,
+    coherence_engine=None,
+    state_manager=None,
+) -> dict:
     ctx = ctx or {}
 
     def status(msg: InboxMessage, session_uuid: str) -> dict:
         reading = monitor.read().to_dict() if monitor is not None else None
         loop_status = loop.status() if loop is not None else {}
         model_snapshot = model_updater.full_snapshot() if model_updater is not None else None
-        return {"status": "running", "loop": loop_status, "hardware": reading, "models": model_snapshot}
+        possibility_snapshot = state_manager.snapshot() if state_manager is not None else None
+        return {"status": "running", "loop": loop_status, "hardware": reading, "models": model_snapshot, "possibility_states": possibility_snapshot}
 
     def log_note(msg: InboxMessage, session_uuid: str) -> dict:
         text = str(msg.args.get("text", ""))
@@ -34,7 +45,9 @@ def make_handlers(loop=None, teaching_layer=None, monitor=None, ctx: dict | None
         from ..reflection.reflect import run_reflection
         result = run_reflection(session_uuid, trigger_type="manual")
         if model_updater is not None:
-            return {"reflection": result, "model_update": model_updater.run(session_uuid, trigger="post_reflection")}
+            result = {"reflection": result, "model_update": model_updater.run(session_uuid, trigger="post_reflection")}
+        if consolidation_engine is not None:
+            result["consolidation"] = consolidation_engine.run(session_uuid, trigger="post_reflection").to_dict()
         return result
 
     def replay_skill(msg: InboxMessage, session_uuid: str) -> dict:
@@ -46,6 +59,8 @@ def make_handlers(loop=None, teaching_layer=None, monitor=None, ctx: dict | None
         result = teaching_layer.replay_skill(str(skill_name), session_uuid=session_uuid)
         if model_updater is not None:
             result["model_update"] = model_updater.run(session_uuid, trigger="skill_replay")
+        if consolidation_engine is not None:
+            result["consolidation"] = consolidation_engine.run(session_uuid, trigger="skill_replay").to_dict()
         return result
 
     def update_models(msg: InboxMessage, session_uuid: str) -> dict:
@@ -54,10 +69,31 @@ def make_handlers(loop=None, teaching_layer=None, monitor=None, ctx: dict | None
         trigger = str(msg.args.get("trigger") or msg.args.get("note") or "manual")
         return {"success": True, "update": model_updater.run(session_uuid, trigger=trigger)}
 
-    return {"status": status, "log_note": log_note, "shutdown": shutdown, "run_reflection": run_reflection, "replay_skill": replay_skill, "update_models": update_models}
+    def run_consolidation(msg: InboxMessage, session_uuid: str) -> dict:
+        if consolidation_engine is None:
+            return {"success": False, "reason": "consolidation_engine unavailable"}
+        trigger = str(msg.args.get("trigger") or "manual")
+        return {"success": True, "report": consolidation_engine.run(session_uuid, trigger=trigger).to_dict()}
+
+    def run_coherence(msg: InboxMessage, session_uuid: str) -> dict:
+        if coherence_engine is None:
+            return {"success": False, "reason": "coherence_engine unavailable"}
+        trigger = str(msg.args.get("trigger") or "manual")
+        return {"success": True, "report": coherence_engine.run(session_uuid, trigger=trigger).to_dict()}
+
+    return {
+        "status": status,
+        "log_note": log_note,
+        "shutdown": shutdown,
+        "run_reflection": run_reflection,
+        "replay_skill": replay_skill,
+        "update_models": update_models,
+        "run_consolidation": run_consolidation,
+        "run_coherence": run_coherence,
+    }
 
 
-def register_all(inbox, loop=None, teaching_layer=None, monitor=None, ctx: dict | None = None, *, model_updater=None):
-    for name, handler in make_handlers(loop=loop, teaching_layer=teaching_layer, monitor=monitor, ctx=ctx, model_updater=model_updater).items():
+def register_all(inbox, loop=None, teaching_layer=None, monitor=None, ctx: dict | None = None, *, model_updater=None, consolidation_engine=None, coherence_engine=None, state_manager=None):
+    for name, handler in make_handlers(loop=loop, teaching_layer=teaching_layer, monitor=monitor, ctx=ctx, model_updater=model_updater, consolidation_engine=consolidation_engine, coherence_engine=coherence_engine, state_manager=state_manager).items():
         inbox.register(name, handler)
     return inbox
