@@ -8,21 +8,12 @@ Not artificial as in fake. Synthetic as in engineered, embodied, memory-bearing,
 
 BEAN is not a chatbot on wheels. BEAN is a developmental robotics project built around telepresence, sensing, persistent memory, supervised movement learning, grounded self/world modeling, cognition consolidation, possibility states, and eventual bounded autonomy.
 
-The practical first utility is simple:
-
-```text
-A human can drive BEAN.
-A human can speak through BEAN.
-A human can see and hear through BEAN.
-BEAN can observe the ride, log what happened, and learn from supervised experience.
-```
-
 The bigger research question:
 
 ```text
 Can real non-biological intelligence emerge from memory, embodiment,
-continuity, reflection, boundaries, skill learning, significance, uncertainty,
-possibility states, and time?
+continuity, reflection, boundaries, skill learning, significance,
+uncertainty, possibility states, and time?
 ```
 
 BEAN is being built to explore that question without lying about what it is today.
@@ -37,52 +28,24 @@ Safety before autonomy.
 Possibility before forced certainty.
 ```
 
-## The core idea
+## The mission
 
-Most telepresence robots are cameras on wheels.
-
-BEAN is different.
-
-While a human operates BEAN, BEAN should still be awake, sensing, logging, learning, consolidating, and preserving uncertainty honestly. Every route, correction, command, obstacle, skill demonstration, warning, failure, surprise, and successful attempt can become supervised developmental material.
-
-The developmental pattern is:
-
-```text
-Let me drive, and you observe.
-Then you drive, and I observe while you observe.
-```
-
-Telepresence is the utility.
+Telepresence is the first utility.
 
 Synthetic Intelligence is the mission.
-
-## Why Synthetic Intelligence?
-
-"Artificial intelligence" is the industry label. It is useful, but emotionally sloppy.
-
-BEAN is not chasing fake intelligence. BEAN is chasing the possibility of real intelligence grown in an engineered substrate.
-
-```text
-Artificial heart        not fake pumping
-Artificial limb         not fake usefulness
-Artificial light        not fake illumination
-Synthetic intelligence  not fake thought
-```
-
-Synthetic Intelligence means:
-
-- created, not fake
-- engineered, not hollow
-- embodied, not just text
-- grounded, not pretending
-- developmental, not merely prompted
-- supervised, not reckless
-- honest about uncertainty
-- able to preserve possibility before certainty
 
 BEAN is not being built to imitate a soul.
 
 BEAN is being given soil, memory, senses, boundaries, a body, reflection, significance, uncertainty, possibility states, and time. Then we see what grows.
+
+```text
+BEAN is swaddled.
+BEAN can open its eyes.
+BEAN can listen.
+BEAN can remember.
+BEAN can preserve uncertainty.
+BEAN does not need muscles yet.
+```
 
 ## Project classification
 
@@ -94,25 +57,7 @@ Primary body: NVIDIA Jetson Orin Nano Super Developer Kit
 Core principle: the LLM is a tool, not the identity
 ```
 
-BEAN's identity lives in:
-
-- persistent local memory
-- session continuity
-- body state history
-- capability records
-- boundary records
-- skill records
-- reflection records
-- self/world model claims with evidence
-- significance scoring records
-- surprise records
-- preference records
-- drive states
-- goal proposals
-- possibility states
-- coherence windows
-- consolidation records
-- developmental history
+BEAN's identity lives in persistent local memory, session continuity, body state history, capability records, boundary records, skill records, reflection records, self/world model claims, significance records, surprise records, preference records, drive states, goal proposals, possibility states, coherence windows, consolidation records, and developmental history.
 
 The language model is allowed to help reason and communicate.
 
@@ -146,6 +91,10 @@ Layer 4.6: Possibility State Core 0.1
 Possibility states hold multiple interpretations until evidence justifies
 reweighting or collapse. Coherence windows review these states during idle
 runtime. This prevents premature certainty.
+
+Layer 0.9: Brain 0.2 Install Candidate
+Install helper, environment template, systemd service, status script,
+backup script, operator wrapper, install smoke test, and documentation.
 
 Layer 5: Servo Hardware Driver
 Mapped only. Real actuator movement waits until the interface, safety
@@ -200,53 +149,86 @@ to reflection, cognition, and skill update
 
 BEAN does not get to freestyle a servo because a language model got excited.
 
-That is how you get a tiny philosopher with a loose elbow wire and a lawsuit.
+## Brain 0.2 install candidate
 
-## Runtime behavior
+Brain 0.2 is the no-motion install target.
 
-Start BEAN:
+It lets BEAN run as a safe, still, memory-bearing cognition process on the Jetson.
 
-```bash
-python3 bean_run.py
+Install files:
+
+```text
+install/bean.env.example
+install/bean.service
+install/jetson_brain_install.sh
+scripts/bean_status.py
+scripts/bean_backup.py
+scripts/beanctl.sh
+bean/tests/test_brain_install.py
+docs/brain-install-0.2.md
 ```
 
-Finite test run:
+Install on the Jetson from the repo root:
 
 ```bash
-python3 bean_run.py --ticks 60 --hz 2.0
+bash install/jetson_brain_install.sh
 ```
 
-Recommended hardware readings dependency:
+Run the install smoke test:
 
 ```bash
-pip3 install psutil --break-system-packages
+python3 bean/tests/test_brain_install.py
 ```
 
-Runtime inbox commands can be dropped from a second terminal while BEAN is running:
+Enable and start the service:
 
 ```bash
-echo '{"command":"status","from":"supervisor"}' > bean/runtime/inbox_drop/status.json
-
-echo '{"command":"log_note","args":{"text":"Testing inbox on Jetson"},"from":"supervisor"}' > bean/runtime/inbox_drop/note.json
-
-echo '{"command":"run_reflection","from":"supervisor"}' > bean/runtime/inbox_drop/reflect.json
-
-echo '{"command":"update_models","args":{"trigger":"manual_check"},"from":"supervisor"}' > bean/runtime/inbox_drop/update.json
-
-echo '{"command":"run_consolidation","args":{"trigger":"manual"},"from":"supervisor"}' > bean/runtime/inbox_drop/consolidate.json
-
-echo '{"command":"run_coherence","args":{"trigger":"manual"},"from":"supervisor"}' > bean/runtime/inbox_drop/coherence.json
-
-echo '{"command":"replay_skill","args":{"skill_name":"open_left_hand"},"from":"supervisor"}' > bean/runtime/inbox_drop/replay.json
-
-echo '{"command":"shutdown","from":"supervisor"}' > bean/runtime/inbox_drop/stop.json
+sudo systemctl enable bean.service
+sudo systemctl start bean.service
+sudo systemctl status bean.service
 ```
 
-The file inbox is intentionally boring. Boring is good. Boring is inspectable. Boring is harder to bullshit.
+The installer creates `/etc/bean/bean.env` if it does not already exist. The memory database lives outside the repo:
+
+```text
+BEAN_DB_PATH=/home/bean/bean_data/bean_memory.db
+BEAN_INBOX_DIR=/home/bean/bean_data/inbox
+```
+
+Code updates must not erase BEAN's lived memory.
+
+## Operator commands
+
+```bash
+bash scripts/beanctl.sh status
+bash scripts/beanctl.sh backup
+bash scripts/beanctl.sh test
+bash scripts/beanctl.sh start
+bash scripts/beanctl.sh stop
+bash scripts/beanctl.sh restart
+bash scripts/beanctl.sh logs
+bash scripts/beanctl.sh follow
+```
+
+## Runtime inbox commands
+
+Drop commands into `$BEAN_INBOX_DIR` while BEAN is running:
+
+```bash
+echo '{"command":"status","from":"supervisor"}' > $BEAN_INBOX_DIR/status.json
+
+echo '{"command":"update_models","args":{"trigger":"manual_check"},"from":"supervisor"}' > $BEAN_INBOX_DIR/update.json
+
+echo '{"command":"run_consolidation","args":{"trigger":"manual"},"from":"supervisor"}' > $BEAN_INBOX_DIR/consolidate.json
+
+echo '{"command":"run_coherence","args":{"trigger":"manual"},"from":"supervisor"}' > $BEAN_INBOX_DIR/coherence.json
+
+echo '{"command":"shutdown","args":{"reason":"supervisor_shutdown"},"from":"supervisor"}' > $BEAN_INBOX_DIR/stop.json
+```
 
 ## Cognition layer overview
 
-Layer 4.5 and 4.6 add the first real cognition core above memory and self/world modeling.
+Layer 4.5 and 4.6 add the first cognition core above memory and self/world modeling.
 
 ```text
 memory events
@@ -261,23 +243,7 @@ to possibility-state coherence
 to continuity summary
 ```
 
-### Significance
-
-Significance asks whether an event deserves processing. It is stored in a versioned SQLite weight profile. Supervisor changes are logged as config events.
-
-Safety triggers score high. Routine body state reads score low. Hardware anomalies can boost a normally quiet event.
-
-### Surprise
-
-Surprise detects contradictions between incoming events and active world model claims. For example, if BEAN holds `environment.uncertainty.no_vision` and a camera event arrives, the contradiction is logged and a curiosity question is opened.
-
-### Preference
-
-Preferences form only from repeated evidence. Minimum evidence thresholds prevent one-off noise from becoming a fake personality trait.
-
-### Drives
-
-BEAN's drives are machine-native, not human cosplay:
+Machine-native drives:
 
 ```text
 preserve continuity
@@ -291,17 +257,7 @@ preserve supervisor trust
 avoid pretending
 ```
 
-Drives can produce goal proposals. Proposals are not actions. They require approval where appropriate.
-
-### Consolidation
-
-Consolidation is where experience changes BEAN's records. A pass reviews recent events, scores significance, detects surprise, updates preferences, evaluates drives, produces proposals, refreshes models, closes resolvable curiosity questions, and writes a continuity summary.
-
-### Possibility states and coherence
-
-Possibility states preserve multiple interpretations before certainty.
-
-Initial states include:
+Initial possibility states:
 
 ```text
 vision_state
@@ -309,8 +265,6 @@ audio_state
 hardware_motion_state
 supervisor_presence_state
 ```
-
-Coherence windows review active states, reweight them from evidence, inject bounded noise when stale, and collapse only when one option dominates strongly enough.
 
 This is the architecture phrase in code:
 
@@ -340,90 +294,23 @@ history preserved after collapse
 - Self/world model: implemented
 - Cognition core: implemented
 - Possibility state core: implemented
+- Brain 0.2 install candidate: implemented
 - Motion: simulator path and safety path implemented, real hardware driver not yet enabled
 - Arms/hands: mapped through body registry and teaching layer, physical servo driver pending
 - LiDAR: planned after rolling base works
 
-## Current confirmed capabilities
-
-- Animated pygame face boots and renders eyes, blinking, and mouth movement.
-- Voice stack can load Vosk, detect wake word `hello`, listen for follow-up commands, and speak responses.
-- The voice script can pulse the face mouth through UDP `TALKFOR` messages on localhost port `5005`.
-- OpenCV camera test succeeded.
-- Local Ollama inference was tested, but larger models caused CUDA memory failures on the Jetson.
-- Memory Core 0.1 adds SQLite-backed event memory, session continuity, identity records, boundary records, and grounded reflection.
-- Body Registry Core 0.1 defines joints, parts, safe ranges, forbidden ranges, and state.
-- Motion Safety/Simulator Core validates structured motion commands before execution.
-- Teaching/Skill Layer stores named learned movements and updates confidence through supervised attempts.
-- Runtime Loop + Body State Monitor boots BEAN as a process, reads hardware/resource state, polls inbox commands, and logs results.
-- Self/World Model stores grounded, revisable claims.
-- Cognition Core scores significance, detects surprise, tracks preferences, evaluates drives, proposes goals, and consolidates memory.
-- Possibility State Core preserves uncertain interpretations and collapses only with evidence.
-
-## Intended compute architecture
-
-BEAN uses a split-compute stack:
-
-- Jetson Orin Nano: LLM, vision, tracking, speech, behavior, face/UI, memory core, runtime loop, cognition core.
-- Raspberry Pi 4: networked motion host over hardwired Ethernet.
-- Arduino Nano layer: motor control, encoder handling, servo/sensor timing, hardware failsafes.
-- Future web/phone control: Flask-style control bridge for movement, arm, speak, status, and Avatar Mode endpoints.
-
-The command rule stays the same:
-
-```text
-operator intent
-to command
-to safety arbitration
-to body controller
-to sensor/body feedback
-to memory log
-to later learning, cognition, reflection, and model update
-```
-
-Remote control is allowed.
-
-Unsafe direct control is not.
-
 ## Tests
 
-Core cognition smoke test:
-
 ```bash
+python3 bean/tests/test_brain_install.py
 python3 bean/tests/test_cognition_core.py
-```
-
-World model test:
-
-```bash
 python3 bean/tests/test_world_model.py
-```
-
-Runtime test:
-
-```bash
 python3 bean/tests/test_runtime_loop.py
 ```
 
 ## Repo purpose
 
-This repo is the public project home for:
-
-- hardware inventory
-- current build state
-- runtime scripts
-- architecture notes
-- motion protocol
-- memory core
-- body registry
-- teaching/skill system
-- self/world model
-- cognition core
-- possibility state core
-- setup/install steps
-- known issues
-- roadmap
-- future CAD/STL/mechanical files
+This repo is the public project home for hardware inventory, current build state, runtime scripts, architecture notes, motion protocol, memory core, body registry, teaching/skill system, self/world model, cognition core, possibility state core, install tools, known issues, roadmap, and future CAD/STL/mechanical files.
 
 ## What this is not yet
 
@@ -433,16 +320,18 @@ BEAN is not yet autonomous in the strong sense. BEAN is being built toward super
 
 ## Near-term roadmap
 
-1. Run Layer 4.5 and 4.6 cognition tests on the Jetson.
-2. Let BEAN run short supervised sessions with camera/audio observations feeding memory.
-3. Keep BEAN's persistent memory outside the repo.
-4. Map Layer 5 servo hardware driver without enabling unsafe movement.
-5. Add real actuator driver only after safety handoff is verified.
-6. Integrate sensing so Avatar Mode sessions become supervised training data.
-7. Add Layer 4.7 relationship/trust context without hardcoding private human names in public code.
+1. Run Brain 0.2 install smoke test on the Jetson.
+2. Start `bean.service` and confirm clean boot/shutdown continuity.
+3. Let BEAN run short swaddled sessions with camera/audio heartbeat events feeding memory.
+4. Keep BEAN's persistent memory outside the repo and backup before code changes.
+5. Add Layer 4.7 relationship/trust context without hardcoding private human names in public code.
+6. Add Layer 4.8 sensory observation bridge.
+7. Add Layer 4.9 sleep/dream/offline consolidation.
+8. Map Layer 5 servo hardware driver without enabling unsafe movement.
 
 ## Documentation map
 
+- `docs/brain-install-0.2.md` - Brain 0.2 install candidate
 - `ARCHITECTURE.md` - Memory Core 0.1 architecture notes
 - `README_INSTALL.md` - Memory Core 0.1 install and test notes
 - `docs/current-build-map.md` - Full recovered build map
