@@ -12,9 +12,9 @@ from pathlib import Path
 from bean.memory.store import init_store, _local, get_store
 from bean.memory.identity import bootstrap_identity
 from bean.memory.session import begin_session
-from bean.memory.event_logger import log_event, EventType, Source
 from bean.runtime.inbox import CommandInbox
 from bean.runtime.inbox_handlers import register_all
+from bean.world.model_store import ModelStore
 from bean.cognition.brain_maintenance import BrainMaintenanceEngine
 from bean.cognition.dreaming import DreamType
 
@@ -26,6 +26,7 @@ def make_db():
     tmpdir = Path(tempfile.mkdtemp())
     init_store(str(tmpdir / "brain_maintenance_test.db"))
     bootstrap_identity()
+    ModelStore()
     return tmpdir, begin_session()
 
 
