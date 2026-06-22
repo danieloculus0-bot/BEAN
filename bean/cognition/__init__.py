@@ -14,3 +14,9 @@ from .entropy import EntropySource, EntropySourceType, EntropyReading
 from .epistemic_guard import EpistemicGuard, EpistemicAudit, CandidateClaim, EpistemicVerdict
 from .contradiction_court import ContradictionCourt, ClaimConflict, ClaimVerdict, ConflictType, CourtVerdict
 from .falsification import FalsificationEngine, FalsificationRule, FalsificationResult, FalsificationType
+from .dreaming import DreamEngine, DreamRecord, DreamType
+from .uncertainty_garden import UncertaintyGarden, UncertaintyRecord, UncertaintyOption, UncertaintyStatus
+from .dignity import DignityLayer, DignityRule, DignityEvent, DignityAction
+from .inner_weather import InnerWeatherEngine, InnerWeatherReport
+from .autobiography import AutobiographyEngine, AutobiographyEntry, AutobiographyEntryType
+from .brain_maintenance import BrainMaintenanceEngine
