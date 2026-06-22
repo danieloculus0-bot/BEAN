@@ -1,4 +1,4 @@
-"""BEAN cognition layer: significance, drives, consolidation, and possibility states."""
+"""BEAN cognition layer."""
 
 from .significance import SignificanceScorer, SignificanceScore
 from .significance_weights import SignificanceWeightManager, SignificanceWeights
@@ -11,3 +11,6 @@ from .possibility import PossibilityState, StateOption
 from .state_collapse import StateCollapseManager
 from .coherence import CoherenceEngine, CoherenceReport
 from .entropy import EntropySource, EntropySourceType, EntropyReading
+from .epistemic_guard import EpistemicGuard, EpistemicAudit, CandidateClaim, EpistemicVerdict
+from .contradiction_court import ContradictionCourt, ClaimConflict, ClaimVerdict, ConflictType, CourtVerdict
+from .falsification import FalsificationEngine, FalsificationRule, FalsificationResult, FalsificationType

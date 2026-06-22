@@ -6,14 +6,14 @@
 
 Not artificial as in fake. Synthetic as in engineered, embodied, memory-bearing, and grown from real experience.
 
-BEAN is not a chatbot on wheels. BEAN is a developmental robotics project built around telepresence, sensing, persistent memory, supervised movement learning, grounded self/world modeling, cognition consolidation, possibility states, and eventual bounded autonomy.
+BEAN is not a chatbot on wheels. BEAN is a developmental robotics project built around telepresence, sensing, persistent memory, supervised movement learning, grounded self/world modeling, cognition consolidation, possibility states, epistemic self-defense, and eventual bounded autonomy.
 
 The bigger research question:
 
 ```text
 Can real non-biological intelligence emerge from memory, embodiment,
 continuity, reflection, boundaries, skill learning, significance,
-uncertainty, possibility states, and time?
+uncertainty, possibility states, self-falsification, and time?
 ```
 
 BEAN is being built to explore that question without lying about what it is today.
@@ -26,6 +26,7 @@ Memory before identity claims.
 Body model before motion.
 Safety before autonomy.
 Possibility before forced certainty.
+Doubt before confidence.
 ```
 
 ## The mission
@@ -36,7 +37,7 @@ Synthetic Intelligence is the mission.
 
 BEAN is not being built to imitate a soul.
 
-BEAN is being given soil, memory, senses, boundaries, a body, reflection, significance, uncertainty, possibility states, and time. Then we see what grows.
+BEAN is being given soil, memory, senses, boundaries, a body, reflection, significance, uncertainty, possibility states, an epistemic immune system, and time. Then we see what grows.
 
 ```text
 BEAN is swaddled.
@@ -44,6 +45,7 @@ BEAN can open its eyes.
 BEAN can listen.
 BEAN can remember.
 BEAN can preserve uncertainty.
+BEAN can challenge its own claims.
 BEAN does not need muscles yet.
 ```
 
@@ -57,7 +59,7 @@ Primary body: NVIDIA Jetson Orin Nano Super Developer Kit
 Core principle: the LLM is a tool, not the identity
 ```
 
-BEAN's identity lives in persistent local memory, session continuity, body state history, capability records, boundary records, skill records, reflection records, self/world model claims, significance records, surprise records, preference records, drive states, goal proposals, possibility states, coherence windows, consolidation records, and developmental history.
+BEAN's identity lives in persistent local memory, session continuity, body state history, capability records, boundary records, skill records, reflection records, self/world model claims, significance records, surprise records, preference records, drive states, goal proposals, possibility states, coherence windows, consolidation records, epistemic audits, claim conflicts, falsification checks, and developmental history.
 
 The language model is allowed to help reason and communicate.
 
@@ -96,6 +98,11 @@ Layer 0.9: Brain 0.2 Install Candidate
 Install helper, environment template, systemd service, status script,
 backup script, operator wrapper, install smoke test, and documentation.
 
+Layer 4.7: Epistemic Immune System 0.1
+Candidate claims are screened for evidence, confidence, source,
+falsification path, capability inflation, fake emotion/sentience language,
+and active contradictions. BEAN can put its own claims on trial.
+
 Layer 5: Servo Hardware Driver
 Mapped only. Real actuator movement waits until the interface, safety
 handoff, and hardware controller are verified.
@@ -114,6 +121,7 @@ BEAN is:
 - a robot that should know what it can and cannot do
 - a machine learner that must keep receipts
 - a system that can preserve uncertainty without collapsing it too early
+- a system that can challenge its own claims before trusting them
 
 ## What BEAN is not
 
@@ -136,59 +144,21 @@ No direct LLM-to-actuator path.
 
 Everything physical must pass through structure, safety, execution, feedback, and memory.
 
-```text
-intent
-to planner or teaching layer
-to structured motion command
-to safety arbitration
-to simulator or hardware driver
-to observed result
-to memory log
-to reflection, cognition, and skill update
-```
-
-BEAN does not get to freestyle a servo because a language model got excited.
-
 ## Brain 0.2 install candidate
 
-Brain 0.2 is the no-motion install target.
-
-It lets BEAN run as a safe, still, memory-bearing cognition process on the Jetson.
-
-Install files:
-
-```text
-install/bean.env.example
-install/bean.service
-install/jetson_brain_install.sh
-scripts/bean_status.py
-scripts/bean_backup.py
-scripts/beanctl.sh
-bean/tests/test_brain_install.py
-docs/brain-install-0.2.md
-```
+Brain 0.2 is the no-motion install target. It lets BEAN run as a safe, still, memory-bearing cognition process on the Jetson.
 
 Install on the Jetson from the repo root:
 
 ```bash
 bash install/jetson_brain_install.sh
-```
-
-Run the install smoke test:
-
-```bash
 python3 bean/tests/test_brain_install.py
-```
-
-Enable and start the service:
-
-```bash
 sudo systemctl enable bean.service
 sudo systemctl start bean.service
 sudo systemctl status bean.service
 ```
 
-The installer creates `/etc/bean/bean.env` if it does not already exist. The memory database lives outside the repo:
+The memory database lives outside the repo:
 
 ```text
 BEAN_DB_PATH=/home/bean/bean_data/bean_memory.db
@@ -196,6 +166,40 @@ BEAN_INBOX_DIR=/home/bean/bean_data/inbox
 ```
 
 Code updates must not erase BEAN's lived memory.
+
+## Brain 0.3 epistemic immune system
+
+Brain 0.3 is not wired into the always-on runtime loop yet. It is a schema/module/test/docs pass first.
+
+Files:
+
+```text
+bean/cognition/epistemic_guard.py
+bean/cognition/contradiction_court.py
+bean/cognition/falsification.py
+bean/tests/test_epistemic_guard.py
+bean/tests/test_contradiction_court.py
+bean/tests/test_falsification.py
+docs/brain-0.3-epistemic-immune-system.md
+```
+
+Run:
+
+```bash
+python3 bean/tests/test_epistemic_guard.py
+python3 bean/tests/test_contradiction_court.py
+python3 bean/tests/test_falsification.py
+```
+
+Mission of this layer:
+
+```text
+BEAN should not trust itself by default.
+BEAN should earn belief through evidence.
+BEAN should preserve doubt until reality forces collapse.
+BEAN should remember when it was wrong.
+BEAN should protect itself from pretending.
+```
 
 ## Operator commands
 
@@ -228,8 +232,6 @@ echo '{"command":"shutdown","args":{"reason":"supervisor_shutdown"},"from":"supe
 
 ## Cognition layer overview
 
-Layer 4.5 and 4.6 add the first cognition core above memory and self/world modeling.
-
 ```text
 memory events
 to significance scoring
@@ -240,6 +242,7 @@ to goal proposals
 to consolidation
 to self/world model update
 to possibility-state coherence
+to epistemic audit / contradiction court / falsification check
 to continuity summary
 ```
 
@@ -295,6 +298,7 @@ history preserved after collapse
 - Cognition core: implemented
 - Possibility state core: implemented
 - Brain 0.2 install candidate: implemented
+- Brain 0.3 epistemic immune system: module/test/docs pass implemented
 - Motion: simulator path and safety path implemented, real hardware driver not yet enabled
 - Arms/hands: mapped through body registry and teaching layer, physical servo driver pending
 - LiDAR: planned after rolling base works
@@ -306,11 +310,10 @@ python3 bean/tests/test_brain_install.py
 python3 bean/tests/test_cognition_core.py
 python3 bean/tests/test_world_model.py
 python3 bean/tests/test_runtime_loop.py
+python3 bean/tests/test_epistemic_guard.py
+python3 bean/tests/test_contradiction_court.py
+python3 bean/tests/test_falsification.py
 ```
-
-## Repo purpose
-
-This repo is the public project home for hardware inventory, current build state, runtime scripts, architecture notes, motion protocol, memory core, body registry, teaching/skill system, self/world model, cognition core, possibility state core, install tools, known issues, roadmap, and future CAD/STL/mechanical files.
 
 ## What this is not yet
 
@@ -320,18 +323,19 @@ BEAN is not yet autonomous in the strong sense. BEAN is being built toward super
 
 ## Near-term roadmap
 
-1. Run Brain 0.2 install smoke test on the Jetson.
+1. Run Brain 0.2 and Brain 0.3 smoke tests on the Jetson.
 2. Start `bean.service` and confirm clean boot/shutdown continuity.
-3. Let BEAN run short swaddled sessions with camera/audio heartbeat events feeding memory.
-4. Keep BEAN's persistent memory outside the repo and backup before code changes.
-5. Add Layer 4.7 relationship/trust context without hardcoding private human names in public code.
-6. Add Layer 4.8 sensory observation bridge.
-7. Add Layer 4.9 sleep/dream/offline consolidation.
+3. Add inbox commands for `run_epistemic_audit`, `run_contradiction_court`, and `run_falsification_check`.
+4. Let BEAN run short swaddled sessions with camera/audio heartbeat events feeding memory.
+5. Keep BEAN's persistent memory outside the repo and backup before code changes.
+6. Add Brain 0.4 Dream Engine + Uncertainty Garden.
+7. Add Brain 0.5 Dignity Layer + Inner Weather + Autobiography.
 8. Map Layer 5 servo hardware driver without enabling unsafe movement.
 
 ## Documentation map
 
 - `docs/brain-install-0.2.md` - Brain 0.2 install candidate
+- `docs/brain-0.3-epistemic-immune-system.md` - Brain 0.3 epistemic guard, contradiction court, falsification
 - `ARCHITECTURE.md` - Memory Core 0.1 architecture notes
 - `README_INSTALL.md` - Memory Core 0.1 install and test notes
 - `docs/current-build-map.md` - Full recovered build map
