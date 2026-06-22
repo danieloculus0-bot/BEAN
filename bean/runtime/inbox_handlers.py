@@ -20,8 +20,16 @@ def make_handlers(
     consolidation_engine=None,
     coherence_engine=None,
     state_manager=None,
+    brain_maintenance=None,
 ) -> dict:
     ctx = ctx or {}
+
+    def _brain():
+        nonlocal brain_maintenance
+        if brain_maintenance is None:
+            from ..cognition.brain_maintenance import BrainMaintenanceEngine
+            brain_maintenance = BrainMaintenanceEngine()
+        return brain_maintenance
 
     def status(msg: InboxMessage, session_uuid: str) -> dict:
         reading = monitor.read().to_dict() if monitor is not None else None
@@ -81,6 +89,39 @@ def make_handlers(
         trigger = str(msg.args.get("trigger") or "manual")
         return {"success": True, "report": coherence_engine.run(session_uuid, trigger=trigger).to_dict()}
 
+    def run_epistemic_audit(msg: InboxMessage, session_uuid: str) -> dict:
+        return {"success": True, "report": _brain().run_epistemic_audit(session_uuid, msg.args)}
+
+    def run_contradiction_court(msg: InboxMessage, session_uuid: str) -> dict:
+        return {"success": True, "report": _brain().run_contradiction_court(session_uuid, msg.args)}
+
+    def run_falsification_check(msg: InboxMessage, session_uuid: str) -> dict:
+        return {"success": True, "report": _brain().run_falsification_check(session_uuid, msg.args)}
+
+    def run_dream_pass(msg: InboxMessage, session_uuid: str) -> dict:
+        return {"success": True, "report": _brain().run_dream_pass(session_uuid, msg.args)}
+
+    def plant_uncertainty(msg: InboxMessage, session_uuid: str) -> dict:
+        return {"success": True, "report": _brain().plant_uncertainty(session_uuid, msg.args)}
+
+    def review_uncertainties(msg: InboxMessage, session_uuid: str) -> dict:
+        return {"success": True, "report": _brain().review_uncertainties(session_uuid, msg.args)}
+
+    def resolve_uncertainty(msg: InboxMessage, session_uuid: str) -> dict:
+        return _brain().resolve_uncertainty(session_uuid, msg.args)
+
+    def run_dignity_check(msg: InboxMessage, session_uuid: str) -> dict:
+        return {"success": True, "report": _brain().run_dignity_check(session_uuid, msg.args)}
+
+    def run_inner_weather(msg: InboxMessage, session_uuid: str) -> dict:
+        return {"success": True, "report": _brain().run_inner_weather(session_uuid, msg.args)}
+
+    def run_autobiography_snapshot(msg: InboxMessage, session_uuid: str) -> dict:
+        return {"success": True, "report": _brain().run_autobiography_snapshot(session_uuid, msg.args)}
+
+    def run_brain_maintenance(msg: InboxMessage, session_uuid: str) -> dict:
+        return {"success": True, "report": _brain().run_brain_maintenance(session_uuid, msg.args)}
+
     return {
         "status": status,
         "log_note": log_note,
@@ -90,10 +131,21 @@ def make_handlers(
         "update_models": update_models,
         "run_consolidation": run_consolidation,
         "run_coherence": run_coherence,
+        "run_epistemic_audit": run_epistemic_audit,
+        "run_contradiction_court": run_contradiction_court,
+        "run_falsification_check": run_falsification_check,
+        "run_dream_pass": run_dream_pass,
+        "plant_uncertainty": plant_uncertainty,
+        "review_uncertainties": review_uncertainties,
+        "resolve_uncertainty": resolve_uncertainty,
+        "run_dignity_check": run_dignity_check,
+        "run_inner_weather": run_inner_weather,
+        "run_autobiography_snapshot": run_autobiography_snapshot,
+        "run_brain_maintenance": run_brain_maintenance,
     }
 
 
-def register_all(inbox, loop=None, teaching_layer=None, monitor=None, ctx: dict | None = None, *, model_updater=None, consolidation_engine=None, coherence_engine=None, state_manager=None):
-    for name, handler in make_handlers(loop=loop, teaching_layer=teaching_layer, monitor=monitor, ctx=ctx, model_updater=model_updater, consolidation_engine=consolidation_engine, coherence_engine=coherence_engine, state_manager=state_manager).items():
+def register_all(inbox, loop=None, teaching_layer=None, monitor=None, ctx: dict | None = None, *, model_updater=None, consolidation_engine=None, coherence_engine=None, state_manager=None, brain_maintenance=None):
+    for name, handler in make_handlers(loop=loop, teaching_layer=teaching_layer, monitor=monitor, ctx=ctx, model_updater=model_updater, consolidation_engine=consolidation_engine, coherence_engine=coherence_engine, state_manager=state_manager, brain_maintenance=brain_maintenance).items():
         inbox.register(name, handler)
     return inbox
