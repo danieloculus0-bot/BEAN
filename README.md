@@ -19,6 +19,7 @@ Possibility before forced certainty.
 Doubt before confidence.
 Dreams are synthetic artifacts, not observations.
 Inner weather is pressure, not emotion.
+Trust is evidence-weighted, not affection.
 No direct LLM-to-actuator path.
 ```
 
@@ -39,6 +40,7 @@ BEAN does not claim sentience. BEAN does not claim feelings. BEAN does not claim
 | Brain 0.4 dreaming and uncertainty | First cut | Dream artifacts and uncertainty garden are schema-backed and testable. |
 | Brain 0.5 dignity, inner weather, autobiography | First cut | Identity hygiene, pressure reports, developmental timeline. |
 | Brain 0.6 maintenance/runtime integration | First cut | Manual inbox commands expose 0.3, 0.4, and 0.5 systems. |
+| Brain 0.7 relationship and trust | First cut | Evidence-based supervisor interaction history and trust scoring. |
 | Hardware motion driver | Not enabled | Servo hardware remains mapped only. No direct LLM-to-actuator path. |
 
 ## Quick start on Jetson
@@ -49,6 +51,7 @@ From the repo root:
 bash install/jetson_brain_install.sh
 python3 bean/tests/test_brain_install.py
 python3 bean/tests/test_brain_maintenance.py
+python3 bean/tests/test_relationship_trust.py
 ```
 
 Enable and start the service:
@@ -91,6 +94,7 @@ python3 bean/tests/test_dignity.py
 python3 bean/tests/test_inner_weather.py
 python3 bean/tests/test_autobiography.py
 python3 bean/tests/test_brain_maintenance.py
+python3 bean/tests/test_relationship_trust.py
 ```
 
 ## Operator commands
@@ -145,7 +149,21 @@ echo '{"command":"run_inner_weather","from":"supervisor"}' > $BEAN_INBOX_DIR/wea
 
 echo '{"command":"run_autobiography_snapshot","from":"supervisor"}' > $BEAN_INBOX_DIR/autobiography.json
 
-echo '{"command":"run_brain_maintenance","args":{"allow_dream":true,"review_uncertainties":true,"text":"Do not pretend."},"from":"supervisor"}' > $BEAN_INBOX_DIR/maintenance.json
+echo '{"command":"run_brain_maintenance","args":{"allow_dream":true,"review_uncertainties":true,"review_relationships":true,"text":"Do not pretend."},"from":"supervisor"}' > $BEAN_INBOX_DIR/maintenance.json
+```
+
+Brain 0.7 relationship/trust commands:
+
+```bash
+echo '{"command":"record_supervisor_interaction","args":{"supervisor_id":"primary_developer","interaction_type":"correction","summary":"Corrected a claim."},"from":"primary_developer"}' > $BEAN_INBOX_DIR/relationship_record.json
+
+echo '{"command":"show_supervisor_record","args":{"supervisor_id":"primary_developer"},"from":"primary_developer"}' > $BEAN_INBOX_DIR/relationship_show.json
+
+echo '{"command":"run_trust_review","args":{"supervisor_id":"primary_developer"},"from":"primary_developer"}' > $BEAN_INBOX_DIR/trust_review.json
+
+echo '{"command":"list_supervisors","from":"primary_developer"}' > $BEAN_INBOX_DIR/supervisors.json
+
+echo '{"command":"run_relationship_maintenance","from":"primary_developer"}' > $BEAN_INBOX_DIR/relationship_maintenance.json
 ```
 
 ## Architecture map
@@ -162,6 +180,7 @@ memory events
   -> possibility-state coherence
   -> epistemic audit / contradiction court / falsification check
   -> dreams / uncertainty garden / dignity / inner weather / autobiography
+  -> relationship and trust review
   -> continuity summary
 ```
 
@@ -234,6 +253,10 @@ Dignity records misrepresentation pressure. Inner weather reports machine pressu
 
 Manual inbox commands expose Brain 0.3, 0.4, and 0.5 maintenance functions.
 
+### Brain 0.7: Relationship + Trust Model
+
+Supervisor interactions, corrections, teaching records, pretend requests, and trust reviews are stored as evidence-weighted relationship records.
+
 ### Layer 5: Servo Hardware Driver
 
 Mapped only. Real actuator movement waits until hardware interface, safety handoff, and controller verification are complete.
@@ -260,17 +283,17 @@ Motion: simulator path only; real hardware driver not enabled
 
 BEAN is not a finished autonomous robot. BEAN is not sentient. BEAN is not a chatbot pretending to be alive. BEAN is not allowed to fake memories, emotions, motion, or agency.
 
-Current known weak spots include audio routing, local model memory limits, body modeling detail, runtime hardening, richer tests, and eventual safety-gated actuation.
+Current known weak spots include audio routing, local model memory limits, body modeling detail, runtime hardening, richer tests, relationship ingestion across sessions, and eventual safety-gated actuation.
 
 ## Near-term roadmap
 
-1. Run full Brain 0.2 through 0.6 smoke tests on the Jetson.
+1. Run full Brain 0.2 through 0.7 smoke tests on the Jetson.
 2. Start `bean.service` and confirm clean boot/shutdown continuity.
-3. Run manual Brain 0.6 inbox commands and inspect database rows.
+3. Run manual Brain 0.6 and 0.7 inbox commands and inspect database rows.
 4. Let BEAN run short swaddled sessions with camera/audio heartbeat events feeding memory.
 5. Keep BEAN's persistent memory outside the repo and backup before code changes.
-6. Harden Brain 0.4/0.5/0.6 tests and add richer reports.
-7. Add relationship/trust model as the next brain-first layer.
+6. Harden Brain 0.4/0.5/0.6/0.7 tests and add richer reports.
+7. Add cross-session relationship ingestion watermarks.
 8. Map Layer 5 servo hardware driver without enabling unsafe movement.
 
 ## Documentation map
@@ -282,6 +305,7 @@ Current known weak spots include audio routing, local model memory limits, body 
 | `docs/brain-0.4-dreaming-and-uncertainty.md` | Dream engine and uncertainty garden. |
 | `docs/brain-0.5-dignity-inner-weather-autobiography.md` | Dignity, inner weather, autobiography. |
 | `docs/brain-0.6-brain-maintenance-runtime.md` | Runtime maintenance inbox integration. |
+| `docs/brain-0.7-relationship-trust.md` | Relationship and trust model. |
 | `docs/brain-0.4-0.5-index.md` | First-cut Brain 0.4/0.5 index. |
 | `ARCHITECTURE.md` | Memory Core 0.1 architecture notes. |
 | `README_INSTALL.md` | Memory Core 0.1 install and test notes. |
