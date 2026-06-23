@@ -21,6 +21,7 @@ def make_handlers(
     coherence_engine=None,
     state_manager=None,
     brain_maintenance=None,
+    relationship_engine=None,
 ) -> dict:
     ctx = ctx or {}
 
@@ -30,6 +31,13 @@ def make_handlers(
             from ..cognition.brain_maintenance import BrainMaintenanceEngine
             brain_maintenance = BrainMaintenanceEngine()
         return brain_maintenance
+
+    def _relationship():
+        nonlocal relationship_engine
+        if relationship_engine is None:
+            from ..relationship.maintenance import RelationshipMaintenanceEngine
+            relationship_engine = RelationshipMaintenanceEngine()
+        return relationship_engine
 
     def status(msg: InboxMessage, session_uuid: str) -> dict:
         reading = monitor.read().to_dict() if monitor is not None else None
@@ -122,6 +130,44 @@ def make_handlers(
     def run_brain_maintenance(msg: InboxMessage, session_uuid: str) -> dict:
         return {"success": True, "report": _brain().run_brain_maintenance(session_uuid, msg.args)}
 
+    def record_supervisor_interaction(msg: InboxMessage, session_uuid: str) -> dict:
+        args = msg.args or {}
+        supervisor_id = str(args.get("supervisor_id") or msg.sender or "unknown")
+        if not supervisor_id or supervisor_id == "unknown":
+            return {"success": False, "reason": "missing supervisor_id"}
+        result = _relationship().tracker.record_manual_interaction(
+            supervisor_id=supervisor_id,
+            session_uuid=session_uuid,
+            interaction_type=str(args.get("interaction_type") or "unknown"),
+            summary=str(args.get("summary") or "Supervisor interaction recorded."),
+            display_label=args.get("display_label"),
+            evidence_refs=args.get("evidence_refs") or [],
+            source_event_id=args.get("source_event_id"),
+            trust_delta=args.get("trust_delta"),
+        )
+        return {"success": True, **result}
+
+    def show_supervisor_record(msg: InboxMessage, session_uuid: str) -> dict:
+        supervisor_id = str((msg.args or {}).get("supervisor_id") or msg.sender or "")
+        record = _relationship().records.build(supervisor_id)
+        if record is None:
+            return {"status": "no_record", "supervisor_id": supervisor_id}
+        return record.to_dict()
+
+    def run_trust_review(msg: InboxMessage, session_uuid: str) -> dict:
+        supervisor_id = (msg.args or {}).get("supervisor_id")
+        if supervisor_id:
+            return _relationship().trust_model.run_review(str(supervisor_id))
+        return {"reviews": _relationship().trust_model.run_all_reviews()}
+
+    def list_supervisors(msg: InboxMessage, session_uuid: str) -> dict:
+        records = [record.to_dict() for record in _relationship().records.build_all_active()]
+        return {"active_supervisor_count": len(records), "supervisors": records}
+
+    def run_relationship_maintenance(msg: InboxMessage, session_uuid: str) -> dict:
+        limit = int((msg.args or {}).get("event_limit", 200))
+        return _relationship().run(session_uuid=session_uuid, event_limit=limit)
+
     return {
         "status": status,
         "log_note": log_note,
@@ -142,10 +188,39 @@ def make_handlers(
         "run_inner_weather": run_inner_weather,
         "run_autobiography_snapshot": run_autobiography_snapshot,
         "run_brain_maintenance": run_brain_maintenance,
+        "record_supervisor_interaction": record_supervisor_interaction,
+        "show_supervisor_record": show_supervisor_record,
+        "run_trust_review": run_trust_review,
+        "list_supervisors": list_supervisors,
+        "run_relationship_maintenance": run_relationship_maintenance,
     }
 
 
-def register_all(inbox, loop=None, teaching_layer=None, monitor=None, ctx: dict | None = None, *, model_updater=None, consolidation_engine=None, coherence_engine=None, state_manager=None, brain_maintenance=None):
-    for name, handler in make_handlers(loop=loop, teaching_layer=teaching_layer, monitor=monitor, ctx=ctx, model_updater=model_updater, consolidation_engine=consolidation_engine, coherence_engine=coherence_engine, state_manager=state_manager, brain_maintenance=brain_maintenance).items():
+def register_all(
+    inbox,
+    loop=None,
+    teaching_layer=None,
+    monitor=None,
+    ctx: dict | None = None,
+    *,
+    model_updater=None,
+    consolidation_engine=None,
+    coherence_engine=None,
+    state_manager=None,
+    brain_maintenance=None,
+    relationship_engine=None,
+):
+    for name, handler in make_handlers(
+        loop=loop,
+        teaching_layer=teaching_layer,
+        monitor=monitor,
+        ctx=ctx,
+        model_updater=model_updater,
+        consolidation_engine=consolidation_engine,
+        coherence_engine=coherence_engine,
+        state_manager=state_manager,
+        brain_maintenance=brain_maintenance,
+        relationship_engine=relationship_engine,
+    ).items():
         inbox.register(name, handler)
     return inbox
