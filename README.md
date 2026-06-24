@@ -41,6 +41,7 @@ BEAN does not claim sentience. BEAN does not claim feelings. BEAN does not claim
 | Brain 0.5 dignity, inner weather, autobiography | First cut | Identity hygiene, pressure reports, developmental timeline. |
 | Brain 0.6 maintenance/runtime integration | First cut | Manual inbox commands expose 0.3, 0.4, and 0.5 systems. |
 | Brain 0.7 relationship and trust | First cut | Evidence-based supervisor interaction history and trust scoring. |
+| Brain 0.8 runtime proof and hardening | First cut | Runtime proof command, smoke runner, durable relationship ingestion watermark. |
 | Hardware motion driver | Not enabled | Servo hardware remains mapped only. No direct LLM-to-actuator path. |
 
 ## Quick start on Jetson
@@ -49,9 +50,16 @@ From the repo root:
 
 ```bash
 bash install/jetson_brain_install.sh
+bash scripts/run_brain_smoke_tests.sh
+```
+
+Or run the minimum smoke checks manually:
+
+```bash
 python3 bean/tests/test_brain_install.py
 python3 bean/tests/test_brain_maintenance.py
 python3 bean/tests/test_relationship_trust.py
+python3 bean/tests/test_runtime_proof.py
 ```
 
 Enable and start the service:
@@ -81,6 +89,12 @@ Code updates must not erase BEAN's lived memory.
 ## Run the full smoke-test set
 
 ```bash
+bash scripts/run_brain_smoke_tests.sh
+```
+
+Equivalent manual list:
+
+```bash
 python3 bean/tests/test_brain_install.py
 python3 bean/tests/test_cognition_core.py
 python3 bean/tests/test_world_model.py
@@ -95,6 +109,7 @@ python3 bean/tests/test_inner_weather.py
 python3 bean/tests/test_autobiography.py
 python3 bean/tests/test_brain_maintenance.py
 python3 bean/tests/test_relationship_trust.py
+python3 bean/tests/test_runtime_proof.py
 ```
 
 ## Operator commands
@@ -124,6 +139,8 @@ echo '{"command":"update_models","args":{"trigger":"manual_check"},"from":"super
 echo '{"command":"run_consolidation","args":{"trigger":"manual"},"from":"supervisor"}' > $BEAN_INBOX_DIR/consolidate.json
 
 echo '{"command":"run_coherence","args":{"trigger":"manual"},"from":"supervisor"}' > $BEAN_INBOX_DIR/coherence.json
+
+echo '{"command":"run_runtime_proof","from":"supervisor"}' > $BEAN_INBOX_DIR/runtime_proof.json
 
 echo '{"command":"shutdown","args":{"reason":"supervisor_shutdown"},"from":"supervisor"}' > $BEAN_INBOX_DIR/stop.json
 ```
@@ -166,6 +183,20 @@ echo '{"command":"list_supervisors","from":"primary_developer"}' > $BEAN_INBOX_D
 echo '{"command":"run_relationship_maintenance","from":"primary_developer"}' > $BEAN_INBOX_DIR/relationship_maintenance.json
 ```
 
+## Runtime proof
+
+Brain 0.8 adds `run_runtime_proof`, a safe proof command that reports runtime health without touching motion hardware.
+
+It reports counts for events, active claims, possibility states, dream records, supervisor relationships, and the durable relationship ingestion watermark.
+
+It skips dreams by default. To explicitly allow a synthetic dream artifact during proof:
+
+```bash
+echo '{"command":"run_runtime_proof","args":{"allow_dream":true},"from":"supervisor"}' > $BEAN_INBOX_DIR/runtime_proof_dream.json
+```
+
+Dreams remain synthetic artifacts, not observations.
+
 ## Architecture map
 
 ```text
@@ -181,6 +212,7 @@ memory events
   -> epistemic audit / contradiction court / falsification check
   -> dreams / uncertainty garden / dignity / inner weather / autobiography
   -> relationship and trust review
+  -> runtime proof and health report
   -> continuity summary
 ```
 
@@ -257,6 +289,10 @@ Manual inbox commands expose Brain 0.3, 0.4, and 0.5 maintenance functions.
 
 Supervisor interactions, corrections, teaching records, pretend requests, and trust reviews are stored as evidence-weighted relationship records.
 
+### Brain 0.8: Runtime Proof + Hardening
+
+Runtime proof reports health without motion, and relationship ingestion uses a durable SQLite watermark to avoid double-counting old events.
+
 ### Layer 5: Servo Hardware Driver
 
 Mapped only. Real actuator movement waits until hardware interface, safety handoff, and controller verification are complete.
@@ -283,17 +319,17 @@ Motion: simulator path only; real hardware driver not enabled
 
 BEAN is not a finished autonomous robot. BEAN is not sentient. BEAN is not a chatbot pretending to be alive. BEAN is not allowed to fake memories, emotions, motion, or agency.
 
-Current known weak spots include audio routing, local model memory limits, body modeling detail, runtime hardening, richer tests, relationship ingestion across sessions, and eventual safety-gated actuation.
+Current known weak spots include audio routing, local model memory limits, body modeling detail, runtime hardening, richer tests, wisdom/trigger modeling, and eventual safety-gated actuation.
 
 ## Near-term roadmap
 
-1. Run full Brain 0.2 through 0.7 smoke tests on the Jetson.
+1. Run full Brain 0.2 through 0.8 smoke tests on the Jetson.
 2. Start `bean.service` and confirm clean boot/shutdown continuity.
-3. Run manual Brain 0.6 and 0.7 inbox commands and inspect database rows.
+3. Run `run_runtime_proof` and inspect database row counts.
 4. Let BEAN run short swaddled sessions with camera/audio heartbeat events feeding memory.
 5. Keep BEAN's persistent memory outside the repo and backup before code changes.
-6. Harden Brain 0.4/0.5/0.6/0.7 tests and add richer reports.
-7. Add cross-session relationship ingestion watermarks.
+6. Harden runtime proof and relationship ingestion reports.
+7. Build Brain 0.9 Wisdom Module: event-triggered associative memory, pressure states, repair records, and loop detection.
 8. Map Layer 5 servo hardware driver without enabling unsafe movement.
 
 ## Documentation map
@@ -306,6 +342,7 @@ Current known weak spots include audio routing, local model memory limits, body 
 | `docs/brain-0.5-dignity-inner-weather-autobiography.md` | Dignity, inner weather, autobiography. |
 | `docs/brain-0.6-brain-maintenance-runtime.md` | Runtime maintenance inbox integration. |
 | `docs/brain-0.7-relationship-trust.md` | Relationship and trust model. |
+| `docs/brain-0.8-runtime-proof-and-hardening.md` | Runtime proof, smoke runner, durable relationship watermark. |
 | `docs/brain-0.4-0.5-index.md` | First-cut Brain 0.4/0.5 index. |
 | `ARCHITECTURE.md` | Memory Core 0.1 architecture notes. |
 | `README_INSTALL.md` | Memory Core 0.1 install and test notes. |
