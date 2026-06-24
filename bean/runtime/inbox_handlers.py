@@ -168,6 +168,18 @@ def make_handlers(
         limit = int((msg.args or {}).get("event_limit", 200))
         return _relationship().run(session_uuid=session_uuid, event_limit=limit)
 
+    def run_runtime_proof(msg: InboxMessage, session_uuid: str) -> dict:
+        from .proof import RuntimeProof
+        proof = RuntimeProof(
+            monitor=monitor,
+            model_updater=model_updater,
+            consolidation_engine=consolidation_engine,
+            coherence_engine=coherence_engine,
+            brain_maintenance=_brain(),
+            relationship_engine=_relationship(),
+        )
+        return proof.run(session_uuid=session_uuid, allow_dream=bool((msg.args or {}).get("allow_dream", False)))
+
     return {
         "status": status,
         "log_note": log_note,
@@ -193,6 +205,7 @@ def make_handlers(
         "run_trust_review": run_trust_review,
         "list_supervisors": list_supervisors,
         "run_relationship_maintenance": run_relationship_maintenance,
+        "run_runtime_proof": run_runtime_proof,
     }
 
 
