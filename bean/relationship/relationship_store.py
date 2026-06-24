@@ -1,4 +1,4 @@
-"""SQLite persistence for BEAN Brain 0.7 relationship and trust records."""
+"""SQLite persistence for BEAN Brain 0.7/0.8 relationship and trust records."""
 
 from __future__ import annotations
 
@@ -63,11 +63,20 @@ CREATE TABLE IF NOT EXISTS trust_reviews (
     created_at TEXT NOT NULL DEFAULT (datetime('now','utc'))
 );
 
+CREATE TABLE IF NOT EXISTS relationship_ingestion_state (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    state_id TEXT NOT NULL UNIQUE,
+    scope TEXT NOT NULL UNIQUE,
+    last_event_id INTEGER NOT NULL DEFAULT 0,
+    updated_at TEXT NOT NULL DEFAULT (datetime('now','utc'))
+);
+
 CREATE INDEX IF NOT EXISTS idx_relationship_supervisor ON supervisor_relationships(supervisor_id);
 CREATE INDEX IF NOT EXISTS idx_interactions_supervisor ON supervisor_interactions(supervisor_id);
 CREATE INDEX IF NOT EXISTS idx_interactions_session ON supervisor_interactions(session_uuid);
 CREATE INDEX IF NOT EXISTS idx_trust_evidence_supervisor ON trust_evidence(supervisor_id);
 CREATE INDEX IF NOT EXISTS idx_trust_reviews_supervisor ON trust_reviews(supervisor_id);
+CREATE INDEX IF NOT EXISTS idx_relationship_ingestion_scope ON relationship_ingestion_state(scope);
 """
 
 INTERACTION_TYPES = {
@@ -118,7 +127,7 @@ def ensure_relationship_tables():
 
 
 class RelationshipStore:
-    """Low-level read/write access for Brain 0.7 relationship tables."""
+    """Low-level read/write access for Brain relationship tables."""
 
     def __init__(self):
         ensure_relationship_tables()
@@ -299,3 +308,34 @@ class RelationshipStore:
             (supervisor_id,),
         )
         return dict(row) if row else None
+
+    def get_ingestion_watermark(self, scope: str = "relationship_events") -> int:
+        from ..memory.store import get_store
+        row = get_store().fetchone(
+            "SELECT last_event_id FROM relationship_ingestion_state WHERE scope=?",
+            (scope,),
+        )
+        return int(row["last_event_id"]) if row else 0
+
+    def set_ingestion_watermark(self, last_event_id: int, scope: str = "relationship_events") -> dict:
+        from ..memory.store import get_store
+        now = _now()
+        existing = get_store().fetchone(
+            "SELECT state_id FROM relationship_ingestion_state WHERE scope=?",
+            (scope,),
+        )
+        if existing:
+            get_store().execute(
+                "UPDATE relationship_ingestion_state SET last_event_id=?, updated_at=? WHERE scope=?",
+                (int(last_event_id), now, scope),
+            )
+        else:
+            get_store().execute(
+                """
+                INSERT INTO relationship_ingestion_state (state_id, scope, last_event_id, updated_at)
+                VALUES (?, ?, ?, ?)
+                """,
+                (str(uuid.uuid4()), scope, int(last_event_id), now),
+            )
+        get_store().commit()
+        return {"scope": scope, "last_event_id": int(last_event_id), "updated_at": now}
