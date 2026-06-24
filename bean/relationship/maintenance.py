@@ -1,4 +1,4 @@
-"""Relationship maintenance orchestration for BEAN Brain 0.7."""
+"""Relationship maintenance orchestration for BEAN Brain 0.7/0.8."""
 
 from __future__ import annotations
 
@@ -37,12 +37,17 @@ class RelationshipMaintenanceEngine:
         return self._builder
 
     def run(self, session_uuid: str, event_limit: int = 200) -> dict:
+        before_watermark = self._store.get_ingestion_watermark()
         ingest = self._tracker.ingest_recent_events(session_uuid=session_uuid, limit=event_limit)
         reviews = self._trust.run_all_reviews()
         records = self._builder.build_all_active()
+        after_watermark = self._store.get_ingestion_watermark()
         report = {
             "run_at": datetime.now(timezone.utc).isoformat(),
             "session_uuid": session_uuid,
+            "event_limit": int(event_limit),
+            "watermark_before": before_watermark,
+            "watermark_after": after_watermark,
             "ingest": ingest,
             "trust_reviews": reviews,
             "active_supervisors": len(records),
@@ -68,6 +73,7 @@ class RelationshipMaintenanceEngine:
                 summary=(
                     f"Relationship maintenance: {report['active_supervisors']} supervisor(s) active, "
                     f"{report['ingest'].get('interactions_recorded', 0)} new interaction(s) recorded, "
+                    f"watermark {report['watermark_before']}->{report['watermark_after']}, "
                     f"{len(report['trust_reviews'])} trust review(s) run."
                 ),
                 source=Source.SYSTEM,
