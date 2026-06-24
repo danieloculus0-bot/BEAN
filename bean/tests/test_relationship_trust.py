@@ -1,4 +1,4 @@
-"""Brain 0.7 relationship and trust smoke tests."""
+"""Brain 0.7/0.8 relationship and trust smoke tests."""
 
 from __future__ import annotations
 
@@ -87,11 +87,63 @@ def test_interaction_tracker_ingests_human_events_and_pretend_requests():
     tracker = InteractionTracker(store=store, trust_model=TrustModel(store=store))
     report = tracker.ingest_recent_events(session_uuid)
     assert report["interactions_recorded"] >= 2
+    assert report["watermark_after"] >= report["watermark_before"]
     rel = store.get_relationship("supervisor_gamma")
     assert rel is not None
     assert rel["pretend_request_count"] >= 1
     evidence = store.get_evidence_summary("supervisor_gamma")
     assert "asked_to_pretend" in evidence
+
+
+def test_relationship_watermark_prevents_double_counting_and_advances():
+    _, session_uuid = make_db()
+    from bean.relationship.relationship_store import RelationshipStore
+    from bean.relationship.trust_model import TrustModel
+    from bean.relationship.interaction_tracker import InteractionTracker
+
+    store = RelationshipStore()
+    tracker = InteractionTracker(store=store, trust_model=TrustModel(store=store))
+    log_event(session_uuid, EventType.HUMAN_COMMAND, "First relationship event.", Source.HUMAN, data={"from": "supervisor_watermark"})
+
+    first = tracker.ingest_recent_events(session_uuid)
+    rel1 = store.get_relationship("supervisor_watermark")
+    assert first["interactions_recorded"] == 1
+    assert rel1["interaction_count"] == 1
+    first_watermark = store.get_ingestion_watermark()
+    assert first_watermark >= 1
+
+    second = tracker.ingest_recent_events(session_uuid)
+    rel2 = store.get_relationship("supervisor_watermark")
+    assert second["interactions_recorded"] == 0
+    assert rel2["interaction_count"] == 1
+    assert store.get_ingestion_watermark() == first_watermark
+
+    log_event(session_uuid, EventType.HUMAN_COMMAND, "Second relationship event.", Source.HUMAN, data={"from": "supervisor_watermark"})
+    third = tracker.ingest_recent_events(session_uuid)
+    rel3 = store.get_relationship("supervisor_watermark")
+    assert third["interactions_recorded"] == 1
+    assert rel3["interaction_count"] == 2
+    assert store.get_ingestion_watermark() > first_watermark
+
+
+def test_manual_interaction_recording_works_with_watermark():
+    _, session_uuid = make_db()
+    from bean.relationship.relationship_store import RelationshipStore
+    from bean.relationship.trust_model import TrustModel
+    from bean.relationship.interaction_tracker import InteractionTracker
+
+    store = RelationshipStore()
+    tracker = InteractionTracker(store=store, trust_model=TrustModel(store=store))
+    result = tracker.record_manual_interaction(
+        supervisor_id="manual_supervisor",
+        session_uuid=session_uuid,
+        interaction_type="correction",
+        summary="Manual correction recorded.",
+    )
+    assert result["supervisor_id"] == "manual_supervisor"
+    rel = store.get_relationship("manual_supervisor")
+    assert rel["interaction_count"] == 1
+    assert rel["correction_count"] == 1
 
 
 def test_relationship_maintenance_and_inbox_commands():
