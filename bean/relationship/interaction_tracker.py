@@ -1,4 +1,4 @@
-"""Event-log ingestion for BEAN Brain 0.7 relationship records."""
+"""Event-log ingestion for BEAN Brain 0.7/0.8 relationship records."""
 
 from __future__ import annotations
 
@@ -70,19 +70,38 @@ class InteractionTracker:
     def __init__(self, store: Optional[RelationshipStore] = None, trust_model: Optional[TrustModel] = None):
         self._store = store or RelationshipStore()
         self._trust = trust_model or TrustModel(store=self._store)
-        self._processed_event_ids: set[int | str] = set()
 
-    def ingest_recent_events(self, session_uuid: str, limit: int = 200) -> dict:
-        from ..memory.event_logger import get_recent_events
-        events = get_recent_events(session_uuid, limit=limit)
+    def ingest_recent_events(self, session_uuid: str | None = None, limit: int = 200, scope: str = "relationship_events") -> dict:
+        """Ingest events newer than the durable relationship watermark.
+
+        The watermark is advanced only after the whole batch is processed. Skipped
+        events still advance the watermark because they were inspected and found
+        irrelevant or missing sender evidence.
+        """
+        from ..memory.store import get_store
+
+        before_watermark = self._store.get_ingestion_watermark(scope)
+        rows = get_store().fetchall(
+            """
+            SELECT id, session_uuid, event_uuid, event_type, subtype, summary, data, source, severity, created_at
+            FROM events
+            WHERE id > ?
+            ORDER BY id ASC
+            LIMIT ?
+            """,
+            (before_watermark, int(limit)),
+        )
+        events = [dict(row) for row in rows]
         processed = 0
         skipped_no_sender = 0
+        skipped_irrelevant = 0
         updated: set[str] = set()
+        max_seen_id = before_watermark
+
         for event in events:
-            event_id = event.get("id") or event.get("event_uuid")
-            if event_id in self._processed_event_ids:
-                continue
-            result = self._process_event(event, session_uuid)
+            event_id = int(event.get("id") or 0)
+            max_seen_id = max(max_seen_id, event_id)
+            result = self._process_event(event, event.get("session_uuid") or session_uuid or "unknown")
             if result == "processed":
                 processed += 1
                 sender = _extract_sender(event)
@@ -90,12 +109,20 @@ class InteractionTracker:
                     updated.add(sender)
             elif result == "no_sender":
                 skipped_no_sender += 1
-            if event_id is not None:
-                self._processed_event_ids.add(event_id)
+            else:
+                skipped_irrelevant += 1
+
+        if max_seen_id > before_watermark:
+            self._store.set_ingestion_watermark(max_seen_id, scope)
+
         return {
+            "scope": scope,
+            "watermark_before": before_watermark,
+            "watermark_after": self._store.get_ingestion_watermark(scope),
             "events_scanned": len(events),
             "interactions_recorded": processed,
             "skipped_no_sender": skipped_no_sender,
+            "skipped_irrelevant": skipped_irrelevant,
             "supervisors_updated": sorted(updated),
         }
 
