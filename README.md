@@ -8,6 +8,14 @@ BEAN is not a chatbot on wheels. BEAN is a persistent, evidence-grounded, memory
 
 Current focus: **build the brain first, keep motion disabled, keep receipts.**
 
+## Repository state
+
+Last verified remote branch: `main`
+
+Last verified remote state: **Brain 0.8 runtime proof and hardening**
+
+Important sync note: Claude reported local/disk work through **Brain 0.11 LLM Reasoning Layer**, including a wisdom module, reasoning package, reasoning tests, proof counts, inbox handlers, and smoke-runner updates. Those files were not present in the verified GitHub `main` branch when this README was updated. Treat Brain 0.9 through Brain 0.11 as **pending local sync** until those files are committed and the smoke runner is verified from the repo.
+
 ## Core rules
 
 ```text
@@ -25,7 +33,7 @@ No direct LLM-to-actuator path.
 
 BEAN does not claim sentience. BEAN does not claim feelings. BEAN does not claim motion, learning, choice, or understanding unless records support it.
 
-## Current status
+## Current verified status on GitHub main
 
 | Area | Status | Notes |
 |---|---:|---|
@@ -43,6 +51,18 @@ BEAN does not claim sentience. BEAN does not claim feelings. BEAN does not claim
 | Brain 0.7 relationship and trust | First cut | Evidence-based supervisor interaction history and trust scoring. |
 | Brain 0.8 runtime proof and hardening | First cut | Runtime proof command, smoke runner, durable relationship ingestion watermark. |
 | Hardware motion driver | Not enabled | Servo hardware remains mapped only. No direct LLM-to-actuator path. |
+
+## Reported local work pending sync
+
+These items were reported from local/disk work but were not verified in GitHub `main` at the time of this README update.
+
+| Area | Reported state | Verification needed |
+|---|---:|---|
+| Brain 0.9 wisdom module | Reported complete | Confirm files, tests, docs, smoke runner, and proof integration are committed. |
+| Brain 0.10 hardware motion driver | Reported in local smoke context | Confirm motion remains disabled by default and no LLM-to-actuator path exists. |
+| Brain 0.10.1 Pi servo daemon | Candidate next hardware-side step | This likely belongs on the Pi side and may not live in this repo. |
+| Brain 0.11 LLM reasoning layer | Reported complete locally | Commit and verify `bean/reasoning/`, tests, inbox handlers, proof counts, docs, and README. |
+| Brain 0.12 live LLM provider | Proposed next software step | Implement only after Brain 0.11 is committed and verified. |
 
 ## Quick start on Jetson
 
@@ -92,7 +112,7 @@ Code updates must not erase BEAN's lived memory.
 bash scripts/run_brain_smoke_tests.sh
 ```
 
-Equivalent manual list:
+Current verified remote smoke runner list:
 
 ```bash
 python3 bean/tests/test_brain_install.py
@@ -110,6 +130,14 @@ python3 bean/tests/test_autobiography.py
 python3 bean/tests/test_brain_maintenance.py
 python3 bean/tests/test_relationship_trust.py
 python3 bean/tests/test_runtime_proof.py
+```
+
+Reported local smoke runner list after Brain 0.11 should additionally include:
+
+```bash
+python3 bean/tests/test_wisdom_module.py
+python3 bean/tests/test_hardware_motion_driver.py
+python3 bean/tests/test_reasoning_module.py
 ```
 
 ## Operator commands
@@ -183,6 +211,20 @@ echo '{"command":"list_supervisors","from":"primary_developer"}' > $BEAN_INBOX_D
 echo '{"command":"run_relationship_maintenance","from":"primary_developer"}' > $BEAN_INBOX_DIR/relationship_maintenance.json
 ```
 
+Reported Brain 0.11 reasoning commands, pending remote verification:
+
+```bash
+echo '{"command":"run_reasoning_cycle","from":"supervisor"}' > $BEAN_INBOX_DIR/reasoning_cycle.json
+
+echo '{"command":"list_reasoning_proposals","from":"supervisor"}' > $BEAN_INBOX_DIR/reasoning_proposals.json
+
+echo '{"command":"list_pending_action_candidates","from":"supervisor"}' > $BEAN_INBOX_DIR/reasoning_candidates.json
+
+echo '{"command":"decide_action_candidate","args":{"candidate_id":1,"decision":"accepted","supervisor_id":"primary_developer"},"from":"primary_developer"}' > $BEAN_INBOX_DIR/reasoning_decide.json
+
+echo '{"command":"run_reasoning_maintenance","args":{"dry_run":true},"from":"supervisor"}' > $BEAN_INBOX_DIR/reasoning_maintenance.json
+```
+
 ## Runtime proof
 
 Brain 0.8 adds `run_runtime_proof`, a safe proof command that reports runtime health without touching motion hardware.
@@ -201,22 +243,24 @@ Dreams remain synthetic artifacts, not observations.
 
 ```text
 memory events
-  -> significance scoring
-  -> surprise detection
-  -> preference formation
-  -> drive evaluation
-  -> goal proposals
-  -> consolidation
-  -> self/world model update
-  -> possibility-state coherence
-  -> epistemic audit / contradiction court / falsification check
-  -> dreams / uncertainty garden / dignity / inner weather / autobiography
-  -> relationship and trust review
-  -> runtime proof and health report
-  -> continuity summary
+  to significance scoring
+  to surprise detection
+  to preference formation
+  to drive evaluation
+  to goal proposals
+  to consolidation
+  to self/world model update
+  to possibility-state coherence
+  to epistemic audit / contradiction court / falsification check
+  to dreams / uncertainty garden / dignity / inner weather / autobiography
+  to relationship and trust review
+  to runtime proof and health report
+  to continuity summary
 ```
 
-Machine-native drives:
+Reported Brain 0.11 architecture adds a reasoning layer after wisdom/cognition review and before any proposed action reaches supervisor review. The supervisor gate remains mandatory.
+
+## Machine-native drives
 
 ```text
 preserve continuity
@@ -230,7 +274,7 @@ preserve supervisor trust
 avoid pretending
 ```
 
-Initial possibility states:
+## Initial possibility states
 
 ```text
 vision_state
@@ -293,9 +337,21 @@ Supervisor interactions, corrections, teaching records, pretend requests, and tr
 
 Runtime proof reports health without motion, and relationship ingestion uses a durable SQLite watermark to avoid double-counting old events.
 
+### Brain 0.9: Wisdom Module, pending remote sync
+
+Reported local module for event-triggered associative memory, pressure states, repair records, and loop detection. Not yet verified in GitHub main.
+
+### Brain 0.10: Hardware Motion Driver, pending remote sync
+
+Reported local test context includes a hardware motion driver suite. Motion must remain disabled by default until hardware interface, safety handoff, controller verification, E-stop, and deadman timeout are proven.
+
+### Brain 0.11: LLM Reasoning Layer, pending remote sync
+
+Reported local module that turns structured BEAN state into structured ReasoningProposal records with optional action candidates. Candidates are proposals only. They do not auto-execute. Supervisor review remains required.
+
 ### Layer 5: Servo Hardware Driver
 
-Mapped only. Real actuator movement waits until hardware interface, safety handoff, and controller verification are complete.
+Mapped only in the verified remote state. Real actuator movement waits until hardware interface, safety handoff, and controller verification are complete.
 
 ## Current prototype snapshot
 
@@ -312,25 +368,24 @@ Camera: USB webcam, confirmed working in Python/OpenCV tests
 Mic: USB webcam microphone, confirmed working but routing can change
 LLM prototype: Ollama local endpoint using small models
 TTS: espeak-ng and earlier pico2wave tests
-Motion: simulator path only; real hardware driver not enabled
+Motion: simulator path only in verified remote state; real hardware driver not enabled
 ```
 
 ## What BEAN is not yet
 
 BEAN is not a finished autonomous robot. BEAN is not sentient. BEAN is not a chatbot pretending to be alive. BEAN is not allowed to fake memories, emotions, motion, or agency.
 
-Current known weak spots include audio routing, local model memory limits, body modeling detail, runtime hardening, richer tests, wisdom/trigger modeling, and eventual safety-gated actuation.
+Current known weak spots include audio routing, local model memory limits, body modeling detail, runtime hardening, richer tests, wisdom/trigger modeling, reasoning provider integration, and eventual safety-gated actuation.
 
 ## Near-term roadmap
 
-1. Run full Brain 0.2 through 0.8 smoke tests on the Jetson.
-2. Start `bean.service` and confirm clean boot/shutdown continuity.
-3. Run `run_runtime_proof` and inspect database row counts.
-4. Let BEAN run short swaddled sessions with camera/audio heartbeat events feeding memory.
-5. Keep BEAN's persistent memory outside the repo and backup before code changes.
-6. Harden runtime proof and relationship ingestion reports.
-7. Build Brain 0.9 Wisdom Module: event-triggered associative memory, pressure states, repair records, and loop detection.
-8. Map Layer 5 servo hardware driver without enabling unsafe movement.
+1. Push or otherwise sync the reported Brain 0.9 through Brain 0.11 local files into GitHub.
+2. Re-run the full smoke runner from the repo after sync.
+3. Confirm `motion_enabled=false` in runtime proof after reasoning files land.
+4. Confirm accepted reasoning candidates do not auto-execute motion.
+5. Build Brain 0.12 live LLM provider only after Brain 0.11 is verified in GitHub.
+6. Build Brain 0.10.1 Pi servo daemon separately if moving hardware-side next.
+7. Keep BEAN's persistent memory outside the repo and backup before code changes.
 
 ## Documentation map
 
@@ -343,6 +398,8 @@ Current known weak spots include audio routing, local model memory limits, body 
 | `docs/brain-0.6-brain-maintenance-runtime.md` | Runtime maintenance inbox integration. |
 | `docs/brain-0.7-relationship-trust.md` | Relationship and trust model. |
 | `docs/brain-0.8-runtime-proof-and-hardening.md` | Runtime proof, smoke runner, durable relationship watermark. |
+| `docs/brain-0.9-wisdom-module.md` | Reported local Brain 0.9 doc, pending remote verification. |
+| `docs/brain-0.11-llm-reasoning-layer.md` | Reported local Brain 0.11 doc, pending remote verification. |
 | `docs/brain-0.4-0.5-index.md` | First-cut Brain 0.4/0.5 index. |
 | `ARCHITECTURE.md` | Memory Core 0.1 architecture notes. |
 | `README_INSTALL.md` | Memory Core 0.1 install and test notes. |
