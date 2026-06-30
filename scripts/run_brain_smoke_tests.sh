@@ -21,6 +21,7 @@ TESTS=(
   "bean/tests/test_brain_maintenance.py"
   "bean/tests/test_relationship_trust.py"
   "bean/tests/test_runtime_proof.py"
+  "bean/tests/test_wisdom_module.py"
   "bean/tests/test_reasoning_module.py"
   "bean/tests/test_openai_provider.py"
   "bean/tests/test_speculative_logic.py"
