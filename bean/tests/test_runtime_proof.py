@@ -1,4 +1,4 @@
-"""Brain 0.8 runtime proof smoke tests."""
+"""Brain runtime proof smoke tests."""
 
 from __future__ import annotations
 
@@ -33,10 +33,13 @@ def test_runtime_proof_direct_report_is_structured_and_motion_disabled():
     report = RuntimeProof().run(session_uuid)
     assert report["session_uuid"] == session_uuid
     assert report["motion_enabled"] is False
+    assert report["sentience_claimed"] is False
     assert report["dream_allowed"] is False
     assert "events" in report
     assert "active_claims" in report
     assert "supervisor_relationships" in report
+    assert "reasoning_proposals" in report
+    assert "speculative_hypotheses" in report
     assert any("No hardware motion driver" in note for note in report["notes"])
 
 
@@ -50,6 +53,7 @@ def test_runtime_proof_inbox_command_processes():
     assert results[0]["status"] == "ok"
     report = results[0]["result"]
     assert report["motion_enabled"] is False
+    assert report["sentience_claimed"] is False
     assert report["dream_allowed"] is False
     assert get_store().fetchone("SELECT COUNT(*) AS n FROM events WHERE subtype='inbox_command_processed'")["n"] == 1
 
