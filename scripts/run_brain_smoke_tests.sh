@@ -3,6 +3,7 @@ set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$REPO_ROOT"
+export PYTHONPATH="$REPO_ROOT:${PYTHONPATH:-}"
 
 TESTS=(
   "bean/tests/test_brain_install.py"
@@ -20,6 +21,9 @@ TESTS=(
   "bean/tests/test_brain_maintenance.py"
   "bean/tests/test_relationship_trust.py"
   "bean/tests/test_runtime_proof.py"
+  "bean/tests/test_reasoning_module.py"
+  "bean/tests/test_openai_provider.py"
+  "bean/tests/test_speculative_logic.py"
 )
 
 for test_file in "${TESTS[@]}"; do
