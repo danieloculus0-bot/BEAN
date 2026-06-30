@@ -10,10 +10,12 @@ Current focus: **build the brain first, keep motion disabled, keep receipts.**
 
 ## Recovery branch status
 
-This branch adds a software-only recovery implementation for Brain 0.11 through Brain 0.13:
+This branch adds a software-only recovery implementation for Brain 0.9 and Brain 0.11 through Brain 0.13, with Brain 0.10 explicitly preserved as a motion boundary rather than a physical driver implementation.
 
 | Layer | Status on this branch | Notes |
 |---|---:|---|
+| Brain 0.9 wisdom module | Added | Local wisdom triggers, activation traces, meaning frames, and fake-emotion/sentience guards. |
+| Brain 0.10 motion boundary | Documented boundary | Physical motion, Pi daemon, GPIO, RPi, pigpio, serial, and actuator execution remain out of scope. |
 | Brain 0.11 reasoning layer | Added | Structured reasoning context, proposals, candidate validation, stub provider, inbox commands. |
 | Brain 0.12 OpenAI provider | Added | Optional OpenAI Responses API provider using strict JSON Schema and `requests`. Falls back to stub without `OPENAI_API_KEY`. |
 | Brain 0.13 speculative logic | Added | Hypothesis records, evidence links, discipline checks, speculative summaries, maintenance, inbox commands. |
@@ -80,6 +82,7 @@ python3 bean/tests/test_autobiography.py
 python3 bean/tests/test_brain_maintenance.py
 python3 bean/tests/test_relationship_trust.py
 python3 bean/tests/test_runtime_proof.py
+python3 bean/tests/test_wisdom_module.py
 python3 bean/tests/test_reasoning_module.py
 python3 bean/tests/test_openai_provider.py
 python3 bean/tests/test_speculative_logic.py
@@ -88,10 +91,10 @@ python3 bean/tests/test_speculative_logic.py
 Recommended safety scan:
 
 ```bash
-grep -R "execute_motion\|GPIO\|RPi\|pigpio\|serial" bean/reasoning bean/speculation || true
+grep -R "execute_motion\|GPIO\|RPi\|pigpio\|serial" bean/wisdom bean/reasoning bean/speculation || true
 ```
 
-Any hit in reasoning or speculation must be reviewed before merge.
+Any hit in wisdom, reasoning, or speculation must be reviewed before merge.
 
 ## Runtime inbox commands
 
@@ -137,6 +140,9 @@ It reports:
 - dream records
 - supervisor relationships
 - relationship ingestion watermark
+- wisdom triggers
+- wisdom activation traces
+- wisdom meaning frames
 - reasoning proposals
 - reasoning action candidates
 - reasoning context snapshots
@@ -165,6 +171,7 @@ memory events
   to epistemic audit / contradiction court / falsification check
   to dreams / uncertainty garden / dignity / inner weather / autobiography
   to relationship and trust review
+  to wisdom triggers and meaning frames
   to reasoning context
   to provider output
   to reasoning proposal
@@ -178,6 +185,8 @@ memory events
 
 | File | Purpose |
 |---|---|
+| `docs/brain-0.09-wisdom-module.md` | Brain 0.9 wisdom triggers, activation traces, and meaning frames. |
+| `docs/brain-0.10-motion-boundary.md` | Brain 0.10 boundary explaining why physical motion is not implemented here. |
 | `docs/brain-0.11-llm-reasoning-layer.md` | Brain 0.11 reasoning proposals and safety gates. |
 | `docs/brain-0.12-openai-responses-api.md` | Brain 0.12 OpenAI Responses API provider. |
 | `docs/brain-0.13-speculative-logic.md` | Brain 0.13 speculative logic and hypothesis discipline. |
@@ -185,6 +194,7 @@ memory events
 ## Known limitations
 
 - This recovery branch needs real smoke-test execution before merge.
+- Brain 0.10 physical motion is intentionally not implemented in this branch.
 - The OpenAI provider is optional and requires `OPENAI_API_KEY` at runtime.
 - Reasoning is proposal-only.
 - Speculation is hypothesis-only.
