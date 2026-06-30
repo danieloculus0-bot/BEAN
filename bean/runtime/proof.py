@@ -1,7 +1,7 @@
-"""Runtime proof command for BEAN Brain 0.8.
+"""Runtime proof command for BEAN.
 
-This is a cheap, safe proof pass that reports whether the brain stack is alive
-without enabling motion hardware, invoking servo code, or claiming sentience.
+Safe proof pass that reports whether the brain stack is alive without enabling
+motion hardware, invoking servo code, or claiming sentience.
 """
 
 from __future__ import annotations
@@ -24,6 +24,15 @@ def _count_active_claims() -> int:
     from ..memory.store import get_store
     try:
         row = get_store().fetchone("SELECT COUNT(*) AS n FROM world_claims WHERE active=1")
+        return int(row["n"] if row else 0)
+    except Exception:
+        return 0
+
+
+def _count_speculation_status(status: str) -> int:
+    from ..memory.store import get_store
+    try:
+        row = get_store().fetchone("SELECT COUNT(*) AS n FROM speculative_hypotheses WHERE status=?", (status,))
         return int(row["n"] if row else 0)
     except Exception:
         return 0
@@ -57,6 +66,7 @@ class RuntimeProof:
             "success": True,
             "session_uuid": session_uuid,
             "motion_enabled": False,
+            "sentience_claimed": False,
             "dream_allowed": bool(allow_dream),
         }
 
@@ -112,6 +122,14 @@ class RuntimeProof:
                 "dream_records": _count_table("dream_records"),
                 "supervisor_relationships": _count_table("supervisor_relationships"),
                 "relationship_watermark": self._relationship_watermark(),
+                "reasoning_proposals": _count_table("reasoning_proposals"),
+                "reasoning_action_candidates": _count_table("reasoning_action_candidates"),
+                "reasoning_context_snapshots": _count_table("reasoning_context_snapshots"),
+                "speculative_hypotheses": _count_table("speculative_hypotheses"),
+                "open_hypotheses": _count_speculation_status("open"),
+                "contradicted_hypotheses": _count_speculation_status("contradicted"),
+                "resolved_hypotheses": _count_speculation_status("resolved"),
+                "speculation_reviews": _count_table("speculative_reviews"),
             }
         )
 
