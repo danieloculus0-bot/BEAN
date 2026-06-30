@@ -39,6 +39,10 @@ def make_handlers(
             relationship_engine = RelationshipMaintenanceEngine()
         return relationship_engine
 
+    def _conn():
+        from ..memory.store import get_store
+        return get_store()._conn()
+
     def status(msg: InboxMessage, session_uuid: str) -> dict:
         reading = monitor.read().to_dict() if monitor is not None else None
         loop_status = loop.status() if loop is not None else {}
@@ -180,6 +184,72 @@ def make_handlers(
         )
         return proof.run(session_uuid=session_uuid, allow_dream=bool((msg.args or {}).get("allow_dream", False)))
 
+    def run_reasoning_cycle_handler(msg: InboxMessage, session_uuid: str) -> dict:
+        from ..reasoning import get_provider
+        from ..reasoning.reasoning_engine import run_reasoning_cycle
+        provider = get_provider(force_stub=bool((msg.args or {}).get("force_stub", False)))
+        instruction = str((msg.args or {}).get("instruction") or "reason about current state")
+        return run_reasoning_cycle(session_uuid=session_uuid, provider=provider, instruction=instruction, conn=_conn())
+
+    def list_reasoning_proposals(msg: InboxMessage, session_uuid: str) -> dict:
+        from ..reasoning import get_pending_proposals
+        return {"success": True, "proposals": get_pending_proposals(_conn(), limit=int((msg.args or {}).get("limit", 25)))}
+
+    def list_pending_action_candidates(msg: InboxMessage, session_uuid: str) -> dict:
+        from ..reasoning import get_pending_candidates
+        return {"success": True, "candidates": get_pending_candidates(_conn(), limit=int((msg.args or {}).get("limit", 25)))}
+
+    def decide_action_candidate_handler(msg: InboxMessage, session_uuid: str) -> dict:
+        from ..reasoning import decide_action_candidate
+        args = msg.args or {}
+        return decide_action_candidate(_conn(), str(args.get("candidate_id", "")), str(args.get("decision", "rejected")), str(args.get("supervisor_id") or msg.sender or "supervisor"))
+
+    def run_reasoning_maintenance_handler(msg: InboxMessage, session_uuid: str) -> dict:
+        from ..reasoning.maintenance import run_reasoning_maintenance
+        return {"success": True, "report": run_reasoning_maintenance(_conn(), dry_run=bool((msg.args or {}).get("dry_run", False)))}
+
+    def create_hypothesis(msg: InboxMessage, session_uuid: str) -> dict:
+        from ..speculation import init_speculation
+        args = msg.args or {}
+        claim_text = str(args.get("claim_text") or args.get("text") or "").strip()
+        if not claim_text:
+            return {"success": False, "reason": "missing claim_text"}
+        engine = init_speculation(_conn())
+        try:
+            return engine.create_hypothesis(
+                session_uuid=session_uuid,
+                claim_text=claim_text,
+                claim_type=args.get("claim_type"),
+                evidence_level=str(args.get("evidence_level") or "unknown"),
+                confidence=float(args.get("confidence", 0.3)),
+                falsification_path=str(args.get("falsification_path") or ""),
+                resolution_path=str(args.get("resolution_path") or ""),
+                source="inbox_command",
+                action_permission=args.get("action_permission"),
+            )
+        except Exception as exc:
+            return {"success": False, "reason": str(exc)}
+
+    def review_hypothesis(msg: InboxMessage, session_uuid: str) -> dict:
+        from ..speculation import init_speculation
+        args = msg.args or {}
+        return init_speculation(_conn()).review_hypothesis(str(args.get("hypothesis_id") or ""), reviewer=str(args.get("reviewer") or msg.sender or "supervisor"), review_type=str(args.get("review_type") or "manual"), notes=str(args.get("notes") or ""))
+
+    def list_open_hypotheses(msg: InboxMessage, session_uuid: str) -> dict:
+        from ..speculation.hypothesis_store import init_speculation_schema, list_open_hypotheses
+        conn = _conn()
+        init_speculation_schema(conn)
+        return {"success": True, "open_hypotheses": list_open_hypotheses(conn, session_uuid=session_uuid, limit=int((msg.args or {}).get("limit", 25)))}
+
+    def compare_hypotheses(msg: InboxMessage, session_uuid: str) -> dict:
+        from ..speculation import init_speculation
+        ids = list((msg.args or {}).get("hypothesis_ids") or [])
+        return init_speculation(_conn()).compare_hypotheses(ids)
+
+    def run_speculation_maintenance_handler(msg: InboxMessage, session_uuid: str) -> dict:
+        from ..speculation.maintenance import run_speculation_maintenance
+        return {"success": True, "report": run_speculation_maintenance(_conn(), dry_run=bool((msg.args or {}).get("dry_run", False)))}
+
     return {
         "status": status,
         "log_note": log_note,
@@ -206,6 +276,16 @@ def make_handlers(
         "list_supervisors": list_supervisors,
         "run_relationship_maintenance": run_relationship_maintenance,
         "run_runtime_proof": run_runtime_proof,
+        "run_reasoning_cycle": run_reasoning_cycle_handler,
+        "list_reasoning_proposals": list_reasoning_proposals,
+        "list_pending_action_candidates": list_pending_action_candidates,
+        "decide_action_candidate": decide_action_candidate_handler,
+        "run_reasoning_maintenance": run_reasoning_maintenance_handler,
+        "create_hypothesis": create_hypothesis,
+        "review_hypothesis": review_hypothesis,
+        "list_open_hypotheses": list_open_hypotheses,
+        "compare_hypotheses": compare_hypotheses,
+        "run_speculation_maintenance": run_speculation_maintenance_handler,
     }
 
 
