@@ -1,0 +1,27 @@
+[Unit]
+Description=BEAN Brain Runtime
+Documentation=/opt/bean/BEAN/install/bean-os/README.md
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=bean
+Group=bean
+WorkingDirectory=/opt/bean/BEAN
+EnvironmentFile=/etc/bean/bean.env
+ExecStart=/opt/bean/venv/bin/python /opt/bean/BEAN/scripts/bean_safe_runtime.py
+Restart=on-failure
+RestartSec=5
+TimeoutStopSec=20
+KillSignal=SIGTERM
+
+# Hard safety defaults. This service is brain-only and does not grant hardware access.
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ProtectHome=true
+ReadWritePaths=/var/lib/bean /var/log/bean /opt/bean/BEAN
+
+[Install]
+WantedBy=multi-user.target
