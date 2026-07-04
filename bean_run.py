@@ -38,7 +38,47 @@ from bean.runtime.inbox import CommandInbox
 from bean.runtime.inbox_handlers import register_all
 from bean.runtime.tick_handlers import build_default_handlers
 from bean.runtime.loop import BeanLoop
-from bean.memory.event_logger import log_event, EventType, Source
+from bean.memory.event_logger import log_event, EventType, Source, Severity
+
+
+def initialize_optional_brain_layers(session_uuid: str):
+    """Initialize optional schema-backed layers without enabling motion."""
+    results = {}
+    try:
+        from bean.relationship.relationship_store import RelationshipStore
+        RelationshipStore()
+        results["relationship"] = True
+    except Exception as exc:
+        results["relationship"] = str(exc)
+    try:
+        from bean.wisdom.schema import init_wisdom_schema
+        init_wisdom_schema()
+        results["wisdom"] = True
+    except Exception as exc:
+        results["wisdom"] = str(exc)
+    try:
+        from bean.reasoning.schema import init_reasoning_schema
+        init_reasoning_schema()
+        results["reasoning"] = True
+    except Exception as exc:
+        results["reasoning"] = str(exc)
+    try:
+        from bean.speculation.hypothesis_store import init_speculation_schema
+        init_speculation_schema()
+        results["speculation"] = True
+    except Exception as exc:
+        results["speculation"] = str(exc)
+    severity = Severity.INFO if all(value is True for value in results.values()) else Severity.WARN
+    log_event(
+        session_uuid,
+        EventType.CONFIG_CHANGE,
+        "Optional brain layer schema initialization complete.",
+        Source.SYSTEM,
+        subtype="optional_brain_layers_initialized",
+        severity=severity,
+        data=results,
+    )
+    return results
 
 
 def main():
@@ -57,6 +97,8 @@ def main():
     session_uuid = ctx["session_uuid"]
 
     try:
+        initialize_optional_brain_layers(session_uuid)
+
         registry = load_registry()
         body_state = BodyState(registry=registry)
         safety = MotionSafety(registry=registry)
