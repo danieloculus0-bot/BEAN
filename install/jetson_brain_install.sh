@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# BEAN Brain 0.2 Jetson install helper.
+# BEAN Jetson install helper.
 # Run from the repository root on the Jetson.
 
 set -euo pipefail
@@ -40,15 +40,18 @@ fi
 python3 -m pip install --upgrade pip
 python3 -m pip install psutil
 
+python3 -m bean.runtime.boot_readiness --temp
+
 sudo cp install/bean.service "$SERVICE_FILE"
 sudo systemctl daemon-reload
 
 echo
 cat <<'MSG'
-BEAN Brain 0.2 install files are in place.
+BEAN install files are in place.
 
 Next commands:
-  python3 bean/tests/test_brain_install.py
+  bash scripts/run_brain_smoke_tests.sh
+  bash scripts/bean_boot_ready.sh --db $BEAN_DB_PATH
   sudo systemctl enable bean.service
   sudo systemctl start bean.service
   sudo systemctl status bean.service
