@@ -24,30 +24,28 @@ Current focus: **build the brain first, keep motion disabled, keep receipts.**
 | Brain 0.7 relationship and trust | First cut | Evidence-based supervisor interaction history and trust scoring. |
 | Brain 0.8 runtime proof and hardening | First cut | Runtime proof command, smoke runner, durable relationship ingestion watermark. |
 | Brain 0.9 wisdom module | First cut | Trigger matching, pressure deltas, meaning frames, traces, repair records, loop signatures. |
-| Brain 0.11 OpenAI-preferred reasoning | First cut | Context packets, prompt contract, mock provider, OpenAI provider placeholder, parser, proposal filters, proposal store. |
+| Brain 0.11 OpenAI-preferred reasoning | First cut | Context packets, prompt contract, mock provider, real stdlib OpenAI provider, parser, proposal filters, proposal store. |
 | Brain 0.13 hypothesis discipline | First cut | Claim type discipline, evidence levels, hypothesis storage, review records, speculation summary. |
 | Boot readiness | First cut | Temp-DB boot probe for fresh BEAN OS/reformat checks. |
+| Brain-layer inbox commands | First cut | Wisdom, reasoning, and hypothesis commands are wired into runtime inbox. |
 | Hardware motion driver | Not enabled | Real servo movement remains disabled. No direct LLM-to-actuator path. |
 
 ## Quick start on Jetson
 
 ```bash
 bash install/jetson_brain_install.sh
-bash scripts/bean_boot_ready.sh --temp
-bash scripts/run_brain_smoke_tests.sh
+bash scripts/bean_doctor.sh
 ```
 
-Minimum manual checks:
+Manual checks:
 
 ```bash
-python3 bean/tests/test_brain_install.py
-python3 bean/tests/test_brain_maintenance.py
-python3 bean/tests/test_relationship_trust.py
-python3 bean/tests/test_runtime_proof.py
+bash scripts/bean_boot_ready.sh --temp
+bash scripts/run_brain_smoke_tests.sh
+python3 bean/tests/test_boot_readiness.py
 python3 bean/tests/test_wisdom_module.py
 python3 bean/tests/test_reasoning_layer.py
 python3 bean/tests/test_speculative_logic.py
-python3 bean/tests/test_boot_readiness.py
 ```
 
 Memory should stay outside the repo:
@@ -60,6 +58,7 @@ BEAN_INBOX_DIR=/home/bean/bean_data/inbox
 Before starting the service after a reformat, run:
 
 ```bash
+source /etc/bean/bean.env
 bash scripts/bean_boot_ready.sh --db "$BEAN_DB_PATH"
 ```
 
@@ -88,6 +87,18 @@ echo '{"command":"run_runtime_proof","from":"supervisor"}' > $BEAN_INBOX_DIR/run
 
 Runtime proof reports key row counts, keeps motion disabled, and skips dream generation by default.
 
+## Brain-layer inbox commands
+
+Examples:
+
+```bash
+echo '{"command":"process_wisdom_event","args":{"summary":"Future plan changed and remains uncertain."},"from":"supervisor"}' > $BEAN_INBOX_DIR/wisdom.json
+
+echo '{"command":"run_reasoning_pass","args":{"adapter":"mock","request_type":"reflection"},"from":"supervisor"}' > $BEAN_INBOX_DIR/reasoning.json
+
+echo '{"command":"create_hypothesis","args":{"claim_text":"This may need follow-up.","claim_type":"hypothesis","evidence_level":"hypothetical"},"from":"supervisor"}' > $BEAN_INBOX_DIR/hypothesis.json
+```
+
 ## Brain layers added after 0.8
 
 ### Brain 0.9: Wisdom Module
@@ -96,7 +107,7 @@ Event-triggered associative memory plus repair intelligence. It separates event 
 
 ### Brain 0.11: OpenAI-preferred reasoning layer
 
-Builds bounded context packets and asks a reasoning provider for structured JSON proposals. Tests use a mock provider. The OpenAI provider is preferred for real use but remains offline-safe unless configured.
+Builds bounded context packets and asks a reasoning provider for structured JSON proposals. Tests use a mock provider. The OpenAI provider uses the Responses API through Python stdlib when `OPENAI_API_KEY` is configured.
 
 ### Brain 0.13: Hypothesis discipline
 
@@ -125,9 +136,7 @@ Lets BEAN store uncertain claims as labeled hypotheses with claim type, evidence
 ## Near-term roadmap
 
 1. Pull latest `main` on the Jetson.
-2. Run `bash scripts/bean_boot_ready.sh --temp`.
-3. Run the smoke runner.
+2. Run `bash scripts/bean_doctor.sh`.
+3. Fix any integration failures found by doctor or CI.
 4. Run `bash scripts/bean_boot_ready.sh --db "$BEAN_DB_PATH"` before enabling service.
-5. Fix any integration failures from the new first-cut layers.
-6. Wire selected inbox commands after tests are green.
-7. Keep motion as placeholder until the brain stack is stable.
+5. Keep motion out of scope until the brain stack is boringly reliable.
