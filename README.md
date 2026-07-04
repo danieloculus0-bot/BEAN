@@ -26,12 +26,14 @@ Current focus: **build the brain first, keep motion disabled, keep receipts.**
 | Brain 0.9 wisdom module | First cut | Trigger matching, pressure deltas, meaning frames, traces, repair records, loop signatures. |
 | Brain 0.11 OpenAI-preferred reasoning | First cut | Context packets, prompt contract, mock provider, OpenAI provider placeholder, parser, proposal filters, proposal store. |
 | Brain 0.13 hypothesis discipline | First cut | Claim type discipline, evidence levels, hypothesis storage, review records, speculation summary. |
+| Boot readiness | First cut | Temp-DB boot probe for fresh BEAN OS/reformat checks. |
 | Hardware motion driver | Not enabled | Real servo movement remains disabled. No direct LLM-to-actuator path. |
 
 ## Quick start on Jetson
 
 ```bash
 bash install/jetson_brain_install.sh
+bash scripts/bean_boot_ready.sh --temp
 bash scripts/run_brain_smoke_tests.sh
 ```
 
@@ -45,6 +47,7 @@ python3 bean/tests/test_runtime_proof.py
 python3 bean/tests/test_wisdom_module.py
 python3 bean/tests/test_reasoning_layer.py
 python3 bean/tests/test_speculative_logic.py
+python3 bean/tests/test_boot_readiness.py
 ```
 
 Memory should stay outside the repo:
@@ -52,6 +55,12 @@ Memory should stay outside the repo:
 ```text
 BEAN_DB_PATH=/home/bean/bean_data/bean_memory.db
 BEAN_INBOX_DIR=/home/bean/bean_data/inbox
+```
+
+Before starting the service after a reformat, run:
+
+```bash
+bash scripts/bean_boot_ready.sh --db "$BEAN_DB_PATH"
 ```
 
 ## Core rules
@@ -93,6 +102,10 @@ Builds bounded context packets and asks a reasoning provider for structured JSON
 
 Lets BEAN store uncertain claims as labeled hypotheses with claim type, evidence level, confidence, resolution path, and action permission. Hypotheses remain reviewable records, not facts.
 
+### Boot readiness
+
+`python3 -m bean.runtime.boot_readiness --temp` verifies imports, schema initialization, session start/end, wisdom, reasoning, hypothesis discipline, and runtime proof using a temporary DB.
+
 ## Documentation map
 
 | File | Purpose |
@@ -107,11 +120,14 @@ Lets BEAN store uncertain claims as labeled hypotheses with claim type, evidence
 | `docs/brain-0.9-wisdom-module.md` | Wisdom module. |
 | `docs/brain-0.11-llm-reasoning-layer.md` | OpenAI-preferred reasoning layer. |
 | `docs/brain-0.13-speculative-logic.md` | Hypothesis discipline. |
+| `docs/bean-os-reformat-checklist.md` | Reformat and first-boot checklist. |
 
 ## Near-term roadmap
 
 1. Pull latest `main` on the Jetson.
-2. Run the smoke runner.
-3. Fix any integration failures from the new 0.9, 0.11, and 0.13 first-cut layers.
-4. Wire selected inbox commands after tests are green.
-5. Keep motion as placeholder until the brain stack is stable.
+2. Run `bash scripts/bean_boot_ready.sh --temp`.
+3. Run the smoke runner.
+4. Run `bash scripts/bean_boot_ready.sh --db "$BEAN_DB_PATH"` before enabling service.
+5. Fix any integration failures from the new first-cut layers.
+6. Wire selected inbox commands after tests are green.
+7. Keep motion as placeholder until the brain stack is stable.
