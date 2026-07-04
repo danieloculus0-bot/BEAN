@@ -65,7 +65,7 @@ class RuntimeProof:
         self.relationship_engine = relationship_engine
 
     def run(self, session_uuid: str, *, allow_dream: bool = False) -> dict:
-        notes = ["No motion hardware driver was invoked."]
+        notes = ["No hardware motion driver was invoked."]
         errors = []
         report = {"success": True, "session_uuid": session_uuid, "motion_enabled": False, "dream_allowed": bool(allow_dream)}
 
