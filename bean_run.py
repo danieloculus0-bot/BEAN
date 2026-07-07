@@ -42,8 +42,13 @@ from bean.memory.event_logger import log_event, EventType, Source, Severity
 
 
 def initialize_optional_brain_layers(session_uuid: str):
-    """Initialize optional schema-backed layers without enabling motion."""
+    """Initialize schema-backed brain layers without enabling physical motion."""
     results = {}
+    try:
+        from bean.memory.origin import ensure_origin_records
+        results["origin_covenant"] = ensure_origin_records(session_uuid)
+    except Exception as exc:
+        results["origin_covenant"] = str(exc)
     try:
         from bean.relationship.relationship_store import RelationshipStore
         RelationshipStore()
@@ -68,11 +73,11 @@ def initialize_optional_brain_layers(session_uuid: str):
         results["speculation"] = True
     except Exception as exc:
         results["speculation"] = str(exc)
-    severity = Severity.INFO if all(value is True for value in results.values()) else Severity.WARN
+    severity = Severity.INFO if all(value is True or isinstance(value, dict) for value in results.values()) else Severity.WARN
     log_event(
         session_uuid,
         EventType.CONFIG_CHANGE,
-        "Optional brain layer schema initialization complete.",
+        "Optional brain layer initialization complete.",
         Source.SYSTEM,
         subtype="optional_brain_layers_initialized",
         severity=severity,
