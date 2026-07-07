@@ -23,6 +23,7 @@ TESTS=(
   bean/tests/test_wisdom_module.py
   bean/tests/test_reasoning_layer.py
   bean/tests/test_speculative_logic.py
+  bean/tests/test_origin_covenant.py
   bean/tests/test_boot_readiness.py
 )
 
