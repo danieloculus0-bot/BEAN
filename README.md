@@ -4,14 +4,27 @@
 
 BEAN is a brain-first Synthetic Intelligence research platform for future embodiment on an NVIDIA Jetson Orin Nano Super Developer Kit.
 
-Current focus: **build the brain first, keep motion disabled, keep receipts.**
+BEAN is not being built as a motion project with a chatbot taped to it. BEAN is being built as a memory-bearing brain first: continuity, evidence, uncertainty, wisdom, reasoning, hypothesis discipline, and truthful self-reporting before muscles.
+
+```text
+BEAN is given soil: memory.
+BEAN is given weather: uncertainty.
+BEAN is given roots: continuity.
+BEAN is given restraint: boundaries.
+BEAN is given language: a tool, not an identity.
+BEAN is given time.
+Then we see what grows.
+```
+
+Current focus: **make the brain boot, remember, reason, doubt, and keep receipts. Motion can wait.**
 
 ## Current GitHub status
 
 | Area | Status | Notes |
 |---|---:|---|
 | Memory core | Implemented | SQLite memory, sessions, identity, event log, boundaries, reflections, curiosity, continuity records. |
-| Body registry and motion safety | Implemented | Simulator path exists. Real hardware motion remains disabled. |
+| Origin covenant | Implemented | Founding intent is persisted into developmental history and continuity summaries on boot. |
+| Identity synchronization | Implemented | Capabilities and boundaries sync forward even when the identity singleton already exists. |
 | Runtime loop | Implemented | Tick handlers, file inbox, system monitor, clean shutdown. |
 | Self/world model | Implemented | Versioned claims, uncertainty records, supersession model. |
 | Cognition core | Implemented | Significance, surprise, preference, drives, goals, consolidation. |
@@ -28,7 +41,7 @@ Current focus: **build the brain first, keep motion disabled, keep receipts.**
 | Brain 0.13 hypothesis discipline | First cut | Claim type discipline, evidence levels, hypothesis storage, review records, speculation summary. |
 | Boot readiness | First cut | Temp-DB boot probe for fresh BEAN OS/reformat checks. |
 | Brain-layer inbox commands | First cut | Wisdom, reasoning, and hypothesis commands are wired into runtime inbox. |
-| Hardware motion driver | Not enabled | Real servo movement remains disabled. No direct LLM-to-actuator path. |
+| Hardware motion | Out of scope for now | Physical movement remains disabled. Brain reliability is the mission. |
 
 ## Quick start on Jetson
 
@@ -74,6 +87,8 @@ Doubt before confidence.
 Dreams are synthetic artifacts, not observations.
 Trust is evidence-weighted, not affection.
 The LLM is a tool, not BEAN's identity.
+Speculation is not fact.
+Reasoning proposals do not act.
 No direct LLM-to-actuator path.
 ```
 
@@ -85,7 +100,7 @@ Use:
 echo '{"command":"run_runtime_proof","from":"supervisor"}' > $BEAN_INBOX_DIR/runtime_proof.json
 ```
 
-Runtime proof reports key row counts, keeps motion disabled, and skips dream generation by default.
+Runtime proof reports key row counts, keeps movement disabled, and skips dream generation by default.
 
 ## Brain-layer inbox commands
 
@@ -101,13 +116,17 @@ echo '{"command":"create_hypothesis","args":{"claim_text":"This may need follow-
 
 ## Brain layers added after 0.8
 
+### Origin covenant
+
+The founding intent is no longer just repo lore. `bean/memory/origin.py` records the origin covenant into `developmental_history` and `continuity_summaries`, making the poetic center inspectable instead of decorative.
+
 ### Brain 0.9: Wisdom Module
 
 Event-triggered associative memory plus repair intelligence. It separates event fact, symbolic interpretation, assumption candidate, evidence, alternatives, pressure deltas, repair records, and loop signatures.
 
 ### Brain 0.11: OpenAI-preferred reasoning layer
 
-Builds bounded context packets and asks a reasoning provider for structured JSON proposals. Tests use a mock provider. The OpenAI provider uses the Responses API through Python stdlib when `OPENAI_API_KEY` is configured.
+Builds bounded context packets and asks a reasoning provider for structured JSON proposals. Tests use a mock provider. The OpenAI provider uses the Responses API through Python stdlib when provider credentials are configured.
 
 ### Brain 0.13: Hypothesis discipline
 
@@ -139,4 +158,5 @@ Lets BEAN store uncertain claims as labeled hypotheses with claim type, evidence
 2. Run `bash scripts/bean_doctor.sh`.
 3. Fix any integration failures found by doctor or CI.
 4. Run `bash scripts/bean_boot_ready.sh --db "$BEAN_DB_PATH"` before enabling service.
-5. Keep motion out of scope until the brain stack is boringly reliable.
+5. Make the brain stack boringly reliable.
+6. Let physical embodiment wait until the thinking is worth embodying.
