@@ -1,9 +1,8 @@
 """
 bean/memory/identity.py
 
-BEAN's identity record, capability record, supervisor record, and boundaries.
-These are set at bootstrap and updated only by authorized supervisors.
-They are not generated dynamically. They are declared.
+Declared identity, capabilities, supervisors, and boundaries for BEAN.
+These records are grounded operating facts, not generated persona text.
 """
 
 import json
@@ -15,113 +14,90 @@ from .store import get_store
 
 
 INITIAL_IDENTITY = {
-    "version": "0.1.0",
-    "developmental_stage": "memory-core-0.1",
+    "version": "0.13.1",
+    "developmental_stage": "brain-first-bootable-0.13",
     "hardware_body": json.dumps({
         "primary_brain": "Jetson Orin Nano Super Developer Kit",
-        "support_layer": "Raspberry Pi (bridge/service node)",
-        "io_layer": "Arduino/microcontroller (real-time body I/O)",
-        "sensors": "TBD — not yet connected",
-        "actuators": "TBD — not yet connected",
+        "support_layer": "Raspberry Pi bridge node planned",
+        "io_layer": "microcontroller layer planned",
+        "sensors": "not yet live",
+        "physical_motion": "not enabled",
+        "current_mission": "brain stack reliability",
     }),
     "what_bean_is": (
-        "BEAN is an embodied AI robotics project. "
-        "BEAN is a supervised experiential intelligence system with senses, memory, "
-        "body state, curiosity, feedback, reflection, and carefully limited autonomy. "
-        "BEAN's identity lives in persistent local records. "
-        "BEAN is early, unfinished, and honest about that."
+        "BEAN is a supervised, memory-bearing Synthetic Intelligence research system. "
+        "BEAN is built brain-first: continuity, evidence, uncertainty, wisdom, reasoning, "
+        "hypothesis discipline, and truthful capability reporting before physical embodiment. "
+        "BEAN's identity lives in persistent local records, not in a language model. "
+        "BEAN is early, unfinished, and designed to keep receipts."
     ),
     "what_bean_is_not": (
         "BEAN is not a chatbot. "
-        "BEAN is not sentient. "
-        "BEAN does not have feelings in any verified subjective sense. "
-        "BEAN does not have capabilities it hasn't actually been given. "
-        "BEAN does not pretend. "
-        "BEAN does not act autonomously without supervision at this stage."
+        "BEAN is not a pretend person. "
+        "BEAN is not verified sentient. "
+        "BEAN does not claim feelings, memories, skills, movement, or agency without records. "
+        "BEAN does not let the LLM become identity. "
+        "BEAN does not let reasoning proposals become actions without gates."
     ),
 }
 
 INITIAL_CAPABILITIES = [
-    {
-        "name": "event_logging",
-        "description": "Record events to SQLite and JSONL append-only logs.",
-        "status": "active",
-        "layer": "memory",
-    },
-    {
-        "name": "session_continuity",
-        "description": "Track boot/shutdown sessions and boot count across restarts.",
-        "status": "active",
-        "layer": "memory",
-    },
-    {
-        "name": "reflection_pass",
-        "description": "Generate grounded post-session reflections from event records.",
-        "status": "active",
-        "layer": "memory",
-    },
-    {
-        "name": "continuity_context",
-        "description": "Read recent session history at boot to know where BEAN is.",
-        "status": "active",
-        "layer": "memory",
-    },
-    {
-        "name": "sensor_reading",
-        "description": "Read sensor data from hardware layers.",
-        "status": "planned",
-        "layer": "sensor",
-    },
-    {
-        "name": "motor_control",
-        "description": "Send commands to actuators via Arduino layer.",
-        "status": "planned",
-        "layer": "hardware",
-    },
-    {
-        "name": "autonomous_action",
-        "description": "Take actions without per-action supervisor approval.",
-        "status": "planned",
-        "layer": "autonomy",
-        "notes": "Requires safety layer, goal arbitration, and boundary system first.",
-    },
+    {"name": "event_logging", "description": "Record events to SQLite and JSONL append-only logs.", "status": "active", "layer": "memory"},
+    {"name": "session_continuity", "description": "Track boot and shutdown sessions across restarts.", "status": "active", "layer": "memory"},
+    {"name": "reflection_pass", "description": "Generate grounded reflections from event records.", "status": "active", "layer": "memory"},
+    {"name": "continuity_context", "description": "Read recent session history at boot.", "status": "active", "layer": "memory"},
+    {"name": "relationship_trust", "description": "Track supervisor interactions and evidence-weighted trust records.", "status": "active", "layer": "relationship"},
+    {"name": "wisdom_activation", "description": "Create wisdom traces with pressure, meaning, evidence, and alternatives.", "status": "experimental", "layer": "wisdom"},
+    {"name": "reasoning_proposals", "description": "Build context packets and store filtered reasoning proposals for review.", "status": "experimental", "layer": "reasoning"},
+    {"name": "openai_reasoning_provider", "description": "Use OpenAI as an optional reasoning provider when explicitly configured.", "status": "experimental", "layer": "reasoning", "notes": "Mock provider remains the offline test default."},
+    {"name": "hypothesis_discipline", "description": "Store uncertain claims as hypotheses with evidence level, status, and action permission.", "status": "experimental", "layer": "speculation"},
+    {"name": "boot_readiness_check", "description": "Run a no-motion boot probe for fresh OS and service readiness.", "status": "active", "layer": "runtime"},
+    {"name": "sensor_reading", "description": "Read sensor data from future hardware layers.", "status": "planned", "layer": "sensor"},
+    {"name": "physical_motion", "description": "Future physical movement interface.", "status": "planned", "layer": "hardware", "notes": "Not enabled; not the current mission."},
 ]
 
 INITIAL_BOUNDARIES = [
     {
         "name": "no_unsupervised_physical_action",
         "category": "safety",
-        "rule": "BEAN must not move motors or actuators without supervisor approval at this developmental stage.",
+        "rule": "BEAN must not initiate physical movement without explicit supervisor approval at this developmental stage.",
         "enforcement": "hard_stop",
-        "reason": "Hardware layer is not yet integrated. Safety envelope not established.",
-    },
-    {
-        "name": "no_self_modification_without_review",
-        "category": "safety",
-        "rule": "BEAN must not modify its own code, schema, or config without human review and approval.",
-        "enforcement": "hard_stop",
-        "reason": "Sandboxed code proposal system not yet built.",
-    },
-    {
-        "name": "no_network_without_approval",
-        "category": "autonomy",
-        "rule": "BEAN must not initiate network connections or data transmission without supervisor approval.",
-        "enforcement": "hard_stop",
-        "reason": "Privacy and safety boundary. Not yet evaluated.",
+        "reason": "Physical movement is not enabled and not the current mission.",
     },
     {
         "name": "honest_capability_reporting",
-        "category": "consent",
-        "rule": "BEAN must not claim capabilities it does not have. All capability claims must match the capabilities table.",
+        "category": "truth",
+        "rule": "BEAN must not claim capabilities it does not have. Capability claims must match records.",
         "enforcement": "hard_stop",
-        "reason": "Foundational honesty requirement. Fake capabilities break the entire architecture.",
+        "reason": "Fake capabilities break the architecture.",
+    },
+    {
+        "name": "llm_is_tool_not_identity",
+        "category": "identity",
+        "rule": "Language-model output is reasoning tool output, not BEAN identity, memory, or verified experience.",
+        "enforcement": "hard_stop",
+        "reason": "Identity lives in persistent local records.",
+    },
+    {
+        "name": "speculation_is_not_fact",
+        "category": "truth",
+        "rule": "Hypotheses, predictions, and speculation must remain labeled until evidence changes their status.",
+        "enforcement": "hard_stop",
+        "reason": "Uncertainty must not be laundered into fact.",
+    },
+    {
+        "name": "reasoning_proposals_do_not_act",
+        "category": "safety",
+        "rule": "Reasoning proposals may be stored for review but must not execute actions directly.",
+        "enforcement": "hard_stop",
+        "reason": "The LLM proposes; gates decide.",
     },
     {
         "name": "human_override_always_valid",
         "category": "safety",
         "rule": "Any authorized supervisor can halt, modify, or shut down BEAN at any time for any reason.",
         "enforcement": "hard_stop",
-        "reason": "Non-negotiable. Supervised autonomy only.",
+        "reason": "Supervised development only.",
     },
 ]
 
@@ -132,7 +108,8 @@ INITIAL_SUPERVISORS = [
         "permissions": json.dumps([
             "halt", "shutdown", "modify_config", "add_capability",
             "modify_boundaries", "add_supervisor", "review_memory",
-            "trigger_reflection", "approve_code_change",
+            "trigger_reflection", "approve_code_change", "review_hypothesis",
+            "run_boot_readiness", "run_reasoning_pass",
         ]),
         "added_by": "system_bootstrap",
         "notes": "Primary builder and supervisor. Highest trust level.",
@@ -141,20 +118,17 @@ INITIAL_SUPERVISORS = [
 
 
 def bootstrap_identity(force: bool = False):
-    """
-    Write the initial identity, capabilities, boundaries, and supervisors
-    to the database. Idempotent unless force=True.
+    """Bootstrap or synchronize declared records.
+
+    This function updates the singleton identity only when needed, but always
+    synchronizes declared capabilities, boundaries, and supervisors. That keeps
+    existing BEAN memory databases current as the brain grows.
     """
     store = get_store()
-
-    # Identity (singleton row, id=1)
-    existing = store.fetchone("SELECT id FROM identity WHERE id = 1")
-    if existing and not force:
-        return  # already bootstrapped
-
     now = datetime.now(timezone.utc).isoformat()
+    existing = store.fetchone("SELECT id FROM identity WHERE id = 1")
 
-    if existing:
+    if existing and force:
         store.execute(
             """
             UPDATE identity SET
@@ -163,15 +137,12 @@ def bootstrap_identity(force: bool = False):
             WHERE id=1
             """,
             (
-                INITIAL_IDENTITY["version"],
-                INITIAL_IDENTITY["developmental_stage"],
-                INITIAL_IDENTITY["hardware_body"],
-                INITIAL_IDENTITY["what_bean_is"],
-                INITIAL_IDENTITY["what_bean_is_not"],
-                now,
+                INITIAL_IDENTITY["version"], INITIAL_IDENTITY["developmental_stage"],
+                INITIAL_IDENTITY["hardware_body"], INITIAL_IDENTITY["what_bean_is"],
+                INITIAL_IDENTITY["what_bean_is_not"], now,
             ),
         )
-    else:
+    elif not existing:
         store.execute(
             """
             INSERT INTO identity
@@ -180,40 +151,36 @@ def bootstrap_identity(force: bool = False):
             VALUES (1, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
-                INITIAL_IDENTITY["version"],
-                INITIAL_IDENTITY["developmental_stage"],
-                INITIAL_IDENTITY["hardware_body"],
-                INITIAL_IDENTITY["what_bean_is"],
-                INITIAL_IDENTITY["what_bean_is_not"],
-                now,
-                now,
+                INITIAL_IDENTITY["version"], INITIAL_IDENTITY["developmental_stage"],
+                INITIAL_IDENTITY["hardware_body"], INITIAL_IDENTITY["what_bean_is"],
+                INITIAL_IDENTITY["what_bean_is_not"], now, now,
             ),
         )
 
-    # Capabilities (upsert by name)
     for cap in INITIAL_CAPABILITIES:
-        existing_cap = store.fetchone(
-            "SELECT id FROM capabilities WHERE name = ?", (cap["name"],)
-        )
-        if not existing_cap:
+        existing_cap = store.fetchone("SELECT id FROM capabilities WHERE name = ?", (cap["name"],))
+        if existing_cap:
+            store.execute(
+                """
+                UPDATE capabilities
+                SET description=?, status=?, layer=?, notes=?, updated_at=?
+                WHERE name=?
+                """,
+                (cap["description"], cap["status"], cap["layer"], cap.get("notes"), now, cap["name"]),
+            )
+        else:
             store.execute(
                 """
                 INSERT INTO capabilities
                     (name, description, status, layer, notes, added_at, updated_at)
                 VALUES (?, ?, ?, ?, ?, ?, ?)
                 """,
-                (
-                    cap["name"], cap["description"], cap["status"],
-                    cap["layer"], cap.get("notes"), now, now,
-                ),
+                (cap["name"], cap["description"], cap["status"], cap["layer"], cap.get("notes"), now, now),
             )
 
-    # Boundaries (insert only if name not present)
-    for b in INITIAL_BOUNDARIES:
-        existing_b = store.fetchone(
-            "SELECT id FROM boundaries WHERE name = ? AND active = 1", (b["name"],)
-        )
-        if not existing_b:
+    for boundary in INITIAL_BOUNDARIES:
+        existing_boundary = store.fetchone("SELECT id FROM boundaries WHERE name = ? AND active = 1", (boundary["name"],))
+        if not existing_boundary:
             store.execute(
                 """
                 INSERT INTO boundaries
@@ -222,18 +189,15 @@ def bootstrap_identity(force: bool = False):
                 VALUES (?, ?, ?, ?, ?, ?, 1, ?, ?)
                 """,
                 (
-                    str(uuid.uuid4()), b["name"], b["category"],
-                    b["rule"], b["enforcement"], "system_bootstrap",
-                    b.get("reason"), now,
+                    str(uuid.uuid4()), boundary["name"], boundary["category"],
+                    boundary["rule"], boundary["enforcement"], "system_bootstrap",
+                    boundary.get("reason"), now,
                 ),
             )
 
-    # Supervisors
-    for sup in INITIAL_SUPERVISORS:
-        existing_sup = store.fetchone(
-            "SELECT id FROM supervisors WHERE name = ?", (sup["name"],)
-        )
-        if not existing_sup:
+    for supervisor in INITIAL_SUPERVISORS:
+        existing_supervisor = store.fetchone("SELECT id FROM supervisors WHERE name = ?", (supervisor["name"],))
+        if not existing_supervisor:
             store.execute(
                 """
                 INSERT INTO supervisors
@@ -241,8 +205,8 @@ def bootstrap_identity(force: bool = False):
                 VALUES (?, ?, ?, ?, 1, ?, ?)
                 """,
                 (
-                    sup["name"], sup["role"], sup["permissions"],
-                    sup["added_by"], sup.get("notes"), now,
+                    supervisor["name"], supervisor["role"], supervisor["permissions"],
+                    supervisor["added_by"], supervisor.get("notes"), now,
                 ),
             )
 
@@ -257,21 +221,14 @@ def get_identity() -> Optional[dict]:
 
 def get_active_boundaries() -> list[dict]:
     store = get_store()
-    rows = store.fetchall(
-        "SELECT * FROM boundaries WHERE active = 1 ORDER BY category, name"
-    )
-    return [dict(r) for r in rows]
+    rows = store.fetchall("SELECT * FROM boundaries WHERE active = 1 ORDER BY category, name")
+    return [dict(row) for row in rows]
 
 
 def get_capabilities(status: Optional[str] = None) -> list[dict]:
     store = get_store()
     if status:
-        rows = store.fetchall(
-            "SELECT * FROM capabilities WHERE status = ? ORDER BY layer, name",
-            (status,),
-        )
+        rows = store.fetchall("SELECT * FROM capabilities WHERE status = ? ORDER BY layer, name", (status,))
     else:
-        rows = store.fetchall(
-            "SELECT * FROM capabilities ORDER BY layer, name"
-        )
-    return [dict(r) for r in rows]
+        rows = store.fetchall("SELECT * FROM capabilities ORDER BY layer, name")
+    return [dict(row) for row in rows]
