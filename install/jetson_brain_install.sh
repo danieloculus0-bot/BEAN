@@ -17,6 +17,10 @@ if [[ ! -f "bean_run.py" ]]; then
   exit 1
 fi
 
+echo "==> Checking Jetson / JetPack platform"
+python3 install/jetson_platform_check.py --require-jetson
+
+echo "==> Creating BEAN data directories"
 mkdir -p "$BEAN_DATA_DIR" "$BEAN_LOG_DIR" "$BEAN_DATA_DIR/inbox"
 sudo mkdir -p "$ENV_DIR"
 
@@ -32,6 +36,7 @@ else
   echo "$ENV_FILE already exists. Leaving it unchanged."
 fi
 
+echo "==> Preparing Python virtual environment"
 if [[ ! -d ".venv" ]]; then
   python3 -m venv .venv
 fi
@@ -40,8 +45,10 @@ fi
 python3 -m pip install --upgrade pip
 python3 -m pip install psutil
 
+echo "==> Running temporary boot readiness check"
 python3 -m bean.runtime.boot_readiness --temp
 
+echo "==> Installing systemd service"
 sudo cp install/bean.service "$SERVICE_FILE"
 sudo systemctl daemon-reload
 
@@ -50,11 +57,12 @@ cat <<'MSG'
 BEAN install files are in place.
 
 Next commands:
-  bash scripts/run_brain_smoke_tests.sh
-  bash scripts/bean_boot_ready.sh --db $BEAN_DB_PATH
+  source /etc/bean/bean.env
+  bash scripts/bean_doctor.sh
+  bash scripts/bean_boot_ready.sh --db "$BEAN_DB_PATH"
   sudo systemctl enable bean.service
   sudo systemctl start bean.service
   sudo systemctl status bean.service
 
-Motion hardware is not enabled by this installer.
+Physical output hardware is not enabled by this installer.
 MSG
