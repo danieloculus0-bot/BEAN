@@ -16,7 +16,7 @@ BEAN is given time.
 Then we see what grows.
 ```
 
-Current focus: **make the brain boot, remember, reason, doubt, and keep receipts. Motion can wait.**
+Current focus: **make the brain boot, remember, reason, doubt, and keep receipts. Physical output can wait.**
 
 ## Current GitHub status
 
@@ -39,7 +39,8 @@ Current focus: **make the brain boot, remember, reason, doubt, and keep receipts
 | Brain 0.9 wisdom module | First cut | Trigger matching, pressure deltas, meaning frames, traces, repair records, loop signatures. |
 | Brain 0.11 OpenAI-preferred reasoning | First cut | Context packets, prompt contract, mock provider, real stdlib OpenAI provider, parser, proposal filters, proposal store. |
 | Brain 0.13 hypothesis discipline | First cut | Claim type discipline, evidence levels, hypothesis storage, review records, speculation summary. |
-| Boot readiness | First cut | Temp-DB boot probe for fresh BEAN OS/reformat checks. |
+| Strict boot readiness | Implemented | Verifies core memory, origin covenant, required capabilities, required boundaries, brain probes, runtime proof, and Jetson/L4T platform report. |
+| Jetson install guard | Implemented | Installer runs a stdlib Jetson/L4T platform check before creating venv and service files. |
 | Brain-layer inbox commands | First cut | Wisdom, reasoning, and hypothesis commands are wired into runtime inbox. |
 | Hardware motion | Out of scope for now | Physical movement remains disabled. Brain reliability is the mission. |
 
@@ -48,6 +49,18 @@ Current focus: **make the brain boot, remember, reason, doubt, and keep receipts
 ```bash
 bash install/jetson_brain_install.sh
 bash scripts/bean_doctor.sh
+```
+
+The installer now runs:
+
+```bash
+python3 install/jetson_platform_check.py --require-jetson
+```
+
+For a non-Jetson development machine only:
+
+```bash
+BEAN_ALLOW_NON_JETSON_INSTALL=1 bash install/jetson_brain_install.sh
 ```
 
 Manual checks:
@@ -80,7 +93,7 @@ bash scripts/bean_boot_ready.sh --db "$BEAN_DB_PATH"
 ```text
 Evidence before belief.
 Memory before identity claims.
-Body model before motion.
+Body model before physical output.
 Safety before autonomy.
 Possibility before forced certainty.
 Doubt before confidence.
@@ -89,7 +102,7 @@ Trust is evidence-weighted, not affection.
 The LLM is a tool, not BEAN's identity.
 Speculation is not fact.
 Reasoning proposals do not act.
-No direct LLM-to-actuator path.
+No direct LLM-to-physical-output path.
 ```
 
 ## Runtime proof
@@ -100,7 +113,7 @@ Use:
 echo '{"command":"run_runtime_proof","from":"supervisor"}' > $BEAN_INBOX_DIR/runtime_proof.json
 ```
 
-Runtime proof reports key row counts, keeps movement disabled, and skips dream generation by default.
+Runtime proof reports key row counts, keeps physical output disabled, and skips dream generation by default.
 
 ## Brain-layer inbox commands
 
@@ -132,9 +145,9 @@ Builds bounded context packets and asks a reasoning provider for structured JSON
 
 Lets BEAN store uncertain claims as labeled hypotheses with claim type, evidence level, confidence, resolution path, and action permission. Hypotheses remain reviewable records, not facts.
 
-### Boot readiness
+### Strict boot readiness
 
-`python3 -m bean.runtime.boot_readiness --temp` verifies imports, schema initialization, session start/end, wisdom, reasoning, hypothesis discipline, and runtime proof using a temporary DB.
+`python3 -m bean.runtime.boot_readiness --temp` verifies imports, schema initialization, session start/end, origin covenant, required capabilities, required boundaries, wisdom, reasoning, hypothesis discipline, runtime proof, and platform facts using a temporary DB.
 
 ## Documentation map
 
@@ -155,8 +168,9 @@ Lets BEAN store uncertain claims as labeled hypotheses with claim type, evidence
 ## Near-term roadmap
 
 1. Pull latest `main` on the Jetson.
-2. Run `bash scripts/bean_doctor.sh`.
-3. Fix any integration failures found by doctor or CI.
-4. Run `bash scripts/bean_boot_ready.sh --db "$BEAN_DB_PATH"` before enabling service.
-5. Make the brain stack boringly reliable.
-6. Let physical embodiment wait until the thinking is worth embodying.
+2. Run `bash install/jetson_brain_install.sh`.
+3. Run `bash scripts/bean_doctor.sh`.
+4. Fix any integration failures found by doctor or CI.
+5. Run `bash scripts/bean_boot_ready.sh --db "$BEAN_DB_PATH"` before enabling service.
+6. Make the brain stack boringly reliable.
+7. Let physical embodiment wait until the thinking is worth embodying.
