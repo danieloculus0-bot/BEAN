@@ -37,7 +37,7 @@ Current focus: **make the brain boot, remember, reason, doubt, and keep receipts
 | Brain 0.7 relationship and trust | First cut | Evidence-based supervisor interaction history and trust scoring. |
 | Brain 0.8 runtime proof and hardening | First cut | Runtime proof command, smoke runner, durable relationship ingestion watermark. |
 | Brain 0.9 wisdom module | First cut | Trigger matching, pressure deltas, meaning frames, traces, repair records, loop signatures. |
-| Brain 0.11 OpenAI-preferred reasoning | First cut | Context packets, prompt contract, mock provider, real stdlib OpenAI provider, parser, proposal filters, proposal store. |
+| Brain 0.11 OpenAI-preferred reasoning | First cut | Bounded brain snapshots, prompt contract, mock provider, real stdlib OpenAI provider, parser, proposal filters, proposal store. |
 | Brain 0.13 hypothesis discipline | First cut | Claim type discipline, evidence levels, hypothesis storage, review records, speculation summary. |
 | Strict boot readiness | Implemented | Verifies core memory, origin covenant, required capabilities, required boundaries, brain probes, runtime proof, and Jetson/L4T platform report. |
 | Jetson install guard | Implemented | Installer runs a stdlib Jetson/L4T platform check before creating venv and service files. |
@@ -71,6 +71,7 @@ bash scripts/run_brain_smoke_tests.sh
 python3 bean/tests/test_boot_readiness.py
 python3 bean/tests/test_wisdom_module.py
 python3 bean/tests/test_reasoning_layer.py
+python3 bean/tests/test_reasoning_context_packet.py
 python3 bean/tests/test_speculative_logic.py
 ```
 
@@ -139,7 +140,7 @@ Event-triggered associative memory plus repair intelligence. It separates event 
 
 ### Brain 0.11: OpenAI-preferred reasoning layer
 
-Builds bounded context packets and asks a reasoning provider for structured JSON proposals. Tests use a mock provider. The OpenAI provider uses the Responses API through Python stdlib when provider credentials are configured.
+Builds bounded brain snapshots and asks a reasoning provider for structured JSON proposals. Tests use a mock provider. The context packet includes identity, origin covenant, active boundaries, capabilities, recent events, active claims, uncertainty claims, wisdom traces, relationship summaries, and hypothesis summary. Packet rows store the included record IDs for traceability.
 
 ### Brain 0.13: Hypothesis discipline
 
