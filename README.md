@@ -4,7 +4,7 @@
 
 BEAN is a brain-first Synthetic Intelligence research platform for future embodiment on an NVIDIA Jetson Orin Nano Super Developer Kit.
 
-BEAN is not being built as a motion project with a chatbot taped to it. BEAN is being built as a memory-bearing brain first: continuity, evidence, uncertainty, wisdom, reasoning, hypothesis discipline, and truthful self-reporting before muscles.
+BEAN is not being built as a motion project with a chatbot taped to it. BEAN is being built as a memory-bearing brain first: continuity, evidence, uncertainty, wisdom, reasoning, hypothesis discipline, supervised self-optimization, and truthful self-reporting before muscles.
 
 ```text
 BEAN is given soil: memory.
@@ -16,7 +16,7 @@ BEAN is given time.
 Then we see what grows.
 ```
 
-Current focus: **make the brain boot, remember, reason, doubt, and keep receipts. Physical output can wait.**
+Current focus: **make the brain boot, remember, reason, doubt, propose improvements, and keep receipts. Physical output can wait.**
 
 ## Current GitHub status
 
@@ -39,9 +39,10 @@ Current focus: **make the brain boot, remember, reason, doubt, and keep receipts
 | Brain 0.9 wisdom module | First cut | Trigger matching, pressure deltas, meaning frames, traces, repair records, loop signatures. |
 | Brain 0.11 OpenAI-preferred reasoning | First cut | Bounded brain snapshots, prompt contract, mock provider, real stdlib OpenAI provider, parser, proposal filters, proposal store. |
 | Brain 0.13 hypothesis discipline | First cut | Claim type discipline, evidence levels, hypothesis storage, review records, speculation summary. |
+| Brain 0.14 supervised self-optimization | First cut | Persistent improvement proposals, risk labels, supervisor review, validation and rollback plans, and a hard no-execution invariant. |
 | Strict boot readiness | Implemented | Verifies core memory, origin covenant, required capabilities, required boundaries, brain probes, runtime proof, and Jetson/L4T platform report. |
 | Jetson install guard | Implemented | Installer runs a stdlib Jetson/L4T platform check before creating venv and service files. |
-| Brain-layer inbox commands | First cut | Wisdom, reasoning, and hypothesis commands are wired into runtime inbox. |
+| Brain-layer inbox commands | First cut | Wisdom, reasoning, and hypothesis commands are wired into runtime inbox. Optimization inbox integration is next. |
 | Hardware motion | Out of scope for now | Physical movement remains disabled. Brain reliability is the mission. |
 
 ## Quick start on Jetson
@@ -73,6 +74,7 @@ python3 bean/tests/test_wisdom_module.py
 python3 bean/tests/test_reasoning_layer.py
 python3 bean/tests/test_reasoning_context_packet.py
 python3 bean/tests/test_speculative_logic.py
+python3 bean/tests/test_self_optimization_governor.py
 ```
 
 Memory should stay outside the repo:
@@ -103,6 +105,7 @@ Trust is evidence-weighted, not affection.
 The LLM is a tool, not BEAN's identity.
 Speculation is not fact.
 Reasoning proposals do not act.
+Self-optimization proposes; it does not execute.
 No direct LLM-to-physical-output path.
 ```
 
@@ -122,9 +125,7 @@ Examples:
 
 ```bash
 echo '{"command":"process_wisdom_event","args":{"summary":"Future plan changed and remains uncertain."},"from":"supervisor"}' > $BEAN_INBOX_DIR/wisdom.json
-
 echo '{"command":"run_reasoning_pass","args":{"adapter":"mock","request_type":"reflection"},"from":"supervisor"}' > $BEAN_INBOX_DIR/reasoning.json
-
 echo '{"command":"create_hypothesis","args":{"claim_text":"This may need follow-up.","claim_type":"hypothesis","evidence_level":"hypothetical"},"from":"supervisor"}' > $BEAN_INBOX_DIR/hypothesis.json
 ```
 
@@ -146,6 +147,39 @@ Builds bounded brain snapshots and asks a reasoning provider for structured JSON
 
 Lets BEAN store uncertain claims as labeled hypotheses with claim type, evidence level, confidence, resolution path, and action permission. Hypotheses remain reviewable records, not facts.
 
+### Brain 0.14: Supervised self-optimization governor
+
+Lets BEAN record a limitation and propose a better software, workflow, sensor, hardware, or embodiment configuration. Every proposal must include expected benefit, expected cost, risk, evidence, alternatives, a validation plan, and a rollback plan.
+
+The governor stores supervisor decisions but contains no execution path. Even an approved proposal reports:
+
+```text
+auto_executed = false
+motion_command_generated = false
+requires_supervisor_execution = true
+```
+
+Basic API:
+
+```python
+from bean.optimization import init_self_optimization
+
+optimizer = init_self_optimization()
+proposal = optimizer.create_proposal(
+    session_uuid=session_uuid,
+    title="Compare mobile base configurations",
+    problem_statement="The future body configuration has not been selected.",
+    proposed_change="Compare a rocker-bogie base with articulated legs in simulation.",
+    target_layer="embodiment",
+    proposal_type="experiment",
+    expected_benefit="Choose a body using measured evidence.",
+    expected_cost="Simulation and prototype design time.",
+    risk_level="medium",
+    validation_plan="Score terrain access, energy use, stability, cost, and failure modes.",
+    rollback_plan="Retain the current no-motion configuration.",
+)
+```
+
 ### Strict boot readiness
 
 `python3 -m bean.runtime.boot_readiness --temp` verifies imports, schema initialization, session start/end, origin covenant, required capabilities, required boundaries, wisdom, reasoning, hypothesis discipline, runtime proof, and platform facts using a temporary DB.
@@ -164,6 +198,7 @@ Lets BEAN store uncertain claims as labeled hypotheses with claim type, evidence
 | `docs/brain-0.9-wisdom-module.md` | Wisdom module. |
 | `docs/brain-0.11-llm-reasoning-layer.md` | OpenAI-preferred reasoning layer. |
 | `docs/brain-0.13-speculative-logic.md` | Hypothesis discipline. |
+| `docs/brain-0.14-self-optimization-governor.md` | Supervised improvement proposals and hard no-execution boundaries. |
 | `docs/bean-os-reformat-checklist.md` | Reformat and first-boot checklist. |
 
 ## Near-term roadmap
@@ -171,7 +206,9 @@ Lets BEAN store uncertain claims as labeled hypotheses with claim type, evidence
 1. Pull latest `main` on the Jetson.
 2. Run `bash install/jetson_brain_install.sh`.
 3. Run `bash scripts/bean_doctor.sh`.
-4. Fix any integration failures found by doctor or CI.
-5. Run `bash scripts/bean_boot_ready.sh --db "$BEAN_DB_PATH"` before enabling service.
-6. Make the brain stack boringly reliable.
-7. Let physical embodiment wait until the thinking is worth embodying.
+4. Run the Brain 0.14 self-optimization smoke test.
+5. Wire optimization summaries into bounded reasoning context and runtime proof.
+6. Add supervisor-only inbox commands for proposal review and outcome recording.
+7. Keep any future sandbox runner isolated from physical motion drivers.
+8. Make the brain stack boringly reliable.
+9. Let physical embodiment wait until the thinking is worth embodying.
