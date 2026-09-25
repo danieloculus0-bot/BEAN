@@ -125,6 +125,8 @@ def ensure_court_tables():
 
 class ContradictionCourt:
     def __init__(self):
+        from ..world.model_store import ensure_claims_table
+        ensure_claims_table()
         ensure_court_tables()
 
     def run(self, session_uuid: Optional[str] = None) -> dict:
