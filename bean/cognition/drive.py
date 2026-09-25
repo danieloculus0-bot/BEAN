@@ -66,6 +66,8 @@ class DriveState:
 
 class DriveEvaluator:
     def __init__(self):
+        from ..world.model_store import ensure_claims_table
+        ensure_claims_table()
         ensure_drives_table()
 
     def evaluate_all(self, session_uuid: str) -> list[DriveState]:
