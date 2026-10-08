@@ -98,51 +98,34 @@ No direct provider-to-action path belongs in this architecture.
 
 ## Current Python integration surface
 
-The current reasoning engine is available from:
+This branch now includes a thin host-neutral wrapper:
+
+```python
+from bean.integration import BeanReasoningLayer
+
+with BeanReasoningLayer("./data/bean_memory.db") as bean:
+    result = bean.observe_and_reason(
+        "Host project submitted a condition for analysis.",
+        data={
+            "host": "example_project",
+            "object_id": "sample-001",
+            "evidence": {"state": "example"},
+        },
+        adapter_name="mock",
+    )
+
+    print(result)
+```
+
+The wrapper initializes the store, synchronizes declared BEAN state, begins a session, records the host observation, invokes the reasoning engine, and returns trace IDs. It does not contain an execution path.
+
+The lower-level reasoning engine remains available from:
 
 ```python
 from bean.reasoning import ReasoningEngine
 ```
 
-A minimal embedded smoke integration can use the existing memory and session APIs:
-
-```python
-from bean.memory.store import init_store
-from bean.memory.identity import bootstrap_identity
-from bean.memory.session import begin_session, end_session
-from bean.memory.event_logger import log_event, EventType, Source
-from bean.reasoning import ReasoningEngine
-
-init_store("./data/bean_memory.db")
-bootstrap_identity()
-
-session_uuid = begin_session()
-
-event_id = log_event(
-    session_uuid=session_uuid,
-    event_type=EventType.OBSERVATION,
-    summary="Host project submitted a condition for analysis.",
-    source=Source.SYSTEM,
-    data={
-        "host": "example_project",
-        "object_id": "sample-001",
-        "evidence": {"state": "example"},
-    },
-)
-
-engine = ReasoningEngine()
-
-result = engine.run(
-    session_uuid=session_uuid,
-    request_type="analysis",
-    source_event_id=event_id,
-    adapter_name="mock",
-)
-
-print(result)
-
-end_session(session_uuid)
-```
+Use the lower-level APIs when a host needs explicit control of session or event lifecycle.
 
 The mock adapter should remain the default for smoke testing because it keeps tests offline and deterministic.
 
@@ -317,23 +300,24 @@ The reasoning architecture should work without knowing which one it is attached 
 
 ### Phase 2: Thin host adapter
 
-Create a small adapter layer that:
-
-- initializes a host-specific BEAN data store
-- begins and closes a reasoning session
-- records canonical host events
-- invokes `ReasoningEngine`
-- returns stable proposal metadata
-- never executes host actions
-
-Suggested package:
+First cut implemented on this branch:
 
 ```text
 bean/integration/
     __init__.py
     reasoning_layer.py
-    host_event.py
 ```
+
+`BeanReasoningLayer` now:
+
+- initializes a host-specific BEAN data store
+- begins and closes a reasoning session
+- records canonical host observations
+- invokes `ReasoningEngine`
+- returns stable event, request, response, and proposal identifiers
+- never executes host actions
+
+The next adapter step is a dedicated host-event schema/normalizer so external projects do not need to import BEAN enums directly.
 
 ### Phase 3: Host profiles
 
