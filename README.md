@@ -55,6 +55,22 @@ Current reusable pieces already include:
 
 See `docs/general-reasoning-layer.md` for the host-neutral implementation and deployment guide.
 
+Starter embedded use:
+
+```python
+from bean.integration import BeanReasoningLayer
+
+with BeanReasoningLayer("./data/project_brain.db") as bean:
+    result = bean.observe_and_reason(
+        "Host submitted an observation for analysis.",
+        data={"host": "example_project", "value": 42},
+        adapter_name="mock",
+    )
+    print(result["proposal_id"])
+```
+
+The wrapper records the host observation, creates a bounded reasoning request, stores the proposal and filter results, and returns trace IDs. It deliberately contains no host action executor.
+
 ## Current GitHub status
 
 | Area | Status | Notes |
@@ -75,6 +91,7 @@ See `docs/general-reasoning-layer.md` for the host-neutral implementation and de
 | Brain 0.8 runtime proof and hardening | First cut | Runtime proof command, smoke runner, durable relationship ingestion watermark. |
 | Brain 0.9 wisdom module | First cut | Trigger matching, pressure deltas, meaning frames, traces, repair records, loop signatures. |
 | Brain 0.11 OpenAI-preferred reasoning | First cut | Bounded brain snapshots, prompt contract, mock provider, real stdlib OpenAI provider, parser, proposal filters, proposal store. |
+| General host integration | First cut on this branch | `bean/integration/reasoning_layer.py` wraps store, session, event, and reasoning lifecycle for body-optional host projects. |
 | Brain 0.13 hypothesis discipline | First cut | Claim type discipline, evidence levels, hypothesis storage, review records, speculation summary. |
 | Brain 0.14 supervised self-optimization | First cut | Persistent improvement proposals, risk labels, supervisor review, validation and rollback plans, and a hard no-execution invariant. |
 | Strict boot readiness | Implemented | Verifies core memory, origin covenant, required capabilities, required boundaries, brain probes, runtime proof, and Jetson/L4T platform report. |
