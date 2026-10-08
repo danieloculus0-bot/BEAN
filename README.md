@@ -2,7 +2,7 @@
 
 **Behavior Enabled Avatar Node**
 
-BEAN is a brain-first Synthetic Intelligence research platform for future embodiment on an NVIDIA Jetson Orin Nano Super Developer Kit.
+BEAN is a persistent, inspectable reasoning platform that can operate as the nervous system behind software, machines, workflows, or future physical embodiment. The NVIDIA Jetson Orin Nano Super Developer Kit remains one deployment target, not the definition of BEAN.
 
 BEAN is not being built as a motion project with a chatbot taped to it. BEAN is being built as a memory-bearing brain first: continuity, evidence, uncertainty, wisdom, reasoning, hypothesis discipline, supervised self-optimization, and truthful self-reporting before muscles.
 
@@ -17,6 +17,43 @@ Then we see what grows.
 ```
 
 Current focus: **make the brain boot, remember, reason, doubt, propose improvements, and keep receipts. Physical output can wait.**
+
+## BEAN as a general-purpose reasoning layer
+
+BEAN does not require a body. A host project can provide observations, events, domain data, and available capabilities while BEAN provides persistent memory, bounded context, hypothesis discipline, reasoning proposals, filters, uncertainty handling, and an audit trail.
+
+```text
+Host project
+    |
+    | observations / events / requests
+    v
+BEAN memory + context
+    |
+    | bounded reasoning packet
+    v
+Reasoning provider
+    |
+    | structured proposal
+    v
+BEAN filters + stored evidence
+    |
+    | reviewed / permitted result
+    v
+Host project decides whether and how to act
+```
+
+The important boundary is deliberate: **BEAN reasons; the host owns execution.** No project has to inherit a robot body, a particular UI, or a specific domain model in order to use the brain.
+
+Current reusable pieces already include:
+
+- SQLite continuity and append-only event history.
+- Versioned identity, boundaries, capabilities, claims, and uncertainty.
+- Bounded context packet construction with record IDs retained for traceability.
+- Replaceable reasoning adapters, including an offline mock provider and configured OpenAI provider.
+- Structured proposal parsing, filtering, persistence, and supervisor review requirements.
+- Hypothesis discipline, wisdom traces, relationship context, and supervised self-optimization records.
+
+See `docs/general-reasoning-layer.md` for the host-neutral implementation and deployment guide.
 
 ## Current GitHub status
 
@@ -199,9 +236,20 @@ proposal = optimizer.create_proposal(
 | `docs/brain-0.11-llm-reasoning-layer.md` | OpenAI-preferred reasoning layer. |
 | `docs/brain-0.13-speculative-logic.md` | Hypothesis discipline. |
 | `docs/brain-0.14-self-optimization-governor.md` | Supervised improvement proposals and hard no-execution boundaries. |
+| `docs/general-reasoning-layer.md` | Host-neutral implementation and deployment guide for using BEAN as a reasoning layer. |
 | `docs/bean-os-reformat-checklist.md` | Reformat and first-boot checklist. |
 
 ## Near-term roadmap
+
+General reasoning-layer track:
+
+1. Keep the brain API independent of any one host project.
+2. Define a stable host event/request envelope and a stable proposal/result contract.
+3. Add a thin host adapter so projects can feed evidence and receive proposals without knowing BEAN internals.
+4. Separate deployment profile from embodiment profile so a project can run BEAN with no body model at all.
+5. Add integration smoke tests using a generic software host before wiring project-specific adapters.
+
+Embodiment track:
 
 1. Pull latest `main` on the Jetson.
 2. Run `bash install/jetson_brain_install.sh`.
