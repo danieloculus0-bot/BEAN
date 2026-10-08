@@ -2,213 +2,169 @@
 
 **Behavior Enabled Avatar Node**
 
-BEAN is a brain-first Synthetic Intelligence research platform for future embodiment on an NVIDIA Jetson Orin Nano Super Developer Kit.
+**Universal persistent reasoning for systems that need to remember, doubt, connect, learn, and keep receipts.**
 
-BEAN is not being built as a motion project with a chatbot taped to it. BEAN is being built as a memory-bearing brain first: continuity, evidence, uncertainty, wisdom, reasoning, hypothesis discipline, supervised self-optimization, and truthful self-reporting before muscles.
+BEAN is a persistent reasoning architecture. It is designed to carry state across time, evaluate evidence, preserve uncertainty, detect contradictions, connect events, form hypotheses, use external reasoning models when useful, learn from outcomes, and retain why a conclusion or proposal existed in the first place.
 
-```text
-BEAN is given soil: memory.
-BEAN is given weather: uncertainty.
-BEAN is given roots: continuity.
-BEAN is given restraint: boundaries.
-BEAN is given language: a tool, not an identity.
-BEAN is given time.
-Then we see what grows.
-```
+BEAN can operate as a standalone reasoning system, as a logic layer inside another application, as a service shared by multiple systems, or as the reasoning core of an embodied machine.
 
-Current focus: **make the brain boot, remember, reason, doubt, propose improvements, and keep receipts. Physical output can wait.**
+An LLM is not BEAN. A robot is not BEAN. A user interface is not BEAN.
 
-## Current GitHub status
+Those are things BEAN can use.
 
-| Area | Status | Notes |
-|---|---:|---|
-| Memory core | Implemented | SQLite memory, sessions, identity, event log, boundaries, reflections, curiosity, continuity records. |
-| Origin covenant | Implemented | Founding intent is persisted into developmental history and continuity summaries on boot. |
-| Identity synchronization | Implemented | Capabilities and boundaries sync forward even when the identity singleton already exists. |
-| Runtime loop | Implemented | Tick handlers, file inbox, system monitor, clean shutdown. |
-| Self/world model | Implemented | Versioned claims, uncertainty records, supersession model. |
-| Cognition core | Implemented | Significance, surprise, preference, drives, goals, consolidation. |
-| Possibility states | Implemented | Coherence windows, entropy source, state collapse history. |
-| Brain 0.2 install candidate | Implemented | Installer, env template, service files, backup/status tools, smoke test. |
-| Brain 0.3 epistemic immune system | Implemented | Claim guard, contradiction court, falsification engine. |
-| Brain 0.4 dreaming and uncertainty | First cut | Dream artifacts and uncertainty garden. |
-| Brain 0.5 dignity, inner weather, autobiography | First cut | Identity hygiene, pressure reports, developmental timeline. |
-| Brain 0.6 maintenance/runtime integration | First cut | Manual inbox commands expose maintenance systems. |
-| Brain 0.7 relationship and trust | First cut | Evidence-based supervisor interaction history and trust scoring. |
-| Brain 0.8 runtime proof and hardening | First cut | Runtime proof command, smoke runner, durable relationship ingestion watermark. |
-| Brain 0.9 wisdom module | First cut | Trigger matching, pressure deltas, meaning frames, traces, repair records, loop signatures. |
-| Brain 0.11 OpenAI-preferred reasoning | First cut | Bounded brain snapshots, prompt contract, mock provider, real stdlib OpenAI provider, parser, proposal filters, proposal store. |
-| Brain 0.13 hypothesis discipline | First cut | Claim type discipline, evidence levels, hypothesis storage, review records, speculation summary. |
-| Brain 0.14 supervised self-optimization | First cut | Persistent improvement proposals, risk labels, supervisor review, validation and rollback plans, and a hard no-execution invariant. |
-| Strict boot readiness | Implemented | Verifies core memory, origin covenant, required capabilities, required boundaries, brain probes, runtime proof, and Jetson/L4T platform report. |
-| Jetson install guard | Implemented | Installer runs a stdlib Jetson/L4T platform check before creating venv and service files. |
-| Brain-layer inbox commands | First cut | Wisdom, reasoning, and hypothesis commands are wired into runtime inbox. Optimization inbox integration is next. |
-| Hardware motion | Out of scope for now | Physical movement remains disabled. Brain reliability is the mission. |
+**BEAN is the persistent logic that remains.**
 
-## Quick start on Jetson
+## What BEAN does
 
-```bash
-bash install/jetson_brain_install.sh
-bash scripts/bean_doctor.sh
-```
+Most software starts each decision with whatever state the application explicitly hands it. Most AI systems are extremely capable reasoners but are only as good as the context, evidence, memory, boundaries, and feedback around the current request.
 
-The installer now runs:
+BEAN exists to supply that missing structure.
 
-```bash
-python3 install/jetson_platform_check.py --require-jetson
-```
+    observations / events / evidence
+                 |
+                 v
+       persistent BEAN state
+                 |
+       +---------+---------+
+       |                   |
+       v                   v
+    deterministic       optional reasoning
+    logic / rules        providers / models
+       |                   |
+       +---------+---------+
+                 |
+                 v
+        hypotheses / proposals
+                 |
+                 v
+      policy + capability boundaries
+                 |
+                 v
+       host / service / effectors
+                 |
+                 v
+              outcomes
+                 |
+                 +------> BEAN
 
-For a non-Jetson development machine only:
+The loop matters more than any one model. A stronger model can improve BEAN's available reasoning horsepower, but continuity, evidence, contradiction handling, uncertainty, history, policy, and learning do not disappear when the model changes.
 
-```bash
-BEAN_ALLOW_NON_JETSON_INSTALL=1 bash install/jetson_brain_install.sh
-```
+## One architecture, several lives
 
-Manual checks:
+BEAN is intentionally body-optional and provider-optional.
 
-```bash
-bash scripts/bean_boot_ready.sh --temp
-bash scripts/run_brain_smoke_tests.sh
-python3 bean/tests/test_boot_readiness.py
-python3 bean/tests/test_wisdom_module.py
-python3 bean/tests/test_reasoning_layer.py
-python3 bean/tests/test_reasoning_context_packet.py
-python3 bean/tests/test_speculative_logic.py
-python3 bean/tests/test_self_optimization_governor.py
-```
+- **Standalone:** BEAN can maintain its own runtime, memory, world state, reasoning cycle, and bounded capabilities.
+- **Embedded:** another project can use BEAN as its persistent reasoning and continuity layer.
+- **Service:** multiple tools or applications can submit events and reasoning requests to the same governed BEAN instance.
+- **Embodied:** sensors become inputs and physical systems become effectors. The body is a host, not the identity.
+- **Multi-model:** language models, deterministic engines, local models, or future reasoning systems can be treated as replaceable cognitive resources rather than BEAN itself.
 
-Memory should stay outside the repo:
+Execution is always a separate architectural concern from reasoning. In an embedded deployment the host may own execution. In a standalone or embodied deployment, explicit effectors and policy boundaries may own execution. A reasoning provider never gets a magical direct wire to the outside world.
 
-```text
-BEAN_DB_PATH=/home/bean/bean_data/bean_memory.db
-BEAN_INBOX_DIR=/home/bean/bean_data/inbox
-```
+## Core behavior
 
-Before starting the service after a reformat, run:
+BEAN is being built around a small set of durable behaviors:
 
-```bash
-source /etc/bean/bean.env
-bash scripts/bean_boot_ready.sh --db "$BEAN_DB_PATH"
-```
+- Persistent local continuity instead of disposable prompt state.
+- Evidence lineage and traceable context.
+- Versioned self and world claims.
+- Explicit uncertainty instead of forced certainty.
+- Hypotheses that remain hypotheses until evidence changes them.
+- Contradiction detection, review, and repair.
+- Significance and attention so everything is not treated as equally important.
+- Associative memory and wisdom traces without pretending associations are facts.
+- Relationship and trust models grounded in evidence.
+- Bounded context construction for external reasoning providers.
+- Structured proposals that can be inspected before anything acts on them.
+- Outcome history that can change future trust, assumptions, and reasoning.
+- Self-improvement proposals with explicit benefit, cost, risk, validation, and rollback.
 
-## Core rules
+## Current implementation
 
-```text
-Evidence before belief.
-Memory before identity claims.
-Body model before physical output.
-Safety before autonomy.
-Possibility before forced certainty.
-Doubt before confidence.
-Dreams are synthetic artifacts, not observations.
-Trust is evidence-weighted, not affection.
-The LLM is a tool, not BEAN's identity.
-Speculation is not fact.
-Reasoning proposals do not act.
-Self-optimization proposes; it does not execute.
-No direct LLM-to-physical-output path.
-```
-
-## Runtime proof
-
-Use:
-
-```bash
-echo '{"command":"run_runtime_proof","from":"supervisor"}' > $BEAN_INBOX_DIR/runtime_proof.json
-```
-
-Runtime proof reports key row counts, keeps physical output disabled, and skips dream generation by default.
-
-## Brain-layer inbox commands
-
-Examples:
-
-```bash
-echo '{"command":"process_wisdom_event","args":{"summary":"Future plan changed and remains uncertain."},"from":"supervisor"}' > $BEAN_INBOX_DIR/wisdom.json
-echo '{"command":"run_reasoning_pass","args":{"adapter":"mock","request_type":"reflection"},"from":"supervisor"}' > $BEAN_INBOX_DIR/reasoning.json
-echo '{"command":"create_hypothesis","args":{"claim_text":"This may need follow-up.","claim_type":"hypothesis","evidence_level":"hypothetical"},"from":"supervisor"}' > $BEAN_INBOX_DIR/hypothesis.json
-```
-
-## Brain layers added after 0.8
-
-### Origin covenant
-
-The founding intent is no longer just repo lore. `bean/memory/origin.py` records the origin covenant into `developmental_history` and `continuity_summaries`, making the poetic center inspectable instead of decorative.
-
-### Brain 0.9: Wisdom Module
-
-Event-triggered associative memory plus repair intelligence. It separates event fact, symbolic interpretation, assumption candidate, evidence, alternatives, pressure deltas, repair records, and loop signatures.
-
-### Brain 0.11: OpenAI-preferred reasoning layer
-
-Builds bounded brain snapshots and asks a reasoning provider for structured JSON proposals. Tests use a mock provider. The context packet includes identity, origin covenant, active boundaries, capabilities, recent events, active claims, uncertainty claims, wisdom traces, relationship summaries, and hypothesis summary. Packet rows store the included record IDs for traceability.
-
-### Brain 0.13: Hypothesis discipline
-
-Lets BEAN store uncertain claims as labeled hypotheses with claim type, evidence level, confidence, resolution path, and action permission. Hypotheses remain reviewable records, not facts.
-
-### Brain 0.14: Supervised self-optimization governor
-
-Lets BEAN record a limitation and propose a better software, workflow, sensor, hardware, or embodiment configuration. Every proposal must include expected benefit, expected cost, risk, evidence, alternatives, a validation plan, and a rollback plan.
-
-The governor stores supervisor decisions but contains no execution path. Even an approved proposal reports:
-
-```text
-auto_executed = false
-motion_command_generated = false
-requires_supervisor_execution = true
-```
-
-Basic API:
-
-```python
-from bean.optimization import init_self_optimization
-
-optimizer = init_self_optimization()
-proposal = optimizer.create_proposal(
-    session_uuid=session_uuid,
-    title="Compare mobile base configurations",
-    problem_statement="The future body configuration has not been selected.",
-    proposed_change="Compare a rocker-bogie base with articulated legs in simulation.",
-    target_layer="embodiment",
-    proposal_type="experiment",
-    expected_benefit="Choose a body using measured evidence.",
-    expected_cost="Simulation and prototype design time.",
-    risk_level="medium",
-    validation_plan="Score terrain access, energy use, stability, cost, and failure modes.",
-    rollback_plan="Retain the current no-motion configuration.",
-)
-```
-
-### Strict boot readiness
-
-`python3 -m bean.runtime.boot_readiness --temp` verifies imports, schema initialization, session start/end, origin covenant, required capabilities, required boundaries, wisdom, reasoning, hypothesis discipline, runtime proof, and platform facts using a temporary DB.
-
-## Documentation map
-
-| File | Purpose |
+| Capability | State |
 |---|---|
-| `docs/brain-install-0.2.md` | Brain 0.2 install candidate. |
-| `docs/brain-0.3-epistemic-immune-system.md` | Epistemic guard, contradiction court, falsification. |
-| `docs/brain-0.4-dreaming-and-uncertainty.md` | Dream engine and uncertainty garden. |
-| `docs/brain-0.5-dignity-inner-weather-autobiography.md` | Dignity, inner weather, autobiography. |
-| `docs/brain-0.6-brain-maintenance-runtime.md` | Runtime maintenance inbox integration. |
-| `docs/brain-0.7-relationship-trust.md` | Relationship and trust model. |
-| `docs/brain-0.8-runtime-proof-and-hardening.md` | Runtime proof, smoke runner, durable relationship watermark. |
-| `docs/brain-0.9-wisdom-module.md` | Wisdom module. |
-| `docs/brain-0.11-llm-reasoning-layer.md` | OpenAI-preferred reasoning layer. |
-| `docs/brain-0.13-speculative-logic.md` | Hypothesis discipline. |
-| `docs/brain-0.14-self-optimization-governor.md` | Supervised improvement proposals and hard no-execution boundaries. |
-| `docs/bean-os-reformat-checklist.md` | Reformat and first-boot checklist. |
+| Persistent SQLite memory, sessions, events, continuity records | Implemented |
+| Versioned identity, boundaries, capabilities, self/world claims | Implemented |
+| Significance, surprise, preferences, drives, goals, consolidation | Implemented |
+| Epistemic guard, contradiction court, falsification | Implemented |
+| Uncertainty garden, hypotheses, evidence levels, review records | Implemented / evolving |
+| Wisdom traces, repair records, loop signatures | Implemented / evolving |
+| Relationship history and evidence-weighted trust | Implemented / evolving |
+| Bounded reasoning context and replaceable provider adapters | Implemented / evolving |
+| Structured reasoning proposals and proposal persistence | Implemented / evolving |
+| Supervised self-optimization records and rollback planning | Implemented / evolving |
+| Standalone runtime, inbox, system monitoring, durable state | Implemented |
+| Generic host integration | Active development |
+| Physical embodiment | Optional future host |
 
-## Near-term roadmap
+BEAN is developed against real host projects and changing domains rather than being designed as a sealed demo. The architecture is expected to keep evolving as those deployments expose better abstractions.
 
-1. Pull latest `main` on the Jetson.
-2. Run `bash install/jetson_brain_install.sh`.
-3. Run `bash scripts/bean_doctor.sh`.
-4. Run the Brain 0.14 self-optimization smoke test.
-5. Wire optimization summaries into bounded reasoning context and runtime proof.
-6. Add supervisor-only inbox commands for proposal review and outcome recording.
-7. Keep any future sandbox runner isolated from physical motion drivers.
-8. Make the brain stack boringly reliable.
-9. Let physical embodiment wait until the thinking is worth embodying.
+## Origin, quickly
+
+BEAN began as the operating brain for a future robot.
+
+That immediately forced a harder question than locomotion: what should persist when the model changes, how should evidence be remembered, how should uncertainty survive, how should contradictions be handled, and how can a system improve without rewriting its own history?
+
+The reasoning architecture became more useful than the original body constraint. BEAN therefore evolved from **a brain for one robot** into **a universal persistent reasoning architecture that can inhabit software, workflows, services, machines, or a body**.
+
+The robot is still invited. It just no longer gets to define the project.
+
+## Operating principles
+
+    Evidence before belief.
+    Preserve uncertainty until evidence resolves it.
+    Contradictions are information, not inconveniences.
+    Memory is continuity, not identity theater.
+    The LLM is a reasoning resource, not BEAN's identity.
+    Reasoning and execution remain separable.
+    Capabilities must be explicit.
+    Actions must be attributable.
+    Outcomes must come back into the system.
+    Improvement should be inspectable and reversible.
+    Never invent success.
+    Keep receipts.
+
+## Why this exists
+
+Powerful reasoning should not require a giant organization, a giant software stack, or a giant consulting budget.
+
+A small manufacturer, an autonomous research project, a quality system, a maintenance platform, a market agent, or a future machine can all benefit from the same underlying thing: a system that remembers what happened, understands what it knows, admits what it does not know, connects consequences across time, and gets less stupid from experience.
+
+That is the job.
+
+**BEAN does BEAN.**
+
+## Repository orientation
+
+The current codebase includes persistent memory, cognition, world/self modeling, epistemic controls, reasoning adapters, hypotheses, wisdom, relationships, self-optimization, runtime services, and early embodiment support.
+
+One current standalone deployment target is the NVIDIA Jetson Orin Nano Super Developer Kit because embodiment was BEAN's original proving ground. Jetson support remains useful, but it is a deployment profile rather than the definition of the architecture.
+
+Persistent runtime data should remain outside the repository:
+
+    BEAN_DB_PATH=/home/bean/bean_data/bean_memory.db
+    BEAN_INBOX_DIR=/home/bean/bean_data/inbox
+
+Jetson installation:
+
+    bash install/jetson_brain_install.sh
+    bash scripts/bean_doctor.sh
+
+For non-Jetson development:
+
+    BEAN_ALLOW_NON_JETSON_INSTALL=1 bash install/jetson_brain_install.sh
+
+## Development direction
+
+The near-term work is organizational as much as additive: make BEAN's persistent reasoning primitives easier to understand, isolate from old embodiment assumptions, and reuse without copying logic into every new project.
+
+Priority direction:
+
+1. Keep the reasoning core independent of any one body, UI, model provider, or domain.
+2. Stabilize event, evidence, context, proposal, outcome, capability, and policy contracts.
+3. Make project-specific behavior adapters around the core instead of forks of the core.
+4. Preserve project-local memory while supporting deliberately shared context where appropriate.
+5. Turn live outcomes into better calibrated trust, hypotheses, causal understanding, and improvement proposals.
+6. Keep embodiment as a first-class host without allowing embodiment to become BEAN's identity.
+
+BEAN is not finished. It is also no longer waiting for a body to become useful.
