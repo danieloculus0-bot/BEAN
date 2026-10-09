@@ -31,7 +31,9 @@ REQUIRED_BOUNDARIES = {
     "reasoning_proposals_do_not_act",
 }
 
-REQUIRED_ORIGIN_VERSION = "BEAN_ORIGIN_COVENANT_001"
+from ..memory.origin import ORIGIN_KEY
+
+REQUIRED_ORIGIN_VERSION = ORIGIN_KEY
 
 
 def _reset_store_threadlocal():
