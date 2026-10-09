@@ -1,0 +1,56 @@
+name: BEAN comprehensive capability audit
+
+on:
+  push:
+    branches:
+      - experiment/bean-capability-lab-20261009
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  capability-audit:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            python: '3.10'
+          - os: ubuntu-latest
+            python: '3.12'
+          - os: windows-latest
+            python: '3.10'
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    env:
+      PYTHONPATH: ${{ github.workspace }}
+      BEAN_DB_PATH: ${{ runner.temp }}/bean-capability-audit.db
+      BEAN_INBOX_DIR: ${{ runner.temp }}/bean-inbox
+      PYTHONDONTWRITEBYTECODE: '1'
+    steps:
+      - name: Checkout isolated branch
+        uses: actions/checkout@v4
+      - name: Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Install test-only dependencies
+        run: python -m pip install pytest pytest-cov psutil
+      - name: Compile every BEAN module
+        run: python -m compileall -q bean bean_run.py
+      - name: Inventory collected tests
+        run: python -m pytest bean/tests --collect-only -q
+      - name: BEAN cold boot check without physical effectors
+        run: python -m bean.runtime.boot_readiness --temp
+      - name: Full Python test suite with line and branch coverage
+        run: python -m pytest bean/tests -q -ra --tb=short --junitxml=bean-capability-results.xml --cov=bean --cov-branch --cov-report=xml:bean-capability-coverage.xml --cov-report=term-missing
+      - name: Upload test and coverage evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bean-capability-${{ matrix.os }}-py${{ matrix.python }}
+          path: |
+            bean-capability-results.xml
+            bean-capability-coverage.xml
+          if-no-files-found: ignore
