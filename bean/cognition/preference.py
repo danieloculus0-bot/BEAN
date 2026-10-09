@@ -140,13 +140,16 @@ class PreferenceEngine:
         support = (existing.supporting_count if existing else 0) + (1 if supporting else 0)
         contradict = (existing.contradicting_count if existing else 0) + (0 if supporting else 1)
         conf = _compute_confidence(support, contradict)
-        if conf <= 0:
-            return None
         strength = _compute_strength(support, contradict)
         direction = PreferenceDirection.TOWARD if strength > 0 else PreferenceDirection.AWAY_FROM if strength < 0 else PreferenceDirection.NEUTRAL
         evidence = list(existing.evidence if existing else []) + [evidence_ref]
+        # Keep subthreshold outcomes so three separate observations can mature
+        # into a grounded preference. They remain uncalibrated (confidence 0)
+        # until the evidence threshold is reached.
         pref = Preference(subject, direction, strength, basis, evidence, support, contradict, conf)
         self.store.save(pref)
+        if conf <= 0:
+            return None
         if session_uuid:
             self._log_preference(pref, session_uuid)
         return pref
