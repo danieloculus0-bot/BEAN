@@ -120,7 +120,8 @@ class BeanWatcher:
         self.event_sink = event_sink
         self.monotonic = monotonic
         self.utc_now = utc_now
-        self._versions: dict[str, object] = {}\n        self._state = {
+        self._versions: dict[str, object] = {}
+        self._state = {
             key: {
                 "status": "n/a", "reason": "not_checked", "current": None,
                 "last_verified": None, "checked_at": None, "next_recall": 0.0,
