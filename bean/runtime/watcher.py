@@ -13,7 +13,7 @@ import math
 import re
 import time
 from dataclasses import dataclass
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Callable, Mapping, Optional, Protocol
 
@@ -120,7 +120,7 @@ class BeanWatcher:
         self.event_sink = event_sink
         self.monotonic = monotonic
         self.utc_now = utc_now
-        self._state = {
+        self._versions: dict[str, object] = {}\n        self._state = {
             key: {
                 "status": "n/a", "reason": "not_checked", "current": None,
                 "last_verified": None, "checked_at": None, "next_recall": 0.0,
@@ -133,7 +133,7 @@ class BeanWatcher:
         spec = self.specs[key]
         current = state["current"]
         verified = state["last_verified"]
-        if current is not None and _utc(current["observed_at"]) < self.utc_now().astimezone(timezone.utc) - __import__("datetime").timedelta(seconds=spec.stale_after):
+        if current is not None and _utc(current["observed_at"]) < self.utc_now().astimezone(timezone.utc) - timedelta(seconds=spec.stale_after):
             status, reason = "stale", "evidence_age_exceeded"
             current = None
         else:
@@ -215,13 +215,22 @@ class BeanWatcher:
     def poll_due(self, *, force: bool = False) -> dict:
         output = {}
         for key in self.specs:
-            if not force and self.monotonic() < self._state[key]["next_recall"]:
+            version = None
+            probe = getattr(self.reader, "version", None)
+            if callable(probe):
+                try:
+                    version = probe(key)
+                except OSError:
+                    version = None
+            changed = callable(probe) and key in self._versions and version != self._versions[key]
+            if not force and not changed and self.monotonic() < self._state[key]["next_recall"]:
                 continue
             try:
                 report = self.reader(key)
                 output[key] = self._apply(key, report)
             except (OSError, TypeError, ValueError, KeyError, json.JSONDecodeError):
                 output[key] = self._apply(key, None, error="source_error")
+            self._versions[key] = version
         return output
 
     def restore_events(self, events: list[dict]) -> None:
