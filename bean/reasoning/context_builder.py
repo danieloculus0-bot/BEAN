@@ -57,8 +57,10 @@ def _identity(conn) -> dict:
 
 
 def _origin(conn) -> dict:
+    from ..memory.origin import ORIGIN_KEY
+
     return {
-        "history": _row(conn, "SELECT version, change_summary, reason, changed_by, created_at FROM developmental_history WHERE version='BEAN_ORIGIN_COVENANT_001' ORDER BY id DESC LIMIT 1"),
+        "history": _row(conn, "SELECT version, change_summary, reason, changed_by, created_at FROM developmental_history WHERE version=? ORDER BY id DESC LIMIT 1", (ORIGIN_KEY,)),
         "summary": _row(conn, "SELECT summary_type, content, created_at FROM continuity_summaries WHERE summary_type='origin_covenant' ORDER BY id DESC LIMIT 1"),
     }
 
