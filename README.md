@@ -94,6 +94,7 @@ BEAN is being built around a small set of durable behaviors:
 | Structured reasoning proposals and proposal persistence | Implemented / evolving |
 | Supervised self-optimization records and rollback planning | Implemented / evolving |
 | Standalone runtime, inbox, system monitoring, durable state | Implemented |
+| RAM-backed BEAN Watcher, configurable recall and N/A-aware source status | Implemented as opt-in local report adapter |
 | Generic host integration | Active development |
 | Physical embodiment | Optional future host |
 
@@ -149,6 +150,10 @@ A small manufacturer, an autonomous research project, a quality system, a mainte
 That is the job.
 
 **BEAN does BEAN.**
+
+## BEAN Watcher
+
+Native BEAN Watcher connects authorized normalized report exports to BEAN's working memory and append-only event ledger. Reports lacking an explicit completeness assertion, required metrics or evidence references show **N/A**, not zero. Change events wake it early; a configurable recall interval still rechecks unchanged sources. Historical values are retained separately, never passed off as current results. See [Watcher contract and example](docs/bean-watcher-contract.md). No live ERP credentials are included.
 
 ## Repository orientation
 

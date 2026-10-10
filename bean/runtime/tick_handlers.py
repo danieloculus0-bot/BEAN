@@ -78,9 +78,12 @@ def build_default_handlers(
     model_update_interval: int = 60,
     coherence_interval: int = 60,
     consolidation_interval: int = 300,
+    watcher=None,
 ) -> TickHandlerRegistry:
     registry = TickHandlerRegistry()
 
+    if watcher is not None:
+        registry.register("bean_watcher", lambda tick, session_uuid, ctx: watcher.poll_due(), interval=1)
     if inbox is not None:
         registry.register("inbox", lambda tick, session_uuid, ctx: inbox.poll(session_uuid), interval=inbox_interval)
     if monitor is not None:
