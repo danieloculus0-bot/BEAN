@@ -44,7 +44,20 @@ def make_handlers(
         loop_status = loop.status() if loop is not None else {}
         model_snapshot = model_updater.full_snapshot() if model_updater is not None else None
         possibility_snapshot = state_manager.snapshot() if state_manager is not None else None
-        return {"status": "running", "loop": loop_status, "hardware": reading, "models": model_snapshot, "possibility_states": possibility_snapshot}
+        return {"status": "running", "loop": loop_status, "hardware": reading, "models": model_snapshot, "possibility_states": possibility_snapshot, "watcher": ctx.get("watcher").snapshot() if ctx.get("watcher") else None}
+
+    def watcher_status(msg: InboxMessage, session_uuid: str) -> dict:
+        watcher = ctx.get("watcher")
+        if watcher is None:
+            return {"status": "not_configured", "reports": {}}
+        key = (msg.args or {}).get("key")
+        return {"status": "ready", "reports": watcher.snapshot(str(key)) if key else watcher.snapshot()}
+
+    def watcher_recheck(msg: InboxMessage, session_uuid: str) -> dict:
+        watcher = ctx.get("watcher")
+        if watcher is None:
+            return {"status": "not_configured", "reports": {}}
+        return {"status": "checked", "reports": watcher.poll_due(force=True)}
 
     def log_note(msg: InboxMessage, session_uuid: str) -> dict:
         text = str(msg.args.get("text", ""))
@@ -267,6 +280,8 @@ def make_handlers(
 
     return {
         "status": status,
+        "watcher_status": watcher_status,
+        "watcher_recheck": watcher_recheck,
         "log_note": log_note,
         "shutdown": shutdown,
         "run_reflection": run_reflection,
