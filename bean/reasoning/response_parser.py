@@ -1,6 +1,7 @@
 """Parse structured output for Brain 0.11."""
 
 import json
+import math
 
 DEFAULT_RESPONSE = {"summary": "No structured response parsed.", "observations": [], "interpretations": [], "assumptions": [], "uncertainties": [], "evidence_refs": [], "candidate_steps": [], "risk_flags": [], "referenced_hypothesis_ids": [], "confidence": 0.0}
 
@@ -15,7 +16,10 @@ def parse_response(raw_text: str) -> dict:
         out = dict(DEFAULT_RESPONSE)
         out.update(parsed)
         out["parse_success"] = True
-        out["confidence"] = max(0.0, min(1.0, float(out.get("confidence", 0.5))))
+        confidence = float(out.get("confidence", 0.5))
+        if not math.isfinite(confidence):
+            raise ValueError("confidence must be finite")
+        out["confidence"] = max(0.0, min(1.0, confidence))
         return out
     except Exception as exc:
         out = dict(DEFAULT_RESPONSE)

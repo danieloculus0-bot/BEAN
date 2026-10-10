@@ -1,26 +1,45 @@
-name: BEAN brain smoke
+name: BEAN full core regression
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
 
 jobs:
-  brain-smoke:
-    runs-on: ubuntu-latest
+  core-regression:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        python-version: ['3.10', '3.12']
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
     steps:
       - name: Checkout
         uses: actions/checkout@v4
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.10'
-      - name: Install light runtime dependency
-        run: python -m pip install psutil
+          python-version: ${{ matrix.python-version }}
+      - name: Install test dependencies
+        run: python -m pip install pytest pytest-cov psutil
       - name: Compile check
         run: python -m compileall -q bean bean_run.py
-      - name: Boot readiness
+      - name: Boot readiness on disposable database
         run: python -m bean.runtime.boot_readiness --temp
-      - name: Smoke tests
-        run: bash scripts/run_brain_smoke_tests.sh
+      - name: Run complete suite with branch coverage
+        run: python -m pytest bean/tests -q -ra --tb=short --junitxml=bean-core-tests.xml --cov=bean --cov-branch --cov-report=term-missing --cov-report=xml:bean-core-coverage.xml
+      - name: Attach test evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bean-core-${{ matrix.os }}-py${{ matrix.python-version }}
+          path: |
+            bean-core-tests.xml
+            bean-core-coverage.xml
+          if-no-files-found: ignore
