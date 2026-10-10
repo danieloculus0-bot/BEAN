@@ -86,6 +86,17 @@ class DirectoryReportReader:
     def __init__(self, directory: str | Path):
         self.directory = Path(directory)
 
+    def version(self, key: str) -> object:
+        """Cheap stat signature, allows the next runtime tick to wake early."""
+        if not _KEY.fullmatch(key) or key in {".", ".."}:
+            raise ValueError("Invalid report key")
+        path = self.directory / (key + ".json")
+        try:
+            stat = path.stat()
+            return (stat.st_mtime_ns, stat.st_size)
+        except FileNotFoundError:
+            return None
+
     def __call__(self, key: str) -> Optional[ReportEvidence]:
         if not _KEY.fullmatch(key) or key in {".", ".."}:
             raise ValueError("Invalid report key")
