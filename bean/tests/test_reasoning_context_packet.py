@@ -42,6 +42,9 @@ def test_context_packet_has_core_sections_and_ids():
     from bean.reasoning.context_builder import build_reasoning_context
     packet = build_reasoning_context(session_uuid, source_event_id=event_id)
     context = packet["context"]
+    from bean.memory.origin import ORIGIN_KEY
+    assert context["origin_covenant"]["history"]["version"] == ORIGIN_KEY
+    assert "BEAN" in context["origin_covenant"]["summary"]["content"]
 
     for key in ["identity", "origin_covenant", "active_boundaries", "capabilities", "recent_events", "active_world_claims", "wisdom_recent_traces", "speculative_summary"]:
         assert key in context
