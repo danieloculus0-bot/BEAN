@@ -103,6 +103,12 @@ class PreferenceStore:
         row = get_store().fetchone("SELECT * FROM cognition_preferences WHERE subject=? AND active=1 ORDER BY id DESC LIMIT 1", (subject,))
         return self._row_to_pref(row) if row else None
 
+    def get_latest(self, subject: str) -> Optional[Preference]:
+        """Return the latest record, including uncalibrated pending evidence."""
+        from ..memory.store import get_store
+        row = get_store().fetchone("SELECT * FROM cognition_preferences WHERE subject=? ORDER BY id DESC LIMIT 1", (subject,))
+        return self._row_to_pref(row) if row else None
+
     def all_active(self, min_confidence: float = 0.0) -> list[Preference]:
         from ..memory.store import get_store
         rows = get_store().fetchall("SELECT * FROM cognition_preferences WHERE active=1 AND confidence>=? ORDER BY confidence DESC", (min_confidence,))
@@ -136,17 +142,22 @@ class PreferenceEngine:
         return prefs
 
     def record_outcome(self, subject: str, supporting: bool, evidence_ref: str, basis: str, session_uuid: Optional[str] = None) -> Optional[Preference]:
-        existing = self.store.get(subject)
+        existing = self.store.get_latest(subject)
+        if existing and evidence_ref in existing.evidence:
+            return existing if existing.confidence > 0 else None
         support = (existing.supporting_count if existing else 0) + (1 if supporting else 0)
         contradict = (existing.contradicting_count if existing else 0) + (0 if supporting else 1)
         conf = _compute_confidence(support, contradict)
-        if conf <= 0:
-            return None
         strength = _compute_strength(support, contradict)
         direction = PreferenceDirection.TOWARD if strength > 0 else PreferenceDirection.AWAY_FROM if strength < 0 else PreferenceDirection.NEUTRAL
         evidence = list(existing.evidence if existing else []) + [evidence_ref]
-        pref = Preference(subject, direction, strength, basis, evidence, support, contradict, conf)
+        # Keep subthreshold outcomes so three separate observations can mature
+        # into a grounded preference. They remain uncalibrated (confidence 0)
+        # until the evidence threshold is reached.
+        pref = Preference(subject, direction, strength, basis, evidence, support, contradict, conf, active=conf > 0)
         self.store.save(pref)
+        if conf <= 0:
+            return None
         if session_uuid:
             self._log_preference(pref, session_uuid)
         return pref
