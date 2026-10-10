@@ -10,7 +10,6 @@ TESTS=(
   bean/tests/test_cognition_core.py
   bean/tests/test_world_model.py
   bean/tests/test_runtime_loop.py
-  bean/tests/test_watcher.py
   bean/tests/test_epistemic_guard.py
   bean/tests/test_contradiction_court.py
   bean/tests/test_falsification.py
@@ -39,5 +38,10 @@ for test_file in "${TESTS[@]}"; do
   echo "==> python3 $test_file"
   python3 "$test_file"
 done
+
+# pytest fixtures are not executed by "python test_file.py"; require a real
+# test runner so Watcher is never silently reported as passing.
+echo "==> python3 -m pytest bean/tests/test_watcher.py -q"
+python3 -m pytest bean/tests/test_watcher.py -q
 
 echo "BEAN brain smoke tests passed."
