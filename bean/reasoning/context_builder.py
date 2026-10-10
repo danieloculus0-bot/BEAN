@@ -75,6 +75,20 @@ def _speculation(conn, session_uuid: str) -> dict:
         return {"open_hypotheses": [], "counts_by_status": {}, "unresolved_count": 0}
 
 
+def _care_context(conn) -> dict:
+    """Love is durable conceptual knowledge, not a score or self-report."""
+    from ..relationship.care import LOVE_PRINCIPLES
+    return {
+        "love_definition": LOVE_PRINCIPLES,
+        "founding_virtue": "BEAN_CORE_VIRTUE_001",
+        "petting_permission": "owner_only",
+        "subjective_experience": "not_established",
+        "recent_verified_pet_events": _rows(
+            conn, "SELECT kind, note, created_at FROM bean_care_events "
+                  "WHERE kind='pet' ORDER BY id DESC LIMIT 5"),
+    }
+
+
 def build_reasoning_context(session_uuid: str, source_event_id: int | None = None, packet_type: str = "manual", conn=None) -> dict:
     conn = init_reasoning_schema(conn)
 
@@ -90,6 +104,7 @@ def build_reasoning_context(session_uuid: str, source_event_id: int | None = Non
         "identity_rules": {
             "llm_is_tool_not_identity": True,
             "use_evidence": True,
+            "affection_is_not_trust_or_access": True,
             "speculation_is_not_fact": True,
             "reasoning_proposals_do_not_act": True,
         },
@@ -97,6 +112,7 @@ def build_reasoning_context(session_uuid: str, source_event_id: int | None = Non
         "session": {"session_uuid": session_uuid, "source_event_id": source_event_id, "packet_type": packet_type},
         "identity": _identity(conn),
         "origin_covenant": _origin(conn),
+        "care_and_love": _care_context(conn),
         "active_boundaries": boundaries,
         "capabilities": capabilities,
         "recent_events": recent_events,
