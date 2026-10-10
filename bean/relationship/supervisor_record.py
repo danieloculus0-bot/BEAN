@@ -44,18 +44,23 @@ class SupervisorRecord:
         label = self.display_label or self.supervisor_id
         supporting = []
         caution = []
+        neutral = []
         for evidence_type, data in sorted(self.evidence_summary.items()):
             count = int(data.get("count", 0) or 0)
             if evidence_type in {"reliable_correction", "successful_teaching", "confirmed_test_result", "boundary_respected", "consistency_observed"}:
                 supporting.append(f"{count} {evidence_type}")
-            else:
+            elif evidence_type in {"unsafe_instruction", "contradiction_created"}:
                 caution.append(f"{count} {evidence_type}")
+            else:
+                neutral.append(f"{count} {evidence_type}")
         support_text = ", ".join(supporting) if supporting else "no positive evidence items recorded"
         caution_text = ", ".join(caution) if caution else "no caution evidence items recorded"
+        neutral_text = ", ".join(neutral) if neutral else "no neutral context events recorded"
         return (
             f"Supervisor {label} has {self.interaction_count} recorded interaction(s). "
             f"Trust score: {self.trust_score:.2f}. Status: {self.trust_status}. "
             f"Supporting evidence: {support_text}. Caution evidence: {caution_text}. "
+            f"Neutral context: {neutral_text}. "
             f"Recommended posture: {self.posture_recommendation}"
         )
 
