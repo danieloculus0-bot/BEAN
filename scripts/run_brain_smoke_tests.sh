@@ -10,6 +10,7 @@ TESTS=(
   bean/tests/test_cognition_core.py
   bean/tests/test_world_model.py
   bean/tests/test_runtime_loop.py
+  bean/tests/test_watcher.py
   bean/tests/test_epistemic_guard.py
   bean/tests/test_contradiction_court.py
   bean/tests/test_falsification.py
