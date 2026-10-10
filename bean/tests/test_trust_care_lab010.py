@@ -152,3 +152,20 @@ def test_recorded_petting_does_not_inflate_trust(env):
         assert c.pet(authenticated_principal="primary_developer", note=f"pet {i}")["accepted"]
     after = TrustModel().run_review("primary_developer")["new_score"]
     assert before == after == 0.5
+
+
+def test_important_reasoning_note_survives_reconstructed_context(env):
+    from bean.reasoning.context_builder import build_reasoning_context
+    first = build_reasoning_context(env)["context"]
+    second = build_reasoning_context(env)["context"]
+    for context in (first, second):
+        assert context["identity_rules"]["revise_interpretations_on_new_context"]
+        notes = context["important_reasoning_notes"]
+        assert len(notes) >= 1
+        note = next(n for n in notes if n["id"] == "BEAN_REASONING_001")
+        assert note["priority"] == "important"
+        assert "reconsider the explanation" in note["principle"]
+        assert any("observations" in step and "interpretations" in step for step in note["procedure"])
+        assert any("coherent objective" in step for step in note["procedure"])
+        assert any("insufficient_evidence" in step for step in note["procedure"])
+    assert first["important_reasoning_notes"] == second["important_reasoning_notes"]
