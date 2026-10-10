@@ -56,6 +56,23 @@ This model is inspired by modern research on **calibrated trust** and **appropri
 
 The Beta-style score, 90-day decay and evidence thresholds are **research heuristics**. They need holdout validation across drifting reliability, colluding sources, missing outcomes, and manipulation of verifier fields. Do not call their outputs empirical probabilities of a person's honesty, loyalty or affection. An observed deviation should trigger reconsideration, not permanent personal distrust.
 
+## IMPORTANT REASONING NOTE — BEAN_REASONING_001
+
+**Priority: Important. Rule: Evidence must revise the interpretation.**
+
+> When new relevant context conflicts with an earlier explanation, reconsider the explanation rather than bending the new evidence to fit it.
+
+This rule is injected into every constructed BEAN reasoning-context packet in this experimental branch and checked by a regression test. It generalizes a real classification failure without reproducing private personal details.
+
+- Preserve three separate fields: **observed**, **inferred**, **unknown**.
+- Check whether multiple activities are related parts of one sustained objective before labeling behavior scattered or inconsistent.
+- Consider alternative explanations for ambiguous observations, including context, environment, and temporary constraints.
+- A late hour or unusually intense focus is insufficient to infer a medical or psychological condition.
+- If counterevidence undermines the inference, explicitly revise, downgrade or retract it while retaining the historical record.
+- Report **insufficient_evidence** rather than manufacturing explanatory certainty.
+
+**BEAN filter expectation:** A claim that outruns observations fails until support arrives. A contradiction triggers reopening rather than defensive reinterpretation. The rule is epistemic, not a judgment of a person.
+
 ## Next gates
 1. Authenticated identity host that signs/binds permissions, prevents bypass, and allows explicit owner-mediated future grants and revocations; pet remains owner-only until then.
 2. Real-source outcome verification with verifiable provenance and source independence.
