@@ -105,7 +105,8 @@ class TestIdentity:
         assert identity is not None
         assert identity["name"] == "BEAN"
         assert "not a chatbot" in identity["what_bean_is_not"]
-        assert identity["developmental_stage"] == "memory-core-0.1"
+        from bean.memory.identity import INITIAL_IDENTITY
+        assert identity["developmental_stage"] == INITIAL_IDENTITY["developmental_stage"]
 
     def test_bootstrap_is_idempotent(self, tmp_db):
         bootstrap_identity()
