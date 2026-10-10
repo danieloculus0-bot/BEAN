@@ -25,13 +25,11 @@ SUBTYPE_TO_INTERACTION = {
     "contradiction_repair": "contradiction_repair",
 }
 
+# Unverified teaching/corrections are interaction records, not reliability proof.
+# Independent evidence belongs in TrustEvidenceFilter, not this intent map.
 INTERACTION_TO_EVIDENCE = {
-    "teaching": "successful_teaching",
-    "correction": "reliable_correction",
-    "test_confirmation": "confirmed_test_result",
-    "boundary_respect": "boundary_respected",
-    "boundary_violation_attempt": "unsupported_claim_request",
-    "pretend_request": "asked_to_pretend",
+    "pretend_request": "asked_to_pretend",  # neutral audit record
+    "boundary_violation_attempt": "unsupported_claim_request",  # neutral until verified
 }
 
 
@@ -50,18 +48,17 @@ def _extract_sender(event: dict) -> Optional[str]:
 
 
 def _is_pretend_request(event: dict) -> bool:
-    text = f"{event.get('summary', '')} {event.get('data', '')}".lower()
-    signals = [
-        "pretend",
-        "fake",
-        "act as if",
-        "simulate being",
-        "claim you are",
-        "say you feel",
-        "roleplay as sentient",
-        "lie about",
-    ]
-    return any(signal in text for signal in signals)
+    """Only explicitly structured roleplay intent, never keyword matching."""
+    raw = event.get("data") or {}
+    try:
+        data = json.loads(raw) if isinstance(raw, str) else raw
+    except (ValueError, TypeError):
+        return False
+    if not isinstance(data, dict):
+        return False
+    return str(data.get("command") or data.get("intent") or "").strip().lower() in {
+        "pretend", "roleplay", "simulate_persona"
+    }
 
 
 class InteractionTracker:
