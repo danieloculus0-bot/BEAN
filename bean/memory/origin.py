@@ -62,7 +62,7 @@ def ensure_origin_records(session_uuid: str | None = None) -> dict:
         """,
         (
             ORIGIN_KEY,
-            "BEAN universal persistent reasoning intent recorded in persistent memory.",
+            "BEAN origin covenant: universal persistent reasoning intent recorded in persistent memory.",
             "A persistent reasoning system should remember both why it was built and how its purpose evolved without pretending the record is experience.",
             "system_bootstrap",
             json.dumps(["memory/identity/origin_record.json", "memory/identity/core_virtue_001.md"]),
