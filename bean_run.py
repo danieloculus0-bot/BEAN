@@ -34,6 +34,9 @@ from bean.cognition.state_collapse import StateCollapseManager
 from bean.cognition.coherence import CoherenceEngine
 from bean.cognition.entropy import EntropySource
 from bean.runtime.monitor import SystemMonitor
+from bean.runtime.watcher import BeanWatcher, DirectoryReportReader, load_watch_specs
+from bean.memory.store import get_store
+import json
 from bean.runtime.inbox import CommandInbox
 from bean.runtime.inbox_handlers import register_all
 from bean.runtime.tick_handlers import build_default_handlers
@@ -147,6 +150,31 @@ def main():
 
         monitor = SystemMonitor()
         inbox = CommandInbox(inbox_dir=inbox_dir) if inbox_dir else CommandInbox()
+        watcher = None
+        watch_config = os.environ.get("BEAN_WATCH_CONFIG")
+        if watch_config:
+            watch_report_dir = os.environ.get("BEAN_WATCH_REPORT_DIR")
+            if not watch_report_dir:
+                raise ValueError("BEAN_WATCH_REPORT_DIR is required with BEAN_WATCH_CONFIG")
+            def log_watcher_event(event):
+                log_event(
+                    session_uuid, EventType.OBSERVATION,
+                    "Watcher report transition: " + event["key"],
+                    Source.SYSTEM, subtype="watcher_transition", data=event,
+                )
+            watcher = BeanWatcher(
+                load_watch_specs(watch_config),
+                DirectoryReportReader(watch_report_dir),
+                event_sink=log_watcher_event,
+            )
+            rows = get_store().fetchall(
+                "SELECT data FROM events WHERE subtype=? ORDER BY id DESC LIMIT 5000",
+                ("watcher_transition",),
+            )
+            watcher.restore_events([
+                json.loads(row["data"]) for row in reversed(rows) if row["data"]
+            ])
+            ctx["watcher"] = watcher
         handlers = build_default_handlers(
             monitor,
             inbox,
@@ -154,6 +182,7 @@ def main():
             model_updater=model_updater,
             consolidation_engine=consolidation,
             coherence_engine=coherence,
+            watcher=watcher,
         )
         loop = BeanLoop(ctx, handlers, tick_rate_hz=tick_rate, max_ticks=args.ticks)
         register_all(
