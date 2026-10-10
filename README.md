@@ -99,6 +99,22 @@ BEAN is being built around a small set of durable behaviors:
 
 BEAN is developed against real host projects and changing domains rather than being designed as a sealed demo. The architecture is expected to keep evolving as those deployments expose better abstractions.
 
+## Research experiments and published findings
+
+BEAN is being evaluated through **reproducible, isolated experiments** in evidence reliability, uncertainty reasoning, model revision, confidence-directed search, and lifelong empirical learning. The research code remains on experimental branches; documentation here does **not** mean those features are merged or production-ready.
+
+**[Read the research index: findings, limitations, source branches, test runs and downloadable output artifacts](docs/experimental-research-index-2026-10.md)**
+
+| Experiment | View experiment and output |
+| --- | --- |
+| **Evolution and source reliability** | [Lab 001 research branch](https://github.com/danieloculus0-bot/BEAN-AI-Bridge-/tree/experiment/bean-evolution-lab-20261009) · [Simulation report and tests](https://github.com/danieloculus0-bot/BEAN-AI-Bridge-/actions/runs/37995651207) |
+| **Evidence Intelligence / competing hypotheses** | [Lab 003 findings](https://github.com/danieloculus0-bot/BEAN-AI-Bridge-/blob/experiment/bean-evidence-intelligence-20261010/experiments/evolution_lab/LAB003_FINDINGS.md) · [JSON/test output](https://github.com/danieloculus0-bot/BEAN-AI-Bridge-/actions/runs/38028778085) |
+| **Learning when previous trust becomes wrong** | [Lab 004 findings](https://github.com/danieloculus0-bot/BEAN-AI-Bridge-/blob/experiment/bean-model-revision-lab004-20261010/experiments/evolution_lab/LAB004_FINDINGS.md) · [Cross-platform results](https://github.com/danieloculus0-bot/BEAN-AI-Bridge-/actions/runs/38029372008) |
+| **Confidence-directed search and page reranking** | [Lab 005 source](https://github.com/danieloculus0-bot/BEAN-AI-Bridge-/tree/experiment/bean-confidence-search-lab005-20261010/experiments/search_lab) · [Ranking results](https://github.com/danieloculus0-bot/BEAN-AI-Bridge-/actions/runs/38029876766) |
+| **Nonterminal learning and cross-abstraction relevance** | [Lab 006 research record](https://github.com/danieloculus0-bot/BEAN-AI-Bridge-/blob/experiment/bean-epistemic-continuity-lab006-20261010/experiments/search_lab/LAB006_CONTINUOUS_LEARNING.md) · [100-test run and output](https://github.com/danieloculus0-bot/BEAN-AI-Bridge-/actions/runs/38030419931) |
+
+**Key result:** Empirical conclusions can be temporarily settled without blocking future observations. In the synthetic studies, confidence-driven investigation improved some outcomes but also exposed failure modes: stale learned trust, source-echo duplication, inspection expense, and regressions under changed conditions. **These are not live-browser benchmarks or evidence of AGI.** Exact caveats and comparative metrics are in the [research index](docs/experimental-research-index-2026-10.md).
+
 ## Origin, quickly
 
 BEAN began as the operating brain for a future robot.
