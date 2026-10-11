@@ -16,10 +16,12 @@ This is not a cryptographic or WORM audit system.
 from __future__ import annotations
 
 from contextlib import contextmanager
+import errno
 import json
 import os
 from pathlib import Path
 import tempfile
+import time
 from typing import Iterator
 
 from .store import get_store, MemoryStore
@@ -46,8 +48,21 @@ def _writer_lock(path: Path) -> Iterator[None]:
                 handle.seek(0)
                 handle.write(b"1")
                 handle.flush()
-            handle.seek(0)
-            msvcrt.locking(handle.fileno(), msvcrt.LK_LOCK, 1)
+            # On Windows a live competing byte-lock may report EACCES.
+            # Retry only that contention signal; all other I/O failures remain
+            # fatal and visible. A crashed process releases its Windows lock.
+            deadline = time.monotonic() + 20.0
+            while True:
+                handle.seek(0)
+                try:
+                    msvcrt.locking(handle.fileno(), msvcrt.LK_NBLCK, 1)
+                    break
+                except OSError as exc:
+                    if exc.errno not in (errno.EACCES, errno.EAGAIN):
+                        raise
+                    if time.monotonic() >= deadline:
+                        raise AuditMirrorError("Timed out waiting for Windows mirror lock") from exc
+                    time.sleep(0.025)
             try:
                 yield
             finally:
