@@ -112,7 +112,7 @@ def test_remote_failure_does_not_create_unverified_receipts(tmp_path):
 
 
 def test_bad_repository_and_unapproved_api_paths_are_rejected():
-    for repo in ("example.com/BEAN", "../BEAN", "danieloculus0-bot/../BEAN",
+    for repo in ("https://example.com/BEAN", "../BEAN", "danieloculus0-bot/../BEAN",
                  "danieloculus0-bot/BEAN/other", "danieloculus0-bot"):
         with pytest.raises(ValueError):
             GitHubReadClient(repo)
@@ -128,7 +128,7 @@ def test_tokens_are_not_persisted_or_printed(tmp_path, monkeypatch):
     run_bridge("danieloculus0-bot/BEAN", db, fetch_json=remote.__getitem__)
     with sqlite3.connect(db) as conn:
         rows = conn.execute("SELECT payload_json FROM github_engineering_events").fetchall()
-    assert secret not in json.dumps(rows)
+    assert secret not in json.dumps([tuple(row) for row in rows])
     assert secret not in db.read_bytes().decode("utf-8", errors="ignore")
 
 
