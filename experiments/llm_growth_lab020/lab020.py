@@ -282,6 +282,7 @@ def main():
         if "GITHUB_OUTPUT" in os.environ:
             with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as f:
                 f.write("accepted=" + ("true" if report["outcome"] == "validated" else "false") + "\n")
+                f.write("more=" + ("true" if args.round < 2 and report["status"] in ("generated", "invalid_model_output") else "false") + "\n")
     else:
         report = ast_baseline(source_path=args.source, test_source=args.tests,
                               out=args.out, max_attempts=args.attempts)
