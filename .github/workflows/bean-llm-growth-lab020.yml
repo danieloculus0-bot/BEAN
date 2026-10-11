@@ -1,0 +1,304 @@
+name: BEAN Lab020 live LLM revisions vs AST on real Core code
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  protocol-tests:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        python-version: ['3.10', '3.12']
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - run: python -m pip install pytest
+      - name: Same Core baseline plus mock two-step model feedback and holdout tests
+        run: python -m pytest bean/tests/test_llm_growth_lab020.py -q -ra
+
+  ast-baseline:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Run twenty-five BEAN AST trials on exact original Core code
+        run: python -m experiments.llm_growth_lab020.lab020 ast --out ast-results --attempts 25
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: lab020-ast
+          path: ast-results/
+          if-no-files-found: warn
+
+  gen0:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Free-only model proposal 1 of 3 (no execution)
+        env:
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+        run: python -m experiments.llm_growth_lab020.lab020 generate --round 0 --out gen0
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: lab020-gen0
+          path: gen0/
+          if-no-files-found: warn
+
+  eval0:
+    needs: gen0
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    outputs:
+      accepted: ${{ steps.verify.outputs.accepted }}
+      more: ${{ steps.verify.outputs.more }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/download-artifact@v4
+        with:
+          name: lab020-gen0
+          path: input/
+      - name: Evaluate model source without LLM credentials
+        id: verify
+        run: python -m experiments.llm_growth_lab020.lab020 validate --round 0 --proposal input --out eval0
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: lab020-eval0
+          path: eval0/
+          if-no-files-found: warn
+
+  gen1:
+    needs: eval0
+    if: needs.eval0.outputs.more == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/download-artifact@v4
+        with:
+          name: lab020-eval0
+          path: previous/
+      - name: Free-only model proposal 2 of 3 (no execution)
+        env:
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+        run: python -m experiments.llm_growth_lab020.lab020 generate --round 1 --history previous/history.json --out gen1
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: lab020-gen1
+          path: gen1/
+          if-no-files-found: warn
+
+  eval1:
+    needs: gen1
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    outputs:
+      accepted: ${{ steps.verify.outputs.accepted }}
+      more: ${{ steps.verify.outputs.more }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/download-artifact@v4
+        with:
+          name: lab020-gen1
+          path: input/
+      - uses: actions/download-artifact@v4
+        with:
+          name: lab020-eval0
+          path: previous/
+      - name: Evaluate model source without LLM credentials
+        id: verify
+        run: python -m experiments.llm_growth_lab020.lab020 validate --round 1 --proposal input --history previous/history.json --out eval1
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: lab020-eval1
+          path: eval1/
+          if-no-files-found: warn
+
+  gen2:
+    needs: eval1
+    if: needs.eval1.outputs.more == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/download-artifact@v4
+        with:
+          name: lab020-eval1
+          path: previous/
+      - name: Free-only model proposal 3 of 3 (no execution)
+        env:
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+        run: python -m experiments.llm_growth_lab020.lab020 generate --round 2 --history previous/history.json --out gen2
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: lab020-gen2
+          path: gen2/
+          if-no-files-found: warn
+
+  eval2:
+    needs: gen2
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    outputs:
+      accepted: ${{ steps.verify.outputs.accepted }}
+      more: ${{ steps.verify.outputs.more }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/download-artifact@v4
+        with:
+          name: lab020-gen2
+          path: input/
+      - uses: actions/download-artifact@v4
+        with:
+          name: lab020-eval1
+          path: previous/
+      - name: Evaluate model source without LLM credentials
+        id: verify
+        run: python -m experiments.llm_growth_lab020.lab020 validate --round 2 --proposal input --history previous/history.json --out eval2
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: lab020-eval2
+          path: eval2/
+          if-no-files-found: warn
+
+  final-comparison:
+    needs: [protocol-tests, ast-baseline, eval0, eval1, eval2]
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
+    outputs:
+      verdict: ${{ steps.summary.outputs.verdict }}
+      best_round: ${{ steps.summary.outputs.best_round }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: lab020-*
+          path: all-evidence/
+      - name: Compare all live rounds, AST search, and new never-feedback holdout
+        id: summary
+        run: python -m experiments.llm_growth_lab020.report --artifacts all-evidence --out comparison
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: lab020-comparison
+          path: comparison/
+          if-no-files-found: warn
+
+  make-review-branch:
+    needs: [final-comparison, protocol-tests, ast-baseline]
+    if: github.event_name == 'push' && needs.final-comparison.outputs.verdict == 'LLM_REPAIR_VALIDATED_ON_FRESH_HOLDOUT' && needs.protocol-tests.result == 'success' && needs.ast-baseline.result == 'success'
+    permissions:
+      contents: write
+      pull-requests: write
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          persist-credentials: false
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: lab020-*
+          path: all-evidence/
+      - name: Verify source, handoff and frozen-holdout receipts without running generated code
+        shell: bash
+        run: |
+          python - <<'PY'
+          import ast,hashlib,json,pathlib,shutil,os
+          root=pathlib.Path('all-evidence')
+          report=json.loads((root/'lab020-comparison'/'lab020-final-report.json').read_text())
+          assert report['verdict']=='LLM_REPAIR_VALIDATED_ON_FRESH_HOLDOUT'
+          chosen=report['best_dev']
+          idx=chosen['iteration']
+          submitted=root/('lab020-gen'+str(idx))/'proposal.py'
+          assert submitted.is_file()
+          assert hashlib.sha256(submitted.read_bytes()).hexdigest()==chosen['candidate_sha']
+          original=root/'lab020-gen0'/'receipt.json'
+          baseline=json.loads(original.read_text())
+          current=pathlib.Path('bean/optimization/selection.py')
+          assert hashlib.sha256(current.read_bytes()).hexdigest()==baseline['source_sha'], 'Core source moved; review/rebase needed'
+          parsed=ast.parse(submitted.read_text())
+          assert any(isinstance(n,ast.FunctionDef) and n.name=='rank_improvements' for n in parsed.body)
+          shutil.copyfile(submitted,current)
+          audit=pathlib.Path('experiments/llm_growth_lab020/records')
+          audit.mkdir(exist_ok=True,parents=True)
+          run=os.environ.get('GITHUB_RUN_ID','unknown')
+          shutil.copyfile(root/'lab020-comparison'/'lab020-final-report.json',audit/('result-'+run+'.json'))
+          histories=sorted(root.glob('lab020-eval*/history.json'))
+          if histories:
+              shutil.copyfile(histories[-1],audit/('history-'+run+'.json'))
+          print('Verified LLM candidate: ',chosen['candidate_sha'])
+          PY
+      - name: BEAN commits real Core repair to its own review branch, never main
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          git config user.name "bean-llm-autodev"
+          git config user.email "bean-llm-autodev@users.noreply.github.com"
+          BRANCH="bean/llm-lab020-$GITHUB_RUN_ID"
+          git switch -c "$BRANCH"
+          git add -- bean/optimization/selection.py experiments/llm_growth_lab020/records/
+          git diff --cached --quiet && { echo "No changed code"; exit 0; }
+          git commit -m "fix(core): BEAN free-LLM authored selector identity normalization"
+          gh auth setup-git
+          git push origin "HEAD:refs/heads/$BRANCH"
+          gh pr create --base main --head "$BRANCH"             --title "BEAN free-LLM self-written Core selector repair — $GITHUB_RUN_ID"             --body "Generated by the free-only Lab020 LLM, with 14 independent developer tests and 7 additional never-feedback holdouts. Versioned full result, source hashes, and experiment journal in branch. Core CI review required before merge. No production main self-merge." || true
