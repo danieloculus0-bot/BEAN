@@ -271,13 +271,25 @@ class EngineeringJournal:
             key = (row["kind"], row["external_id"])
             if key not in latest:
                 latest[key] = json.loads(row["payload_json"])
+        # Group repeated CI attempts by workflow and source branch. The latest
+        # attempt supersedes an earlier failed run, but all historical receipts
+        # remain intact for retrospective experiments.
+        run_history = sorted(
+            (value for (kind, _), value in latest.items() if kind == "workflow_run"),
+            key=lambda r: (r.get("updated_at") or "", int(r.get("id") or 0)),
+            reverse=True,
+        )
+        newest_by_workflow = {}
+        for run in run_history:
+            key = (run.get("name"), run.get("head_branch"))
+            newest_by_workflow.setdefault(key, run)
         failures = [
-            value for (kind, _), value in latest.items()
-            if kind == "workflow_run" and value.get("conclusion") in
+            run for run in newest_by_workflow.values()
+            if run.get("conclusion") in
             {"failure", "timed_out", "cancelled", "action_required"}
         ]
         queue = []
-        for run in sorted(failures, key=lambda r: (r.get("updated_at") or ""), reverse=True):
+        for run in failures:
             queue.append({
                 "priority": "investigate",
                 "subject": "workflow_run",
