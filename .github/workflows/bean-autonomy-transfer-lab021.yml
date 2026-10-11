@@ -1,9 +1,6 @@
 name: BEAN LAB021 multi-domain autonomy transfer and blind holdout
 
 on:
-  push:
-    branches:
-      - experiment/bean-autonomy-transfer-lab021-20261011
   workflow_dispatch:
 
 permissions:
