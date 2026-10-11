@@ -189,3 +189,7 @@ Priority direction:
 6. Keep embodiment as a first-class host without allowing embodiment to become BEAN's identity.
 
 BEAN is not finished. It is also no longer waiting for a body to become useful.
+
+## Opt-in durable task behaviors
+
+The native BEAN task engine runs only when a trusted local `BEAN_TASK_CONFIG` file is supplied. It persists bounded, named tasks and execution receipts in the existing SQLite memory store, marks interrupted or unverifiable work as **unknown / needs review**, and will not silently retry unknown side effects. The current allowlist contains only local integrity checks, report Watcher inspections, inner-weather updates, and relationship-summary maintenance; no shell, arbitrary Python, network effects, trades, email, or motors. The scheduler is **disabled by default**, and its human-review workflow and unattended-service readiness are still future work. See [durable-task contract and configuration](docs/bean-durable-tasks-lab011.md).
