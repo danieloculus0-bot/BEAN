@@ -1,20 +1,91 @@
-# BEAN
+# BEAN 🌱
 
-**Behavior Enabled Avatar Node**
+**Behavior Enabled Avatar Node** · Public-source persistent reasoning and evidence architecture
 
-🌱 **[Meet BEAN on the live website](https://danieloculus0-bot.github.io/BEAN/)** · [Run the offline demo](docs/GETTING_STARTED.md) · [Contribute or test](CONTRIBUTING.md) · [Share BEAN](docs/LAUNCH_KIT.md)
+[**Live site**](https://danieloculus0-bot.github.io/BEAN/) · [**Verified utility and evidence**](docs/VERIFIED_UTILITY_AND_EVIDENCE_2026-10-11.md) · [**Five-minute quickstart**](docs/GETTING_STARTED.md) · [**Research index**](docs/experimental-research-index-2026-10.md) · [**Contribute**](CONTRIBUTING.md)
 
-**Universal persistent reasoning for systems that need to remember, doubt, connect, learn, and keep receipts.**
+[![Core regression: Windows and Ubuntu](https://github.com/danieloculus0-bot/BEAN/actions/workflows/brain-smoke.yml/badge.svg)](https://github.com/danieloculus0-bot/BEAN/actions/workflows/brain-smoke.yml)
 
-BEAN is a persistent reasoning architecture. It is designed to carry state across time, evaluate evidence, preserve uncertainty, detect contradictions, connect events, form hypotheses, use external reasoning models when useful, learn from outcomes, and retain why a conclusion or proposal existed in the first place.
+> **Cute name. Serious reasoning. Real receipts.**
+>
+> BEAN is the persistent layer for systems that need to remember, question, track evidence, preserve uncertainty, recognize contradictions, propose improvements and keep an auditable record of what really happened. It can use an LLM, a desktop, a service, a manufacturer's data exports or a robot as a host. **None of those is BEAN's identity. The body is optional.**
 
-BEAN can operate as a standalone reasoning system, as a logic layer inside another application, as a service shared by multiple systems, or as the reasoning core of an embodied machine.
+## Start here: see BEAN do something useful
 
-An LLM is not BEAN. A robot is not BEAN. A user interface is not BEAN.
+BEAN is not waiting for a robot body. The Core already has four actual behaviors wired into a single offline, reproducible acceptance command:
 
-Those are things BEAN can use.
+```bash
+git clone https://github.com/danieloculus0-bot/BEAN.git
+cd BEAN
+python -m pip install psutil
+python -m examples.capability_proof
+```
 
-**BEAN is the persistent logic that remains.**
+The command uses **actual BEAN APIs** and temporary fictional data, not prewritten success narration. Its JSON result includes the pass/fail verdict, the behavior observed and clear limits; a failed assertion stops the run.
+
+| Evidence-backed behavior | What the operator learns | Source |
+| --- | --- | --- |
+| **Real persistent continuity** | A recorded event and a pending-review proposal survive closing and reopening SQLite in two BEAN sessions | [Live code](examples/restart_continuity.py) · [Regression](bean/tests/test_restart_continuity_demo.py) |
+| **Contradictions remain unresolved** | Two conflicting caller-supplied reports cannot be passed off as independently verified truth | [Evidence Bridge](bean/integration/evidence_bridge.py) · [Adversarial tests](bean/tests/test_evidence_bridge_contract.py) |
+| **Claims and actions have boundaries** | Missing sources are flagged and a motion-style proposal is not authorized to execute | [Epistemic Guard](bean/cognition/epistemic_guard.py) · [Plugin tests](bean/tests/test_public_plugin.py) |
+| **Missing does not equal zero** | A missing quality report returns N/A; a complete, host-attested report can legitimately say zero | [BEAN Watcher](bean/runtime/watcher.py) · [Missing/stale tests](bean/tests/test_watcher.py) |
+
+[**Open the complete executable evidence ledger**](docs/VERIFIED_UTILITY_AND_EVIDENCE_2026-10-11.md). It labels which findings are stable Core code, separate Bridge integrations, experimental branches or inconclusive tests. Synthetic contract success is not measured workplace impact or general intelligence.
+
+## Verified engineering snapshot
+
+On October 11, 2026, [Core's previous green four-platform regression](https://github.com/danieloculus0-bot/BEAN/actions/runs/38156840053) passed Windows and Ubuntu on Python 3.10 and 3.12. Its Ubuntu/Python 3.12 job reported **559 passed, one skipped, 47 subtests passed, and 84% measured code coverage**. These figures describe that exact commit and test suite, not a lifetime success count.
+
+| Comparison | Actual finding | Scientific boundary |
+| --- | --- | --- |
+| BEAN vs Aider | Both passed **16/16** held-out functional tests | **TIE**, two synthetic coding tasks; [receipts](https://github.com/danieloculus0-bot/BEAN/actions/runs/38110050070) |
+| Model-written selector repair | **14/14** development checks and **7/7** fresh holdout checks | Limited bounded source repair, not autonomous general software engineering; [study](docs/BEAN_LLM_REPAIR_EXPERIMENT_20261011.md) |
+| Synthetic evidence-sensitive ranking | **91.25% vs 18.75%** on a deliberate source-echo benchmark | Bridge research, not live Google or browser superiority; [lab](https://github.com/danieloculus0-bot/BEAN-AI-Bridge-/actions/runs/38029876766) |
+| Five specialist competitors | **5 INCONCLUSIVE** independent judgments | No claim BEAN defeated OpenCode, Goose, OpenHands, Continue or Cline; [judge run](https://github.com/danieloculus0-bot/BEAN/actions/runs/38126634979) |
+| Arduino Nano and ESP32 | **2 emulator pass markers** on simavr and QEMU | Bridge draft; Wokwi not run (token missing), no physical robot movement; [run](https://github.com/danieloculus0-bot/BEAN-AI-Bridge-/actions/runs/38128794018) |
+
+**Not proven:** AGI, consciousness, autonomous physical control, independently authenticated external truth, profitable trading, production ERP connectivity or universal coding superiority.
+
+## The Core, Bridge and applications
+
+```text
+              HOST OBSERVATIONS, TASKS AND EVIDENCE
+                               |
+                   source + coverage contracts
+                               |
+                        BEAN CORE (main)
+          +--------------------+--------------------+
+          |                    |                    |
+    SQLite continuity    Evidence/uncertainty   Local reasoning
+    session and history   contradictions/N/A     optional Ollama
+          |                    |                    |
+          +--------------------+--------------------+
+                               |
+                  structured reviewable proposals
+                               |
+                      HOST OWNED AUTHORIZATION
+                        (no implicit actions)
+                               |
+          +--------------------+--------------------+
+          |                    |                    |
+   BEAN AI Bridge         Host application      Optional robot
+   offline KPI exports    or AIscend research   / controller
+```
+
+- **Core main:** memory, cognition, epistemic checks, host-neutral evidence review, watcher, scheduled tasks, Ollama reasoning adapter, Windows voice, review-only code proposals, SQLite engineering journal and a local four-tool MCP developer preview. A module being in Core does not imply that every feature is on by default.
+- **[BEAN AI Bridge main](https://github.com/danieloculus0-bot/BEAN-AI-Bridge-):** separate offline export adapters and a [Daily Exception Brief](https://github.com/danieloculus0-bot/BEAN-AI-Bridge-/blob/main/docs/DAILY_EXCEPTION_BRIEF.md) that generates private HTML/JSON for OTD, overdue-work and RMA evidence. This is not an authenticated live ECI JobBOSS feed.
+- **[AIscend](https://github.com/danieloculus0-bot/AIscend):** separate market research and trading project. BEAN Core does not activate Strategy School candidates or send real-money orders.
+- **Research branches:** robotics, ESP32/Arduino emulation, peer-agent tournaments and many LLM experiments are recorded but are not silently imported into live systems.
+
+## Consolidated engineering evidence inventory
+
+BEAN's [read-only audit CLI](scripts/audit_research_inventory.py), consolidated from independently tested [engineering audit PR #81](https://github.com/danieloculus0-bot/BEAN/pull/81), enumerates Core and Bridge branches, pull requests, test modules, workflow files and Git ancestry in both JSON and Markdown:
+
+```bash
+python scripts/audit_research_inventory.py --output-dir audit-output
+```
+
+This command requires GitHub access (and may need a suitable read-only `GH_TOKEN` for higher limits), **never changes repository files**, and calls out incomplete inventories instead of claiming a clean sweep. Ahead/behind Git commits do not prove that a feature is missing from `main`: squash merges can hide that in ancestry. [Read its verification report](docs/ENGINEERING_VALIDATION_2026-10-11.md).
 
 ## BEAN inside ChatGPT — early MCP plugin preview
 
@@ -34,7 +105,7 @@ These integrations are now included in `main`. Live Ollama performance and conne
 
 **[Updated usefulness audit — what BEAN actually helps with, where it doesn't, and the next proof](docs/BEAN_USEFULNESS_AUDIT_2026-10-11.md)**
 
-The real two-session persistence demonstration is available as `python -m examples.restart_continuity`; unlike the one-shot mock proposal quickstart, it explicitly verifies that the SQLite event and pending proposal survive a clean BEAN shutdown and reopen. It still uses a mock reasoning provider and temporary local data. The separate [Bridge Daily Exception Brief](https://github.com/danieloculus0-bot/BEAN-AI-Bridge-/blob/main/docs/DAILY_EXCEPTION_BRIEF.md) now provides a practical, private, read-only management summary from authorized local export ledgers.
+The standalone two-session persistence demonstration is available as `python -m examples.restart_continuity`; unlike the one-shot mock proposal quickstart, it explicitly verifies that the SQLite event and pending proposal survive a clean BEAN shutdown and reopen. It still uses a mock reasoning provider and temporary local data. The separate [Bridge Daily Exception Brief](https://github.com/danieloculus0-bot/BEAN-AI-Bridge-/blob/main/docs/DAILY_EXCEPTION_BRIEF.md) now provides a practical, private, read-only management summary from authorized local export ledgers.
 
 
 [![BEAN full core regression](https://github.com/danieloculus0-bot/BEAN/actions/workflows/brain-smoke.yml/badge.svg)](https://github.com/danieloculus0-bot/BEAN/actions/workflows/brain-smoke.yml)
@@ -53,6 +124,18 @@ python -m examples.quickstart_reasoning
 This is an executable architecture demonstration, **not** a demonstration of trained-model intelligence or unsupervised autonomy.
 
 **Want to follow BEAN's development?** Visit the [mint-green site](https://danieloculus0-bot.github.io/BEAN/#community), star/watch the repo if you find it useful, or [report what you can reproduce](CONTRIBUTING.md). The [launch kit](docs/LAUNCH_KIT.md) contains shareable, evidence-checked announcements and the independent test references.  The [BEAN AI Bridge](https://github.com/danieloculus0-bot/BEAN-AI-Bridge-) provides separate generic ERP/evidence adapters and synthetic replay. See the [public discovery and GitHub Pages activation checklist](docs/PUBLIC_DISCOVERY_LAUNCH.md). Source visibility alone does not provide a redistribution license.
+
+
+## How to verify a candidate before promoting it
+
+1. Start with a reproducible user benefit or failure, not a synthetic score.
+2. Pin exact source code and input fixture digests; never use holdout answers to tune the candidate.
+3. Preserve negative and inconclusive findings, including provider errors and missing data.
+4. Execute independent regression and adversarial tests, preferably on Windows and Ubuntu.
+5. Incorporate only genuinely new reusable behavior into Core. Leave domain-specific adapters in Bridge or their host project.
+6. Review the permissions and operational boundary before merging. No algorithm may approve its own unsupervised production deployment.
+
+The [utility and scientific evidence ledger](docs/VERIFIED_UTILITY_AND_EVIDENCE_2026-10-11.md) provides concrete examples of this standard. The next valuable operational validation is an authorized, ten-workday shadow trial of the offline quality exception report, measuring time saved **and** unsupported-claim rate. That business result has not yet been measured.
 
 ## What BEAN does
 
@@ -152,7 +235,7 @@ contradictions and restart continuity are verified using a separate
 A declared source or verification ID is **host-attested**, not independent
 authentication or proof of truth. No new physical or financial action is enabled.
 
-## Research experiments and published findings
+## Research experiments and published findings (not all merged)
 
 BEAN is being evaluated through **reproducible, isolated experiments** in evidence reliability, uncertainty reasoning, model revision, confidence-directed search, and lifelong empirical learning. The research code remains on experimental branches; documentation here does **not** mean those features are merged or production-ready.
 
