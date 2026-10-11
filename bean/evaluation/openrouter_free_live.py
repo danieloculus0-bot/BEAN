@@ -22,16 +22,24 @@ TASK = ("Fix the following Python function to clamp numeric scores to 0..100 "
         "def clip_score(score):\n    return max(0, min(score, 101))\n")
 
 
+class ModelOutputError(ValueError):
+    def __init__(self, diagnostic: dict):
+        super().__init__("model returned no valid Python module")
+        self.diagnostic = diagnostic
+
+
 def normalise(raw: str) -> str:
     if not isinstance(raw, str) or not raw.strip():
         raise ValueError("empty response")
     source = raw.strip()
     fence = chr(96) * 3
-    if source.startswith(fence):
-        lines = source.splitlines()
-        if len(lines) < 3 or not lines[-1].strip().startswith(fence):
+    if fence in source:
+        parts = source.split(fence, 2)
+        if len(parts) < 3:
             raise ValueError("unclosed code fence")
-        source = "\n".join(lines[1:-1]).strip()
+        source = parts[1].strip()
+        if source.startswith("python"):
+            source = source[6:].strip()
     if len(source) > 12000:
         raise ValueError("response too large")
     parsed = ast.parse(source, filename="proposal.py")
@@ -43,7 +51,7 @@ def normalise(raw: str) -> str:
 
 def make_request(key: str, *, request_fn=urlopen) -> tuple[str, dict]:
     body = {"model": ROUTE, "messages": [{"role": "user", "content": TASK}],
-            "temperature": 0.1, "max_tokens": 700, "stream": False}
+            "temperature": 0.1, "max_tokens": 1400, "stream": False}
     request = Request(ENDPOINT, data=json.dumps(body).encode("utf-8"),
                       headers={"Authorization": "Bearer " + key,
                                "Content-Type": "application/json",
@@ -53,7 +61,23 @@ def make_request(key: str, *, request_fn=urlopen) -> tuple[str, dict]:
     model_used = str(reply.get("model", "unknown"))[:160]
     choice = (reply.get("choices") or [{}])[0]
     response_text = (choice.get("message") or {}).get("content")
-    source = normalise(response_text)
+    try:
+        source = normalise(response_text)
+    except (ValueError, SyntaxError, TypeError) as exc:
+        # Provider or model can return a 200 response with no usable code.
+        # Retain diagnostic metadata, never raw response text or auth headers.
+        diagnostics = {
+            "model_served": model_used,
+            "finish_reason": str(choice.get("finish_reason", "unknown"))[:80],
+            "content_type": type(response_text).__name__,
+            "content_length": len(response_text) if isinstance(response_text, str) else 0,
+            "contains_function": "def clip_score" in response_text
+                if isinstance(response_text, str) else False,
+            "contains_fence": (chr(96) * 3) in response_text
+                if isinstance(response_text, str) else False,
+            "parse_error_type": type(exc).__name__,
+        }
+        raise ModelOutputError(diagnostics) from exc
     usage = {k: v for k, v in (reply.get("usage") or {}).items()
              if k in ("prompt_tokens", "completion_tokens", "total_tokens")
              and isinstance(v, (int, float)) and not isinstance(v, bool)}
@@ -81,6 +105,10 @@ def execute(output_dir: Path, *, api_key: str | None = None, request_fn=urlopen)
             receipt["reason"] = "OpenRouter HTTP " + str(exc.code)
         except (URLError, TimeoutError, OSError) as exc:
             receipt["reason"] = "transport unavailable: " + type(exc).__name__
+        except ModelOutputError as exc:
+            receipt["provider_status"] = "invalid_response"
+            receipt["reason"] = "model response could not be parsed as Python"
+            receipt["diagnostic"] = exc.diagnostic
         except (ValueError, KeyError, TypeError, IndexError, SyntaxError) as exc:
             receipt["provider_status"] = "invalid_response"
             receipt["reason"] = "invalid model response: " + type(exc).__name__
