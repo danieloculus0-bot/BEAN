@@ -34,6 +34,9 @@ jobs:
         run: python -m bean.runtime.boot_readiness --temp
       - name: Run complete suite with branch coverage
         run: python -m pytest bean/tests -q -ra --tb=short --junitxml=bean-core-tests.xml --cov=bean --cov-branch --cov-report=term-missing --cov-report=xml:bean-core-coverage.xml
+      - name: Run complete Lab013 composite growth simulation
+        if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.12'
+        run: python -m bean.evaluation.composite_growth --report bean-composite-growth.json
       - name: Attach test evidence
         if: always()
         uses: actions/upload-artifact@v4
@@ -42,4 +45,5 @@ jobs:
           path: |
             bean-core-tests.xml
             bean-core-coverage.xml
+            bean-composite-growth.json
           if-no-files-found: ignore
