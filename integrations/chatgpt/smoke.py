@@ -32,6 +32,29 @@ def main() -> None:
             raise AssertionError(f"Tool {tool.name} has no input schema")
     print("PASS BEAN MCP tool registration, four JSON schemas, read-only annotations.")
 
+    async def exercise_real_sdk():
+        examples = [
+            ("bean_audit_claim", {"claim": "The imaginary machine passed inspection"}),
+            ("bean_compare_evidence", {"question": "What did the samples report?",
+                "observations": [
+                    {"origin": "Report A", "statement": "pass"},
+                    {"origin": "Report B", "statement": "fail"},
+                ]}),
+            ("bean_screen_proposal", {"summary": "Read fictional log",
+                "steps": ["Review source measurements"]}),
+            ("bean_demo_restart", {}),
+        ]
+        for name, arguments in examples:
+            result = await mcp.call_tool(name, arguments)
+            if result.is_error:
+                raise AssertionError(f"MCP actual tool {name} returned error: {result.content}")
+            body = result.structured_content
+            if not isinstance(body, dict) or "schema" not in body:
+                raise AssertionError(f"MCP actual tool {name} lacks JSON schema result: {body}")
+        print("PASS BEAN four real MCP SDK tool calls and structured results.")
+
+    asyncio.run(exercise_real_sdk())
+
 
 if __name__ == "__main__":
     main()
