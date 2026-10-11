@@ -144,6 +144,8 @@ def test_secret_never_enters_receipt_and_routing_is_free(tmp_path):
     assert "fixture-secret-never-log" not in (out / "receipt.json").read_text()
     report = grade(out, tmp_path / "dev-feedback.json", phase="development")
     assert report["initial_total"] == report["possible_total"]
+    final_report = grade(out, tmp_path / "final-feedback.json", phase="final")
+    assert final_report["initial_total"] == final_report["possible_total"]
     revision = generate(tmp_path / "second", api_key="fixture-secret-never-log",
                         feedback_file=tmp_path / "dev-feedback.json", request_fn=fake)
     assert revision["total_requests"] == 0
