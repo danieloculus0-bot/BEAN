@@ -387,7 +387,7 @@ def test_real_local_model_schema_targets_stable_statement_ids():
     )
     lab.local_model_request(code, None, request_fn=mocked)
     item = seen[0]["format"]["properties"]["edits"]["items"]
-    assert set(item["properties"]["target_id"]["enum"]) == {"prompt", "feedback"}
+    assert set(item["properties"]["target_id"]["enum"]) == {"feedback"}
     assert "STATEMENT_ID=prompt" in seen[0]["messages"][0]["content"]
     assert "STATEMENT_ID=feedback" in seen[0]["messages"][0]["content"]
 
@@ -417,3 +417,26 @@ def test_generated_statement_edit_is_really_applied_not_preselected(tmp_path):
     candidate = json.loads((tmp_path / "output" / "candidate.json").read_text())
     assert "prompt[:200]" in candidate["replacement"]
     assert candidate["replacement_sha256"] == lab.sha(candidate["replacement"])
+
+
+def test_retry_repair_model_is_focused_on_feedback_branch():
+    seen = []
+    def fake(req, timeout):
+        seen.append(json.loads(req.data))
+        return LocalReply(EDIT)
+    code = (
+        "def call_model(key, original, feedback=None):\n"
+        "    prompt = original\n"
+        "    if feedback:\n"
+        "        prompt += feedback\n"
+        "    data = {'prompt': prompt}\n"
+        "    return data\n"
+    )
+    lab.local_model_request(code, "invalid source edit", request_fn=fake)
+    body = seen[0]
+    content = body["messages"][0]["content"]
+    assert "Preserve the initial" in content
+    assert "feedback-handling block" in content
+    assert "STATEMENT_ID=feedback" in content
+    assert "STATEMENT_ID=prompt" not in content
+    assert body["format"]["properties"]["edits"]["items"]["properties"]["target_id"]["enum"] == ["feedback"]
