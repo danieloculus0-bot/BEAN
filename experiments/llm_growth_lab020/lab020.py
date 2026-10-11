@@ -191,12 +191,13 @@ def score_candidate(source, *, test_source, timeout=18):
 def validate(*, source_path, test_source, proposal_dir, prior_history, iteration, out):
     out = Path(out)
     out.mkdir(parents=True, exist_ok=True)
-    source = Path(source_path).read_text(encoding="utf-8")
+    source_bytes = Path(source_path).read_bytes()
+    source = source_bytes.decode("utf-8")
     history = checked_history(prior_history)
     if len(history["entries"]) != iteration:
         raise ValueError("history round mismatch")
     test_sha = digest(Path(test_source).read_bytes())
-    src_sha = digest(source.encode("utf-8"))
+    src_sha = digest(source_bytes)
     baseline = score_candidate(source, test_source=test_source)
     receipt = json.loads((Path(proposal_dir) / "receipt.json").read_text())
     if receipt["source_sha"] != src_sha or receipt["history_tip"] != history["tip"]:
