@@ -48,9 +48,11 @@ def main():
     else:
         raise ValueError("unknown case")
     for _, args in jobs:
+        untouched=json.dumps(args,sort_keys=True)
         original_result=before(*args)
         updated_result=after(*args)
         assert original_result==updated_result, "candidate changed stress behavior"
+        assert json.dumps(args,sort_keys=True)==untouched, "candidate mutated input"
     for _, args in jobs[:min(3,len(jobs))]:
         before(*args)
         after(*args)
