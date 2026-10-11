@@ -1,0 +1,43 @@
+name: BEAN AIscend public demo checks
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'docs/aiscend.html'
+      - 'docs/index.html'
+      - 'docs/bean-official.webp'
+      - 'bean/tests/test_public_aiscend_demo.py'
+      - 'bean/tests/test_public_skill_page.py'
+      - '.github/workflows/bean-aiscend-demo.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'docs/aiscend.html'
+      - 'docs/index.html'
+      - 'docs/bean-official.webp'
+      - 'bean/tests/test_public_aiscend_demo.py'
+      - 'bean/tests/test_public_skill_page.py'
+      - '.github/workflows/bean-aiscend-demo.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  site-regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Confirm browser syntax checker is present
+        run: node --version
+      - name: Validate HTML, identity boundaries, anchors and demo script
+        run: |
+          python -m unittest discover -s bean/tests -p test_public_aiscend_demo.py -v
+          python -m unittest discover -s bean/tests -p test_public_skill_page.py -v
