@@ -43,9 +43,10 @@ def _writer_lock(path: Path) -> Iterator[None]:
     with lock_path.open("a+b") as handle:
         if os.name == "nt":
             import msvcrt
-            handle.seek(0)
-            if not handle.read(1):
-                handle.seek(0)
+            # Never READ the first byte before locking: Windows rejects a
+            # read of a byte locked by another process. Size checks do not
+            # access that locked data; the byte is created only when missing.
+            if handle.seek(0, os.SEEK_END) == 0:
                 handle.write(b"1")
                 handle.flush()
             # On Windows a live competing byte-lock may report EACCES.
