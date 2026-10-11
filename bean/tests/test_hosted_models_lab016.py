@@ -97,7 +97,7 @@ def test_malformed_service_data_is_not_accepted():
     with patch("urllib.request.urlopen",return_value=Wrong()):
         result=adapter.complete("test")
     assert not result["ok"]
-    assert result["error"]=="invalid_service_response"
+    assert result["error"]=="empty_choices"
 
 
 @pytest.mark.parametrize("calls,interval",[(0,0),(121,0),(2,-1),(2,31)])
