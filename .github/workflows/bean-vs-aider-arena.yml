@@ -1,0 +1,134 @@
+name: BEAN vs Aider neutral agent cage match
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'experiments/agent_arena/**'
+      - 'bean/tests/test_agent_arena_protocol.py'
+      - '.github/workflows/bean-vs-aider-arena.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'experiments/agent_arena/**'
+      - 'bean/tests/test_agent_arena_protocol.py'
+      - '.github/workflows/bean-vs-aider-arena.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: bean-vs-aider-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  preflight:
+    name: Offline challenge integrity and fail-closed protocol (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 8
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Compile the source, independent test cases, and judge
+        run: python -m compileall -q experiments/agent_arena bean/tests/test_agent_arena_protocol.py
+      - name: Verify original code is actually broken and agents share inputs
+        run: python -m unittest bean.tests.test_agent_arena_protocol -v
+
+  author:
+    name: Genuine same-model BEAN/Aider coding contest; no test execution
+    needs: preflight
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install untouched upstream champion
+        run: |
+          python -m pip install aider-chat==0.86.2
+          aider --version
+      - name: BEAN and Aider each edit their own isolated copy
+        env:
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          PYTHONDONTWRITEBYTECODE: '1'
+          AIDER_ANALYTICS: 'false'
+        run: |
+          python -m experiments.agent_arena.author --out _agent_arena
+      - name: Always preserve author receipts and exact candidate bytes
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bean-vs-aider-authors-${{ github.run_id }}
+          path: _agent_arena/
+          if-no-files-found: warn
+          retention-days: 21
+
+  judge:
+    name: Independent withheld functional tests (no model credentials)
+    needs: author
+    if: needs.author.result == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/download-artifact@v4
+        with:
+          name: bean-vs-aider-authors-${{ github.run_id }}
+          path: _agent_arena/
+      - name: Grade both agents from identical model-invisible tests
+        run: |
+          python -m experiments.agent_arena.judge --artifacts _agent_arena --output _arena_verdict/verdict.json
+      - name: Summarize true result, including ties and failed infrastructure
+        if: always()
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json, os, pathlib
+          file=pathlib.Path('_arena_verdict/verdict.json')
+          with open(os.environ['GITHUB_STEP_SUMMARY'], 'a', encoding='utf-8') as f:
+              f.write('## BEAN vs Aider — genuine head-to-head\n\n')
+              if not file.exists():
+                  f.write('No scored receipt: infrastructure failure, NOT A BEAN WIN.\n')
+              else:
+                  data=json.loads(file.read_text())
+                  f.write('**Verdict:** ' + data['classification'] + '\n\n')
+                  f.write('Model requested for both: ' + data['model_requested'] + '\n\n')
+                  for agent in ('bean','aider'):
+                      a=data['agents'][agent]
+                      f.write(agent + ': ' + str(a['tasks_passed']) + '/' +
+                              str(a['tasks_total']) + ' tasks; ' +
+                              str(a['passed_tests']) + '/' +
+                              str(a['total_tests']) + ' hidden tests\n\n')
+                  f.write('Evidence hash: ' + data['evidence_sha256'] + '\n\n')
+                  f.write('**A two-task pilot does not establish general superiority.**\n')
+          PY
+      - name: Publish immutable pilot evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bean-vs-aider-verdict-${{ github.run_id }}
+          path: _arena_verdict/
+          if-no-files-found: warn
+          retention-days: 21
