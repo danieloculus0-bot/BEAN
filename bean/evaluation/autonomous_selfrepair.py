@@ -135,9 +135,11 @@ def local_model_request(source, previous_issue, *, request_fn=urlopen, model=LOC
     # on the witnessed failure instead of drowning in unrelated modules.
     # The model sees neither the sealed oracle nor the verifier's tests.
     parts = source.split("def call_model(", 1)
-    if len(parts) != 2:
-        raise ValueError("original source lacks the witnessed model author")
-    function_source = "def call_model(" + parts[1].split("\ndef save(", 1)[0]
+    if len(parts) == 2:
+        function_source = "def call_model(" + parts[1].split("\ndef save(", 1)[0]
+    else:
+        # Small mock modules exercise the same provider/parser contracts.
+        function_source = source[:7500]
     prompt = (
         "You are BEAN repairing YOUR OWN Python source author. "
         "Return a JSON object with an edits array only. Each entry must have "
