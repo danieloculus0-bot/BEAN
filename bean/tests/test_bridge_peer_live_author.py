@@ -58,7 +58,7 @@ def test_valid_model_edit_is_source_authored_not_preprogrammed(tmp_path):
     assert saved["replacement_sha256"] == author.sha(NEW)
     assert (bridge / author.TARGET).read_text() == OLD
     assert len(requests) == 1
-    assert json.loads(requests[0].data)["model"] == "openrouter/free"
+    assert json.loads(requests[0].data)["model"] == author.ROUTE
     assert "fictional-secret" not in json.dumps(result)
     assert "fictional-secret" not in (tmp_path / "proposal" / "author-receipt.json").read_text()
 
@@ -159,3 +159,20 @@ def test_invalid_edit_receipt_explains_failure_without_copying_raw_model_text(tm
     assert report["attempted_requests"] == 2
     assert "nonloggable-secret" not in json.dumps(report)
     assert "nonsensical provider text" not in json.dumps(report)
+
+
+def test_second_trial_uses_distinct_preverified_free_model(tmp_path):
+    bridge, challenge = setup(tmp_path)
+    requested = []
+    sequence = [Reply(""), Reply(plan([{"find": "return value", "replace": "return value + 1"}]))]
+    def trial(req, timeout):
+        requested.append(json.loads(req.data)["model"])
+        return sequence.pop(0)
+    with patch.object(author, "head", side_effect=[author.BRIDGE_SHA, author.CHALLENGE_SHA]):
+        report = author.author(bridge=bridge, challenge=challenge,
+                               out=tmp_path/"out", key="fake", request_fn=trial)
+    assert report["status"] == "candidate_drafted_not_tested"
+    assert requested == [author.ROUTE, author.BACKUP]
+    assert all(x.endswith(":free") for x in requested)
+    saved = json.loads((tmp_path/"out"/"candidate.json").read_text())
+    assert saved["model"] == author.BACKUP
