@@ -3,149 +3,895 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>BEAN | Persistent Reasoning &amp; Evidence Architecture</title>
-  <meta name="description" content="BEAN (Behavior Enabled Avatar Node) is a public-source Python project for persistent reasoning, SQLite memory, evidence traceability, uncertainty handling and reviewable AI proposals. Explore reproducible tests and the offline quickstart.">
+  <title>BEAN | Persistent Reasoning, Memory & Evidence</title>
+  <meta name="description" content="BEAN (Behavior Enabled Avatar Node) is a persistent reasoning architecture for memory, evidence traceability, uncertainty handling, and reviewable AI proposals. Cute name. Serious reasoning.">
   <meta name="robots" content="index, follow">
+  <meta name="theme-color" content="#7ed957">
   <link rel="canonical" href="https://danieloculus0-bot.github.io/BEAN/">
   <link rel="sitemap" type="application/xml" href="https://danieloculus0-bot.github.io/BEAN/sitemap.xml">
-  <meta name="theme-color" content="#0a162e">
+
   <meta property="og:type" content="website">
-  <meta property="og:title" content="BEAN | Persistent Reasoning & Evidence Architecture">
-  <meta property="og:description" content="A public-source Python reasoning core built around memory, evidence, uncertainty and traceable proposals. Includes real code, an offline demo and reproducible research.">
-  <meta property="og:site_name" content="BEAN">
+  <meta property="og:title" content="BEAN | Persistent Reasoning, Memory & Evidence">
+  <meta property="og:description" content="Persistent reasoning with memory, uncertainty, evidence traceability, and reviewable change.">
   <meta property="og:url" content="https://danieloculus0-bot.github.io/BEAN/">
+  <meta property="og:site_name" content="BEAN">
   <meta name="twitter:card" content="summary">
+
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
     "@type": "SoftwareSourceCode",
     "name": "BEAN (Behavior Enabled Avatar Node)",
-    "description": "Experimental Python architecture for persistent reasoning, SQLite memory, evidence lineage, uncertainty management and structured review-required proposals.",
+    "description": "Experimental Python architecture for persistent reasoning, SQLite memory, evidence lineage, uncertainty management, and structured review-required proposals.",
     "codeRepository": "https://github.com/danieloculus0-bot/BEAN",
     "programmingLanguage": "Python",
     "runtimePlatform": "Python 3.10+",
     "isAccessibleForFree": true,
-    "url": "https://github.com/danieloculus0-bot/BEAN",
-    "keywords": "persistent reasoning, AI agent memory, evidence provenance, uncertainty, explainable decisions, Python, SQLite",
+    "url": "https://danieloculus0-bot.github.io/BEAN/",
+    "keywords": "persistent reasoning, evidence provenance, agent memory, uncertainty, explainable AI, Python, SQLite",
     "relatedLink": [
       "https://github.com/danieloculus0-bot/BEAN-AI-Bridge-",
       "https://github.com/danieloculus0-bot/BEAN/blob/main/docs/experimental-research-index-2026-10.md"
     ]
   }
   </script>
+
   <style>
-    :root { color-scheme: dark; --ink:#f0f5ff; --muted:#adbed4; --deep:#091326; --panel:#122341; --line:#344967; --accent:#76d9e3; --focus:#ffe392; }
-    * { box-sizing:border-box; }
-    body { margin:0; background:linear-gradient(150deg,#071326 0%,#142646 52%,#071326 100%); color:var(--ink); font:16px/1.65 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; }
-    a { color:var(--accent); text-underline-offset:3px; }
-    a:hover { color:white; }
-    a:focus-visible { outline:3px solid var(--focus); outline-offset:4px; border-radius:3px; }
-    .wrap { max-width:1080px; margin:auto; padding:0 24px; }
-    header { border-bottom:1px solid var(--line); }
-    nav { display:flex; align-items:center; justify-content:space-between; gap:18px; padding:17px 0; flex-wrap:wrap; }
-    .logo { font-size:1.32rem; font-weight:800; letter-spacing:.2em; color:#fff; text-decoration:none; }
-    .navlinks { display:flex; gap:20px; flex-wrap:wrap; font-size:.92rem; }
-    .hero { padding:76px 0 60px; }
-    .eyebrow { color:var(--accent); text-transform:uppercase; letter-spacing:.16em; font-size:.77rem; font-weight:700; }
-    h1 { margin:15px 0 20px; max-width:830px; font-size:clamp(2.5rem,6vw,5.2rem); line-height:1.08; letter-spacing:-.04em; }
-    h2 { line-height:1.2; font-size:clamp(1.45rem,3vw,2rem); }
-    h3 { margin:0 0 8px; font-size:1.13rem; }
-    .lead { font-size:1.21rem; color:#d4e0f0; max-width:770px; }
-    .actions { display:flex; flex-wrap:wrap; gap:12px; margin-top:28px; }
-    .action { display:inline-block; border:1px solid var(--accent); border-radius:9px; padding:11px 18px; text-decoration:none; color:var(--deep); background:var(--accent); font-weight:700; }
-    .action.secondary { background:transparent; color:var(--accent); }
-    section { padding:38px 0 48px; border-top:1px solid var(--line); }
-    .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(235px,1fr)); gap:15px; }
-    .tile { background:rgba(18,35,65,.8); border:1px solid var(--line); border-radius:14px; padding:24px; }
-    .tile p, .muted { color:var(--muted); }
-    .proof-tag { display:inline-block; margin-bottom:12px; color:var(--accent); font-size:.75rem; font-weight:700; letter-spacing:.1em; text-transform:uppercase; }
-    .proof-result { background:#050d1a; border:1px solid var(--line); border-radius:8px; padding:10px 14px; font-family:ui-monospace,SFMono-Regular,Consolas,monospace; font-size:.94rem; color:#f6fafc; }
-    .proof-caption { color:var(--muted); font-size:.88rem; margin-top:14px; }
-    pre { overflow:auto; background:#050d1a; border:1px solid var(--line); padding:23px; border-radius:12px; color:#e4f7ff; line-height:1.8; }
-    code { font-family:ui-monospace,SFMono-Regular,Consolas,"Liberation Mono",monospace; font-size:.9em; }
-    .notice { border-left:3px solid var(--accent); padding:14px 20px; background:rgba(18,35,65,.65); color:#d3deef; }
-    .links { display:flex; flex-wrap:wrap; gap:12px 25px; }
-    footer { padding:30px 0 55px; color:var(--muted); border-top:1px solid var(--line); font-size:.9rem; }
+    :root{
+      --bg:#f5fbf3;
+      --bg-2:#edf8e8;
+      --panel:#ffffff;
+      --panel-soft:rgba(255,255,255,.72);
+      --line:#dcecd4;
+      --line-strong:#b8ddb0;
+      --text:#182118;
+      --muted:#536253;
+      --green:#7ed957;
+      --green-2:#5fc449;
+      --green-3:#35a83d;
+      --green-deep:#25712c;
+      --shadow:0 14px 35px rgba(46,97,39,.10);
+      --shadow-strong:0 18px 48px rgba(46,97,39,.16);
+      --radius:22px;
+      --radius-sm:14px;
+      --max:1160px;
+    }
+
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{
+      margin:0;
+      color:var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(126,217,87,.16), transparent 28%),
+        radial-gradient(circle at top right, rgba(126,217,87,.12), transparent 24%),
+        linear-gradient(180deg, #fbfef9 0%, #f3fbef 46%, #edf8e8 100%);
+      font:16px/1.65 Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    a{
+      color:var(--green-deep);
+      text-decoration:none;
+    }
+
+    a:hover{
+      color:#163e19;
+    }
+
+    img{
+      max-width:100%;
+      display:block;
+    }
+
+    .wrap{
+      width:min(100% - 32px, var(--max));
+      margin:auto;
+    }
+
+    .eyebrow{
+      display:inline-flex;
+      align-items:center;
+      gap:10px;
+      padding:8px 14px;
+      border:1px solid var(--line);
+      border-radius:999px;
+      background:rgba(255,255,255,.76);
+      backdrop-filter:blur(10px);
+      box-shadow:0 6px 18px rgba(58,102,44,.06);
+      color:var(--green-deep);
+      font-size:.78rem;
+      font-weight:800;
+      letter-spacing:.12em;
+      text-transform:uppercase;
+    }
+
+    .eyebrow .dot{
+      width:8px;
+      height:8px;
+      border-radius:50%;
+      background:linear-gradient(180deg, #9df47d 0%, var(--green-2) 100%);
+      box-shadow:0 0 0 4px rgba(126,217,87,.18);
+    }
+
+    .section{
+      padding:76px 0;
+    }
+
+    .section.tight{
+      padding-top:56px;
+      padding-bottom:56px;
+    }
+
+    h1,h2,h3{
+      margin:0 0 14px;
+      line-height:1.1;
+      letter-spacing:-.03em;
+    }
+
+    h1{
+      font-size:clamp(2.9rem, 6vw, 5.2rem);
+      max-width:680px;
+    }
+
+    h2{
+      font-size:clamp(2rem, 4vw, 3rem);
+    }
+
+    h3{
+      font-size:1.14rem;
+    }
+
+    p{
+      margin:0 0 14px;
+      color:var(--muted);
+    }
+
+    .lead{
+      font-size:1.15rem;
+      max-width:690px;
+    }
+
+    .strong{
+      color:var(--text);
+    }
+
+    .site-header{
+      position:sticky;
+      top:0;
+      z-index:30;
+      backdrop-filter:blur(14px);
+      background:rgba(250,254,247,.75);
+      border-bottom:1px solid rgba(184,221,176,.55);
+    }
+
+    .nav{
+      min-height:74px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:24px;
+      flex-wrap:wrap;
+    }
+
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      font-weight:900;
+      color:var(--text);
+      letter-spacing:.06em;
+    }
+
+    .brand-badge{
+      width:40px;
+      height:40px;
+      display:grid;
+      place-items:center;
+      border-radius:14px;
+      background:linear-gradient(180deg, #ffffff 0%, #ebf8e7 100%);
+      border:1px solid var(--line);
+      box-shadow:0 10px 24px rgba(72,126,54,.12);
+      font-size:1.2rem;
+    }
+
+    .navlinks{
+      display:flex;
+      align-items:center;
+      gap:18px;
+      flex-wrap:wrap;
+      font-size:.96rem;
+      font-weight:600;
+    }
+
+    .navlinks a{
+      color:var(--muted);
+    }
+
+    .navlinks a:hover{
+      color:var(--text);
+    }
+
+    .hero{
+      padding:62px 0 52px;
+    }
+
+    .hero-grid{
+      display:grid;
+      grid-template-columns:1.15fr .85fr;
+      gap:34px;
+      align-items:center;
+    }
+
+    .hero-card{
+      background:linear-gradient(180deg, rgba(255,255,255,.92) 0%, rgba(248,252,245,.82) 100%);
+      border:1px solid rgba(184,221,176,.72);
+      border-radius:32px;
+      box-shadow:var(--shadow-strong);
+      padding:44px;
+      position:relative;
+      overflow:hidden;
+    }
+
+    .hero-card::before{
+      content:"";
+      position:absolute;
+      inset:auto -80px -100px auto;
+      width:240px;
+      height:240px;
+      border-radius:50%;
+      background:radial-gradient(circle, rgba(126,217,87,.18), transparent 70%);
+      pointer-events:none;
+    }
+
+    .hero-actions{
+      display:flex;
+      flex-wrap:wrap;
+      gap:14px;
+      margin-top:26px;
+    }
+
+    .btn{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:10px;
+      padding:13px 18px;
+      border-radius:14px;
+      font-weight:800;
+      border:1px solid transparent;
+      transition:.18s ease;
+    }
+
+    .btn-primary{
+      background:linear-gradient(180deg, #96ef71 0%, var(--green) 100%);
+      color:#103114;
+      box-shadow:0 10px 22px rgba(95,196,73,.24);
+    }
+
+    .btn-primary:hover{
+      transform:translateY(-1px);
+      box-shadow:0 14px 26px rgba(95,196,73,.28);
+      color:#0a260d;
+    }
+
+    .btn-secondary{
+      background:rgba(255,255,255,.8);
+      border-color:var(--line);
+      color:var(--green-deep);
+    }
+
+    .btn-secondary:hover{
+      background:#fff;
+      color:#184e1f;
+    }
+
+    .hero-pills{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-top:18px;
+    }
+
+    .pill{
+      padding:8px 12px;
+      border-radius:999px;
+      background:rgba(255,255,255,.78);
+      border:1px solid var(--line);
+      color:var(--muted);
+      font-size:.88rem;
+      font-weight:700;
+    }
+
+    .mascot-panel{
+      position:relative;
+      background:linear-gradient(180deg, rgba(255,255,255,.92) 0%, rgba(240,249,236,.88) 100%);
+      border:1px solid rgba(184,221,176,.72);
+      border-radius:32px;
+      box-shadow:var(--shadow-strong);
+      padding:26px;
+      min-height:520px;
+      overflow:hidden;
+      display:flex;
+      flex-direction:column;
+      justify-content:space-between;
+    }
+
+    .mascot-glow{
+      position:absolute;
+      inset:auto auto 25px 25px;
+      width:180px;
+      height:180px;
+      border-radius:50%;
+      background:radial-gradient(circle, rgba(126,217,87,.2), transparent 72%);
+      filter:blur(8px);
+      pointer-events:none;
+    }
+
+    .mascot-svg{
+      width:100%;
+      max-width:390px;
+      margin:0 auto;
+    }
+
+    .mascot-caption{
+      display:grid;
+      gap:12px;
+      margin-top:12px;
+    }
+
+    .mini-proof{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:12px;
+    }
+
+    .mini-card{
+      background:rgba(255,255,255,.85);
+      border:1px solid var(--line);
+      border-radius:16px;
+      padding:14px;
+      box-shadow:0 6px 18px rgba(46,97,39,.08);
+    }
+
+    .mini-label{
+      font-size:.72rem;
+      letter-spacing:.1em;
+      text-transform:uppercase;
+      font-weight:800;
+      color:var(--green-deep);
+      margin-bottom:4px;
+    }
+
+    .mini-card strong{
+      display:block;
+      color:var(--text);
+      font-size:1rem;
+    }
+
+    .grid-3{
+      display:grid;
+      grid-template-columns:repeat(3, minmax(0,1fr));
+      gap:18px;
+    }
+
+    .grid-2{
+      display:grid;
+      grid-template-columns:repeat(2, minmax(0,1fr));
+      gap:18px;
+    }
+
+    .card{
+      background:linear-gradient(180deg, rgba(255,255,255,.95) 0%, rgba(248,252,246,.9) 100%);
+      border:1px solid var(--line);
+      border-radius:24px;
+      padding:24px;
+      box-shadow:var(--shadow);
+    }
+
+    .card.soft{
+      background:rgba(255,255,255,.78);
+      backdrop-filter:blur(12px);
+    }
+
+    .card:hover{
+      border-color:var(--line-strong);
+      box-shadow:0 18px 34px rgba(46,97,39,.12);
+    }
+
+    .icon-badge{
+      width:44px;
+      height:44px;
+      display:grid;
+      place-items:center;
+      border-radius:14px;
+      background:linear-gradient(180deg, #fafff8 0%, #ebf7e7 100%);
+      border:1px solid var(--line);
+      margin-bottom:14px;
+      color:var(--green-deep);
+      font-size:1.1rem;
+      box-shadow:0 8px 20px rgba(60,104,48,.08);
+    }
+
+    .proof-box{
+      background:#f9fff6;
+      border:1px solid var(--line);
+      border-left:6px solid var(--green);
+      border-radius:18px;
+      padding:20px;
+      margin-top:12px;
+    }
+
+    .proof-line{
+      display:inline-block;
+      margin-top:10px;
+      font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size:.95rem;
+      background:#ffffff;
+      padding:8px 12px;
+      border-radius:12px;
+      border:1px solid var(--line);
+      color:#264b29;
+    }
+
+    .code{
+      margin-top:16px;
+      background:#102012;
+      color:#e9ffe7;
+      border-radius:22px;
+      border:1px solid #244129;
+      overflow:auto;
+      box-shadow:0 18px 40px rgba(16,32,18,.18);
+    }
+
+    .code pre{
+      margin:0;
+      padding:22px;
+      font:14px/1.8 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    }
+
+    .split{
+      display:grid;
+      grid-template-columns:1.05fr .95fr;
+      gap:22px;
+      align-items:start;
+    }
+
+    .list{
+      margin:14px 0 0;
+      padding:0;
+      list-style:none;
+      display:grid;
+      gap:12px;
+    }
+
+    .list li{
+      position:relative;
+      padding-left:22px;
+      color:var(--muted);
+    }
+
+    .list li::before{
+      content:"";
+      width:9px;
+      height:9px;
+      border-radius:50%;
+      background:linear-gradient(180deg, #97ed75 0%, var(--green-3) 100%);
+      position:absolute;
+      left:0;
+      top:.58em;
+      box-shadow:0 0 0 5px rgba(126,217,87,.12);
+    }
+
+    .cta{
+      background:
+        radial-gradient(circle at top right, rgba(126,217,87,.14), transparent 30%),
+        linear-gradient(180deg, rgba(255,255,255,.95) 0%, rgba(245,252,241,.92) 100%);
+      border:1px solid var(--line);
+      border-radius:30px;
+      padding:34px;
+      box-shadow:var(--shadow-strong);
+    }
+
+    .footer{
+      padding:26px 0 48px;
+      color:#677667;
+      font-size:.92rem;
+    }
+
+    .footer-inner{
+      display:flex;
+      justify-content:space-between;
+      gap:14px;
+      flex-wrap:wrap;
+      padding-top:10px;
+      border-top:1px solid var(--line);
+    }
+
+    .tagline{
+      color:var(--green-deep);
+      font-weight:800;
+    }
+
+    @media (max-width: 980px){
+      .hero-grid,
+      .grid-3,
+      .grid-2,
+      .split,
+      .mini-proof{
+        grid-template-columns:1fr;
+      }
+
+      .hero-card,
+      .mascot-panel,
+      .cta{
+        padding:28px;
+      }
+
+      .section{
+        padding:62px 0;
+      }
+
+      .hero{
+        padding-top:38px;
+      }
+    }
+
+    @media (max-width: 640px){
+      .wrap{
+        width:min(100% - 20px, var(--max));
+      }
+
+      .nav{
+        padding:14px 0;
+      }
+
+      .navlinks{
+        gap:12px;
+      }
+
+      h1{
+        font-size:2.5rem;
+      }
+
+      .hero-card,
+      .mascot-panel,
+      .card,
+      .cta{
+        border-radius:22px;
+      }
+    }
   </style>
 </head>
 <body>
-  <header><nav class="wrap" aria-label="Main navigation">
-    <a class="logo" href="#top">BEAN</a>
-    <div class="navlinks">
-      <a href="#capabilities">Capabilities</a>
-      <a href="#proof">Evidence</a>
-      <a href="#quickstart">Quickstart</a>
-      <a href="#evidence">Research</a>
-      <a href="https://github.com/danieloculus0-bot/BEAN">Source code</a>
+
+  <header class="site-header">
+    <div class="wrap nav" aria-label="Main navigation">
+      <a class="brand" href="#top">
+        <span class="brand-badge">🫘</span>
+        <span>BEAN</span>
+      </a>
+
+      <nav class="navlinks">
+        <a href="#difference">Why BEAN</a>
+        <a href="#proof">Proof</a>
+        <a href="#quickstart">Quickstart</a>
+        <a href="#research">Research</a>
+        <a href="https://github.com/danieloculus0-bot/BEAN">GitHub</a>
+      </nav>
     </div>
-  </nav></header>
+  </header>
+
   <main id="top">
-    <div class="wrap hero">
-      <p class="eyebrow">Behavior Enabled Avatar Node · Public-source Python project</p>
-      <h1>Reasoning needs a memory. Evidence needs a history.</h1>
-      <p class="lead">BEAN is an experimental persistent reasoning architecture that records events, preserves uncertainty, traces proposals to their context and keeps actions separate from model output. The reasoning provider can change. The evidence record remains inspectable.</p>
-      <div class="actions">
-        <a class="action" href="https://github.com/danieloculus0-bot/BEAN">Explore BEAN on GitHub</a>
-        <a class="action secondary" href="https://github.com/danieloculus0-bot/BEAN/blob/main/docs/GETTING_STARTED.md">Run the offline demo</a>
-      </div>
-    </div>
-    <section id="capabilities"><div class="wrap">
-      <h2>What the project actually implements</h2>
-      <div class="grid">
-        <div class="tile"><h3>Persistent event history</h3><p>SQLite-backed sessions and events, recorded observations and trace IDs that a host application can inspect.</p></div>
-        <div class="tile"><h3>Evidence and uncertainty</h3><p>Epistemic checks, contradiction handling, hypotheses and N/A-aware report adapters with explicit limits on source trust.</p></div>
-        <div class="tile"><h3>Reviewable reasoning</h3><p>Model adapters provide reasoning proposals. Hosts retain policy, execution authority, and the ability to reject a proposal.</p></div>
-        <div class="tile"><h3>Reproducible experiments</h3><p>Cross-platform tests, research branches, synthetic benchmark comparisons, and documented negative results.</p></div>
-      </div>
-    </div></section>
-    <section id="proof"><div class="wrap">
-      <p class="eyebrow">Inspectable behavior, not a marketing benchmark</p>
-      <h2>Two things BEAN refuses to fake</h2>
-      <div class="grid">
-        <div class="tile">
-          <span class="proof-tag">Core · Optional Watcher</span>
-          <h3>Missing information is not zero.</h3>
-          <p>If a source report is absent, stale or lacks confirmed coverage, BEAN's Watcher reports an unknown current value. It keeps prior readings as history rather than presenting them as fresh data.</p>
-          <div class="proof-result">current_value = N/A</div>
-          <p class="proof-caption"><a href="https://github.com/danieloculus0-bot/BEAN/blob/main/docs/bean-watcher-contract.md">Read Watcher source contract</a></p>
+    <section class="hero">
+      <div class="wrap hero-grid">
+
+        <div class="hero-card">
+          <div class="eyebrow">
+            <span class="dot"></span>
+            Behavior Enabled Avatar Node
+          </div>
+
+          <h1>Cute name. <br>Serious reasoning.</h1>
+
+          <p class="lead">
+            <span class="strong">BEAN</span> is a persistent reasoning architecture built for
+            <span class="strong">memory</span>,
+            <span class="strong">evidence</span>,
+            <span class="strong">uncertainty</span>,
+            and <span class="strong">traceable change</span>.
+            It remembers what happened, what supports a conclusion, and when it should refuse to fake certainty.
+          </p>
+
+          <div class="hero-pills">
+            <span class="pill">Persistent event history</span>
+            <span class="pill">Evidence-aware revision</span>
+            <span class="pill">Reviewable proposals</span>
+            <span class="pill">Python + SQLite</span>
+          </div>
+
+          <div class="hero-actions">
+            <a class="btn btn-primary" href="https://github.com/danieloculus0-bot/BEAN">
+              Explore BEAN
+            </a>
+            <a class="btn btn-secondary" href="#quickstart">
+              Run the quickstart
+            </a>
+          </div>
         </div>
-        <div class="tile">
-          <span class="proof-tag">Bridge · Opt-in Learning Loop</span>
-          <h3>A model's assertion is not evidence.</h3>
-          <p>An unsupported answer cannot approve itself. A host-supplied verifier must check corroborating provenance before a new versioned definition is recorded. Conflicts remain unresolved.</p>
-          <div class="proof-result">unverified_claim = held</div>
-          <p class="proof-caption"><a href="https://github.com/danieloculus0-bot/BEAN-AI-Bridge-/blob/main/experiments/learning_loop/README.md">Inspect evidence revision tests</a></p>
+
+        <aside class="mascot-panel" aria-label="BEAN mascot and summary">
+          <div class="mascot-glow"></div>
+
+          <svg class="mascot-svg" viewBox="0 0 360 360" aria-hidden="true" role="img">
+            <defs>
+              <linearGradient id="beanBody" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stop-color="#8fe86a"/>
+                <stop offset="55%" stop-color="#66cc4d"/>
+                <stop offset="100%" stop-color="#3ea53f"/>
+              </linearGradient>
+              <linearGradient id="beanShine" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stop-color="rgba(255,255,255,.95)"/>
+                <stop offset="100%" stop-color="rgba(255,255,255,.2)"/>
+              </linearGradient>
+              <filter id="softShadow" x="-30%" y="-30%" width="160%" height="160%">
+                <feDropShadow dx="0" dy="18" stdDeviation="16" flood-color="rgba(37,113,44,.22)"/>
+              </filter>
+            </defs>
+
+            <g filter="url(#softShadow)">
+              <path d="M204 48c50 0 92 35 92 92 0 23-7 45-19 61-11 14-16 30-15 46 2 41-25 81-88 81-68 0-118-41-118-108 0-26 9-50 24-69 13-17 31-26 46-40 21-19 37-63 78-63z"
+                    fill="url(#beanBody)"/>
+              <path d="M142 88c-31 16-54 53-54 93 0 16 4 31 11 45"
+                    fill="none" stroke="rgba(18,56,18,.20)" stroke-width="11" stroke-linecap="round"/>
+
+              <ellipse cx="141" cy="113" rx="56" ry="30" fill="rgba(255,255,255,.22)" transform="rotate(-25 141 113)"/>
+
+              <ellipse cx="145" cy="168" rx="8" ry="12" fill="#19321b"/>
+              <ellipse cx="214" cy="171" rx="8" ry="12" fill="#19321b"/>
+              <circle cx="142" cy="164" r="2.2" fill="#ffffff"/>
+              <circle cx="211" cy="167" r="2.2" fill="#ffffff"/>
+
+              <path d="M146 211c13 14 49 14 62 0" fill="none" stroke="#18341b" stroke-width="7" stroke-linecap="round"/>
+
+              <path d="M197 51c10-18 32-26 51-23-13 10-21 18-27 31" fill="none" stroke="#58b848" stroke-width="10" stroke-linecap="round"/>
+              <path d="M216 45c17-18 42-21 61-12-20 4-33 14-42 25" fill="none" stroke="#7ed957" stroke-width="10" stroke-linecap="round"/>
+
+              <ellipse cx="111" cy="209" rx="12" ry="7" fill="rgba(255,255,255,.18)"/>
+              <ellipse cx="242" cy="209" rx="12" ry="7" fill="rgba(255,255,255,.18)"/>
+            </g>
+          </svg>
+
+          <div class="mascot-caption">
+            <div class="mini-proof">
+              <div class="mini-card">
+                <div class="mini-label">Identity</div>
+                <strong>Little BEAN</strong>
+                <p>Friendly surface. Rigorous internals.</p>
+              </div>
+              <div class="mini-card">
+                <div class="mini-label">Promise</div>
+                <strong>Evidence first</strong>
+                <p>Memory with receipts, uncertainty, and revision history.</p>
+              </div>
+            </div>
+          </div>
+        </aside>
+
+      </div>
+    </section>
+
+    <section id="difference" class="section tight">
+      <div class="wrap">
+        <div class="eyebrow">
+          <span class="dot"></span>
+          Why BEAN feels different
+        </div>
+
+        <h2>Not just memory. <br>Memory with evidence.</h2>
+        <p class="lead">
+          BEAN is aimed at a stricter kind of reasoning workflow: not simply storing context,
+          but preserving the trail behind a decision and making changes inspectable over time.
+        </p>
+
+        <div class="grid-3" style="margin-top:24px">
+          <article class="card">
+            <div class="icon-badge">🧠</div>
+            <h3>Persistent event history</h3>
+            <p>SQLite-backed sessions, events, trace IDs, and durable state that a host application can inspect after restart.</p>
+          </article>
+
+          <article class="card">
+            <div class="icon-badge">🌿</div>
+            <h3>Evidence and uncertainty</h3>
+            <p>BEAN can preserve contradictions, uncertainty, source boundaries, and unresolved states instead of pretending everything is settled.</p>
+          </article>
+
+          <article class="card">
+            <div class="icon-badge">🔎</div>
+            <h3>Reviewable reasoning</h3>
+            <p>Models can propose. Hosts still control policy, execution authority, and whether a proposal gets accepted, held, or rejected.</p>
+          </article>
         </div>
       </div>
-      <p class="muted">These are separate, opt-in components with synthetic test scenarios. Report completeness and source authenticity are host responsibilities; no live ERP system or independent fact-checking service is claimed.</p>
-    </div></section>
-    <section id="quickstart"><div class="wrap">
-      <p class="eyebrow">Start with real code</p>
-      <h2>A local, offline five-minute demonstration</h2>
-      <p class="muted">Python 3.10+, Git and psutil. No API key, connected machine or data upload. This demonstrates event logging and proposal boundaries using a mock reasoning provider.</p>
-      <pre><code>git clone https://github.com/danieloculus0-bot/BEAN.git
+    </section>
+
+    <section id="proof" class="section">
+      <div class="wrap">
+        <div class="eyebrow">
+          <span class="dot"></span>
+          Inspectable behavior
+        </div>
+
+        <h2>Two things BEAN refuses to fake</h2>
+
+        <div class="grid-2" style="margin-top:22px">
+          <article class="card soft">
+            <h3>Missing information is not zero.</h3>
+            <p>
+              If a source report is absent, stale, or lacks confirmed coverage, BEAN can preserve the uncertainty
+              instead of inventing a neat-looking answer.
+            </p>
+            <div class="proof-box">
+              <strong class="strong">Watcher behavior</strong><br>
+              <span class="proof-line">current_value = N/A</span>
+            </div>
+            <p style="margin-top:12px">
+              <a href="https://github.com/danieloculus0-bot/BEAN/blob/main/docs/bean-watcher-contract.md">
+                Read the Watcher contract →
+              </a>
+            </p>
+          </article>
+
+          <article class="card soft">
+            <h3>A model’s assertion is not evidence.</h3>
+            <p>
+              An unsupported answer does not get to certify itself. A host-supplied verifier must corroborate
+              the claim before a new definition is recorded as revised knowledge.
+            </p>
+            <div class="proof-box">
+              <strong class="strong">Learning-loop behavior</strong><br>
+              <span class="proof-line">unverified_claim = held</span>
+            </div>
+            <p style="margin-top:12px">
+              <a href="https://github.com/danieloculus0-bot/BEAN-AI-Bridge-/blob/main/experiments/learning_loop/README.md">
+                Inspect evidence revision tests →
+              </a>
+            </p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="quickstart" class="section">
+      <div class="wrap split">
+        <div class="card">
+          <div class="eyebrow">
+            <span class="dot"></span>
+            Quickstart
+          </div>
+
+          <h2>Run BEAN in a few minutes</h2>
+          <p>
+            This local demo uses a temporary SQLite database and a mock reasoning provider.
+            No API key, no external data source, no hardware control.
+          </p>
+
+          <div class="code">
+            <pre><code>git clone https://github.com/danieloculus0-bot/BEAN.git
 cd BEAN
 python -m pip install psutil
 python -m examples.quickstart_reasoning</code></pre>
-      <p><a href="https://github.com/danieloculus0-bot/BEAN/blob/main/docs/GETTING_STARTED.md">Read the guide and run the tests</a> · <a href="https://github.com/danieloculus0-bot/BEAN/blob/main/examples/quickstart_reasoning.py">Inspect example source</a></p>
-    </div></section>
-    <section id="evidence"><div class="wrap">
-      <p class="eyebrow">Evidence over hype</p>
-      <h2>Read the experiments, including what failed</h2>
-      <p>The research index links source branches, findings, workflow runs and limitations. Some studies use intentionally fictional cases. Their results are <strong>not</strong> claims of AGI, independent source authentication, production autonomy, or measured superiority on the live web.</p>
-      <div class="links">
-        <a href="https://github.com/danieloculus0-bot/BEAN/blob/main/docs/experimental-research-index-2026-10.md">Research index</a>
-        <a href="https://github.com/danieloculus0-bot/BEAN/blob/main/docs/general-reasoning-layer.md">Python integration</a>
-        <a href="https://github.com/danieloculus0-bot/BEAN/blob/main/docs/EVIDENCE_BRIDGE_READINESS.md">Core and Bridge evidence flow</a>
-        <a href="https://github.com/danieloculus0-bot/BEAN/actions/workflows/brain-smoke.yml">Cross-platform regression runs</a>
+          </div>
+
+          <p style="margin-top:14px">
+            <a href="https://github.com/danieloculus0-bot/BEAN/blob/main/docs/GETTING_STARTED.md">
+              Read the full getting-started guide →
+            </a>
+          </p>
+        </div>
+
+        <div class="card">
+          <div class="icon-badge">✨</div>
+          <h3>What this quickstart proves</h3>
+          <ul class="list">
+            <li>BEAN records an observation and persists a proposal path.</li>
+            <li>Trace IDs are preserved for later inspection.</li>
+            <li>Review boundaries remain explicit.</li>
+            <li>The architecture can run offline and locally.</li>
+          </ul>
+
+          <div style="height:18px"></div>
+
+          <div class="icon-badge">🧾</div>
+          <h3>What it does not claim</h3>
+          <ul class="list">
+            <li>No proof of general intelligence.</li>
+            <li>No live ERP integration.</li>
+            <li>No independent external fact verification.</li>
+            <li>No autonomous hardware control.</li>
+          </ul>
+        </div>
       </div>
-      <p class="notice">Current project scope: experimental development with review-required proposals. Live ERP integration, independently validated open-world learning, and robot autonomy are not claimed. Public source access is not a redistribution license.</p>
-    </div></section>
-    <section><div class="wrap">
-      <h2>Integrate, inspect, contribute</h2>
-      <p>The <a href="https://github.com/danieloculus0-bot/BEAN-AI-Bridge-">BEAN AI Bridge</a> is a separate generic ERP/KPI evidence and replay prototype using synthetic test data. BEAN Core supplies persistent reasoning primitives. Have a concrete use case or a reproducible failure? <a href="https://github.com/danieloculus0-bot/BEAN/issues">Open a GitHub issue</a>.</p>
-    </div></section>
+    </section>
+
+    <section id="research" class="section tight">
+      <div class="wrap">
+        <div class="eyebrow">
+          <span class="dot"></span>
+          Research and boundaries
+        </div>
+
+        <h2>Experiments matter. So do their limits.</h2>
+        <p class="lead">
+          BEAN keeps its research visible, including negative or mixed outcomes.
+          The goal is not to look magical. The goal is to be inspectable.
+        </p>
+
+        <div class="grid-3" style="margin-top:24px">
+          <article class="card">
+            <div class="icon-badge">🧪</div>
+            <h3>Reproducible experiments</h3>
+            <p>Research branches, synthetic studies, cross-platform tests, and tracked findings are part of the public record.</p>
+            <p><a href="https://github.com/danieloculus0-bot/BEAN/blob/main/docs/experimental-research-index-2026-10.md">View research index →</a></p>
+          </article>
+
+          <article class="card">
+            <div class="icon-badge">🔗</div>
+            <h3>Core + Bridge</h3>
+            <p>BEAN Core handles persistent reasoning primitives. BEAN AI Bridge explores evidence, ERP/KPI replay, and revision workflows.</p>
+            <p><a href="https://github.com/danieloculus0-bot/BEAN/blob/main/docs/EVIDENCE_BRIDGE_READINESS.md">See evidence flow →</a></p>
+          </article>
+
+          <article class="card">
+            <div class="icon-badge">🛡️</div>
+            <h3>Honest scope</h3>
+            <p>Live production autonomy, independently validated open-world learning, and operational source authentication are not claimed here.</p>
+            <p><a href="https://github.com/danieloculus0-bot/BEAN/actions/workflows/brain-smoke.yml">Check regression runs →</a></p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="wrap">
+        <div class="cta">
+          <div class="eyebrow">
+            <span class="dot"></span>
+            Integrate, inspect, contribute
+          </div>
+
+          <h2>BEAN is meant to be tested.</h2>
+          <p class="lead">
+            If you want a project that treats memory, evidence, uncertainty, and revision as first-class concerns,
+            BEAN is worth exploring.
+          </p>
+
+          <div class="hero-actions">
+            <a class="btn btn-primary" href="https://github.com/danieloculus0-bot/BEAN">
+              Open the repository
+            </a>
+            <a class="btn btn-secondary" href="https://github.com/danieloculus0-bot/BEAN/issues">
+              Open an issue
+            </a>
+            <a class="btn btn-secondary" href="https://github.com/danieloculus0-bot/BEAN-AI-Bridge-">
+              Visit BEAN AI Bridge
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
   </main>
-  <footer><div class="wrap">BEAN · Behavior Enabled Avatar Node · Source, tests and research maintained on <a href="https://github.com/danieloculus0-bot/BEAN">GitHub</a>.</div></footer>
+
+  <footer class="footer">
+    <div class="wrap footer-inner">
+      <div>
+        <strong>BEAN</strong> · Behavior Enabled Avatar Node
+      </div>
+      <div class="tagline">
+        Friendly little bean. Serious reasoning engine.
+      </div>
+    </div>
+  </footer>
+
 </body>
 </html>
