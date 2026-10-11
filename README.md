@@ -14,6 +14,19 @@
 >
 > BEAN is the persistent layer for systems that need to remember, question, track evidence, preserve uncertainty, recognize contradictions, propose improvements and keep an auditable record of what really happened. It can use an LLM, a desktop, a service, a manufacturer's data exports or a robot as a host. **None of those is BEAN's identity. The body is optional.**
 
+## Why BEAN is more than an LLM call
+
+The distinction is not that BEAN invented memory or tool use. Those are standard agent techniques. BEAN's contribution is an inspectable **evidence-to-action loop**: source-aware records survive restarts, contradictions remain unresolved until evidence supports revision, model proposals stay distinct from permission to execute, and engineering candidates can be judged against repeatable tests. **Its intelligence advantage is a research question, not an asserted fact.**
+
+There are concrete outcomes beyond a feature list:
+
+- **Merged, bounded Bridge source changes:** BEAN selected from known, evidence-backed improvements, and a trusted executor applied regression-tested changes: [invalid-observation validation, PR #15](https://github.com/danieloculus0-bot/BEAN-AI-Bridge-/pull/15) and [timestamp-parsing optimization, PR #17](https://github.com/danieloculus0-bot/BEAN-AI-Bridge-/pull/17). Both merged. These are constrained agentic changes, not freeform neural self-rewriting.
+- **External model-authored Core repair:** [Lab 020](docs/BEAN_LLM_REPAIR_EXPERIMENT_20261011.md) reports 14/14 development plus 7/7 independent holdout checks for a proposal to repair BEAN Core's selector. [Review PR #51](https://github.com/danieloculus0-bot/BEAN/pull/51) remains open, so the candidate is not claimed as a merged Core upgrade.
+- **Tested, but inconclusive transfer learning:** [Lab 023](docs/bean-causal-retention-lab023.md) persists generated lessons across a restart, then attempts fresh tasks with and without those lessons. A pilot scored 4 cold versus 6 retained holdout passes, but missing candidates and unmatched provider identity meant the independent judges classified it **INCONCLUSIVE**.
+- **Next proof:** On unseen tasks and the same base model, compare no memory, simple retrieval, full BEAN, and a placebo-memory control; report accuracy, corrected beliefs, abstention, transfer, regressions, time and cost. A repeatable causal improvement has **not** yet been established.
+
+[**See this comparison on the homepage**](https://danieloculus0-bot.github.io/BEAN/#difference).
+
 ## Start here: see BEAN do something useful
 
 BEAN is not waiting for a robot body. The Core already has four actual behaviors wired into a single offline, reproducible acceptance command:

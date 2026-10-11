@@ -57,6 +57,38 @@ class PublicSkillsPageTests(unittest.TestCase):
         self.assertIn("Cute name. <br>Serious reasoning.", self.page)
         self.assertIn("#skills", self.parser.links)
 
+    def test_differentiation_is_early_visible_and_evidence_citable(self):
+        self.assertIn("difference", self.parser.anchors)
+        self.assertIn("#difference", self.parser.links)
+        self.assertLess(self.page.index('id="difference"'),
+                        self.page.index('id="skills"'))
+        for statement in (
+            "The model thinks. BEAN keeps the receipts.",
+            "A · Base LLM call",
+            "B · Conventional tool agent",
+            "C · BEAN's implementation",
+            "Two real, tested source improvements",
+            "14/14 development",
+            "7/7 fresh holdout",
+            "4 versus 6 held-out checks",
+            "INCONCLUSIVE",
+            "That controlled advantage has not yet been established.",
+        ):
+            with self.subTest(statement=statement):
+                self.assertIn(statement, self.page)
+        for reference in (
+            "https://github.com/danieloculus0-bot/BEAN-AI-Bridge-/pull/15",
+            "https://github.com/danieloculus0-bot/BEAN-AI-Bridge-/pull/17",
+            "https://github.com/danieloculus0-bot/BEAN/pull/51",
+            "https://github.com/danieloculus0-bot/BEAN/blob/main/docs/bean-causal-retention-lab023.md",
+            "https://github.com/danieloculus0-bot/BEAN/actions/runs/38112389946",
+        ):
+            with self.subTest(reference=reference):
+                self.assertIn(reference, self.parser.links)
+        for path in ("docs/bean-causal-retention-lab023.md",
+                     "docs/BEAN_LLM_REPAIR_EXPERIMENT_20261011.md"):
+            self.assertTrue((ROOT / path).is_file(), path)
+
     def test_neural_model_section_is_grounded_in_sources_and_scope(self):
         self.assertIn("neural", self.parser.anchors)
         self.assertIn("#neural", self.parser.links)
