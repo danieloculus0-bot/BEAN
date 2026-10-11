@@ -18,10 +18,11 @@ from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
 from bean.evaluation.transfer_author import normalize as validate_training
+from bean.evaluation.transfer_author import generate as cloud_training
 from bean.evaluation.transfer_tasks import TASKS
 from bean.evaluation.transfer_oracle import grade as development_grade
 from bean.evaluation.lifelong_transfer_lab023 import (
-    learn, transfer, judge, SCHEMA, MAX_LESSON,
+    learn, transfer, judge, reflect as cloud_reflect, SCHEMA, MAX_LESSON,
 )
 from experiments.agent_arena.author import model_written_module, sha, write_json
 from experiments.agent_arena.cases import CASES
@@ -218,11 +219,67 @@ def judge_stage(root: Path):
                  root / "verdict.json", model_requested=route)
 
 
+
+def ollama_all(client: Ollama, root: Path):
+    """Never reuse a partial cloud session; each backend gets its own artifacts."""
+    root = Path(root)
+    if root.exists() and any(root.iterdir()):
+        raise ValueError("Use a NEW empty --out directory for each experiment")
+    training_stage(client, root)
+    development_stage(root)
+    transfer_stage(client, root)
+    return judge_stage(root)
+
+
+def _cloud_rate_limited(artifacts: Path):
+    record = json.loads((artifacts / "receipt.json").read_text(encoding="utf-8"))
+    return any(row.get("reason") == "http_429" for row in record.get("tasks", []))
+
+
+def auto_stage(client: Ollama, root: Path, *, cloud_generator=cloud_training):
+    """Use cloud when available. On 429, discard the cloud attempt and rerun ALL locally.
+
+    A mixed-model result must never be presented as a causal memory comparison.
+    """
+    root = Path(root)
+    if root.exists() and any(root.iterdir()):
+        raise ValueError("Use a NEW empty --out directory for each experiment")
+    key = os.environ.get("OPENROUTER_API_KEY", "")
+    if not key:
+        return ollama_all(client, root)
+    cloud_generator(root / "training", api_key=key)
+    if _cloud_rate_limited(root / "training"):
+        shutil.rmtree(root)
+        return ollama_all(client, root)
+    development_stage(root)
+    learned = learn(root / "training", root / "development.json",
+                    root / "state" / "history.sqlite",
+                    root / "state" / "learning-summary.json",
+                    api_key=key, reflector=cloud_reflect)
+    if learned["model_authored_lessons"] < 2:
+        # An unavailable remote reflection may also be quota-limited.
+        shutil.rmtree(root)
+        return ollama_all(client, root)
+    transfer(root / "state" / "history.sqlite", root / "transfer",
+             api_key=key)
+    manifest = json.loads((root / "transfer" / "manifest.json").read_text())
+    if any(
+        attempt.get("reason") == "MODEL_HTTP_429"
+        for arms in manifest.get("cases", {}).values()
+        for receipt in arms.values()
+        for attempt in receipt.get("attempts", [])
+    ):
+        shutil.rmtree(root)
+        return ollama_all(client, root)
+    return judge(root / "transfer", root / "state" / "history.sqlite",
+                 root / "verdict.json")
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("stage",
                         choices=("train", "development", "reflect-transfer",
-                                 "judge", "all"))
+                                 "judge", "all", "auto"))
     parser.add_argument("--out", type=Path, default=Path("_lab023_ollama"))
     parser.add_argument("--model", default=os.environ.get("BEAN_OLLAMA_MODEL",
                                                           DEFAULT_MODEL))
@@ -238,13 +295,10 @@ def main(argv=None):
             result = training_stage(client, root)
         elif args.stage == "reflect-transfer":
             result = transfer_stage(client, root)
+        elif args.stage == "auto":
+            result = auto_stage(client, root)
         else:
-            if root.exists() and any(root.iterdir()):
-                raise ValueError("Use a NEW empty --out directory for each experiment")
-            result = training_stage(client, root)
-            development_stage(root)
-            result = transfer_stage(client, root)
-            result = judge_stage(root)
+            result = ollama_all(client, root)
     print(json.dumps({
         "stage": args.stage,
         "provider": args.model if args.stage not in ("development", "judge") else None,
