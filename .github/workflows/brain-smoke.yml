@@ -40,6 +40,9 @@ jobs:
       - name: Run Lab014 investigation and retention simulation
         if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.12'
         run: python -m bean.evaluation.investigation_lab014 --provider fixture --report bean-investigation-lab014.json
+      - name: Run Lab015 entirely simulated reasoning-provider ablation
+        if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.12'
+        run: python -m bean.evaluation.simulated_llm_lab015 --report bean-simulated-llm-lab015.json
       - name: Attach test evidence
         if: always()
         uses: actions/upload-artifact@v4
@@ -50,4 +53,5 @@ jobs:
             bean-core-coverage.xml
             bean-composite-growth.json
             bean-investigation-lab014.json
+            bean-simulated-llm-lab015.json
           if-no-files-found: ignore
