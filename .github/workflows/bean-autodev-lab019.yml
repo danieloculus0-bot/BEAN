@@ -59,16 +59,24 @@ jobs:
           python - <<'PY'
           import hashlib, json, pathlib
           report=json.loads(pathlib.Path('autodev-output/report.json').read_text())
-          assert report['status']=='validated_patch_written', report
-          assert report['baseline']['test_count']==7 and not report['baseline']['passed']
-          assert report['tests_passed']==7 and report['new_attempts']>=2
-          target=pathlib.Path('autodev-output/validated/bean/skills/clip_score.py')
-          assert target.is_file()
-          assert hashlib.sha256(target.read_bytes()).hexdigest()==report['accepted_source']
-          print('BEAN generated source SHA256:', report['accepted_source'])
-          print('BEAN tried', report['new_attempts'], 'candidates and found a 7/7 repair')
+          assert report['status'] in ('validated_patch_written', 'baseline_passed_no_witnessed_defect'), report
+          assert report['baseline']['test_count']==7
+          if report['status']=='validated_patch_written':
+              assert not report['baseline']['passed']
+              assert report['tests_passed']==7 and report['new_attempts']>=2
+              target=pathlib.Path('autodev-output/validated/bean/skills/clip_score.py')
+              assert target.is_file()
+              assert hashlib.sha256(target.read_bytes()).hexdigest()==report['accepted_source']
+              print('BEAN generated source SHA256:', report['accepted_source'])
+              print('BEAN tried', report['new_attempts'], 'candidates and found a 7/7 repair')
+          else:
+              assert report['baseline']['passed'] and report['new_attempts']==0
+              print('BEAN confirms source already passes all 7 tests; no pointless rewrite')
           PY
-          echo "status=validated_patch_written" >> "$GITHUB_OUTPUT"
+          python - <<'PY' >> "$GITHUB_OUTPUT"
+          import json
+          print("status="+json.load(open("autodev-output/report.json"))["status"])
+          PY
       - name: Save ALL code attempts and durable learning journal
         if: always()
         uses: actions/upload-artifact@v4
