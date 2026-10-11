@@ -1,0 +1,190 @@
+name: BEAN self-directed axle CAD experiment
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'experiments/robot_cad_peer/**'
+      - 'bean/tests/test_bean_axle_cad_trial.py'
+      - '.github/workflows/bean-autonomous-axle-cad.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'experiments/robot_cad_peer/**'
+      - 'bean/tests/test_bean_axle_cad_trial.py'
+      - '.github/workflows/bean-autonomous-axle-cad.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  preflight:
+    name: Model author and rejection protocol tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Test no forged design, original fixtures, or model-success claims
+        run: |
+          python -m compileall -q experiments/robot_cad_peer bean/tests/test_bean_axle_cad_trial.py
+          python -m unittest bean.tests.test_bean_axle_cad_trial -v
+
+  bean_first_design:
+    name: BEAN selects axle-mount geometry (no CAD/test code executed)
+    needs: preflight
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: BEAN independently chooses new CAD parameters
+        env:
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+        run: python -m experiments.robot_cad_peer.bean_design_request --out _bean_choice1
+      - name: Preserve exact model design and request receipt
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bean-axle-choice1-${{ github.run_id }}
+          path: _bean_choice1/
+          if-no-files-found: warn
+          retention-days: 21
+
+  independent_cad_gate:
+    name: Generate and independently inspect BEAN CAD (no model key)
+    needs: bean_first_design
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    outputs:
+      accepted: ${{ steps.read_verdict.outputs.accepted }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/checkout@v4
+        with:
+          repository: danieloculus0-bot/BEAN-AI-Bridge-
+          ref: 8037a69fb3af74597eebde3daad14fe4d42b721c
+          path: _bridge
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install real trusted CAD exporter and independent checker
+        run: python -m pip install 'cadquery==2.8.0' 'trimesh==4.11.1'
+      - uses: actions/download-artifact@v4
+        with:
+          name: bean-axle-choice1-${{ github.run_id }}
+          path: _bean_choice1
+      - name: Evaluate only model-selected dimensions; never trust model verdict
+        run: |
+          python -m experiments.robot_cad_peer.cad_qa_runner --bridge _bridge --proposal _bean_choice1/proposal.json --author-receipt _bean_choice1/author_receipt.json --out _qa1
+      - name: Record whether BEAN passed geometry checks
+        id: read_verdict
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json,os
+          data=json.load(open('_qa1/qa.json'))
+          with open(os.environ['GITHUB_OUTPUT'],'a') as f:
+              f.write('accepted='+str(data['status']=='PASSED').lower()+'\n')
+          PY
+      - name: Preserve independent CAD, proof, and reasons for rejection
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bean-axle-qa1-${{ github.run_id }}
+          path: _qa1/
+          if-no-files-found: warn
+          retention-days: 21
+
+  bean_revises_if_rejected:
+    name: BEAN gets second design attempt when QA rejects
+    needs: independent_cad_gate
+    if: needs.independent_cad_gate.outputs.accepted != 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/download-artifact@v4
+        with:
+          name: bean-axle-choice1-${{ github.run_id }}
+          path: _bean_choice1
+      - uses: actions/download-artifact@v4
+        with:
+          name: bean-axle-qa1-${{ github.run_id }}
+          path: _qa1
+      - name: BEAN independently revises from actual failure receipt
+        env:
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+        run: |
+          python -m experiments.robot_cad_peer.bean_design_request --feedback _qa1/qa.json --previous _bean_choice1/proposal.json --out _bean_choice2
+      - name: Preserve model-generated second design
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bean-axle-choice2-${{ github.run_id }}
+          path: _bean_choice2/
+          if-no-files-found: warn
+          retention-days: 21
+
+  independent_recheck:
+    name: Final independent mechanical verdict on BEAN revision
+    needs: bean_revises_if_rejected
+    if: needs.bean_revises_if_rejected.result == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/checkout@v4
+        with:
+          repository: danieloculus0-bot/BEAN-AI-Bridge-
+          ref: 8037a69fb3af74597eebde3daad14fe4d42b721c
+          path: _bridge
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install trusted export/check software
+        run: python -m pip install 'cadquery==2.8.0' 'trimesh==4.11.1'
+      - uses: actions/download-artifact@v4
+        with:
+          name: bean-axle-choice2-${{ github.run_id }}
+          path: _bean_choice2
+      - name: Generate revised model CAD; re-run unchanged independent checker
+        run: |
+          python -m experiments.robot_cad_peer.cad_qa_runner --bridge _bridge --proposal _bean_choice2/proposal.json --author-receipt _bean_choice2/author_receipt.json --out _qa2
+      - name: Preserve revised CAD and final verdict
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bean-axle-qa2-${{ github.run_id }}
+          path: _qa2/
+          if-no-files-found: warn
+          retention-days: 21
