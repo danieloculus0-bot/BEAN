@@ -43,5 +43,7 @@ jobs:
         run: python -m pytest bean/tests/test_public_plugin.py -q -ra --tb=short
       - name: Validate MCP tool discovery and accurate annotations
         run: python -m integrations.chatgpt.smoke
+      - name: Verify actual Streamable HTTP handshake and all four tool calls
+        run: python -m integrations.chatgpt.http_smoke
       - name: Verify portable plugin metadata parses
         run: python -c "import json; from pathlib import Path; p=Path('integrations/chatgpt/plugin'); m=json.loads((p/'plugin.json').read_text()); assert m['name']=='bean-evidence-companion'; s=json.loads((p/'mcp.example.json').read_text()); assert s['mcpServers']['bean']['url'].startswith('https://REPLACE-')"
