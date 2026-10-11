@@ -295,6 +295,10 @@ def independent_judge(artifacts, state, output, *, grader=test_source):
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     sub = parser.add_subparsers(dest="stage", required=True)
+    learn_parser = sub.add_parser("learn")
+    learn_parser.add_argument("--root", type=Path, required=True)
+    learn_parser.add_argument("--model", default=os.getenv(
+        "BEAN_OLLAMA_MODEL", "qwen2.5-coder:0.5b"))
     a = sub.add_parser("author")
     a.add_argument("--state", type=Path, required=True)
     a.add_argument("--out", type=Path, required=True)
@@ -305,20 +309,47 @@ def main(argv=None):
     b.add_argument("--artifacts", type=Path, required=True)
     b.add_argument("--out", type=Path, required=True)
     args = parser.parse_args(argv)
-    if args.stage == "author":
+    if args.stage == "judge":
+        result = independent_judge(args.artifacts, args.state, args.out)
+        summary = {"schema": SCHEMA, "stage": "judge",
+                   "classification": result["classification"],
+                   "trials": result["trials"],
+                   "model": result["model_requested"]}
+    else:
         from bean.evaluation.lab023_ollama import Ollama
         model = Ollama(model=args.model)
         model.preflight()
-        result = author_candidates(args.state, args.out,
-                                   model_requested=model.route,
-                                   writer=model.author, trials=args.trials)
-    else:
-        result = independent_judge(args.artifacts, args.state, args.out)
-    print(json.dumps({
-        "schema": SCHEMA, "stage": args.stage,
-        "classification": result.get("classification", "NOT_YET_JUDGED"),
-        "trials": result["trials"], "model": result["model_requested"],
-    }, sort_keys=True))
+        if args.stage == "learn":
+            from bean.evaluation.lifelong_transfer_lab023 import learn
+            root = args.root
+            if (root / "state" / "history.sqlite").exists():
+                raise ValueError("refuse to overwrite a previous learning trial")
+            result = learn(
+                root / "training", root / "development.json",
+                root / "state" / "history.sqlite",
+                root / "state" / "learning-summary.json",
+                api_key="local-ollama-no-secret", reflector=model.reflect,
+            )
+            eligibility = (result["model_authored_lessons"] >= 2)
+            summary = {
+                "schema": SCHEMA, "stage": "learn", "model": model.route,
+                "eligible_for_ablation": eligibility,
+                "model_authored_lessons": result["model_authored_lessons"],
+                "classification": ("READY_FOR_PILOT" if eligibility else
+                                   "INCONCLUSIVE_INSUFFICIENT_LESSONS"),
+                "journal_tip": result["journal_tip"],
+            }
+            write_json(root / "lab026-preflight.json", summary)
+        else:
+            result = author_candidates(
+                args.state, args.out, model_requested=model.route,
+                writer=model.author, trials=args.trials)
+            summary = {
+                "schema": SCHEMA, "stage": "author",
+                "classification": "NOT_YET_JUDGED", "trials": result["trials"],
+                "model": result["model_requested"],
+            }
+    print(json.dumps(summary, sort_keys=True))
 
 
 if __name__ == "__main__":
