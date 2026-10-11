@@ -14,6 +14,7 @@ import json
 import os
 from pathlib import Path
 import random
+import re
 import subprocess
 import sys
 import tempfile
@@ -277,8 +278,15 @@ def grade(artifact_dir: Path, output: Path, *, phase: str,
             if not record or record["provider_status"] != "proposal_generated":
                 return {"passed": 0, "total": len(fixtures(task.task_id, phase)),
                         "status": "not_tested"}
-            if record["model_requested"] != "openrouter/free":
-                raise ValueError("free route contract broken")
+            route = record["model_requested"]
+            if route != "openrouter/free":
+                # Lab023 permits an explicitly named local Ollama model.
+                # Reject blank/ambiguous routes before evaluating source.
+                local_model = (route.removeprefix("ollama/")
+                               if isinstance(route, str) and route.startswith("ollama/")
+                               else "")
+                if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._:/-]{0,85}", local_model):
+                    raise ValueError("unrecognized training model route")
             path = directory / f"{task.task_id}.py"
             if hashlib.sha256(path.read_bytes()).hexdigest() != record["source_sha256"]:
                 raise ValueError("source digest mismatch")
