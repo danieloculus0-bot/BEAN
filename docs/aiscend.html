@@ -1,0 +1,393 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#101713">
+<meta name="description" content="Explore a read-only interactive demonstration of AIscend, the BEAN capital research console. No real wallet or private account data.">
+<meta property="og:title" content="BEAN AIscend | Public Interactive Demo">
+<meta property="og:description" content="Explore AIscend's research dashboard with safe, simulated states and the real BEAN pixel mascot.">
+<link rel="icon" href="./bean-official.webp" type="image/webp">
+<link rel="canonical" href="https://danieloculus0-bot.github.io/BEAN/aiscend.html">
+<title>BEAN | AIscend Demo</title>
+<style>
+:root{color-scheme:dark;--bg:#101713;--surface:#202b23;--surface2:#263629;--line:#3b5540;--text:#ecf5ed;--muted:#b2c5b5;--green:#91e274;--shadow:0 16px 40px #0005;font:15px/1.6 Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+*{box-sizing:border-box}html{scroll-behavior:smooth;scroll-padding-top:78px}
+body{margin:0;color:var(--text);background:radial-gradient(ellipse at 8% 1%,#5aa84d26,transparent 34%),radial-gradient(ellipse at 98% 16%,#3f74421f,transparent 31%),linear-gradient(170deg,#131d16,#101713 49%,#141d17);min-width:0}
+a{color:#b0ef9a;text-decoration:none}a:hover{color:#ebffe2}button{font:inherit;cursor:pointer}
+:focus-visible{outline:2px solid var(--green);outline-offset:3px}
+.wrap{max-width:1180px;width:calc(100% - 36px);margin:auto}
+header{position:sticky;top:0;z-index:10;background:#0f1712ee;backdrop-filter:blur(14px);border-bottom:1px solid #679a6538}
+.nav{display:flex;align-items:center;justify-content:space-between;gap:18px;min-height:70px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:10px;font-weight:900;color:#ecf5ed;letter-spacing:.055em}
+.brand>span:first-child{display:grid;place-items:center;width:42px;height:42px;border:1px solid #3b5540;border-radius:13px;background:linear-gradient(145deg,#28382c,#1b2720)}
+.brand img{width:32px;height:32px;object-fit:contain}.slash{color:#759f77}.appname{color:#b6eb9f}
+.links{display:flex;gap:20px;flex-wrap:wrap;font-weight:700;font-size:13px}.links a{color:#c3d7c5}.links a:hover{color:#fff}
+.hero{padding:56px 0 38px;display:grid;grid-template-columns:minmax(0,1.45fr) minmax(225px,.55fr);align-items:center;gap:35px}
+.eyebrow,.status{display:inline-flex;align-items:center;gap:9px;border:1px solid #486a4c;border-radius:999px;padding:7px 12px;background:#26382b;color:#baf0a4;font-size:11px;font-weight:850;letter-spacing:.08em;text-transform:uppercase}
+.dot{width:8px;height:8px;border-radius:50%;background:#a4ef89;box-shadow:0 0 0 3px #91e27420}
+h1{font-size:clamp(38px,5.2vw,65px);letter-spacing:-.055em;line-height:1.06;margin:19px 0}
+.hero p{color:#c5d8c5;max-width:700px;font-size:16px}.buttons{display:flex;gap:10px;flex-wrap:wrap;margin:20px 0 0}
+.btn{display:inline-flex;align-items:center;justify-content:center;border:1px solid #567756;background:#304434;color:#e8f8e3;padding:11px 16px;border-radius:12px;font-weight:800;font-size:13px}
+.btn:hover{background:#415b43}.btn.primary{background:linear-gradient(#a1ee7d,#7acf5c);color:#112417;border-color:#a2e687}.btn.primary:hover{background:#b4f5a1;color:#112417}
+.mascot{min-height:260px;border:1px solid #405645;border-radius:25px;background:radial-gradient(circle at 50% 35%,#59974530,transparent 60%),linear-gradient(160deg,#263428,#1a261e);display:grid;place-items:center;padding:14px;box-shadow:var(--shadow)}
+.mascot img{width:min(265px,86%);height:auto;display:block}.mascot figcaption{font-size:11px;letter-spacing:.08em;color:#c3e1bf;text-align:center}
+.heading{display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:12px;margin:12px 0 15px}
+h2{letter-spacing:-.025em;line-height:1.2;margin:0 0 3px;font-size:clamp(24px,3vw,34px)}.muted{color:var(--muted)}
+.heading p{margin:0;font-size:14px;color:var(--muted)}.notice{padding:9px 12px;border:1px solid #547c50;border-radius:11px;background:#1d3523;color:#d2f4c9;font-size:11px;letter-spacing:.04em;font-weight:850}
+.console{background:linear-gradient(155deg,#17231b,#101811);border:1px solid #406147;border-radius:21px;box-shadow:0 24px 55px #0006;padding:18px}
+.console-nav{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;border-bottom:1px solid #3c5740;padding-bottom:12px;margin-bottom:13px}
+.console-brand{display:flex;align-items:center;gap:9px;font-weight:900}.console-brand img{width:26px;height:26px}.console-state{border:1px solid #5c8c58;background:#2e5134;color:#d9ffce;border-radius:999px;padding:5px 10px;font-size:11px;font-weight:850}
+.metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:13px}
+.metric,.panel{min-width:0;border:1px solid #3b5540;background:linear-gradient(160deg,#27382b,#1c2b20);border-radius:12px;padding:14px}
+.metric .value{font-size:clamp(17px,2vw,22px);font-weight:850;margin-top:4px;color:#effbea;font-variant-numeric:tabular-nums}
+.label{color:#b2c9b3;font-size:11px;font-weight:800;letter-spacing:.07em;text-transform:uppercase}
+.green{color:#a5ec90!important}
+.dashboard{display:grid;grid-template-columns:minmax(235px,340px) minmax(0,1fr);gap:12px}
+.column{display:grid;gap:12px;align-content:start;min-width:0}.panel h3{font-size:12px;letter-spacing:.075em;color:#c9ebbc;margin:0 0 12px}
+.petbox{border:2px solid #4a6950;background:#0c140e;border-radius:9px;padding:10px;text-align:center}
+#pet{width:192px;height:192px;max-width:100%;display:block;margin:auto;image-rendering:pixelated}
+.petname{font:bold 14px "Courier New",monospace;color:#c4e9ae;letter-spacing:.14em}
+#petMood{font:12px "Courier New",monospace;color:#9acc89;min-height:18px}
+.demo-button{display:flex;align-items:center;justify-content:space-between;width:100%;padding:10px 11px;margin:6px 0;border:1px solid #4f6c51;border-radius:9px;background:#203626;color:#d4eed0;text-align:left;font-weight:750;font-size:13px}
+.demo-button[aria-pressed=true]{background:#a0e682;border-color:#b7f2a2;color:#152c17}.demo-button:hover{border-color:#a5df9c}
+.note{font-size:12px;color:#b9cfb7;line-height:1.55;margin:10px 0 0}
+.soft{border:1px solid #416348;background:#182a1d;border-radius:9px;padding:11px;color:#cadfc7;font-size:12px}
+.pair{display:grid;grid-template-columns:1fr 1fr;gap:12px}.pair strong{display:block;font-size:19px;line-height:1.25;margin-top:4px}
+.school-head{display:flex;align-items:center;justify-content:space-between;gap:9px;flex-wrap:wrap}.tag{border:1px solid #5f995f;border-radius:999px;background:#325a37;color:#d9f8cd;padding:4px 9px;font-size:10px;font-weight:850}
+.school-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:10px 0}
+.school-grid>div{padding:10px;border:1px solid #4c6d50;border-radius:9px;background:#172b1c}
+.school-grid strong{display:block;font-size:18px;margin-top:3px}
+hr{border:0;border-top:1px solid #405a44;margin:14px 0}
+table{width:100%;border-collapse:collapse;font-size:12px}th,td{text-align:left;padding:9px 6px;border-bottom:1px solid #405a44;vertical-align:top}th{color:#bed4bb}
+.detail{padding:61px 0 80px}.features{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px;margin:20px 0}
+.feature{border:1px solid #3b5540;background:linear-gradient(160deg,#28382c,#1b2720);border-radius:16px;padding:20px}
+.feature h3{margin:0 0 10px}.feature p{font-size:13px;line-height:1.65;color:var(--muted)}
+.feature a{font-size:13px;font-weight:800}
+.disclaimer{border:1px solid #4b754d;background:#192e1e;padding:16px 19px;border-radius:14px;color:#c7dfc4;font-size:13px}
+footer{border-top:1px solid #3b5540;padding:23px 0;color:var(--muted);font-size:13px}
+.foot{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
+@media(max-width:900px){.hero{grid-template-columns:1fr}.mascot{min-height:180px}.mascot img{max-height:210px;width:auto}.dashboard{grid-template-columns:1fr}.column:first-child{grid-template-columns:200px 1fr}.features{grid-template-columns:1fr 1fr}}
+@media(max-width:600px){.wrap{width:calc(100% - 24px)}.nav{gap:6px;padding:10px 0}.links{gap:11px;font-size:12px}.hero{padding:29px 0 21px}.console{padding:10px}.metrics{grid-template-columns:1fr 1fr}.column:first-child{grid-template-columns:1fr}.school-grid{grid-template-columns:1fr 1fr}.features{grid-template-columns:1fr}.notice{font-size:10px}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+<header><div class="wrap nav">
+<a class="brand" href="./index.html" aria-label="BEAN home"><span><img src="./bean-official.webp" alt="" width="32" height="32"></span>BEAN <span class="slash">/</span> <span class="appname">AIscend</span></a>
+<nav class="links" aria-label="Page navigation"><a href="#demo">Demo</a><a href="#how-it-works">How it works</a><a href="https://github.com/danieloculus0-bot/AIscend">Source</a><a href="./index.html">BEAN home ↗</a></nav>
+</div></header>
+<main>
+<section class="wrap hero">
+<div><span class="eyebrow"><span class="dot" aria-hidden="true"></span> BEAN Infrastructure · Public Technical Beta</span>
+<h1>Autonomous capital research. Evidence first.</h1>
+<p>AIscend brings BEAN-style memory, strategy experiments, market research and decision journaling together in one polished capital research console.</p>
+<p>Explore an <strong>interactive read-only replica</strong> of the real AIscend dashboard. The public page never connects to an exchange or private wallet.</p>
+<div class="buttons"><a class="btn primary" href="#demo">Explore the demo ↓</a><a class="btn" href="https://github.com/danieloculus0-bot/AIscend">Inspect the code ↗</a></div>
+</div>
+<figure class="mascot"><img src="./bean-official.webp" alt="Official smiling lime-green BEAN mascot with two sprout leaves and arms" width="290" height="290"><figcaption>BEAN · BEHAVIOR ENABLED AVATAR NODE</figcaption></figure>
+</section>
+<section class="wrap" id="demo" aria-labelledby="demoTitle">
+<div class="heading"><div><h2 id="demoTitle">Inside AIscend</h2><p>Try the interface states. Every interaction below is simulated.</p></div><div class="notice">● PUBLIC DEMO · SAMPLE DATA · NO WALLET CONNECTED</div></div>
+<div class="console" aria-label="Read-only AIscend demonstration">
+<div class="console-nav"><span class="console-brand"><img src="./bean-official.webp" alt="" width="26" height="26"> BEAN / AIscend</span><span id="stageTag" class="console-state">DEMO · MARKET OBSERVATION</span></div>
+<div class="metrics" aria-label="Illustrative example portfolio metrics">
+<div class="metric"><div class="label">Net liquidation · sample</div><div class="value">$25.60</div></div>
+<div class="metric"><div class="label">Cash / USDC · sample</div><div class="value">$6.20</div></div>
+<div class="metric"><div class="label">P/L · sample</div><div class="value green">+$0.60</div></div>
+<div class="metric"><div class="label">Wealth multiple · sample</div><div class="value">1.0240×</div></div>
+</div>
+<div class="dashboard">
+<div class="column">
+<section class="panel"><h3 id="traderThingTitle">BEAN</h3><div class="petbox"><canvas id="pet" width="192" height="192" role="img" aria-label="Original AIscend dot-matrix BEAN character"></canvas><div class="petname">BEAN</div><div id="petMood">just sitting there</div></div></section>
+<section class="panel"><h3>EXPLORE THE DEMO</h3><button type="button" class="demo-button" data-scene="watch" aria-pressed="true">Market observation <span>›</span></button><button type="button" class="demo-button" data-scene="experiment" aria-pressed="false">Strategy experiment <span>›</span></button><button type="button" class="demo-button" data-scene="paper" aria-pressed="false">Forward paper trial <span>›</span></button><button type="button" class="demo-button" data-scene="gate" aria-pressed="false">BUY confirmation gate <span>›</span></button><p class="note">These buttons change the public display only. They cannot submit orders, activate trading or alter BEAN's real experiments.</p></section>
+<section class="soft"><strong>Identity protected.</strong> No names, wallet addresses, account IDs, API keys, credentials or proprietary strategy settings. Sample balances are illustrative.</section>
+</div>
+<div class="column">
+<section class="panel"><h3>RESEARCH BRAIN</h3><div class="pair"><div><div class="label">Research state</div><strong id="brainState">BULLISH</strong></div><div><div class="label">Example confidence</div><strong id="confidence">65.4%</strong></div></div><p class="note" id="thesis">Market observations have been logged with confidence; a hypothesis is not yet a trade.</p></section>
+<section class="panel"><h3>BEAN MEMORY</h3><div class="pair"><div><div class="label">Claims · example snapshot</div><strong>3,062</strong></div><div><div class="label">Predictions · example snapshot</div><strong>208</strong></div></div><p class="note">Retained observations, predictions and evidence persist across runs. A stored claim is not necessarily verified.</p></section>
+<section class="panel"><div class="school-head"><h3>BEAN STRATEGY SCHOOL</h3><span class="tag" id="researchTag">RESEARCH SELECTED</span></div><div class="school-grid"><div><div class="label">Experiments · example</div><strong>75</strong></div><div><div class="label">Candidates · example</div><strong>79</strong></div><div><div class="label">Historical holdout</div><strong id="holdout">+7.59%</strong></div></div>
+<div class="soft" id="examText">Historical research result. Not actual wallet profit or a verified forward return.</div>
+<hr><div class="label">Five-minute research + forward paper</div><p class="note" id="paperText">BEAN evaluates new market windows and tests promising rules on independently arriving candles. No forward result is asserted by this demo.</p>
+<div class="label" style="margin-top:15px">Independent BEAN gate</div><p class="note" id="gateText">A selected strategy can confirm or veto an existing proposed BUY; it cannot originate an order from research.</p></section>
+<section class="panel"><h3>DECISION JOURNAL · DEMO ENTRIES</h3><table aria-label="Example research event journal"><thead><tr><th>Stage</th><th>Action</th><th>Status</th><th>Reason</th></tr></thead><tbody id="journal"></tbody></table><p class="note">Illustrative events, not a private transaction log.</p></section>
+</div>
+</div>
+</div>
+</section>
+<section class="wrap detail" id="how-it-works">
+<div class="eyebrow"><span class="dot" aria-hidden="true"></span> Built software · Inspectable evidence</div><h2 style="margin-top:17px">Behind the pretty green screen.</h2><p class="muted">The actual application is a working local beta. This public demo is not connected to its live installation.</p>
+<div class="features">
+<article class="feature"><h3>Persistent market memory</h3><p>Hypotheses, outcomes and contradictory evidence are recorded rather than replaced with manufactured certainty.</p><a href="https://github.com/danieloculus0-bot/AIscend/blob/main/src/bean.py">Inspect memory ↗</a></article>
+<article class="feature"><h3>Five-minute strategy research</h3><p>Experimental rules are backtested on Coinbase candle histories; forward-paper trials use separate later observations.</p><a href="https://github.com/danieloculus0-bot/AIscend/blob/main/src/bean_five_minute.py">Inspect research ↗</a></article>
+<article class="feature"><h3>Buy-confirmation boundaries</h3><p>The live policy gate is distinct from research. Historical wins do not automatically create wallet trades.</p><a href="https://github.com/danieloculus0-bot/AIscend/blob/main/src/bean_policy.py">Inspect policy ↗</a></article>
+</div>
+<div class="disclaimer"><strong>What is demonstrated:</strong> The branding, control layout, and original AIscend pixel-art BEAN drawing code. Numeric tiles are illustrative. Research counts resemble a public example snapshot. The buttons simulate display states only. No personal identity, actual wallet balances, account data, or secret trading logic is transmitted. Historical returns and hypothetical fills are not independently verified live profits.</div>
+<div class="buttons"><a class="btn primary" href="https://github.com/danieloculus0-bot/AIscend">AIscend repository ↗</a><a class="btn" href="./index.html#applications">More BEAN applications ↗</a></div>
+</section>
+</main>
+<footer><div class="wrap foot"><span>BEAN · Behavior Enabled Avatar Node · AIscend public demo</span><span>Read only · No external account connection</span></div></footer>
+<script>
+"use strict";
+const $=id=>document.getElementById(id);
+let petState="curious",petBlink=false,petQuipIndex=0;
+function drawPet(){
+  const canvas=$('pet');
+  const ctx=canvas.getContext('2d');
+  if(!ctx) return;
+  // 48x48 Game Boy-inspired pixel canvas, scaled without smoothing.
+  // BEAN's silhouette follows the official two-leaf sprout + waving body.
+  const unit=4, size=48;
+  const color={
+    bg:'#0b100b', outline:'#29482d', shadow:'#457c42',
+    bean:'#83ba60', light:'#a7d49b', shine:'#d7edba',
+    ink:'#081108', blush:'#619d51'
+  };
+  ctx.imageSmoothingEnabled=false;
+  ctx.fillStyle=color.bg;
+  ctx.fillRect(0,0,canvas.width,canvas.height);
+  const pixel=(x,y,shade)=>{
+    x=Math.round(x); y=Math.round(y);
+    if(x<0||y<0||x>=size||y>=size) return;
+    ctx.fillStyle=shade;
+    ctx.fillRect(x*unit,y*unit,unit,unit);
+  };
+  const oval=(cx,cy,rx,ry,shade,rotation=0)=>{
+    const co=Math.cos(rotation), si=Math.sin(rotation);
+    const reach=Math.ceil(Math.max(rx,ry))+2;
+    for(let y=Math.floor(cy-reach);y<=cy+reach;y++){
+      for(let x=Math.floor(cx-reach);x<=cx+reach;x++){
+        const dx=x-cx, dy=y-cy;
+        const u=dx*co+dy*si, v=-dx*si+dy*co;
+        if(u*u/(rx*rx)+v*v/(ry*ry)<=1) pixel(x,y,shade);
+      }
+    }
+  };
+  const stroke=(ax,ay,bx,by,width,shade)=>{
+    const dx=bx-ax,dy=by-ay,len=dx*dx+dy*dy||1;
+    for(let y=Math.floor(Math.min(ay,by)-width-1);y<=Math.ceil(Math.max(ay,by)+width+1);y++){
+      for(let x=Math.floor(Math.min(ax,bx)-width-1);x<=Math.ceil(Math.max(ax,bx)+width+1);x++){
+        const t=Math.max(0,Math.min(1,((x-ax)*dx+(y-ay)*dy)/len));
+        if((x-ax-t*dx)**2+(y-ay-t*dy)**2<=width*width) pixel(x,y,shade);
+      }
+    }
+  };
+
+  // Two distinct leaves, curved stem, and chunky four-color foliage.
+  stroke(24,15,24,8,2.0,color.outline);
+  stroke(24,13,27,7,1.7,color.shadow);
+  oval(17.5,6.7,8.8,4.2,color.outline,0.34);
+  oval(17.5,6.2,7.5,3.1,color.bean,0.34);
+  oval(15.5,5.0,3.7,1.0,color.shine,0.34);
+  oval(32.2,7.0,8.2,4.0,color.outline,-0.32);
+  oval(32,6.4,7.0,2.9,color.bean,-0.32);
+  oval(34,5.1,3.6,1.0,color.light,-0.32);
+  stroke(24,14,24,9,1.1,color.light);
+
+  // Arms remain visible outside the body. BEAN waves one hand.
+  const waving=['buy','win','point','up','interested'].includes(petState);
+  const handY=waving?13:16;
+  stroke(14,25,8,23,4,color.outline);
+  stroke(8,23,5,handY+3,3.5,color.outline);
+  oval(5.8,handY+1,3.7,4.2,color.outline,-0.15);
+  stroke(14,25,8,23,2.8,color.bean);
+  stroke(8,23,5,handY+3,2.3,color.bean);
+  oval(5.7,handY+1,2.5,3.1,color.bean,-0.15);
+  stroke(8,handY+1,10,handY+4,1.8,color.outline);
+  stroke(8,handY+1,10,handY+4,1.1,color.bean);
+  pixel(4,handY-1,color.light);
+  stroke(37,27,42,30,4,color.outline);
+  stroke(42,30,43,34,3.6,color.outline);
+  stroke(37,27,42,30,2.7,color.bean);
+  stroke(42,30,43,34,2.3,color.bean);
+  oval(43,34.5,3.4,3.4,color.outline);
+  oval(43,34,2.4,2.5,color.bean);
+  pixel(44,33,color.light);
+
+  // Rounded bean body, rim light and belly shading. No black faceplate.
+  oval(24.5,27.6,14.6,15.7,color.outline);
+  oval(25,32,13.7,10.5,color.outline);
+  oval(24.5,27.1,13.2,14.4,color.shadow);
+  oval(25,32,12.3,9.5,color.shadow);
+  oval(23.2,26.4,11.5,12.7,color.bean);
+  oval(23.5,32,10.6,8.0,color.bean);
+  oval(20,22,6.9,6.0,color.light,-0.18);
+  oval(20,17.1,5.3,1.6,color.shine,-0.14);
+  oval(21,34,6.6,5.1,color.light,0.12);
+  oval(30.8,34,4.3,5.9,color.shadow,0.20);
+  oval(23,28,9,7,color.bean);
+
+  // Expressive DARK eyes set directly in the GREEN body, with tiny highlights.
+  const unhappy=['down','poop','sell','trouble'].includes(petState);
+  const happy=['up','buy','point','win','interested'].includes(petState);
+  if(petState==='dead'){
+    stroke(17,24,21,28,1.0,color.ink);
+    stroke(21,24,17,28,1.0,color.ink);
+    stroke(28,24,32,28,1.0,color.ink);
+    stroke(32,24,28,28,1.0,color.ink);
+  }else if(petBlink){
+    stroke(17,26,21,26,0.85,color.ink);
+    stroke(28,26,32,26,0.85,color.ink);
+  }else{
+    oval(19,26,2.7,3.2,color.ink);
+    oval(30,26,2.7,3.2,color.ink);
+    pixel(18,24,color.shine);
+    pixel(29,24,color.shine);
+    if(petState==='curious'){ pixel(31,25,color.light); }
+    if(unhappy){
+      stroke(17,22,21,23,0.7,color.outline);
+      stroke(28,23,32,22,0.7,color.outline);
+    }
+  }
+  // Rounded cheeks and a stateful pixel mouth preserve the familiar moods.
+  pixel(15,30,color.blush);
+  pixel(16,31,color.blush);
+  pixel(33,30,color.blush);
+  pixel(34,31,color.blush);
+  if(unhappy){
+    stroke(21,34,24,32,0.8,color.ink);
+    stroke(24,32,27,34,0.8,color.ink);
+  }else if(petState==='think'||petState==='bean'){
+    oval(24.5,33.5,1.8,2.2,color.ink);
+    pixel(38,15,color.light);
+    pixel(41,12,color.light);
+  }else if(petState==='dead'){
+    stroke(22,33,27,33,0.8,color.ink);
+  }else if(petState==='curious'){
+    oval(24.5,33,2.4,2.5,color.ink);
+  }else{
+    oval(24.5,33.3,happy?5.0:3.9,happy?2.9:2.2,color.ink);
+    oval(24.5,34.6,happy?2.7:2.0,0.9,color.blush);
+  }
+
+  // Independent little shoes, shaded like chunky original-game sprites.
+  oval(17.5,42.0,5.1,3.6,color.outline);
+  oval(31.3,42.0,5.1,3.6,color.outline);
+  oval(17.1,41.6,3.8,2.6,color.shadow);
+  oval(31.0,41.6,3.8,2.6,color.shadow);
+  oval(16,40.8,2.2,1.1,color.light);
+  oval(29.8,40.8,2.2,1.1,color.light);
+  pixel(14,43,color.bean); pixel(29,43,color.bean);
+
+  const moods={
+    idle:[
+      'just sitting there',
+      'waiting for some shit to happen',
+      'refusing to buy bullshit'
+    ],
+    think:[
+      'thinking extremely hard',
+      'doing fucked-up little math',
+      'consulting the tiny oracle'
+    ],
+    bean:[
+      'BEAN is chewing on it',
+      'grading its own bullshit',
+      'remembering what happened last time'
+    ],
+    curious:[
+      'hmm.',
+      'something moved',
+      'mildly interested'
+    ],
+    interested:[
+      'oh?',
+      'now we are getting somewhere',
+      'trade-shaped object detected'
+    ],
+    trouble:[
+      'something smells fucked',
+      'evidence is fighting itself',
+      'troubleshooting this bullshit'
+    ],
+    buy:[
+      'bought the damn thing',
+      'money deployed. hell yeah.',
+      'committed to the bit'
+    ],
+    sell:[
+      'sold that shit',
+      'nope. we are out.',
+      'yeeted the bag'
+    ],
+    up:[
+      'feeling smug as hell',
+      'number went up. excellent.',
+      'tiny capitalist noises'
+    ],
+    down:[
+      'having a shitty little day',
+      'deeply unimpressed',
+      'market kicked me in the nuts'
+    ],
+    poop:[
+      'taking a tactical shit',
+      'market looks like ass',
+      'this is my bearish analysis'
+    ],
+    point:[
+      'ONE WHOLE POINT',
+      'FUCK YEAH. A POINT.',
+      'doubling achieved. absurd.'
+    ],
+    win:[
+      'LEVEL 1. HOLY SHIT.',
+      'WE FUCKING DID IT.',
+      '$100K. WHAT THE FUCK.'
+    ],
+    dead:[
+      'something is fucked',
+      'i have died of computers',
+      'goddammit.'
+    ]
+  };
+  const labels={
+    idle:'BEAN',
+    think:'BEAN · THINKING',
+    curious:'BEAN · WATCHING',
+    interested:'BEAN · INTERESTED',
+    bean:'BEAN · LEARNING',
+    trouble:'BEAN · TROUBLESHOOTER',
+    poop:'BEAN · SOMETHING IS FUCKED',
+    buy:'BEAN · BUY',
+    sell:'BEAN · SELL',
+    up:'BEAN · SMUG',
+    down:'BEAN · PISSED',
+    point:'BEAN · POINT',
+    win:'BEAN · WINNER',
+    dead:'BEAN · DEAD'
+  };
+  $('traderThingTitle').textContent=labels[petState] || 'BEAN';
+  const lines=moods[petState] || ['...'];
+  $('petMood').textContent=lines[petQuipIndex % lines.length];
+}
+const scenarios={
+watch:{pet:"curious",tag:"MARKET OBSERVATION",brain:"BULLISH",confidence:"65.4%",school:"RESEARCH SELECTED",holdout:"+7.59%",thesis:"Market observations have been logged with confidence; a hypothesis is not yet a trade.",exam:"Historical research result. Not actual wallet profit or a verified forward return.",paper:"BEAN can test completed five-minute candles, then forward paper-track later observations.",gate:"Read-only evaluation does not originate an order.",rows:[["Research","HOLD","Observed","Evidence under review"],["Strategy","TEST","Logged","Historical rules archived"],["Forward","WAIT","Pending","New samples required"]]},
+experiment:{pet:"think",tag:"STRATEGY EXPERIMENT",brain:"EXPERIMENTING",confidence:"N/A",school:"RESEARCH ONLY",holdout:"+7.59%",thesis:"Strategy School compares rule families, rotates candidates and retains earlier lessons.",exam:"Historical example: +7.59% holdout. Research-only, not a live or independent forward gain.",paper:"A later forward paper trial is separate from this backtest.",gate:"Historical results cannot override existing execution checks.",rows:[["School","TEST","Research","Evaluate historical candidate"],["Memory","RETAIN","Stored","Lesson archived"],["Live","NO ORDER","Protected","Research-only result"]]},
+paper:{pet:"interested",tag:"FORWARD PAPER TRIAL",brain:"OBSERVING",confidence:"N/A",school:"FORWARD TEST",holdout:"N/A",thesis:"Subsequent observations give evidence that did not exist when a candidate was chosen.",exam:"A historical test alone never counts as forward validation.",paper:"Illustrative trial: 86/288 five-minute samples. Verdict PENDING. Hypothetical fills include costs; Coinbase orders are never submitted.",gate:"A paper strategy has no direct permission to trade a funded wallet.",rows:[["Paper","OBSERVE","86/288","Illustrative sample count"],["Paper","WAIT","Pending","Forward verdict not complete"],["Wallet","NO ORDER","Protected","Paper ledger only"]]},
+gate:{pet:"trouble",tag:"BUY CONFIRMATION GATE",brain:"VERIFYING",confidence:"N/A",school:"CURRENT-DATA GATE",holdout:"N/A",thesis:"Fresh complete candles can confirm or veto a buy already proposed by the live engine.",exam:"A selected research result still requires independent fresh-data evaluation.",paper:"Forward paper evidence remains separate from live order eligibility.",gate:"Example HOLD: the fresh-data gate vetoes an existing BUY idea. This is a staged example, not a real executed decision.",rows:[["Market","BUY?","Proposed","Existing engine hypothesis"],["BEAN","VETO","Example","Fresh-data disagreement"],["Wallet","NO ORDER","Protected","No research-originated trade"]]}
+};
+function show(scene){
+const s=scenarios[scene];if(!s)return;
+petState=s.pet;petQuipIndex=0;
+$("stageTag").textContent="DEMO · "+s.tag;
+$("brainState").textContent=s.brain;
+$("confidence").textContent=s.confidence;
+$("researchTag").textContent=s.school;
+$("holdout").textContent=s.holdout;
+$("thesis").textContent=s.thesis;
+$("examText").textContent=s.exam;
+$("paperText").textContent=s.paper;
+$("gateText").textContent=s.gate;
+const body=$("journal");body.replaceChildren();
+for(const cells of s.rows){const tr=document.createElement("tr");for(const cell of cells){const td=document.createElement("td");td.textContent=cell;tr.append(td)}body.append(tr)}
+for(const btn of document.querySelectorAll("[data-scene]"))btn.setAttribute("aria-pressed",String(btn.dataset.scene===scene));
+drawPet();
+}
+document.querySelectorAll("[data-scene]").forEach(b=>b.addEventListener("click",()=>show(b.dataset.scene)));
+show("watch");
+setInterval(()=>{petBlink=true;drawPet();setTimeout(()=>{petBlink=false;drawPet()},160)},5300);
+setInterval(()=>{petQuipIndex++;drawPet()},8600);
+</script>
+</body>
+</html>
