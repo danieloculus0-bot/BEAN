@@ -171,9 +171,23 @@ def main():
                 "SELECT data FROM events WHERE subtype=? ORDER BY id DESC LIMIT 5000",
                 ("watcher_transition",),
             )
-            watcher.restore_events([
-                json.loads(row["data"]) for row in reversed(rows) if row["data"]
-            ])
+            recovered = []
+            corrupt_count = 0
+            for row in reversed(rows):
+                if not row["data"]:
+                    continue
+                try:
+                    recovered.append(json.loads(row["data"]))
+                except (TypeError, json.JSONDecodeError):
+                    corrupt_count += 1
+            watcher.restore_events(recovered)
+            if corrupt_count:
+                log_event(
+                    session_uuid, EventType.ERROR,
+                    "Watcher restore skipped malformed historical JSON.",
+                    Source.SYSTEM, subtype="watcher_restore_invalid_json",
+                    severity=Severity.WARN, data={"skipped_events": corrupt_count},
+                )
             ctx["watcher"] = watcher
         handlers = build_default_handlers(
             monitor,
