@@ -134,6 +134,10 @@ jobs:
           assert len(data["iterations"]) == 5
           assert all(x["all_disputes_examined"] == 23 for x in data["iterations"])
           assert len(data["source_observations"]) >= 15
+          assert all(isinstance(row["linked_case_ids"], list) and row["linked_case_ids"]
+                     for row in data["source_observations"])
+          assert all(set(row["linked_case_ids"]) <= set(data["final_assessments"])
+                     for row in data["source_observations"])
           assert all(s["independent_historical_fact_proven"] is False
                      for s in data["source_observations"])
           assert data["gnostic_texts_in_historical_verdicts"] == 0
