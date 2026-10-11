@@ -50,12 +50,30 @@ class PublicSkillsPageTests(unittest.TestCase):
         self.assertEqual(self.parser.svgs + len(self.parser.mascot_images), 1)
         if self.parser.mascot_images:
             image = self.parser.mascot_images[0]
-            self.assertEqual(image.get("src"), "./bean-sprout.webp")
+            self.assertEqual(image.get("src"), "./bean-official.webp")
             self.assertIn("BEAN", image.get("alt", ""))
-            self.assertTrue((PAGE.parent / "bean-sprout.webp").is_file())
+            self.assertTrue((PAGE.parent / "bean-official.webp").is_file())
         self.assertIn("--green:#7ed957;", self.page)
         self.assertIn("Cute name. <br>Serious reasoning.", self.page)
         self.assertIn("#skills", self.parser.links)
+
+    def test_neural_model_section_is_grounded_in_sources_and_scope(self):
+        self.assertIn("neural", self.parser.anchors)
+        self.assertIn("#neural", self.parser.links)
+        for phrase in ("Yes, BEAN uses a neural network.",
+                       "Not claimed: native BEAN-trained weights or backpropagation",
+                       "Those records do not modify neural-network weights.",
+                       "session-only"):
+            with self.subTest(phrase=phrase):
+                self.assertIn(phrase, self.page)
+        for path in ("bean/reasoning/ollama_provider.py",
+                     "bean/tests/test_ollama_reasoning_provider.py",
+                     "docs/bean-autonomous-code-growth-lab019.md",
+                     "docs/bean-watcher-contract.md"):
+            with self.subTest(path=path):
+                self.assertTrue((ROOT / path).is_file(), path)
+                self.assertIn("https://github.com/danieloculus0-bot/BEAN/blob/main/" + path,
+                              self.parser.links)
 
     def test_new_skills_have_reproducible_refs(self):
         links = self.parser.links
