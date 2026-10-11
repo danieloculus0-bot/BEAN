@@ -1,0 +1,659 @@
+{
+  "schema": "bean.gospel_historical_models.v1",
+  "scope": "These scenarios model conditional feasibility only; they are not a determination that any event occurred.",
+  "cases": [
+    {
+      "id": "ahaziah_accession_age",
+      "focus": "same king's accession age",
+      "literal_model": {
+        "type": "numeric_same_event",
+        "source_refs": [
+          "2 Kings 8:26",
+          "2 Chronicles 22:2"
+        ],
+        "require_equal": true
+      },
+      "alternative_model": {
+        "type": "scribal_error",
+        "statement": "One of the accession numbers is a later transcription error; 22 is compatible with the father dying at about forty.",
+        "status": "conditionally_possible_not_attested"
+      },
+      "limits": "The incompatibility is in current wording, not necessarily the reconstructed original Hebrew text.",
+      "research": [
+        {
+          "url": "https://www.icr.org/books/defenders/2310",
+          "claim": "Conservative commentary attributes the 42 vs 22 disagreement to scribal transmission.",
+          "role": "interpretation"
+        },
+        {
+          "url": "https://www.historicalchristian.faith/doctrine/doctrines/ahaziah-age.html",
+          "claim": "Parallel verses and Jehoram chronology are compared, with ancient versions discussed.",
+          "role": "secondary_analysis"
+        }
+      ]
+    },
+    {
+      "id": "judas_death_accounts",
+      "focus": "Whether both death narratives can describe one occurrence",
+      "literal_model": {
+        "type": "sequence_possible",
+        "source_refs": [
+          "Matthew 27:5",
+          "Acts 1:18"
+        ],
+        "assumptions": [
+          "Hanging precedes a later fall; the latter report can describe consequences of death."
+        ]
+      },
+      "alternative_model": {
+        "type": "distinct_or_conflicting_accounts",
+        "statement": "The writers may preserve independent incompatible descriptions; the surviving passages alone cannot select.",
+        "status": "undetermined"
+      },
+      "limits": "An internally possible sequence is not evidence that the event happened.",
+      "research": [
+        {
+          "url": "https://www.thegospelcoalition.org/article/judas-demise-matthew-1-acts-1/",
+          "claim": "One tradition reconciles hanging followed by a fall.",
+          "role": "interpretation"
+        },
+        {
+          "url": "https://www.catholic.com/qa/how-do-we-explain-the-conflicting-accounts-of-judas-death-in-matthew-and-acts",
+          "claim": "Another Christian explanation harmonizes narratives.",
+          "role": "interpretation"
+        }
+      ]
+    },
+    {
+      "id": "genesis_creation_sequencing",
+      "focus": "Order in the Genesis 1 and 2 accounts",
+      "literal_model": {
+        "type": "textual_interpretation_open",
+        "source_refs": [
+          "Genesis 1:27",
+          "Genesis 2:7",
+          "Genesis 2:19"
+        ]
+      },
+      "alternative_model": {
+        "type": "literary_retelling",
+        "statement": "Genesis 2 may narrow and retell Genesis 1, while historical-critical readings posit independent source traditions.",
+        "status": "undetermined"
+      },
+      "limits": "No historically testable observational timestamp for creation events; scientific claims require separately defined hypotheses.",
+      "research": [
+        {
+          "url": "https://www.thetorah.com/article/genesis-two-creation-accounts-compiled-and-interpreted-as-one",
+          "claim": "Literary and source-critical arguments for multiple creation accounts.",
+          "role": "secondary_analysis"
+        }
+      ]
+    },
+    {
+      "id": "mark_long_ending",
+      "focus": "Whether Mark 16:9–20 belonged to earliest recoverable Gospel",
+      "literal_model": {
+        "type": "manuscript_origin_open",
+        "source_refs": [
+          "Mark 16:8",
+          "Mark 16:9",
+          "Mark 16:20"
+        ]
+      },
+      "alternative_model": {
+        "type": "later_ending_attested",
+        "statement": "An early gospel text may have ended at 16:8 while other manuscript traditions preserved a longer ending.",
+        "status": "conditionally_possible_not_attested"
+      },
+      "limits": "Textual originality and factual historicity of narrated events must not be conflated.",
+      "research": [
+        {
+          "url": "https://www.cambridge.org/core/journals/new-testament-studies/article/unfinished-business-the-ending-of-mark-in-two-catena-manuscripts/549D874ACAA4D63CAD6BC4137214F476",
+          "claim": "A peer-reviewed analysis cautions against misclassifying two Greek catena witnesses.",
+          "role": "secondary_analysis"
+        },
+        {
+          "url": "https://textandcanon.org/a-case-for-the-longer-ending-of-mark/",
+          "claim": "A scholar advocates the longer ending and discusses codex layout.",
+          "role": "counterposition"
+        },
+        {
+          "url": "https://manuscriptwitness.com/studies/mark-16-9-20-earliest-manuscript-evidence/",
+          "claim": "Sinaiticus and Vaticanus lack the longer ending in continuous text.",
+          "role": "secondary_analysis"
+        }
+      ]
+    },
+    {
+      "id": "quirinius_herod_timeline",
+      "focus": "Whether Herod's lifetime and Quirinius's AD 6 census refer to the same birth",
+      "literal_model": {
+        "type": "date_overlap",
+        "source_refs": [
+          "Matthew 2:1",
+          "Luke 2:2"
+        ],
+        "premises": [
+          {
+            "name": "Herod died",
+            "start_year": -4,
+            "end_year": -4,
+            "source": "secondary historical chronology"
+          },
+          {
+            "name": "Quirinius census",
+            "start_year": 6,
+            "end_year": 6,
+            "source": "secondary historical chronology"
+          }
+        ],
+        "note": "BCE/CE years use signed integers only as a modeling shorthand; this case tests event ordering, not absolute year arithmetic."
+      },
+      "alternative_model": {
+        "type": "earlier_or_different_census",
+        "statement": "An otherwise undocumented census or alternate translation could change the assumptions; those claims require external evidence.",
+        "status": "undetermined"
+      },
+      "limits": "Disjoint source dates make that specific single-event reading impossible conditional on mainstream dates; not a verdict on all conceivable readings.",
+      "research": [
+        {
+          "url": "https://biblia.com/books/lbd/article/QUIRINIUS.1.HISTORICITY%245FOF%245FTHE%245FBIBLICAL%245FACCOUNT",
+          "claim": "Lexham summarizes the dated census and birth-narrative chronological tension.",
+          "role": "secondary_analysis"
+        },
+        {
+          "url": "https://ibri.org/RRs/RR004/04census.htm",
+          "claim": "A conservative historical analysis presents alternative earlier-governorship hypotheses with evidentiary limits.",
+          "role": "counterposition"
+        }
+      ]
+    },
+    {
+      "id": "literal_earth_age_hypothesis",
+      "focus": "Whether a young-Earth date is directly asserted in Genesis and independently supported",
+      "literal_model": {
+        "type": "unsupported_attribution",
+        "source_refs": [
+          "Genesis 1:1",
+          "Genesis 1:5"
+        ],
+        "proposed_claim": "Earth created approximately 6,000 years ago",
+        "premise_origin": "later chronological inference, not these two verses"
+      },
+      "alternative_model": {
+        "type": "scientific_age",
+        "statement": "Physical dating evidence overwhelmingly indicates Earth is billions of years old; the literal age inference is incompatible with that evidence.",
+        "status": "scientifically_disconfirmed_inference"
+      },
+      "limits": "Conflating one later interpretation with what a text expressly says is an invalid test.",
+      "research": [
+        {
+          "url": "https://pubs.usgs.gov/gip/geotime/age.html",
+          "claim": "USGS discusses radiometric methods and geological age estimates.",
+          "role": "scientific_measurement"
+        },
+        {
+          "url": "https://humanorigins.si.edu/evidence/human-fossils/species/homo-sapiens",
+          "claim": "Smithsonian describes fossil evidence for humans far older than a six-thousand-year timeline.",
+          "role": "scientific_measurement"
+        }
+      ]
+    },
+    {
+      "id": "ark_animal_capacity",
+      "focus": "Is the stated Ark physically adequate for all required terrestrial animal populations and supplies?",
+      "literal_model": {
+        "type": "capacity_bound",
+        "source_refs": [
+          "Genesis 6:15",
+          "Genesis 6:19",
+          "Genesis 6:20"
+        ],
+        "cubit_m": 0.4572,
+        "dimensions_cubits": [
+          300,
+          50,
+          30
+        ],
+        "usable_fraction_assumed": 0.65,
+        "hypothetical_pairs": [
+          1000,
+          100000
+        ],
+        "volume_per_animal_and_supplies_m3": 2
+      },
+      "alternative_model": {
+        "type": "reinterpretation_or_additional_mechanism",
+        "statement": "A \"kind\" need not equal a modern species; no species count or average body mass is specified.",
+        "status": "requires_independent_evidence"
+      },
+      "limits": "The Ark's internal gross volume can be calculated, but number and average volume of animal 'kinds' are not stated; illustrative scenarios cannot establish actual occupancy.",
+      "research": [
+        {
+          "url": "https://en.wikisource.org/wiki/1911_Encyclop%C3%A6dia_Britannica/Ark",
+          "claim": "reference history and Ark dimensions",
+          "role": "source_lead_not_automatically_verified"
+        }
+      ]
+    },
+    {
+      "id": "ark_clean_unclean_counts",
+      "focus": "Does 'two of every sort' exclude additional clean animals?",
+      "literal_model": {
+        "type": "category_exception",
+        "source_refs": [
+          "Genesis 6:19",
+          "Genesis 7:2",
+          "Genesis 7:3"
+        ]
+      },
+      "alternative_model": {
+        "type": "reinterpretation_or_additional_mechanism",
+        "statement": "The later passage distinguishes clean/unclean categories and specifies greater numbers for clean animals and birds.",
+        "status": "requires_independent_evidence"
+      },
+      "limits": "General two-of-kind instruction and later clean-animal/bird allowances may operate as general rule plus exceptions.",
+      "research": [
+        {
+          "url": "https://www.biblegateway.com/passage/?search=Genesis%206-7&version=KJV",
+          "claim": "primary biblical wording comparison",
+          "role": "source_lead_not_automatically_verified"
+        }
+      ]
+    },
+    {
+      "id": "ark_global_flood_geology",
+      "focus": "Could every mountain have been underwater in a historically recent global flood without a matching geological record?",
+      "literal_model": {
+        "type": "observational_conflict",
+        "source_refs": [
+          "Genesis 7:11",
+          "Genesis 7:19",
+          "Genesis 8:13"
+        ],
+        "scientific_evidence": "National Academies geological succession and missing Holocene global flood stratum"
+      },
+      "alternative_model": {
+        "type": "reinterpretation_or_additional_mechanism",
+        "statement": "Regional Mesopotamian flooding or figurative scope is a distinct historical hypothesis from a recent worldwide inundation.",
+        "status": "requires_independent_evidence"
+      },
+      "limits": "A recent worldwide mountain-covering flood conflicts with the geological record; alternative regional flood is a different claim.",
+      "research": [
+        {
+          "url": "https://www.ncbi.nlm.nih.gov/books/NBK230204/pdf/Bookshelf_NBK230204.pdf",
+          "claim": "National Academies geological evidence contrary to recent global flood",
+          "role": "source_lead_not_automatically_verified"
+        }
+      ]
+    },
+    {
+      "id": "ark_ecosystem_survival",
+      "focus": "Can obligate freshwater, saltwater and specialized terrestrial organisms survive the described environmental upheaval by ordinary ecological means?",
+      "literal_model": {
+        "type": "mechanism_unknown",
+        "source_refs": [
+          "Genesis 7:19",
+          "Genesis 8:13"
+        ],
+        "mechanism": "aquatic salinity and specialized habitat survival"
+      },
+      "alternative_model": {
+        "type": "reinterpretation_or_additional_mechanism",
+        "statement": "Survival is species- and habitat-dependent; alternative refuges and unspecified supernatural protection differ from ordinary ecology.",
+        "status": "requires_independent_evidence"
+      },
+      "limits": "Species-specific tolerance and refuges are unquantified. A single hypothetical explanation is not evidence of survival.",
+      "research": [
+        {
+          "url": "https://oceanservice.noaa.gov/facts/salinity.html",
+          "claim": "NOAA water-salinity physical context",
+          "role": "source_lead_not_automatically_verified"
+        }
+      ]
+    },
+    {
+      "id": "ark_postflood_biogeography",
+      "focus": "How could all terrestrial lineages return to isolated continents and unique ecosystems following one Ark landing?",
+      "literal_model": {
+        "type": "mechanism_unknown",
+        "source_refs": [
+          "Genesis 8:4",
+          "Genesis 8:13",
+          "Genesis 6:20"
+        ],
+        "mechanism": "rapid recolonization of isolated bioregions from Ararat"
+      },
+      "alternative_model": {
+        "type": "reinterpretation_or_additional_mechanism",
+        "statement": "Long-term dispersal, unknown geographic configurations, regional scope, and differing taxonomy require individual tests.",
+        "status": "requires_independent_evidence"
+      },
+      "limits": "Geographic and evolutionary dispersal constraints require species-by-species analysis.",
+      "research": [
+        {
+          "url": "https://www.nationalacademies.org/read/5787/chapter/3",
+          "claim": "National Academies evolutionary diversity and distribution evidence",
+          "role": "source_lead_not_automatically_verified"
+        }
+      ]
+    },
+    {
+      "id": "ark_two_founders_genetics",
+      "focus": "Would a two-individual founder bottleneck for all unclean animal lineages preserve modern variation without extraordinary processes?",
+      "literal_model": {
+        "type": "population_founders",
+        "source_refs": [
+          "Genesis 6:19",
+          "Genesis 7:2"
+        ],
+        "founders_per_lineage_assumed": 2,
+        "distinguish_kind_and_species": true
+      },
+      "alternative_model": {
+        "type": "reinterpretation_or_additional_mechanism",
+        "statement": "A biblical 'kind' is not necessarily a species; genetic consequences depend on mutation, founding variation and population model.",
+        "status": "requires_independent_evidence"
+      },
+      "limits": "Two individuals per modern biological lineage implies a severe bottleneck; viability and observed variation require formal genomic population models.",
+      "research": [
+        {
+          "url": "https://www.nationalacademies.org/read/13163/chapter/6",
+          "claim": "National Academies population genetic variation and inheritance",
+          "role": "source_lead_not_automatically_verified"
+        }
+      ]
+    },
+    {
+      "id": "creation_six_day_history",
+      "focus": "Can literal consecutive 24-hour creation days accommodate the independently measured age of Earth and solar system?",
+      "literal_model": {
+        "type": "observational_conflict",
+        "source_refs": [
+          "Genesis 1:5",
+          "Genesis 1:16",
+          "Genesis 2:2"
+        ],
+        "scientific_evidence": "USGS multi-billion-year Earth rocks and radiometric dating; six-day duration alone does not fix Earth's absolute beginning"
+      },
+      "alternative_model": {
+        "type": "reinterpretation_or_additional_mechanism",
+        "statement": "Literal day sequence does not by itself date the beginning to 6,000 years ago; alternate day-age and literary readings are distinct.",
+        "status": "requires_independent_evidence"
+      },
+      "limits": "A young-Earth inferred natural timetable contradicts physical chronology; a literary or non-24-hour reading cannot be dismissed by testing a different claim.",
+      "research": [
+        {
+          "url": "https://pubs.usgs.gov/gip/geotime/age.html",
+          "claim": "USGS radiometric age of Earth",
+          "role": "source_lead_not_automatically_verified"
+        }
+      ]
+    },
+    {
+      "id": "creation_vegetation_before_sun",
+      "focus": "Can seed-bearing plants precede the Sun in the ordinary physical timeline?",
+      "literal_model": {
+        "type": "mechanism_unknown",
+        "source_refs": [
+          "Genesis 1:11",
+          "Genesis 1:16"
+        ],
+        "mechanism": "natural photosynthesis/energy before solar formation"
+      },
+      "alternative_model": {
+        "type": "reinterpretation_or_additional_mechanism",
+        "statement": "The text mentions light before the sun; photosynthesis needs energy, not necessarily direct sunlight in every theoretical model.",
+        "status": "requires_independent_evidence"
+      },
+      "limits": "Plant growth requires energy. Genesis also mentions earlier light, so this source alone does not establish zero light prior to the Sun.",
+      "research": [
+        {
+          "url": "https://science.nasa.gov/sun/facts/",
+          "claim": "NASA age and formation of the Sun",
+          "role": "source_lead_not_automatically_verified"
+        }
+      ]
+    },
+    {
+      "id": "creation_daylight_before_luminaries",
+      "focus": "Does 'day/night' before the fourth-day luminaries require a naturally impossible lighting mechanism?",
+      "literal_model": {
+        "type": "mechanism_unknown",
+        "source_refs": [
+          "Genesis 1:3",
+          "Genesis 1:5",
+          "Genesis 1:14"
+        ],
+        "mechanism": "ordinary solar day/night without solar luminary"
+      },
+      "alternative_model": {
+        "type": "reinterpretation_or_additional_mechanism",
+        "statement": "Genesis 1 introduces light before the lights; classification requires distinguishing ordinary solar days from narrative day markers.",
+        "status": "requires_independent_evidence"
+      },
+      "limits": "A solar day presupposes a star, but day-night literary markers or other light sources need separate modeling.",
+      "research": [
+        {
+          "url": "https://science.nasa.gov/sun/facts/",
+          "claim": "NASA ordinary illumination and solar system formation",
+          "role": "source_lead_not_automatically_verified"
+        }
+      ]
+    },
+    {
+      "id": "eve_rib_biological_origin",
+      "focus": "Can typical XY rib tissue naturally become an adult XX woman with independent developmental genetics?",
+      "literal_model": {
+        "type": "donor_cell_only",
+        "source_refs": [
+          "Genesis 2:21",
+          "Genesis 2:22"
+        ],
+        "donor_karyotype": "46,XY",
+        "target_karyotype": "46,XX",
+        "permitted_process": "ordinary somatic tissue growth without chromosome replacement, cloning, embryogenesis or genetic engineering"
+      },
+      "alternative_model": {
+        "type": "reinterpretation_or_additional_mechanism",
+        "statement": "Cellular reprogramming and chromosome alteration are separate hypotheses; miracles are not naturally testable mechanisms.",
+        "status": "requires_independent_evidence"
+      },
+      "limits": "Natural expansion of a donor's XY rib tissue will not, without genetic/developmental modification, create a biologically independent typical XX woman. Human sex development has exceptions.",
+      "research": [
+        {
+          "url": "https://www.nationalacademies.org/read/27757/chapter/4",
+          "claim": "National Academies modern XX/XY biology and gene expression",
+          "role": "source_lead_not_automatically_verified"
+        }
+      ]
+    },
+    {
+      "id": "adam_dust_spontaneous_origin",
+      "focus": "Can an adult human be assembled directly from soil by known unassisted biological mechanisms?",
+      "literal_model": {
+        "type": "mechanism_unknown",
+        "source_refs": [
+          "Genesis 2:7",
+          "Genesis 1:27"
+        ],
+        "mechanism": "adult human assembled directly from inorganic soil without developmental processes"
+      },
+      "alternative_model": {
+        "type": "reinterpretation_or_additional_mechanism",
+        "statement": "Life's chemistry involves Earth elements, but assembly of an adult from dirt is not the same as a demonstrated natural origin.",
+        "status": "requires_independent_evidence"
+      },
+      "limits": "No known natural embryology produces an adult from unorganized soil; the supernatural claim is not itself a laboratory hypothesis.",
+      "research": [
+        {
+          "url": "https://www.nationalacademies.org/read/5787/chapter/3",
+          "claim": "National Academies biological evolutionary history",
+          "role": "source_lead_not_automatically_verified"
+        }
+      ]
+    },
+    {
+      "id": "adam_eve_two_human_founders",
+      "focus": "Is all living human genetic diversity compatible with exactly two recent biological ancestors and no outside populations?",
+      "literal_model": {
+        "type": "population_founders",
+        "source_refs": [
+          "Genesis 2:7",
+          "Genesis 2:22",
+          "Genesis 5:3"
+        ],
+        "founders_per_lineage_assumed": 2,
+        "human_history_model": "all modern humans solely descend genetically from two recent individuals"
+      },
+      "alternative_model": {
+        "type": "reinterpretation_or_additional_mechanism",
+        "statement": "Genealogical ancestry and genetic ancestry differ; the timeframe, migration and other populations affect the hypothesis.",
+        "status": "requires_independent_evidence"
+      },
+      "limits": "Recent sole-genetic-founder model requires population genetics and fossil modeling; genealogical ancestry is a different hypothesis.",
+      "research": [
+        {
+          "url": "https://www.nationalacademies.org/read/13163/chapter/6",
+          "claim": "National Academies human genome and genetic variation",
+          "role": "source_lead_not_automatically_verified"
+        }
+      ]
+    },
+    {
+      "id": "serpent_identity_satan",
+      "focus": "Does Genesis 3 explicitly identify its serpent as the same named Satan in Revelation?",
+      "literal_model": {
+        "type": "later_identity",
+        "source_refs": [
+          "Genesis 3:1",
+          "Revelation 12:9"
+        ]
+      },
+      "alternative_model": {
+        "type": "reinterpretation_or_additional_mechanism",
+        "statement": "Revelation identifies an 'old serpent' with Satan, but that does not insert the name into the older Genesis passage.",
+        "status": "requires_independent_evidence"
+      },
+      "limits": "The Genesis serpent is unnamed as Satan; Revelation explicitly identifies an old serpent with Satan. That permits later linkage but not contemporaneous explicit identification.",
+      "research": [
+        {
+          "url": "https://hmane.harvard.edu/publications/adversary-heaven-satan-hebrew-bible",
+          "claim": "Harvard historical analysis of the Hebrew noun satan",
+          "role": "source_lead_not_automatically_verified"
+        }
+      ]
+    },
+    {
+      "id": "satan_job_and_fall",
+      "focus": "Is Job's heavenly accuser historically incompatible with Revelation's portrayal of Satan cast to Earth?",
+      "literal_model": {
+        "type": "narrative_sequence",
+        "source_refs": [
+          "Job 1:6",
+          "Job 1:7",
+          "Revelation 12:9"
+        ],
+        "assumptions": [
+          "Job's heavenly scene and later apocalyptic expulsion need not be synchronous"
+        ]
+      },
+      "alternative_model": {
+        "type": "reinterpretation_or_additional_mechanism",
+        "statement": "Narrative chronology and celestial role may differ; whether these are one character is interpretive.",
+        "status": "requires_independent_evidence"
+      },
+      "limits": "Possible chronology is not independent evidence of heavenly events.",
+      "research": [
+        {
+          "url": "https://hmane.harvard.edu/publications/adversary-heaven-satan-hebrew-bible",
+          "claim": "Harvard historical analysis of heavenly adversary",
+          "role": "source_lead_not_automatically_verified"
+        },
+        {
+          "url": "https://www.biblegateway.com/resources/encyclopedia-of-the-bible/Satan",
+          "claim": "A biblical textual reference distinguishes different meanings of Hebrew adversary and links Job and Revelation.",
+          "role": "complementary_commentary_not_independent_supernatural_proof"
+        }
+      ]
+    },
+    {
+      "id": "satan_david_census_cause",
+      "focus": "Do Samuel and Chronicles exclude one another by attributing David's census impetus to God and Satan?",
+      "literal_model": {
+        "type": "layered_cause",
+        "source_refs": [
+          "2 Samuel 24:1",
+          "1 Chronicles 21:1"
+        ],
+        "assumptions": [
+          "Divine permission or agency and an adversary's proximate action may be distinct causal levels"
+        ]
+      },
+      "alternative_model": {
+        "type": "reinterpretation_or_additional_mechanism",
+        "statement": "Multiple levels of causation or differing source traditions could explain the distinct attributed agents.",
+        "status": "requires_independent_evidence"
+      },
+      "limits": "Layered causation permits compatibility, but also could mask a genuine shift in attribution across traditions.",
+      "research": [
+        {
+          "url": "https://www.biblegateway.com/resources/encyclopedia-of-the-bible/Satan",
+          "claim": "Bible Gateway textual comparison of 2 Samuel and 1 Chronicles",
+          "role": "source_lead_not_automatically_verified"
+        }
+      ]
+    },
+    {
+      "id": "lucifer_and_babylon",
+      "focus": "Does Isaiah explicitly identify its 'Lucifer' image as Satan rather than a taunt against a human king?",
+      "literal_model": {
+        "type": "later_identity",
+        "source_refs": [
+          "Isaiah 14:4",
+          "Isaiah 14:12",
+          "Revelation 12:9"
+        ]
+      },
+      "alternative_model": {
+        "type": "reinterpretation_or_additional_mechanism",
+        "statement": "A later typological identification is not the same as an explicit original-context assertion.",
+        "status": "requires_independent_evidence"
+      },
+      "limits": "Isaiah 14's taunt against a human king is a literary context. Later Satan interpretations need not describe the oldest reading.",
+      "research": [
+        {
+          "url": "https://www.biblegateway.com/resources/encyclopedia-of-the-bible/Satan",
+          "claim": "Bible Gateway overview of passages identifying Satan",
+          "role": "source_lead_not_automatically_verified"
+        }
+      ]
+    },
+    {
+      "id": "temptation_mountain_visibility",
+      "focus": "Can all worldly kingdoms be simultaneously visible by ordinary line of sight from any physical mountain?",
+      "literal_model": {
+        "type": "line_of_sight",
+        "source_refs": [
+          "Matthew 4:8",
+          "Luke 4:5"
+        ],
+        "target_scope": "all kingdoms on globe",
+        "assumption": "literal simultaneous unaided visual line-of-sight from one Earth mountain"
+      },
+      "alternative_model": {
+        "type": "reinterpretation_or_additional_mechanism",
+        "statement": "Visionary perception and dramatic literary depiction are alternative interpretations; the natural line-of-sight mechanism alone is bounded.",
+        "status": "requires_independent_evidence"
+      },
+      "limits": "Earth curvature and intervening horizons prohibit unaided simultaneous visibility of all global kingdoms; visionary/figurative reading has different physical commitments.",
+      "research": [
+        {
+          "url": "https://science.nasa.gov/earth/facts/",
+          "claim": "NASA Earth geometry contextual check",
+          "role": "source_lead_not_automatically_verified"
+        }
+      ]
+    }
+  ]
+}

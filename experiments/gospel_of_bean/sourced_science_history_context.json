@@ -1,0 +1,107 @@
+{
+  "schema": "bean.gospel_sourced_fact_context.v1",
+  "purpose": "Human-curated externally documented observations, with explicit wording, URLs and source type. These do not replace source criticism or prove historical narratives. Engine must not silently promote factual claims to independent experiments.",
+  "reviewed_date": "2026-10-10",
+  "source_verification_method": "Text of cited public sources inspected by research assistant via web retrieval; interpretations cross-checked when feasible, not a BEAN autonomous validation or replicated experiment.",
+  "records": [
+    {
+      "fact_id": "flood_global_geological_record",
+      "kind": "scientific_summary",
+      "source_url": "https://www.ncbi.nlm.nih.gov/books/NBK230204/pdf/Bookshelf_NBK230204.pdf",
+      "source_org": "National Academy of Sciences",
+      "statement": "The National Academies explicitly says the geological record does not support a universal flood a few thousand years ago covering all mountains; existing sedimentary deposits conflict with such a recent global-flood scenario.",
+      "related_cases": [
+        "ark_global_flood_geology"
+      ],
+      "evidence_weight": "strong_against_specific_recent_global_flood",
+      "confidence_scope": "consensus_geological_interpretation",
+      "contra": "A regional flood in antiquity is a different claim, not excluded by this review."
+    },
+    {
+      "fact_id": "earth_radiometric_age",
+      "kind": "scientific_measurement_summary",
+      "source_url": "https://pubs.usgs.gov/gip/geotime/age.html",
+      "source_org": "U.S. Geological Survey",
+      "statement": "USGS explains Earth age estimates around 4.54 billion years from radiometric isotope evidence and solar system meteorite measurements.",
+      "related_cases": [
+        "creation_six_day_history",
+        "literal_earth_age_hypothesis"
+      ],
+      "evidence_weight": "strong_against_recent_earth_origin",
+      "confidence_scope": "natural_physical_formation",
+      "contra": "A six-day theological literary frame without a young-Earth calendar date does not contradict this measured age merely by word choice."
+    },
+    {
+      "fact_id": "sun_age",
+      "kind": "scientific_measurement_summary",
+      "source_url": "https://science.nasa.gov/sun/facts/",
+      "source_org": "NASA",
+      "statement": "NASA states the Sun formed about 4.6 billion years ago, within the early formation of the solar system.",
+      "related_cases": [
+        "creation_vegetation_before_sun",
+        "creation_daylight_before_luminaries",
+        "creation_six_day_history"
+      ],
+      "evidence_weight": "strong_on_sun_formation_chronology",
+      "confidence_scope": "ordinary_astrophysical_formation",
+      "contra": "The text's prior divine light is not identical to a physical assertion that Earth's photosynthetic ecosystems existed without any energy source."
+    },
+    {
+      "fact_id": "sex_chromosomes",
+      "kind": "biological_reference_summary",
+      "source_url": "https://www.nichd.nih.gov/health/topics/turner/conditioninfo",
+      "source_org": "NIH NICHD",
+      "statement": "NIH describes a typical 46,XX female and typical 46,XY male chromosome configuration, with documented chromosomal variation such as Turner syndrome.",
+      "related_cases": [
+        "eve_rib_biological_origin"
+      ],
+      "evidence_weight": "strong_against_simple_XY_rib_tissue_equals_XX_woman",
+      "confidence_scope": "typical_chromosomal_determination",
+      "contra": "Scripture does not specify a chromosome count, an ordinary cellular mechanism, or the genetic requirements for supernatural creation."
+    },
+    {
+      "fact_id": "hebrew_satan_lexeme",
+      "kind": "philological_reference_summary",
+      "source_url": "https://hmane.harvard.edu/publications/adversary-heaven-satan-hebrew-bible",
+      "source_org": "Harvard Museum of the Ancient Near East",
+      "statement": "Harvard hosts a bibliographic abstract for P. L. Day's scholarly study of the Hebrew noun satan as heavenly adversary in Numbers, Zechariah, Job and Chronicles.",
+      "related_cases": [
+        "serpent_identity_satan",
+        "satan_job_and_fall",
+        "satan_david_census_cause",
+        "lucifer_and_babylon"
+      ],
+      "evidence_weight": "interpretive_historical_context",
+      "confidence_scope": "historical_linguistic_reference_not_full_book_assessed",
+      "contra": "Hebrew usage over time, later canonical connections and religious interpretation are distinct questions."
+    },
+    {
+      "fact_id": "david_census_alternative_explanations",
+      "kind": "comparative_textual_analysis",
+      "source_url": "https://www.biblegateway.com/resources/encyclopedia-of-the-bible/Satan",
+      "source_org": "Bible Gateway Encyclopedia of the Bible",
+      "statement": "The historical reference describes broad and narrow senses of Hebrew satan, including human adversary, and relates Chronicles 21:1 to 2 Samuel 24:1.",
+      "related_cases": [
+        "satan_david_census_cause",
+        "serpent_identity_satan"
+      ],
+      "evidence_weight": "textual_variation_established_interpretation_disputed",
+      "confidence_scope": "documented_commentarial_interpretation",
+      "contra": "A harmonizing layered-causation reading remains possible, though it is an additional explanation."
+    },
+    {
+      "fact_id": "smithsonian_human_genetics",
+      "kind": "scientific_reference_summary",
+      "source_url": "https://humanorigins.si.edu/evidence/genetics",
+      "source_org": "Smithsonian National Museum of Natural History",
+      "statement": "Smithsonian describes DNA variation and human common ancestry as evidence of evolutionary history and past population changes.",
+      "related_cases": [
+        "adam_eve_two_human_founders",
+        "ark_two_founders_genetics"
+      ],
+      "evidence_weight": "requires_population_genetic_models",
+      "confidence_scope": "genetic_diversity_and_evolutionary_ancestry",
+      "contra": "A claim of genealogical descent from named people is not identical to a recent two-person-only genetic bottleneck."
+    }
+  ]
+}
