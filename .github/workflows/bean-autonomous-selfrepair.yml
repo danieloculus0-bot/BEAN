@@ -10,7 +10,7 @@ on:
       - 'experiments/autonomous_selfrepair/test_selfrepair_holdout.py'
       - '.github/workflows/bean-autonomous-selfrepair.yml'
   push:
-    branches: [main]
+    branches: [main, experiment/bean-selfrepair-live-recovery-20261011]
     paths:
       - 'bean/evaluation/autonomous_selfrepair.py'
       - 'bean/evaluation/autonomous_selfrepair_verify.py'
@@ -123,6 +123,7 @@ jobs:
 
   propose:
     name: Publish only both-platform-valid BEAN source to review PR
+    if: github.ref == 'refs/heads/main'
     needs: [author, independent_verify]
     runs-on: ubuntu-latest
     timeout-minutes: 7
