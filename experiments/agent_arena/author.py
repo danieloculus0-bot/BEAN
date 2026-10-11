@@ -179,7 +179,10 @@ def aider_author(spec, key, *, command_runner=subprocess.run, binary="aider"):
             )
             updated = source.read_text(encoding="utf-8")
             if updated == original:
-                receipt.update(status="no_candidate", reason="unchanged_source")
+                receipt.update(
+                    status="tool_or_transport_failure" if result.returncode != 0 else "no_candidate",
+                    reason="cli_exit_without_edit" if result.returncode != 0 else "unchanged_source",
+                )
                 return receipt, None
             if len(updated.encode()) > MAX_SOURCE_SIZE:
                 receipt.update(status="invalid_candidate", reason="oversized_source")
