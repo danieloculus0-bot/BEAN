@@ -53,6 +53,14 @@ The repository's [cross-platform workflow](https://github.com/danieloculus0-bot/
 - [Reproducible research experiments](experimental-research-index-2026-10.md): source branches, CI results, negative findings and limitations.
 - [BEAN AI Bridge](https://github.com/danieloculus0-bot/BEAN-AI-Bridge-): separate generic ERP/KPI evidence ledger, synthetic fixtures and replay. Not a deployed production integration.
 
+## Durability and local JSONL recovery
+
+The Core SQLite database is authoritative. Its audit mirror now lives beside the chosen database at `<database-path>.events.jsonl`, rather than in the BEAN installed package. After a crash or interrupted mirror append, opening that same SQLite database automatically reconciles a missing or partially written mirror. Complete but altered historical records trigger an explicit `AuditMirrorError` requiring operator investigation, rather than silently being overwritten. If a post-commit mirror write fails, the error includes the committed event ID; **do not retry that event** before examining the SQLite record.
+
+Older installations may have an unrelated package-wide `bean/logs/events.jsonl`; this update does not alter or silently migrate that legacy file. Back it up separately. This mirror design is O(n) per event, not yet stress-tested for high-volume or multi-host use, and is not a tamper-proof cryptographic ledger.
+
+For exact acceptance results and unresolved production blockers, read the [production-readiness audit](PRODUCTION_READINESS_AUDIT_2026-10-11.md).
+
 ## Current boundaries
 
 Real source authentication, production ERP ingestion, general hosted-model evaluation, robust deployment, independently validated learning gains and robot autonomy remain open work. A proposal is **never authorization to execute**. Host systems own their permissions and effects.
