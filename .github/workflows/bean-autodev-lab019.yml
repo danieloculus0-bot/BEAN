@@ -115,16 +115,24 @@ jobs:
         run: |
           set -euo pipefail
           BRANCH="bean/lab019-selfdevelop-$GITHUB_RUN_ID"
+          # The unprivileged generation/testing jobs have ended; only this
+          # post-test job can use GitHub write credentials.
+          gh auth setup-git
           if git ls-remote --heads origin 'refs/heads/bean/lab019-selfdevelop-*' | grep -q .; then
             echo "Existing BEAN Lab019 generated code branch still awaits independent review."
             exit 0
           fi
           cp agent-evidence/autodev-output/validated/bean/skills/clip_score.py \
              experiments/autodev/seed_project/bean/skills/clip_score.py
+          # Preserve the full failed-then-successful search chain in this PR.
+          mkdir -p experiments/autodev/history
+          cp agent-evidence/autodev-output/journal-export.json \
+             "experiments/autodev/history/$GITHUB_RUN_ID.json"
           git config user.name "bean-autodev-lab"
           git config user.email "bean-autodev-lab@users.noreply.github.com"
           git switch -c "$BRANCH"
-          git add -- experiments/autodev/seed_project/bean/skills/clip_score.py
+          git add -- experiments/autodev/seed_project/bean/skills/clip_score.py \
+                      "experiments/autodev/history/$GITHUB_RUN_ID.json"
           git diff --cached --quiet && { echo "Already fixed; no duplicate branch"; exit 0; }
           git commit -m "fix(lab019): BEAN self-authored and independently verified source"
           gh auth setup-git
