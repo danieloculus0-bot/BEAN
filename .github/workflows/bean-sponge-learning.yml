@@ -6,6 +6,11 @@ on:
     paths:
       - 'bean/optimization/sponge.py'
       - 'bean/tests/test_sponge.py'
+      - 'bean/tests/test_memory_compression.py'
+      - 'bean/tests/test_sponge_codec.py'
+      - 'bean/memory/compression.py'
+      - 'bean/optimization/sponge_codec.py'
+      - 'bean/optimization/sponge_td.py'
       - '.github/workflows/bean-sponge-learning.yml'
   workflow_dispatch:
 permissions:
@@ -26,4 +31,4 @@ jobs:
         with:
           python-version: ${{ matrix.python }}
       - name: Test actual BEAN learning and persisted replay
-        run: python -m unittest bean.tests.test_sponge -v
+        run: python -m unittest bean.tests.test_sponge bean.tests.test_sponge_codec bean.tests.test_memory_compression -v
