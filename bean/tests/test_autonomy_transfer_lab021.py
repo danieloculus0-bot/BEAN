@@ -82,7 +82,7 @@ def test_independent_holdout_accepts_complete_solution(task, tmp_path):
     p = tmp_path / "solution.py"
     p.write_text(GOLD[task.task_id])
     validate_source(GOLD[task.task_id], task.function)
-    for phase in ("development", "holdout"):
+    for phase in ("development", "holdout", "final"):
         grade_result = subprocess_grade(task.task_id, p, phase)
         assert grade_result["passed"] == grade_result["total"], (task.task_id, phase, grade_result)
 
@@ -90,6 +90,7 @@ def test_independent_holdout_accepts_complete_solution(task, tmp_path):
 def test_hidden_test_split_is_deterministically_distinct():
     for task in TASKS:
         assert fixtures(task.task_id, "holdout") != fixtures(task.task_id, "development")
+        assert fixtures(task.task_id, "final") != fixtures(task.task_id, "holdout")
 
 
 @pytest.mark.parametrize("source", [
