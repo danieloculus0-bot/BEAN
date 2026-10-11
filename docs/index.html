@@ -843,10 +843,10 @@
             <a href="https://github.com/danieloculus0-bot/BEAN/pull/74">Inspect the candidate, code digest and CI</a>
           </article>
           <article class="experiment-card">
-            <span class="status-tag warning">Bridge research PR</span>
+            <span class="status-tag">Bridge main · Emulator research</span>
             <h3>Robot motion without requiring a robot</h3>
-            <p>Arduino Nano firmware passed in simavr and ESP32 motion logic passed in QEMU with independent UART evidence. Wokwi explicitly reported NOT_RUN_MISSING_TOKEN. These are emulator tests, not physical movement or a field-tested failsafe.</p>
-            <a href="https://github.com/danieloculus0-bot/BEAN-AI-Bridge-/pull/32">Inspect robot-motion emulator evidence</a>
+            <p>Arduino Nano simavr and ESP32 QEMU now test explicit arm, replay protection, heartbeat interlocks, logical watchdog expiry and safe fault recovery. Native C also passed 6,144 deterministic fault transitions and rejected a deliberately sabotaged E-stop. No physical motor control; Wokwi did not run without its token.</p>
+            <a href="https://github.com/danieloculus0-bot/BEAN-AI-Bridge-/blob/main/experiments/robot_motion/README.md">Review the merged test contract and limitations</a>
           </article>
           <article class="experiment-card">
             <span class="status-tag">Core main · Developer preview</span>
@@ -875,8 +875,8 @@
             <span class="status-tag">Emulated, not deployed</span>
             <h3>Two microcontroller targets</h3>
             <div class="result-number">2 <small>confirmed emulators</small></div>
-            <p>AVR on simavr and ESP32 on QEMU emitted their expected motion-contract pass markers. The extra Wokwi CI lane did not run because its token was unavailable, despite the workflow reporting a green status.</p>
-            <a href="https://github.com/danieloculus0-bot/BEAN-AI-Bridge-/actions/runs/38128794018">Open motion-lab results</a>
+            <p>Actual AVR/simavr and ESP32/QEMU emitted verified pass markers. ESP32's FreeRTOS watchdog checks passed too; the host fault sweep and negative-control E-stop test passed. Wokwi is NOT_RUN_MISSING_TOKEN, not a pass; there has been no physical hardware test.</p>
+            <a href="https://github.com/danieloculus0-bot/BEAN-AI-Bridge-/actions/runs/38161744114">Open new emulator and failure-injection results</a>
           </article>
           <article class="experiment-card">
             <span class="status-tag warning">No verified winner</span>
