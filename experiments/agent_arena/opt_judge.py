@@ -79,9 +79,12 @@ def run_ledger():
         rng.shuffle(rows)
         datasets.append((rows,cutoff))
     for rows,at in datasets:
-        assert replay(rows,at)==ledger_reference(rows,at), "stress ledger mismatch"
-        assert replay(list(reversed(rows)),at)==ledger_reference(rows,at), "order dependence"
-        assert replay(rows,"2026-10-10T00:30:00Z")==replay(rows,at), "instant dependence"
+        expected=ledger_reference(rows,at)
+        original=json.dumps(rows,sort_keys=True)
+        assert replay(rows,at)==expected, "stress ledger mismatch"
+        assert replay(list(reversed(rows)),at)==expected, "order dependence"
+        assert replay(rows,"2026-10-10T00:30:00Z")==expected, "instant dependence"
+        assert json.dumps(rows,sort_keys=True)==original, "ledger mutated caller data"
     return [(replay,(rows,at)) for rows,at in datasets]
 
 def run_policy():
@@ -102,10 +105,11 @@ def run_policy():
         branches=rng.sample(range(1200),3)
         links["fork"+str(j)]=["g"+str(i) for i in branches]
         tests.append(("fork"+str(j),"read",links,grants,denies))
-    for item in tests:
-        assert can_access(*item)==policy_reference(*item), "stress graph mismatch"
-    # No mutation from traversal; repeated inputs must remain equivalent.
-    assert links["u"]==["g0","g17"], "mutated membership input"
+    expected=[policy_reference(*item) for item in tests]
+    original=json.dumps(links,sort_keys=True)
+    for item,truth in zip(tests,expected):
+        assert can_access(*item)==truth, "stress graph mismatch"
+    assert json.dumps(links,sort_keys=True)==original, "mutated membership input"
     return [(can_access,item) for item in tests]
 
 def main():
@@ -276,9 +280,15 @@ def evaluate(previous_root,current_root):
     if valid_all["bean"] and valid_all["aider"]:
         be=report["aggregates"]["bean"]["mean_relative_speedup"]
         ai=report["aggregates"]["aider"]["mean_relative_speedup"]
-        # +/-5% in mean gain is a tie to avoid claiming noisy performance wins.
-        report["winner"]="BEAN_OPTIMIZATION_ADVANTAGE" if be>ai*1.05 else (
-            "AIDER_OPTIMIZATION_ADVANTAGE" if ai>be*1.05 else "STATISTICAL_TIE")
+        # No win is credited unless optimization itself delivered >5% gain.
+        if max(be,ai)<1.05:
+            report["winner"]="NO_MEANINGFUL_OPTIMIZATION"
+        elif be>ai*1.05 and be>1.05:
+            report["winner"]="BEAN_OPTIMIZATION_ADVANTAGE"
+        elif ai>be*1.05 and ai>1.05:
+            report["winner"]="AIDER_OPTIMIZATION_ADVANTAGE"
+        else:
+            report["winner"]="WITHIN_NOISE_OR_CLOSE"
     else:
         report["winner"]="INCONCLUSIVE_OR_INCOMPLETE"
     report["evidence_sha256"]=sha(json.dumps(report,sort_keys=True,separators=(",",":")))
