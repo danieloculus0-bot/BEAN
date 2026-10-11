@@ -34,7 +34,7 @@ jobs:
 
   training-author:
     name: Existing model author, three older tasks, no code execution
-    if: github.event_name != 'pull_request'
+    if: github.event_name == 'workflow_dispatch'
     needs: preflight
     runs-on: ubuntu-latest
     timeout-minutes: 16
@@ -48,7 +48,9 @@ jobs:
       - name: Ask external free models for three supervised training proposals
         env:
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
-        run: python -m bean.evaluation.transfer_author --out _lab023/training
+        run: |
+          python -m bean.evaluation.transfer_author --out _lab023/training
+          python -c "import json; x=json.load(open('_lab023/training/receipt.json')); assert sum(r['provider_status']=='proposal_generated' for r in x['tasks']) >= 2, 'No qualifying training proposals; provider may be rate-limited'"
       - uses: actions/upload-artifact@v4
         if: always()
         with:
