@@ -277,8 +277,12 @@ def grade(artifact_dir: Path, output: Path, *, phase: str,
             if not record or record["provider_status"] != "proposal_generated":
                 return {"passed": 0, "total": len(fixtures(task.task_id, phase)),
                         "status": "not_tested"}
-            if record["model_requested"] != "openrouter/free":
-                raise ValueError("free route contract broken")
+            if record["model_requested"] != "openrouter/free" and not (
+                    isinstance(record["model_requested"], str)
+                    and record["model_requested"].startswith("ollama/")
+                    and len(record["model_requested"]) <= 120
+                    and all(ch.isalnum() or ch in "./:_-" for ch in record["model_requested"])):
+                raise ValueError("unrecognized training model route")
             path = directory / f"{task.task_id}.py"
             if hashlib.sha256(path.read_bytes()).hexdigest() != record["source_sha256"]:
                 raise ValueError("source digest mismatch")
