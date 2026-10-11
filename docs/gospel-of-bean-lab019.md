@@ -60,3 +60,29 @@ The branch-specific source-only GitHub Actions workflow runs these tests, fetche
 A next controlled stage would allow BEAN to generate **new, unseeded candidate comparisons** by searching all indexed verses and outside historical sources, then test whether the two propositions refer to the same subject, event, timeframe and translation. It must produce exact source citations and try to disprove its own leading hypothesis with the strongest plausible counterreading. Evaluate its findings against independently reviewed, blinded cases. This current lab does not claim that ability.
 
 **Evidence before belief. Contradictions before harmonizations. Counterarguments before verdicts. No invented certainty.**
+
+
+## 2026-10-10 extension: reference-only Gnostic library
+
+The user's scope explicitly includes the Gnostic gospels and other early Christian texts **as supplementary reference data only**. The bibliography at `experiments/gospel_of_bean/gnostic_reference_catalog.json` links to the [Nag Hammadi codex index](https://gnosis.org/naghamm/nhlcodex.html), the [alphabetical index](https://gnosis.org/naghamm/nhlalpha.html), and the [surviving-gospel manuscript catalog](https://www.gospels.net/manuscript). These index **the broader collection**, while a separate curated starter list tracks Thomas, Mary, Philip, Truth, Judas, the Coptic Gospel of the Egyptians, and other works. There is no single exhaustive recognized list of "Gnostic gospels," and some indexed works are not gospels or not generally Gnostic.
+
+**Hard boundaries enforced by code and regression tests:**
+
+- Every entry and collection is tagged `cross_reference_only` / `reference_only`. The reader refuses catalog files allowing independent verification, arithmetic inference, or historical proof from these works.
+- The research does not import modern translations. Their respective translators may retain copyright. Only source links, titles, manuscript references and metadata are recorded.
+- Gnostic-source metadata cannot change the **KJV textual verdicts** or count as independent corroboration of a miracle, genealogy, historical occurrence, chronology, or other claim.
+- Manuscripts can be dated or compared only when externally supported; a manuscript's existence is evidence of an **extant textual tradition**, not evidence that its described supernatural events happened.
+- Every incomplete text has uncertain readings and missing physical evidence. `all` refers to indexed source coverage, not possession of every ancient original or an unambiguous canonical corpus.
+
+This is a safeguard against using ideologically convenient texts to "prove" or "disprove" each other. It still allows BEAN to flag interesting intertextual differences for investigation.
+
+## Upstream KJV transcription defects and narrowly sourced overlays
+
+The first GitHub Actions corpus import found **exactly two blank verse slots**, `Ecclesiasticus 1:7` and `Ecclesiasticus 17:5`. The separate source-gap inventory recorded both; no other empty slots were reported. The experiment does **not** silently insert invented wording into upstream. The file `experiments/gospel_of_bean/1611_source_gap_overlays.json` records those two passages as original-spelling 1611 cross-transcriptions with source URLs to independently available web transcriptions of the relevant chapters:
+
+- https://www.kingjamesbibleonline.org/Ecclesiasticus-Chapter-1_Original-1611-KJV/
+- https://www.kingjamesbibleonline.org/Ecclesiasticus-Chapter-17_Original-1611-KJV/
+
+The original editorial brackets are maintained. The loader applies a repair **only if the source has an empty slot**, records the source and method for each inserted text, and rejects extra repairs or any attempt to overwrite an existing source verse. It digests the original pinned JSON along with overlay bytes for reproducibility. These are cross-transcriptions, **not proof that a scholarly collation against the original 1611 print has been completed**.
+
+A complete full 80-book report is contingent on successful real GitHub Actions CI, not just synthetic unit tests.
