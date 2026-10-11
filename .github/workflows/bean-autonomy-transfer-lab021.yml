@@ -1,0 +1,131 @@
+name: BEAN LAB021 multi-domain autonomy transfer and blind holdout
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify-evaluator:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install pytest
+      - name: Check oracle catches the known defects and accepts correct repairs
+        run: |
+          python -m compileall -q bean/evaluation/transfer_author.py bean/evaluation/transfer_oracle.py
+          python -m pytest bean/tests/test_autonomy_transfer_lab021.py -q -ra --tb=short
+
+  initial-code-author:
+    needs: verify-evaluator
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: BEAN asks external free models for three unrelated repairs
+        env:
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+        run: python -m bean.evaluation.transfer_author --out first/
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: lab021-first-proposals
+          path: first/
+          if-no-files-found: error
+
+  independent-development-check:
+    needs: initial-code-author
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/download-artifact@v4
+        with:
+          name: lab021-first-proposals
+          path: initial/
+      - name: Evaluate development fixtures without API credentials
+        run: |
+          python -m bean.evaluation.transfer_oracle \
+            --initial initial/ --phase development --output feedback.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: lab021-development-feedback
+          path: feedback.json
+          if-no-files-found: error
+
+  evidence-driven-revision:
+    needs: independent-development-check
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/download-artifact@v4
+        with:
+          name: lab021-development-feedback
+          path: prior/
+      - name: Retry failed tasks using only aggregate feedback
+        env:
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+        run: |
+          python -m bean.evaluation.transfer_author \
+            --feedback prior/feedback.json --out revised/
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: lab021-revised-proposals
+          path: revised/
+          if-no-files-found: error
+
+  sealed-independent-holdout:
+    needs: evidence-driven-revision
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/download-artifact@v4
+        with:
+          name: lab021-first-proposals
+          path: initial/
+      - uses: actions/download-artifact@v4
+        with:
+          name: lab021-revised-proposals
+          path: revised/
+      - name: Independent new-seed holdout; no API key, no feedback to model
+        run: |
+          python -m bean.evaluation.transfer_oracle \
+            --initial initial/ --revised revised/ --phase holdout \
+            --output holdout-report.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: lab021-sealed-holdout-report
+          path: holdout-report.json
+          if-no-files-found: error

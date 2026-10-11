@@ -1,0 +1,65 @@
+name: BEAN Lab021 final independent replay of three saved model repairs
+
+on:
+  push:
+    branches:
+      - experiment/bean-autonomy-transfer-lab021-20261011
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  no-secret-final-evaluator:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Test grading safety and third partition
+        run: |
+          python -m pip install pytest
+          python -m pytest bean/tests/test_autonomy_transfer_lab021.py -q
+      - uses: actions/download-artifact@v4
+        with:
+          name: lab021-first-proposals
+          run-id: 38108649668
+          github-token: ${{ github.token }}
+          path: saved-intervals/
+      - uses: actions/download-artifact@v4
+        with:
+          name: lab021-first-proposals
+          run-id: 38108708826
+          github-token: ${{ github.token }}
+          path: saved-dependencies/
+      - uses: actions/download-artifact@v4
+        with:
+          name: lab021b-new-inventory-proposal
+          run-id: 38109064280
+          github-token: ${{ github.token }}
+          path: saved-inventory/
+      - name: Run untouched third-seed validation and compile provenance
+        run: |
+          python -m bean.evaluation.transfer_oracle --initial saved-intervals/ --phase final --output final-a.json
+          python -m bean.evaluation.transfer_oracle --initial saved-dependencies/ --phase final --output final-b.json
+          python -m bean.evaluation.transfer_oracle --initial saved-inventory/ --phase final --output final-c.json
+          python -m bean.evaluation.transfer_memory compile --a final-a.json --b final-b.json --c final-c.json --out lab021b-results.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: lab021b-proof-${{ matrix.os }}
+          path: |
+            final-a.json
+            final-b.json
+            final-c.json
+            lab021b-results.json
+          if-no-files-found: warn
