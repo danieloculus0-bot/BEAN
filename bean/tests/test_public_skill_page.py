@@ -19,6 +19,7 @@ class SiteLinks(HTMLParser):
         self.links: list[str] = []
         self.anchors: set[str] = set()
         self.svgs = 0
+        self.mascot_images: list[dict[str, str]] = []
 
     def handle_starttag(self, tag: str, attrs) -> None:
         attributes = dict(attrs)
@@ -28,6 +29,8 @@ class SiteLinks(HTMLParser):
             self.links.append(attributes["href"])
         if tag == "svg" and "mascot-svg" in attributes.get("class", ""):
             self.svgs += 1
+        if tag == "img" and "mascot-art" in attributes.get("class", "").split():
+            self.mascot_images.append(attributes)
 
 
 class PublicSkillsPageTests(unittest.TestCase):
@@ -41,7 +44,15 @@ class PublicSkillsPageTests(unittest.TestCase):
         for anchor in ("top", "difference", "skills", "proof",
                        "quickstart", "research", "community"):
             self.assertIn(anchor, self.parser.anchors)
-        self.assertEqual(self.parser.svgs, 1)
+        # The existing public site now uses the actual official webp mascot
+        # instead of an older inline SVG. Verify one rendered mascot AND its
+        # local artifact/alt text, rather than asking for an obsolete tag.
+        self.assertEqual(self.parser.svgs + len(self.parser.mascot_images), 1)
+        if self.parser.mascot_images:
+            image = self.parser.mascot_images[0]
+            self.assertEqual(image.get("src"), "./bean-sprout.webp")
+            self.assertIn("BEAN", image.get("alt", ""))
+            self.assertTrue((PAGE.parent / "bean-sprout.webp").is_file())
         self.assertIn("--green:#7ed957;", self.page)
         self.assertIn("Cute name. <br>Serious reasoning.", self.page)
         self.assertIn("#skills", self.parser.links)
