@@ -124,7 +124,7 @@ class OllamaClient:
         return reply[:6000]
 
 
-    def chat_json(self, model: str, messages: list[dict]) -> str:
+    def chat_json(self, model: str, messages: list[dict], schema: dict | None = None) -> str:
         """Request constrained JSON output for BEAN's structured reasoning layer.
 
         Shares the loopback-only transport, proxy bypass and bounded response
@@ -136,8 +136,8 @@ class OllamaClient:
             "model": model,
             "messages": messages,
             "stream": False,
-            "format": "json",
-            "options": {"temperature": 0.1, "num_predict": 900, "num_ctx": 4096},
+            "format": schema if schema is not None else "json",
+            "options": {"temperature": 0.0, "num_predict": 512, "num_ctx": 4096, "repeat_penalty": 1.2},
         })
         message = result.get("message")
         if not isinstance(message, dict) or not isinstance(message.get("content"), str):
@@ -145,4 +145,7 @@ class OllamaClient:
         reply = message["content"].strip()
         if not reply:
             raise OllamaError("Ollama supplied an empty structured reply")
-        return reply[:6000]
+        # Do not silently truncate JSON: keep the full response for parse-failure receipts.
+        if len(reply) > 20000:
+            raise OllamaError("Ollama structured reply exceeded size limit")
+        return reply
