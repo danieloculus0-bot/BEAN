@@ -75,3 +75,20 @@ def test_false_positive_cannot_be_reported_as_historical_disproof():
         assert row["hypothesis_status"] == "candidate_only"
         assert row["review"] == "not_individually_adjudicated"
     assert not result["verse_semantics_fully_understood"]
+
+
+def test_discovers_unseeded_cross_book_regnal_ages_without_pretending_identity_proven():
+    from bean.evaluation.gospel_wholebook import mine_cross_book_accession_age_pairs
+    corpus = Corpus({
+        "2 Kings 8:26": "Two and twentie yeeres old was Ahaziah when he began to reigne.",
+        "2 Chronicles 22:2": "Fourtie and two yeeres old was Ahaziah when he began to reigne.",
+        "1 Kings 4:2": "Other commentary about a different person without an accession.",
+    }, ("2 Kings", "2 Chronicles", "1 Kings"), 3, "fixture")
+    links = mine_cross_book_accession_age_pairs(corpus)
+    assert len(links) == 1
+    assert links[0]["candidate_name"] == "ahaziah"
+    assert {links[0]["age_a"], links[0]["age_b"]} == {22, 42}
+    assert links[0]["verdict"] == "review_required"
+    assert links[0]["same_historical_person_verified"] is False
+    assert links[0]["same_event_verified"] is False
+    assert links[0]["proven_inaccuracy"] is False
