@@ -221,8 +221,57 @@ def build_read_only_index(corpus: Corpus, database: Path) -> None:
         connection.close()
 
 
-def analyze(root: Path, catalog_file: Path, *, sqlite_db: Path | None = None) -> dict:
-    corpus = load_corpus(root)
+
+def read_reference_only_catalog(path: Path) -> dict:
+    """Load bibliography metadata only. It cannot modify case verdicts."""
+    catalog = _load_json(path)
+    if not isinstance(catalog, dict) or catalog.get("schema") != "bean.reference_only_gnostic.v1":
+        raise CorpusError("not a Gnostic reference-only catalog")
+    policy = catalog.get("policy")
+    if (not isinstance(policy, dict)
+            or policy.get("collection_role") != "cross_reference_only"
+            or policy.get("can_confirm_or_falsify_kjv_claims") is not False
+            or policy.get("can_count_as_independent_corrobation") is not False
+            or policy.get("can_be_used_in_kjv_numeric_verdict") is not False
+            or policy.get("translations_imported") is not False):
+        raise CorpusError("Gnostic sources cannot become proof or canonical text")
+    collections = catalog.get("collections")
+    works = catalog.get("works")
+    if not isinstance(collections, list) or not collections or not isinstance(works, list) or not works:
+        raise CorpusError("missing Gnostic source index")
+    identifiers: set[str] = set()
+    for item in works:
+        if (not isinstance(item, dict)
+                or not isinstance(item.get("id"), str)
+                or not item["id"].strip()
+                or item["id"] in identifiers
+                or not isinstance(item.get("title"), str)
+                or not item["title"].strip()
+                or not isinstance(item.get("source"), str)
+                or not item["source"].startswith("https://")
+                or item.get("evidence_role") != "reference_only"
+                or item.get("full_text_imported") is not False):
+            raise CorpusError("invalid or evidentiary Gnostic reference")
+        identifiers.add(item["id"])
+    if any(not isinstance(row, dict) or not isinstance(row.get("url"), str)
+           or not row["url"].startswith("https://") for row in collections):
+        raise CorpusError("Gnostic collection missing source URL")
+    return {
+        "role": "cross_reference_only",
+        "text_corpus_imported": False,
+        "eligible_for_independent_confirmation": False,
+        "eligible_for_kjv_verdict": False,
+        "source_index_exhaustive": False,
+        "collections": collections,
+        "works": works,
+        "catalog_sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
+    }
+
+
+def analyze(root: Path, catalog_file: Path, *, sqlite_db: Path | None = None,
+            corrections_file: Path | None = None,
+            reference_catalog: Path | None = None) -> dict:
+    corpus = load_corpus(root, corrections_path=corrections_file)
     catalog = _load_json(catalog_file)
     findings = audited_cases(corpus, catalog)
     if sqlite_db is not None:
@@ -231,7 +280,18 @@ def analyze(root: Path, catalog_file: Path, *, sqlite_db: Path | None = None) ->
         "schema": "bean.gospel_of_bean.v1", "edition": "KJV 1611 spelling, 80-book upstream transcription",
         "source_repository": SOURCE_REPOSITORY, "source_commit_declared": SOURCE_COMMIT,
         "source_url": SOURCE_URL, "source_checkout_verified_independently": False,
-        "corpus_sha256": corpus.sha256, "books": len(corpus.books),
+        "corpus_sha256": corpus.sha256,
+        "textual_source_gap_overlays": list(corpus.repairs),
+        "primary_1611_facsimile_collation_proven": False,
+        "gnostic_reference_catalog": (
+            read_reference_only_catalog(reference_catalog)
+            if reference_catalog is not None else {
+                "role": "cross_reference_only", "text_corpus_imported": False,
+                "eligible_for_kjv_verdict": False,
+                "status": "catalog_not_loaded",
+            }
+        ),
+        "books": len(corpus.books),
         "chapters": corpus.chapter_count, "verses": len(corpus.verses),
         "contains_apocrypha": True, "textual_edition_collation_with_1611_facsimile": "not_performed",
         "external_references_fetched_and_verified_by_lab": False,
@@ -248,8 +308,14 @@ def main(argv: list[str] | None = None) -> int:
                         / "experiments/gospel_of_bean/cases.json")
     parser.add_argument("--report", type=Path, required=True)
     parser.add_argument("--index", type=Path, default=None)
+    parser.add_argument("--corrections", type=Path, default=None,
+                        help="Explicit source-attributed fills for blank original JSON slots")
+    parser.add_argument("--reference-catalog", type=Path, default=None,
+                        help="Bibliography only, never KJV-verdict evidence")
     args = parser.parse_args(argv)
-    result = analyze(args.corpus, args.cases, sqlite_db=args.index)
+    result = analyze(args.corpus, args.cases, sqlite_db=args.index,
+                     corrections_file=args.corrections,
+                     reference_catalog=args.reference_catalog)
     args.report.parent.mkdir(parents=True, exist_ok=True)
     args.report.write_text(json.dumps(result, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     print(json.dumps({key: result[key] for key in
