@@ -117,6 +117,17 @@ def test_ollama_training_is_valid_under_independent_grade(tmp_path):
 
 
 
+def test_independent_grade_rejects_unrecognized_local_model_routes(tmp_path):
+    fake = FakeOllamaTransport()
+    Ollama(model=fake.model, transport=fake).training(tmp_path)
+    receipt_file = tmp_path / "receipt.json"
+    receipt = json.loads(receipt_file.read_text(encoding="utf-8"))
+    receipt["tasks"][0]["model_requested"] = "ollama/../invalid"
+    receipt_file.write_text(json.dumps(receipt), encoding="utf-8")
+    with pytest.raises(ValueError, match="unrecognized training model route"):
+        grade(tmp_path, tmp_path / "score.json", phase="development")
+
+
 def test_auto_provider_recovers_from_remote_429_with_clean_local_restart(
         monkeypatch, tmp_path):
     import bean.evaluation.lab023_ollama as lab
