@@ -6,6 +6,7 @@ from __future__ import annotations
 
 import json
 import sqlite3
+from contextlib import closing
 import subprocess
 import tempfile
 import unittest
@@ -111,7 +112,7 @@ class BeanIdentityAndChatTests(unittest.TestCase):
     def test_existing_brain_metadata_is_read_only(self):
         with tempfile.TemporaryDirectory() as tmp:
             path=Path(tmp)/"bean.db"
-            with sqlite3.connect(path) as db:
+            with closing(sqlite3.connect(path)) as db:
                 db.execute("CREATE TABLE identity "
                            "(id INTEGER, version TEXT, developmental_stage TEXT, "
                            "what_bean_is TEXT, what_bean_is_not TEXT)")
@@ -127,7 +128,7 @@ class BeanIdentityAndChatTests(unittest.TestCase):
             self.assertIn("experiment_evaluation",text)
             self.assertNotIn("No local memory DB",text)
             # No inserts or database updates during context retrieval.
-            with sqlite3.connect(path) as db:
+            with closing(sqlite3.connect(path)) as db:
                 self.assertEqual(db.execute("SELECT COUNT(*) FROM identity").fetchone()[0],1)
 
     def test_conversation_is_bounded_and_no_false_history_on_failure(self):
