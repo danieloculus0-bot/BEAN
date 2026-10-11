@@ -173,6 +173,7 @@ def author(*, bridge, challenge, out, key, request_fn=urlopen):
         feedback = None
         for attempt in range(MAX_CALLS):
             report["attempted_requests"] += 1
+            metadata = {}
             try:
                 content, metadata = call_model(key, original, request_fn=request_fn,
                                                feedback=feedback)
@@ -197,8 +198,7 @@ def author(*, bridge, challenge, out, key, request_fn=urlopen):
                 report.update(status="invalid_model_edit_plan",
                               reason=type(exc).__name__,
                               rejected_stage=feedback,
-                              latest_served_model=metadata.get("model_served", "unknown")
-                              if "metadata" in locals() else "unknown")
+                              latest_served_model=metadata.get("model_served", "unknown"))
             except RuntimeError as exc:
                 report.update(status="provider_unavailable", reason=str(exc)[:90])
                 break
