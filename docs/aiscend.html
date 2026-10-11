@@ -43,6 +43,20 @@ h2{letter-spacing:-.025em;line-height:1.2;margin:0 0 3px;font-size:clamp(24px,3v
 .metric .value{font-size:clamp(17px,2vw,22px);font-weight:850;margin-top:4px;color:#effbea;font-variant-numeric:tabular-nums}
 .label{color:#b2c9b3;font-size:11px;font-weight:800;letter-spacing:.07em;text-transform:uppercase}
 .green{color:#a5ec90!important}
+
+.market-strip{border:1px solid #4b7050;background:#182a1c;border-radius:13px;padding:15px;margin-bottom:14px}
+.markets-header{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+.markets-header h3{margin:0;color:#d0f6c2;font-size:12px;letter-spacing:.075em}
+.market-description{color:#b9d1b8;font-size:11px;margin-top:3px}
+.market-all{font-size:12px;font-weight:850;color:#b8eda4}
+.market-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.market-item{display:grid;gap:4px;border:1px solid #496d4c;border-radius:11px;padding:11px;background:#1b321f;color:#f0fae9}
+.market-item:hover{background:#29452d;color:#fff;border-color:#82ad73}
+.market-symbol{font-size:11px;font-weight:850;color:#bfdfba;letter-spacing:.045em}
+.market-item strong{font-variant-numeric:tabular-nums;font-size:clamp(14px,1.8vw,19px);white-space:nowrap}
+.market-link{font-size:11px;color:#a6d795}
+.market-freshness{font-size:11px;color:#b7d3b4;margin:10px 0 0}
+@media(max-width:700px){.market-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 .dashboard{display:grid;grid-template-columns:minmax(235px,340px) minmax(0,1fr);gap:12px}
 .column{display:grid;gap:12px;align-content:start;min-width:0}.panel h3{font-size:12px;letter-spacing:.075em;color:#c9ebbc;margin:0 0 12px}
 .petbox{border:2px solid #4a6950;background:#0c140e;border-radius:9px;padding:10px;text-align:center}
@@ -75,7 +89,7 @@ footer{border-top:1px solid #3b5540;padding:23px 0;color:var(--muted);font-size:
 <body>
 <header><div class="wrap nav">
 <a class="brand" href="./index.html" aria-label="BEAN home"><span><img src="./bean-official.webp" alt="" width="32" height="32"></span>BEAN <span class="slash">/</span> <span class="appname">AIscend</span></a>
-<nav class="links" aria-label="Page navigation"><a href="#demo">Demo</a><a href="#how-it-works">How it works</a><a href="https://github.com/danieloculus0-bot/AIscend">Source</a><a href="./index.html">BEAN home ↗</a></nav>
+<nav class="links" aria-label="Page navigation"><a href="#demo">Demo</a><a href="#markets">Live markets</a><a href="#how-it-works">How it works</a><a href="https://github.com/danieloculus0-bot/AIscend">Source</a><a href="./index.html">BEAN home ↗</a></nav>
 </div></header>
 <main>
 <section class="wrap hero">
@@ -97,6 +111,27 @@ footer{border-top:1px solid #3b5540;padding:23px 0;color:var(--muted);font-size:
 <div class="metric"><div class="label">P/L · sample</div><div class="value green">+$0.60</div></div>
 <div class="metric"><div class="label">Wealth multiple · sample</div><div class="value">1.0240×</div></div>
 </div>
+<section class="market-strip" id="markets" aria-labelledby="marketsTitle">
+  <div class="markets-header">
+    <div><h3 id="marketsTitle">LIVE COINBASE MARKET PRICES</h3><div class="market-description">Public last-trade quotes, USD pairs. Independent of the demo portfolio.</div></div>
+    <a class="market-all" href="https://exchange.coinbase.com/markets" target="_blank" rel="noopener noreferrer">Explore all Coinbase markets ↗</a>
+  </div>
+  <div class="market-grid">
+    <a class="market-item" href="https://www.coinbase.com/price/bitcoin" target="_blank" rel="noopener noreferrer">
+      <span class="market-symbol">BTC / USD</span><strong id="marketBTC">—</strong><span class="market-link">Bitcoin market ↗</span>
+    </a>
+    <a class="market-item" href="https://www.coinbase.com/price/ethereum" target="_blank" rel="noopener noreferrer">
+      <span class="market-symbol">ETH / USD</span><strong id="marketETH">—</strong><span class="market-link">Ethereum market ↗</span>
+    </a>
+    <a class="market-item" href="https://www.coinbase.com/price/solana" target="_blank" rel="noopener noreferrer">
+      <span class="market-symbol">SOL / USD</span><strong id="marketSOL">—</strong><span class="market-link">Solana market ↗</span>
+    </a>
+    <a class="market-item" href="https://www.coinbase.com/price/dogecoin" target="_blank" rel="noopener noreferrer">
+      <span class="market-symbol">DOGE / USD</span><strong id="marketDOGE">—</strong><span class="market-link">Dogecoin market ↗</span>
+    </a>
+  </div>
+  <p class="market-freshness" id="marketFreshness" role="status" aria-live="polite">Connecting to public Coinbase Exchange quotes… No credentials required.</p>
+</section>
 <div class="dashboard">
 <div class="column">
 <section class="panel"><h3 id="traderThingTitle">BEAN</h3><div class="petbox"><canvas id="pet" width="192" height="192" role="img" aria-label="Original AIscend dot-matrix BEAN character"></canvas><div class="petname">BEAN</div><div id="petMood">just sitting there</div></div></section>
@@ -386,6 +421,51 @@ drawPet();
 }
 document.querySelectorAll("[data-scene]").forEach(b=>b.addEventListener("click",()=>show(b.dataset.scene)));
 show("watch");
+const liveMarkets=[
+  ["BTC-USD","marketBTC"],["ETH-USD","marketETH"],
+  ["SOL-USD","marketSOL"],["DOGE-USD","marketDOGE"]
+];
+let marketReading=false;
+async function refreshPublicMarkets(){
+  if(marketReading || document.hidden)return;
+  marketReading=true;
+  const outcomes=await Promise.all(liveMarkets.map(async ([pair,target])=>{
+    const abort=new AbortController();
+    const expiry=setTimeout(()=>abort.abort(),7000);
+    try{
+      // Coinbase Exchange public market-data endpoint. No key, login or order rights.
+      const endpoint="https://api.exchange.coinbase.com/products/"+pair+"/ticker";
+      const response=await fetch(endpoint,{signal:abort.signal,cache:"no-store"});
+      if(!response.ok)throw new Error("Coinbase "+response.status);
+      const data=await response.json();
+      const price=Number(data.price);
+      const timestamp=Date.parse(data.time);
+      if(!Number.isFinite(price)||price<=0||!Number.isFinite(timestamp)||
+         Math.abs(Date.now()-timestamp)>15*60*1000){
+        throw new Error("No fresh quote");
+      }
+      $(target).textContent=new Intl.NumberFormat("en-US",{
+        style:"currency",currency:"USD",minimumFractionDigits:price<1?4:2,
+        maximumFractionDigits:price<1?6:2
+      }).format(price);
+      return true;
+    }catch(err){
+      // Fail visibly: NEVER replace a failed live quote with a synthetic one.
+      $(target).textContent="—";
+      return false;
+    }finally{clearTimeout(expiry)}
+  }));
+  const available=outcomes.filter(Boolean).length;
+  $("marketFreshness").textContent=available===0
+    ?"Live public prices unavailable right now. Open any Coinbase market link for current information."
+    :available+"/4 Coinbase Exchange public last-trade quotes · checked "+new Date().toLocaleTimeString()+
+      (available<4?" · some quotes unavailable":"")+
+      " · quotes can change rapidly; not investment advice.";
+  marketReading=false;
+}
+refreshPublicMarkets();
+setInterval(refreshPublicMarkets,60000);
+document.addEventListener("visibilitychange",()=>{if(!document.hidden)refreshPublicMarkets()});
 setInterval(()=>{petBlink=true;drawPet();setTimeout(()=>{petBlink=false;drawPet()},160)},5300);
 setInterval(()=>{petQuipIndex++;drawPet()},8600);
 </script>
