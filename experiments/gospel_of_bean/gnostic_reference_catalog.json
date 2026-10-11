@@ -1,0 +1,182 @@
+{
+  "schema": "bean.reference_only_gnostic.v1",
+  "policy": {
+    "collection_role": "cross_reference_only",
+    "historical_claims_role": "context_not_proof",
+    "can_generate_hypotheses": true,
+    "can_confirm_or_falsify_kjv_claims": false,
+    "can_count_as_independent_corrobation": false,
+    "can_be_used_in_kjv_numeric_verdict": false,
+    "translations_imported": false,
+    "completeness_claim": "open_index_not_exhaustive",
+    "note": "Gnosticism is not a single canon. The Nag Hammadi Library includes texts of varied genres, not all gnostic, and its translations have distinct copyright holders. Treat surviving manuscripts as historic artifacts only with independently documented provenance; their theological narratives are not historical verification."
+  },
+  "collections": [
+    {
+      "title": "Nag Hammadi Library: codex index, 13 codices and over 50 tractates",
+      "url": "https://gnosis.org/naghamm/nhlcodex.html",
+      "scope": "all listed codices and tractates including non-gospel writings",
+      "copyright_status": "translation_rights_vary"
+    },
+    {
+      "title": "Nag Hammadi Library: alphabetical tractate index",
+      "url": "https://gnosis.org/naghamm/nhlalpha.html",
+      "scope": "indexed named texts, editorial notes and translations",
+      "copyright_status": "translators_retain_rights"
+    },
+    {
+      "title": "Gospels.net manuscript catalog",
+      "url": "https://www.gospels.net/manuscript",
+      "scope": "original-language witnesses and surviving manuscript fragments",
+      "copyright_status": "metadata_links_only"
+    },
+    {
+      "title": "Gnosis Archive broader early Christian and Gnostic source index",
+      "url": "https://gnosis.org/library.html",
+      "scope": "additional early Christian and Gnostic writings outside Nag Hammadi",
+      "copyright_status": "rights_vary"
+    }
+  ],
+  "works": [
+    {
+      "id": "thomas",
+      "title": "Gospel of Thomas",
+      "manuscript": "NHC II,2; Greek P.Oxy. 1, 654, 655",
+      "source": "https://www.gospels.net/manuscript",
+      "genre": "sayings",
+      "evidence_role": "reference_only",
+      "full_text_imported": false,
+      "translation_provenance": "not_attested_in_lab"
+    },
+    {
+      "id": "philip",
+      "title": "Gospel of Philip",
+      "manuscript": "NHC II,3",
+      "source": "https://www.gospels.net/manuscript",
+      "genre": "sacramental_theology",
+      "evidence_role": "reference_only",
+      "full_text_imported": false,
+      "translation_provenance": "not_attested_in_lab"
+    },
+    {
+      "id": "truth",
+      "title": "Gospel of Truth",
+      "manuscript": "NHC I,3; NHC XII,2",
+      "source": "https://www.gospels.net/manuscript",
+      "genre": "homily",
+      "evidence_role": "reference_only",
+      "full_text_imported": false,
+      "translation_provenance": "not_attested_in_lab"
+    },
+    {
+      "id": "mary",
+      "title": "Gospel of Mary",
+      "manuscript": "Berlin Codex 8502,1; P.Oxy. 3525; P.Ryl. 463",
+      "source": "https://www.gospels.net/manuscript",
+      "genre": "dialogue_fragmentary",
+      "evidence_role": "reference_only",
+      "full_text_imported": false,
+      "translation_provenance": "not_attested_in_lab"
+    },
+    {
+      "id": "judas",
+      "title": "Gospel of Judas",
+      "manuscript": "Codex Tchacos, tractate 3",
+      "source": "https://www.gospels.net/manuscript",
+      "genre": "dialogue_fragmentary",
+      "evidence_role": "reference_only",
+      "full_text_imported": false,
+      "translation_provenance": "not_attested_in_lab"
+    },
+    {
+      "id": "holy-book-invisible-spirit",
+      "title": "Holy Book of the Great Invisible Spirit, often called Coptic Gospel of the Egyptians",
+      "manuscript": "NHC III,2 and NHC IV,2",
+      "source": "https://gnosis.org/naghamm/nhlcodex.html",
+      "genre": "revelatory_treatise",
+      "evidence_role": "reference_only",
+      "full_text_imported": false,
+      "translation_provenance": "not_attested_in_lab"
+    },
+    {
+      "id": "secret-john",
+      "title": "Secret Book of John (Apocryphon of John)",
+      "manuscript": "NHC II,1; III,1; IV,1; Berlin Codex 8502",
+      "source": "https://gnosis.org/naghamm/nhlcodex.html",
+      "genre": "revelation_not_gospel",
+      "evidence_role": "reference_only",
+      "full_text_imported": false,
+      "translation_provenance": "not_attested_in_lab"
+    },
+    {
+      "id": "secret-james",
+      "title": "Secret Book of James",
+      "manuscript": "NHC I,2",
+      "source": "https://www.gospels.net/manuscript",
+      "genre": "dialogue_not_gospel",
+      "evidence_role": "reference_only",
+      "full_text_imported": false,
+      "translation_provenance": "not_attested_in_lab"
+    },
+    {
+      "id": "dialogue-savior",
+      "title": "Dialogue of the Savior",
+      "manuscript": "NHC III,5",
+      "source": "https://gnosis.org/naghamm/nhlcodex.html",
+      "genre": "dialogue_not_gospel",
+      "evidence_role": "reference_only",
+      "full_text_imported": false,
+      "translation_provenance": "not_attested_in_lab"
+    },
+    {
+      "id": "thomas-contender",
+      "title": "Book of Thomas the Contender",
+      "manuscript": "NHC II,7",
+      "source": "https://gnosis.org/naghamm/nhlcodex.html",
+      "genre": "dialogue_not_gospel",
+      "evidence_role": "reference_only",
+      "full_text_imported": false,
+      "translation_provenance": "not_attested_in_lab"
+    },
+    {
+      "id": "sophia-jesus-christ",
+      "title": "Sophia of Jesus Christ",
+      "manuscript": "NHC III,4; Berlin Codex 8502",
+      "source": "https://gnosis.org/naghamm/nhlcodex.html",
+      "genre": "dialogue_not_gospel",
+      "evidence_role": "reference_only",
+      "full_text_imported": false,
+      "translation_provenance": "not_attested_in_lab"
+    },
+    {
+      "id": "pistis-sophia",
+      "title": "Pistis Sophia",
+      "manuscript": "Askew Codex",
+      "source": "https://gnosis.org/library.html",
+      "genre": "gnostic_dialogue_outside_nag_hammadi",
+      "evidence_role": "reference_only",
+      "full_text_imported": false,
+      "translation_provenance": "not_attested_in_lab"
+    },
+    {
+      "id": "gospel-peter",
+      "title": "Gospel of Peter (not necessarily Gnostic)",
+      "manuscript": "Akhmim fragment; candidate P.Oxy. 2949, 4009",
+      "source": "https://www.gospels.net/manuscript",
+      "genre": "noncanonical_gospel_comparison",
+      "evidence_role": "reference_only",
+      "full_text_imported": false,
+      "translation_provenance": "not_attested_in_lab"
+    },
+    {
+      "id": "egerton",
+      "title": "Egerton Papyrus 2 (unnamed gospel text; classification unsettled)",
+      "manuscript": "P.Egerton 2 and P.Koeln 255",
+      "source": "https://www.gospels.net/manuscript",
+      "genre": "fragmentary_early_christian",
+      "evidence_role": "reference_only",
+      "full_text_imported": false,
+      "translation_provenance": "not_attested_in_lab"
+    }
+  ]
+}

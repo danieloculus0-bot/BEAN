@@ -1,0 +1,21 @@
+{
+  "schema": "bean.kjv_transcription_gap_overlays.v1",
+  "source_repository": "aruljohn/Bible-kjv-1611",
+  "source_commit": "8ef066868ad1b7204d7be48658ea3bd1783d409b",
+  "validation": "secondary_1611_web_transcription_crosscheck_not_facsimile_collation",
+  "notes": "Only supply blank upstream verses; do not rewrite original pinned source or silently attribute repaired text to that file. The 1611 translation has editorial brackets for these passages, which must be preserved. Source website copyright metadata applies to webpage design/annotations; these are short public-domain historic verse texts.",
+  "verses": [
+    {
+      "ref": "Ecclesiasticus 1:7",
+      "text": "[Unto whom hath the knowledge of wisedome beene made manifest? and who hath vnderstood her great experience?]",
+      "source_url": "https://www.kingjamesbibleonline.org/Ecclesiasticus-Chapter-1_Original-1611-KJV/",
+      "method": "manual_transcription_crosscheck"
+    },
+    {
+      "ref": "Ecclesiasticus 17:5",
+      "text": "[They receiued the vse of the fiue operations of the Lord, and in the sixt place he imparted them vnderstanding, and in the seuenth, speech, an interpreter of the cogitations thereof.]",
+      "source_url": "https://www.kingjamesbibleonline.org/Ecclesiasticus-Chapter-17_Original-1611-KJV/",
+      "method": "manual_transcription_crosscheck"
+    }
+  ]
+}
