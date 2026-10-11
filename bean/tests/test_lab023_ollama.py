@@ -69,7 +69,7 @@ def test_ollama_writes_real_hashed_training_receipts_without_network(tmp_path):
                    api_key="local-no-secret", reflector=model.reflect)
     assert result["restart_verified"]
     assert result["model_authored_lessons"] == 3
-    assert len(transport.calls) == 7  # one preflight twice, three training, three reflection
+    assert len(transport.calls) == 8  # two preflights, three training, three reflections
 
 
 def test_full_module_author_records_genuine_candidate_not_fixture_success():
