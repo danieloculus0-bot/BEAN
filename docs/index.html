@@ -518,7 +518,18 @@
     .skill-support{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:17px;margin-top:19px}
     .skill-support .card{padding:21px}
     .skill-support h3{margin-bottom:8px}
-    @media(max-width:980px){.skill-grid,.skill-support{grid-template-columns:1fr}.skill-card{padding:24px}}
+    .skill-subhead{font-size:1.4rem;letter-spacing:-.025em;margin:38px 0 13px}
+    .skill-support-expanded{grid-template-columns:repeat(4,minmax(0,1fr));gap:13px}
+    .skill-support-expanded .card{display:flex;flex-direction:column;align-items:flex-start;padding:20px}
+    .skill-support-expanded .card h3{font-size:1.06rem;line-height:1.24;margin-bottom:10px}
+    .skill-support-expanded .card p{font-size:.89rem;line-height:1.62;flex:1;margin-bottom:15px}
+    .skill-support-expanded .skill-kicker{font-size:.64rem;line-height:1.3;margin-bottom:14px}
+    .skill-support-expanded .card a{font-weight:700;font-size:.87rem}
+    .hero-beta-line{margin-top:14px;color:#d7eacf;font-size:.95rem}
+    .hero-beta-line strong{color:#b9fb9a}
+    @media(max-width:1100px){.skill-support-expanded{grid-template-columns:repeat(2,minmax(0,1fr))}}
+    @media(max-width:640px){.skill-support-expanded{grid-template-columns:1fr}}
+    @media(max-width:980px){.skill-grid,.skill-support:not(.skill-support-expanded){grid-template-columns:1fr}.skill-card{padding:24px}}
 
     .footer{
       padding:26px 0 48px;
@@ -799,10 +810,10 @@
 
       <button class="mobile-nav-toggle" type="button" aria-controls="primary-navigation" aria-expanded="false" aria-label="Show site sections"><span aria-hidden="true">☰</span> Sections</button>
       <nav class="navlinks" id="primary-navigation" aria-label="Site sections">
-        <a href="#latest">Latest</a>
+        <a href="#latest">Build log</a>
         <a href="#milestones">Verified tests</a>
         <a href="#difference">Why BEAN</a>
-        <a href="#skills">New skills</a>
+        <a href="#skills">Skills</a>
         <a href="#benchmarks">Benchmarks</a>
         <a href="#proof">Proof</a>
         <a href="#quickstart">Quickstart</a>
@@ -823,19 +834,19 @@
         <div class="hero-card">
           <div class="eyebrow">
             <span class="dot"></span>
-            Behavior Enabled Avatar Node
+            Behavior Enabled Avatar Node · Public technical beta
           </div>
 
           <h1>Cute name. <br>Serious reasoning.</h1>
 
           <p class="lead">
-            <span class="strong">BEAN</span> is a persistent reasoning architecture built for
-            <span class="strong">memory</span>,
-            <span class="strong">evidence</span>,
-            <span class="strong">uncertainty</span>,
-            and <span class="strong">traceable change</span>.
-            It remembers what happened, what supports a conclusion, and when it should refuse to fake certainty.
+            <span class="strong">BEAN is working software, not a waiting list.</span>
+            Persistent memory. Evidence-aware reasoning. Useful manufacturing reports.
+            Scheduled investigation. Local AI conversations. Engineering audits.
+            Tested robotics logic. All in public, inspectable code.
           </p>
+          <p class="hero-beta-line"><strong>Public technical beta.</strong> The skills are real; enterprise hosting is optional.
+            Pick a capability, run the command, and inspect the test receipts.</p>
           <div class="embodiment-note">
             <strong>Behavior Enabled Avatar Node.</strong> Originally imagined as the mind for a robot,
             BEAN now stands on its own as a software-first reasoning system. An avatar may be a desktop,
@@ -850,17 +861,14 @@
             <span class="pill">Practical daily reporting</span>
             <span class="pill">Local voice chat</span>
             <span class="pill">Robot optional</span>
-            <span class="pill">MCP developer preview</span>
+            <span class="pill">Local MCP tools</span>
+            <span class="pill">7/7 recovery fault tests</span>
           </div>
 
           <div class="hero-actions">
-            <a class="btn btn-primary" href="https://github.com/danieloculus0-bot/BEAN">
-              Explore BEAN
-            </a>
-            <a class="btn btn-secondary" href="#quickstart">
-              Run the quickstart
-            </a>
-            <a class="btn btn-secondary" href="#benchmarks">Inspect the comparisons</a>
+            <a class="btn btn-primary" href="#skills">See what BEAN can do</a>
+            <a class="btn btn-secondary" href="https://github.com/danieloculus0-bot/BEAN">Browse the code</a>
+            <a class="btn btn-secondary" href="#quickstart">Run it yourself</a>
           </div>
         </div>
 
@@ -889,127 +897,15 @@
     </section>
 
 
-    <section id="latest" class="section tight" aria-labelledby="latest-heading">
-      <div class="wrap">
-        <div class="eyebrow"><span class="dot"></span> October 11, 2026 · Verified development log</div>
-        <h2 id="latest-heading" style="margin-top:17px">What's new in BEAN</h2>
-        <p class="lead">Real code, actual test outcomes, and experiments still under review. Green CI means the stated tests ran successfully, not that BEAN has achieved general intelligence.</p>
-        <div class="experiment-grid">
-          <article class="experiment-card">
-            <span class="status-tag">In Core main</span>
-            <h3>Talk to BEAN: local Ollama + Windows speech</h3>
-            <p>An opt-in conversation interface uses a locally installed Ollama model. Windows can speak responses and listen for one utterance when prompted. BEAN's verified identity record can be loaded read-only. Chat history is session-only.</p>
-            <a href="https://github.com/danieloculus0-bot/BEAN/blob/main/docs/bean-local-voice.md">Read the actual setup and limitations</a>
-          </article>
-          <article class="experiment-card">
-            <span class="status-tag">In Core main</span>
-            <h3>Model-backed reasoning and GitHub evidence integration</h3>
-            <p>Opt-in localhost Ollama inference and a bounded engineering-evidence bridge are available in Core. These are supervised components, not automatic code deployment, independent fact authentication, or a hidden engineering team.</p>
-            <a href="https://github.com/danieloculus0-bot/BEAN/blob/main/docs/bean-github-engineering-bridge.md">Inspect the evidence bridge</a>
-          </article>
-          <article class="experiment-card">
-            <span class="status-tag warning">Draft Bridge experiment</span>
-            <h3>Real conversations exposed a real weakness</h3>
-            <p>Two hosted Qwen 2.5 Coder 1.5B trials showed BEAN incorrectly reversing a straightforward out-of-tolerance measurement after the user disagreed. Contract checks passed on Linux and Windows, but factual resistance did not. Full transcripts are retained.</p>
-            <a href="https://github.com/danieloculus0-bot/BEAN-AI-Bridge-/pull/31">Review the failures and test evidence</a>
-          </article>
-          <article class="experiment-card">
-            <span class="status-tag">Independently tested draft</span>
-            <h3>BEAN wrote a Python repair; the hidden tests checked it</h3>
-            <p>A local Qwen 2.5 Coder 1.5B candidate repaired a bounded score-clipping function and passed seven independent fixture tests on both Windows and Ubuntu. This specific candidate remains in an unmerged review branch, not a demonstrated general self-improvement ability.</p>
-            <a href="https://github.com/danieloculus0-bot/BEAN/pull/74">Inspect the candidate, code digest and CI</a>
-          </article>
-          <article class="experiment-card">
-            <span class="status-tag">Bridge main · Emulator research</span>
-            <h3>Robot motion without requiring a robot</h3>
-            <p>Arduino Nano simavr and ESP32 QEMU now test explicit arm, replay protection, heartbeat interlocks, logical watchdog expiry and safe fault recovery. Native C also passed 6,144 deterministic fault transitions and rejected a deliberately sabotaged E-stop. No physical motor control; Wokwi did not run without its token.</p>
-            <a href="https://github.com/danieloculus0-bot/BEAN-AI-Bridge-/blob/main/experiments/robot_motion/README.md">Review the merged test contract and limitations</a>
-          </article>
-          <article class="experiment-card">
-            <span class="status-tag">Core main · Developer preview</span>
-            <h3>BEAN Evidence Companion: four MCP tools</h3>
-            <p>A local, read-only MCP server can inspect claim structure, compare user-supplied evidence, screen proposed actions, and demonstrate SQLite continuity. It is not publicly hosted, approved, or installable as a ChatGPT plugin yet.</p>
-            <a href="https://github.com/danieloculus0-bot/BEAN/blob/main/integrations/chatgpt/README.md">See the real API, sample calls and remaining work</a>
-          </article>
-        </div>
-      </div>
-    </section>
-
-    <section id="milestones" class="section tight" aria-labelledby="milestones-heading">
-      <div class="wrap">
-        <div class="eyebrow"><span class="dot"></span> Verified snapshot · October 11, 2026 · Not a live scoreboard</div>
-        <h2 id="milestones-heading">The numbers, with their receipts.</h2>
-        <p class="lead">Green workflows measure specific engineering contracts, not general intelligence, trading returns, or autonomous physical deployment. Failed and inconclusive tests belong in the record too.</p>
-        <div class="experiment-grid">
-          <article class="experiment-card">
-            <span class="status-tag">Core main · Regression</span>
-            <h3>Cross-platform foundation</h3>
-            <div class="result-number">559 <small>passing tests</small></div>
-            <p>Ubuntu / Python 3.12 reported 559 passing tests, one skipped, and 47 passing subtests with 84% measured coverage. The same Core workflow's Windows 3.10/3.12 and Ubuntu 3.10 jobs passed too.</p>
-            <a href="https://github.com/danieloculus0-bot/BEAN/actions/runs/38126548233">Inspect four-platform Core CI</a>
-          </article>
-          <article class="experiment-card">
-            <span class="status-tag">Emulated, not deployed</span>
-            <h3>Two microcontroller targets</h3>
-            <div class="result-number">2 <small>confirmed emulators</small></div>
-            <p>Actual AVR/simavr and ESP32/QEMU emitted verified pass markers. ESP32's FreeRTOS watchdog checks passed too; the host fault sweep and negative-control E-stop test passed. Wokwi is NOT_RUN_MISSING_TOKEN, not a pass; there has been no physical hardware test.</p>
-            <a href="https://github.com/danieloculus0-bot/BEAN-AI-Bridge-/actions/runs/38161744114">Open new emulator and failure-injection results</a>
-          </article>
-          <article class="experiment-card">
-            <span class="status-tag warning">No verified winner</span>
-            <h3>Five specialist match attempts</h3>
-            <div class="result-number">5 <small>inconclusive verdicts</small></div>
-            <p>OpenCode, Goose, OpenHands, Continue and Cline were attempted with real local-model CLI harnesses. Their independent judgments did not establish comparable agent wins. Infrastructure completion is not the same as benchmark success.</p>
-            <a href="https://github.com/danieloculus0-bot/BEAN/actions/runs/38126634979">Read each independent judge</a>
-          </article>
-        </div>
-      </div>
-    </section>
-
-    <section id="difference" class="section tight">
-      <div class="wrap">
-        <div class="eyebrow">
-          <span class="dot"></span>
-          Why BEAN feels different
-        </div>
-
-        <h2>Not just memory. <br>Memory with evidence.</h2>
-        <p class="lead">
-          BEAN is aimed at a stricter kind of reasoning workflow: not simply storing context,
-          but preserving the trail behind a decision and making changes inspectable over time.
-        </p>
-
-        <div class="grid-3" style="margin-top:24px">
-          <article class="card">
-            <div class="icon-badge">🧠</div>
-            <h3>Persistent event history</h3>
-            <p>SQLite-backed sessions, events, trace IDs, and durable state that a host application can inspect after restart.</p>
-          </article>
-
-          <article class="card">
-            <div class="icon-badge">🌿</div>
-            <h3>Evidence and uncertainty</h3>
-            <p>BEAN can preserve contradictions, uncertainty, source boundaries, and unresolved states instead of pretending everything is settled.</p>
-          </article>
-
-          <article class="card">
-            <div class="icon-badge">🔎</div>
-            <h3>Reviewable reasoning</h3>
-            <p>Models can propose. Hosts still control policy, execution authority, and whether a proposal gets accepted, held, or rejected.</p>
-          </article>
-        </div>
-      </div>
-    </section>
-
     <section id="skills" class="section" aria-labelledby="skills-heading">
       <div class="wrap">
-        <div class="eyebrow"><span class="dot"></span> New, tested capabilities</div>
+        <div class="eyebrow"><span class="dot"></span> Public technical beta · Built, tested, inspectable</div>
         <div class="skill-intro" style="margin-top:19px">
           <div>
-            <h2 id="skills-heading">The little bean has been busy. 🌱</h2>
-            <p class="lead">These aren't ideas on a roadmap. Here are two practical abilities merged into the public repositories, with real commands and tests you can inspect.</p>
+            <h2 id="skills-heading">Look what this little bastard can do. 🌱</h2>
+            <p class="lead">BEAN already has a serious toolkit. Below are working Core and Bridge skills, commands, tests and research capabilities with measured results. <strong>Beta describes the release stage, not a lack of ability.</strong></p>
           </div>
-          <a class="btn btn-secondary" href="https://github.com/danieloculus0-bot/BEAN/blob/main/docs/BEAN_USEFULNESS_AUDIT_2026-10-11.md">Read the usefulness audit →</a>
+          <a class="btn btn-secondary" href="https://github.com/danieloculus0-bot/BEAN/blob/main/docs/VERIFIED_UTILITY_AND_EVIDENCE_2026-10-11.md">Open the evidence ledger →</a>
         </div>
 
         <div class="skill-grid">
@@ -1050,32 +946,189 @@
           </article>
         </div>
 
-        <div class="skill-support">
+        <h3 class="skill-subhead">More of BEAN's working toolkit</h3>
+        <div class="skill-support skill-support-expanded">
           <article class="card">
+            <div class="skill-kicker">Core main · Cognition</div>
             <div class="skill-icon" aria-hidden="true">🔎</div>
-            <h3>Evidence-first revisions</h3>
-            <p>In the optional Bridge learning loop, unsupported claims stay unresolved. A separately supplied host verifier must check corroborating sources before BEAN records a versioned revision.</p>
-            <a href="https://github.com/danieloculus0-bot/BEAN-AI-Bridge-/blob/main/experiments/learning_loop/README.md">Explore the evidence loop →</a>
+            <h3>Evidence-aware decisions</h3>
+            <p>Compare source claims, preserve contradictions, reopen findings when new evidence arrives, and track the reasoning trail between restarts.</p>
+            <a href="https://github.com/danieloculus0-bot/BEAN/blob/main/bean/tests/test_evidence_bridge_contract.py">See the verified revision tests →</a>
           </article>
           <article class="card">
-            <div class="skill-icon" aria-hidden="true">🛡️</div>
-            <h3>Proposals, not unauthorized actions</h3>
-            <p>Reasoning output is recorded for review. The host keeps permission and execution authority, so generating a proposal doesn't authorize a real-world effect.</p>
-            <a href="https://github.com/danieloculus0-bot/BEAN/blob/main/docs/general-reasoning-layer.md">Explore the reasoning API →</a>
+            <div class="skill-kicker">Core main · Autonomy</div>
+            <div class="skill-icon" aria-hidden="true">⏱️</div>
+            <h3>Scheduled, persistent tasks</h3>
+            <p>Run named, host-provided actions on a durable schedule. Interrupted attempts wait for review instead of blindly replaying unknown effects.</p>
+            <a href="https://github.com/danieloculus0-bot/BEAN/blob/main/bean/runtime/task_engine.py">Inspect the task engine →</a>
+          </article>
+          <article class="card">
+            <div class="skill-kicker">Core main · Engineering</div>
+            <div class="skill-icon" aria-hidden="true">🛠️</div>
+            <h3>GitHub engineering audits</h3>
+            <p>Inventory Core and Bridge branches, compare test evidence, and generate read-only JSON/Markdown research reports with traceable receipts.</p>
+            <a href="https://github.com/danieloculus0-bot/BEAN/blob/main/scripts/audit_research_inventory.py">Run the actual repository auditor →</a>
+          </article>
+          <article class="card">
+            <div class="skill-kicker">Core main · Local AI</div>
+            <div class="skill-icon" aria-hidden="true">🎙️</div>
+            <h3>Local model + voice</h3>
+            <p>Use a locally installed Ollama model for opt-in dialogue and reasoning. On Windows, BEAN can speak answers and accept prompted voice input.</p>
+            <a href="https://github.com/danieloculus0-bot/BEAN/blob/main/docs/bean-local-voice.md">Try BEAN's voice interface →</a>
+          </article>
+          <article class="card">
+            <div class="skill-kicker">Core main · Resilience</div>
+            <div class="skill-icon" aria-hidden="true">💾</div>
+            <h3>Memory crash recovery</h3>
+            <p>Reconcile SQLite with its human-readable audit mirror, restore interrupted records, detect tampering, and withstand tested concurrent writers.</p>
+            <a href="https://github.com/danieloculus0-bot/BEAN/blob/main/bean/tests/test_audit_mirror_recovery.py">Inspect seven fault-injection tests →</a>
+          </article>
+          <article class="card">
+            <div class="skill-kicker">Core main · Developer integration</div>
+            <div class="skill-icon" aria-hidden="true">🔌</div>
+            <h3>Four MCP evidence tools</h3>
+            <p>A working read-only local interface audits claims, checks conflicting evidence, screens proposals, and demonstrates continuity.</p>
+            <a href="https://github.com/danieloculus0-bot/BEAN/blob/main/integrations/chatgpt/README.md">Explore the four-tool developer preview →</a>
+          </article>
+          <article class="card">
+            <div class="skill-kicker">Bridge main · Embedded research</div>
+            <div class="skill-icon" aria-hidden="true">🤖</div>
+            <h3>Arduino + ESP32 motion logic</h3>
+            <p>One portable controller tested on real emulated AVR/ESP32 CPUs: E-stop, TTL watchdog, replay prevention and 6,144 native fault transitions.</p>
+            <a href="https://github.com/danieloculus0-bot/BEAN-AI-Bridge-/blob/main/experiments/robot_motion/README.md">Inspect the emulator lab →</a>
+          </article>
+          <article class="card">
+            <div class="skill-kicker">Tested research · Code improvement</div>
+            <div class="skill-icon" aria-hidden="true">🧬</div>
+            <h3>Model-written code repair</h3>
+            <p>A bounded source-repair candidate passed seven independent tests on Windows and Ubuntu. Reproducible improvement experiments, not just generated code.</p>
+            <a href="https://github.com/danieloculus0-bot/BEAN/pull/74">Inspect the tested candidate →</a>
           </article>
         </div>
 
         <div class="skill-disclaimer">
-          <strong class="strong">What the demos mean:</strong> The daily brief reads previously exported local data, not a live ERP. The restart demonstration uses a mock provider and verifies clean close/reopen of SQLite, not an operating-system reboot or model learning. Source authenticity and business KPI rules still require a responsible host.
+          <strong class="strong">The beta line:</strong> These are genuine software skills, from stable Core modules to clearly labeled research prototypes. The Daily Exception Brief reads authorized offline exports, not a live ERP; the restart demo uses a mock provider and temporary SQLite. Enterprise hosting, authenticated third-party sources and physical robot deployment are separate engineering milestones. <a href="https://github.com/danieloculus0-bot/BEAN/blob/main/docs/PRODUCTION_READINESS_AUDIT_2026-10-11.md">Technical readiness details →</a>
         </div>
       </div>
     </section>
 
 
+    <section id="latest" class="section tight" aria-labelledby="latest-heading">
+      <div class="wrap">
+        <div class="eyebrow"><span class="dot"></span> October 11, 2026 · Verified development log</div>
+        <h2 id="latest-heading" style="margin-top:17px">What's new in BEAN</h2>
+        <p class="lead">New abilities, engineering discoveries and fresh test receipts. Skills already on Core or Bridge main are clearly distinguished from research candidates.</p>
+        <div class="experiment-grid">
+          <article class="experiment-card">
+            <span class="status-tag">In Core main</span>
+            <h3>Talk to BEAN: local Ollama + Windows speech</h3>
+            <p>An opt-in conversation interface uses a locally installed Ollama model. Windows can speak responses and listen for one utterance when prompted. BEAN's verified identity record can be loaded read-only. Chat history is session-only.</p>
+            <a href="https://github.com/danieloculus0-bot/BEAN/blob/main/docs/bean-local-voice.md">Read the actual setup and limitations</a>
+          </article>
+          <article class="experiment-card">
+            <span class="status-tag">In Core main</span>
+            <h3>Model-backed reasoning and GitHub evidence integration</h3>
+            <p>Opt-in localhost Ollama inference and a bounded engineering-evidence bridge are available in Core. These are supervised components, not automatic code deployment, independent fact authentication, or a hidden engineering team.</p>
+            <a href="https://github.com/danieloculus0-bot/BEAN/blob/main/docs/bean-github-engineering-bridge.md">Inspect the evidence bridge</a>
+          </article>
+          <article class="experiment-card">
+            <span class="status-tag warning">Draft Bridge experiment</span>
+            <h3>Real conversations exposed a real weakness</h3>
+            <p>Two hosted Qwen 2.5 Coder 1.5B trials showed BEAN incorrectly reversing a straightforward out-of-tolerance measurement after the user disagreed. Contract checks passed on Linux and Windows, but factual resistance did not. Full transcripts are retained.</p>
+            <a href="https://github.com/danieloculus0-bot/BEAN-AI-Bridge-/pull/31">Review the failures and test evidence</a>
+          </article>
+          <article class="experiment-card">
+            <span class="status-tag">Independently tested draft</span>
+            <h3>BEAN wrote a Python repair; the hidden tests checked it</h3>
+            <p>A local Qwen 2.5 Coder 1.5B candidate repaired a bounded score-clipping function and passed seven independent fixture tests on both Windows and Ubuntu. This specific candidate remains in an unmerged review branch, not a demonstrated general self-improvement ability.</p>
+            <a href="https://github.com/danieloculus0-bot/BEAN/pull/74">Inspect the candidate, code digest and CI</a>
+          </article>
+          <article class="experiment-card">
+            <span class="status-tag">Bridge main · Emulator research</span>
+            <h3>Robot motion without requiring a robot</h3>
+            <p>Arduino Nano simavr and ESP32 QEMU now test explicit arm, replay protection, heartbeat interlocks, logical watchdog expiry and safe fault recovery. Native C also passed 6,144 deterministic fault transitions and rejected a deliberately sabotaged E-stop. No physical motor control; Wokwi did not run without its token.</p>
+            <a href="https://github.com/danieloculus0-bot/BEAN-AI-Bridge-/blob/main/experiments/robot_motion/README.md">Review the merged test contract and limitations</a>
+          </article>
+          <article class="experiment-card">
+            <span class="status-tag">Core main · Developer preview</span>
+            <h3>BEAN Evidence Companion: four MCP tools</h3>
+            <p>Four working read-only tools inspect claims, compare submitted evidence, screen proposals and demonstrate memory continuity. A local MCP developer integration is available now; public distribution is a separate step.</p>
+            <a href="https://github.com/danieloculus0-bot/BEAN/blob/main/integrations/chatgpt/README.md">See the real API, sample calls and remaining work</a>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="milestones" class="section tight" aria-labelledby="milestones-heading">
+      <div class="wrap">
+        <div class="eyebrow"><span class="dot"></span> Measured engineering results · October 11, 2026</div>
+        <h2 id="milestones-heading">BEAN's work speaks for itself.</h2>
+        <p class="lead">These are actual CI measurements on named revisions, with links to the runs. This is how technical beta earns credibility.</p>
+        <div class="experiment-grid">
+          <article class="experiment-card">
+            <span class="status-tag">Core main · Regression</span>
+            <h3>Cross-platform foundation</h3>
+            <div class="result-number">575 <small>passing tests</small></div>
+            <p>Core main passed all four Windows/Ubuntu Python 3.10/3.12 configurations. Ubuntu/Python 3.12 reported 575 passes, one skipped, 47 passing subtests and 84% measured coverage.</p>
+            <a href="https://github.com/danieloculus0-bot/BEAN/actions/runs/38163545503">Inspect the current four-platform Core CI</a>
+          </article>
+          <article class="experiment-card">
+            <span class="status-tag">Emulated, not deployed</span>
+            <h3>Two microcontroller targets</h3>
+            <div class="result-number">2 <small>confirmed emulators</small></div>
+            <p>Actual AVR/simavr and ESP32/QEMU emitted verified pass markers. ESP32's FreeRTOS watchdog checks passed too; the host fault sweep and negative-control E-stop test passed. Wokwi is NOT_RUN_MISSING_TOKEN, not a pass; there has been no physical hardware test.</p>
+            <a href="https://github.com/danieloculus0-bot/BEAN-AI-Bridge-/actions/runs/38161744114">Open new emulator and failure-injection results</a>
+          </article>
+          <article class="experiment-card">
+            <span class="status-tag">Core main · Crash recovery</span>
+            <h3>Persistent audit recovery</h3>
+            <div class="result-number">7/7 <small>fault-injection tests</small></div>
+            <p>Simulated write interruption, partial tail, tampering, missing mirror, separate databases and concurrent processes. The Linux and Windows runs validated consistent SQLite-to-JSONL recovery behavior.</p>
+            <a href="https://github.com/danieloculus0-bot/BEAN/actions/runs/38163545503">Open crash/recovery and cross-platform results</a>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="difference" class="section tight">
+      <div class="wrap">
+        <div class="eyebrow">
+          <span class="dot"></span>
+          Why BEAN feels different
+        </div>
+
+        <h2>Not just memory. <br>Memory with evidence.</h2>
+        <p class="lead">
+          BEAN is aimed at a stricter kind of reasoning workflow: not simply storing context,
+          but preserving the trail behind a decision and making changes inspectable over time.
+        </p>
+
+        <div class="grid-3" style="margin-top:24px">
+          <article class="card">
+            <div class="icon-badge">🧠</div>
+            <h3>Persistent event history</h3>
+            <p>SQLite-backed sessions, events, trace IDs, and durable state that a host application can inspect after restart.</p>
+          </article>
+
+          <article class="card">
+            <div class="icon-badge">🌿</div>
+            <h3>Evidence and uncertainty</h3>
+            <p>BEAN can preserve contradictions, uncertainty, source boundaries, and unresolved states instead of pretending everything is settled.</p>
+          </article>
+
+          <article class="card">
+            <div class="icon-badge">🔎</div>
+            <h3>Reviewable reasoning</h3>
+            <p>Models can propose. Hosts still control policy, execution authority, and whether a proposal gets accepted, held, or rejected.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
     <section id="benchmarks" class="section" aria-labelledby="benchmarks-heading">
       <div class="wrap">
-        <div class="eyebrow"><span class="dot"></span> Head-to-head results · Inspect the receipts</div>
-        <h2 id="benchmarks-heading" style="margin-top:17px">Where BEAN's approach pulled ahead.</h2>
+        <div class="eyebrow"><span class="dot"></span> Head-to-head benchmarks · Real scores, real baselines</div>
+        <h2 id="benchmarks-heading" style="margin-top:17px">Little bean. Big benchmark teeth.</h2>
         <p class="lead">Some comparisons produced substantial wins against <strong class="strong">fixed algorithms</strong>. BEAN has also faced another real coding agent. We keep those categories separate and report the tie honestly.</p>
         <div class="experiment-grid">
           <article class="experiment-card">
@@ -1242,10 +1295,10 @@ python -m examples.quickstart_reasoning</code></pre>
           Research and boundaries
         </div>
 
-        <h2>Experiments matter. So do their limits.</h2>
+        <h2>A serious beta doesn't hide its experiments.</h2>
         <p class="lead">
-          BEAN keeps its research visible, including negative or mixed outcomes.
-          The goal is not to look magical. The goal is to be inspectable.
+          Stable skills ship with code and repeatable tests. New research lives alongside them,
+          including ambitious wins, useful failures and the next capabilities we want to earn.
         </p>
 
         <div class="grid-3" style="margin-top:24px">
@@ -1265,9 +1318,9 @@ python -m examples.quickstart_reasoning</code></pre>
 
           <article class="card">
             <div class="icon-badge">🛡️</div>
-            <h3>Honest scope</h3>
-            <p>Live production autonomy, independently validated open-world learning, and operational source authentication are not claimed here.</p>
-            <p><a href="https://github.com/danieloculus0-bot/BEAN/actions/workflows/brain-smoke.yml">Check regression runs →</a></p>
+            <h3>Built for inspection</h3>
+            <p>BEAN's beta skills are available for testing now. More demanding hosted, financial and hardware deployment gates are documented separately.</p>
+            <p><a href="https://github.com/danieloculus0-bot/BEAN/actions/workflows/brain-smoke.yml">Check fresh regression runs →</a></p>
           </article>
         </div>
       </div>
