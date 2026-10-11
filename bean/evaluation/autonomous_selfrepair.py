@@ -140,7 +140,12 @@ EDITABLE_ASSIGNMENTS = frozenset({
 
 
 def statement_targets(source):
-    tree = ast.parse(source)
+    try:
+        tree = ast.parse(source)
+    except (SyntaxError, TypeError, ValueError):
+        # Legacy fixtures may contain literal backslash-n source strings.
+        # Do not invent locations when the supplied source is not valid Python.
+        return {}
     function = next(
         (node for node in tree.body
          if isinstance(node, ast.FunctionDef) and node.name == "call_model"), None
@@ -266,7 +271,7 @@ def local_model_request(source, previous_issue, *, request_fn=urlopen, model=LOC
         + "\nCURRENT PYTHON FUNCTION (ACTUAL CALL_MODEL PYTHON FUNCTION):\n"
         + function_source
         + "\nSelect existing STATEMENT_ID values and write valid replacements, "
-        "not example code quoted inside the source. "
+        "not from an error description or embedded sample code. "
     )
     schema = {
         "type": "object",
