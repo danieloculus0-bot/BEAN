@@ -42,7 +42,7 @@ def test_bounded_budget_enforces_ceiling():
 
 def test_token_not_configured_reports_unavailable():
     adapter=GitHubModelsAdapter(token="",budget=Budget(2,0))
-    assert smoke(adapter)=={"status":"unavailable","reason":"no_token"}
+    assert smoke(adapter)=={"status":"unavailable","reason":"no_token","safe_diagnostic":""}
     assert adapter.budget.used==0
 
 
@@ -71,7 +71,7 @@ def test_403_response_keeps_error_not_claims():
     adapter=GitHubModelsAdapter(token="synthetic",budget=Budget(2,0))
     exc=urllib.error.HTTPError(ENDPOINT,403,"Forbidden",{},None)
     with patch("urllib.request.urlopen",side_effect=exc):
-        assert smoke(adapter)=={"status":"unavailable","reason":"http_403"}
+        assert smoke(adapter)=={"status":"unavailable","reason":"http_403","safe_diagnostic":""}
     assert adapter.budget.errors=={"http_403":1}
 
 
