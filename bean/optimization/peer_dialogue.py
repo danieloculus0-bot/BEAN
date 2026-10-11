@@ -18,7 +18,7 @@ SCHEMA = "bean.peer-development.v1"
 KINDS = frozenset({"proposal", "challenge", "result", "revision", "acknowledgement"})
 ROLES = frozenset({"selector", "builder", "validator"})
 SHA = re.compile(r"^[a-f0-9]{40}$")
-REF = re.compile(r"^[a-zA-Z0-9][a-zA-Z0-9._/-]{0,150}$")
+REF = re.compile(r"^[a-zA-Z0-9][a-zA-Z0-9._/:#-]{0,150}$")
 DIGEST = re.compile(r"^[a-f0-9]{64}$")
 # A human-readable label only, not a verified assertion about external CI status.
 STATES = frozenset({"not_run", "reported_pass", "reported_fail", "unavailable"})
