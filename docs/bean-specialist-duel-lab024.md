@@ -67,3 +67,28 @@ Do not publish generated candidates to production/main or present a
 synthetic-mock test as evidence of BEAN coding ability.
 
 First real no-OpenRouter 3-round trial requested on local Ollama hosted CI.
+
+
+## First actual duel: 2026-10-11 (UTC), independent Linux + Windows verdict
+
+[GitHub Actions run 38114334666](https://github.com/danieloculus0-bot/BEAN/actions/runs/38114334666)
+ran real unmodified Aider 0.86.2 versus the Lab024 BEAN author using the
+same disposable-host Ollama qwen2.5-coder:1.5b server. Both offline
+contract preflights passed. The author job ran all three rounds; the
+separate Linux and Windows hidden evaluators agreed.
+
+| Actual agent | Hidden test passes | Fully solved tasks |
+| --- | ---: | ---: |
+| BEAN | 0/16 | 0/2 |
+| Aider | 2/16 | 0/2 |
+
+**Classification: INCONCLUSIVE**, as BEAN had no accepted candidate on
+either repair objective. This is NOT a BEAN win and NOT evidence of
+successful transfer learning. The Aider candidate on ledger revisions
+passed 2/8 and failed 6/8; neither agent solved permission graph.
+
+The experiment exposed a concrete next engineering priority: raise
+BEAN's valid-candidate rate with model-appropriate structured edit
+fallbacks, error-aware retries and independently tested parsing. Preserve
+both the original source-edit AST gate and independent holdouts. Only
+then attempt a fair OpenCode/Goose tournament using the same model.
