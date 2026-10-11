@@ -34,7 +34,7 @@ def normalise(raw: str) -> str:
     source = raw.strip()
     fence = chr(96) * 3
     if fence in source:
-        blocks = re.findall(r"```(?:python|py)?[ \\t]*\\r?\\n(.*?)```", source, re.S | re.I)
+        blocks = re.findall(r"```(?:python|py)?[ \t]*\r?\n(.*?)```", source, re.S | re.I)
         if len(blocks) != 1:
             raise ValueError("ambiguous_code_fences")
         source = blocks[0].strip()
@@ -47,7 +47,7 @@ def normalise(raw: str) -> str:
     if not any(isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef)) and n.name == "clip_score"
                for n in parsed.body):
         raise ValueError("required_function_missing")
-    return source + "\\n"
+    return source + "\n"
 
 
 def make_request(key: str, *, request_fn=urlopen) -> tuple[str, dict]:
@@ -67,7 +67,7 @@ def make_request(key: str, *, request_fn=urlopen) -> tuple[str, dict]:
     if isinstance(response_text, list):
         # Some completion backends return multimodal typed parts rather
         # than a simple string, with no actual textual answer.
-        response_text = "\\n".join(
+        response_text = "\n".join(
             part.get("text", "") for part in response_text
             if isinstance(part, dict) and part.get("type") == "text"
             and isinstance(part.get("text"), str)
