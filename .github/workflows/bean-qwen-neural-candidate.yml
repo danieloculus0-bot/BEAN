@@ -33,7 +33,7 @@ jobs:
           import hashlib
           from pathlib import Path
           p = Path("experiments/autodev/neural_candidate_qwen_1p5b/bean/skills/clip_score.py")
-          digest = hashlib.sha256(p.read_bytes().replace(b"\\r\\n", b"\\n")).hexdigest()
+          digest = hashlib.sha256(p.read_bytes().replace(b"\r\n", b"\n")).hexdigest()
           expected = "d8754155f5e568077c7e526528884f5dc596137b04bc85b94a802fbf39aaac08"
           print("NEURAL_CANDIDATE_SHA256:", digest)
           assert digest == expected, "Candidate differs from the locally generated Python bytes"
@@ -55,7 +55,7 @@ jobs:
           with tempfile.TemporaryDirectory(prefix="bean-neural-independent-") as root:
               project = Path(root) / "project"
               shutil.copytree(original, project)
-              (project / "bean/skills/clip_score.py").write_bytes(candidate.read_bytes().replace(b"\\r\\n", b"\\n"))
+              (project / "bean/skills/clip_score.py").write_bytes(candidate.read_bytes().replace(b"\r\n", b"\n"))
               env = {
                   "PATH": os.environ.get("PATH", ""),
                   "PYTHONPATH": str(project),
