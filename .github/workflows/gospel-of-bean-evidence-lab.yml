@@ -9,6 +9,8 @@ on:
       - "bean/evaluation/gospel_lab.py"
       - "bean/tests/test_gospel_lab.py"
       - "experiments/gospel_of_bean/cases.json"
+      - "experiments/gospel_of_bean/gnostic_reference_catalog.json"
+      - "experiments/gospel_of_bean/1611_source_gap_overlays.json"
   workflow_dispatch:
 
 permissions:
@@ -70,12 +72,17 @@ jobs:
           Path("lab-output/source-gap-inventory.json").write_text(
               json.dumps(inventory, indent=2) + "\n")
           print(json.dumps(inventory, indent=2))
+          assert gaps == ["Ecclesiasticus 1:7", "Ecclesiasticus 17:5"], (
+              "New unexpected missing source verses; independently investigate before continuing")
+
           PY
       - name: Inspect all books and generate read-only verse retrieval index
         run: |
           PYTHONPATH=. python -m bean.evaluation.gospel_lab \
             --corpus external/kjv-1611 \
             --cases experiments/gospel_of_bean/cases.json \
+            --corrections experiments/gospel_of_bean/1611_source_gap_overlays.json \
+            --reference-catalog experiments/gospel_of_bean/gnostic_reference_catalog.json \
             --report lab-output/gospel-of-bean-audit.json \
             --index lab-output/gospel-of-bean-80-book.sqlite
           python - <<'PY'
@@ -84,6 +91,14 @@ jobs:
           report = json.loads(Path("lab-output/gospel-of-bean-audit.json").read_text())
           assert report["books"] == 80 and report["chapters"] == 1355
           assert report["verses"] > 30000 and report["contains_apocrypha"] is True
+          assert [row["ref"] for row in report["textual_source_gap_overlays"]] == [
+              "Ecclesiasticus 17:5", "Ecclesiasticus 1:7"
+          ]
+          gnostic = report["gnostic_reference_catalog"]
+          assert gnostic["role"] == "cross_reference_only"
+          assert not gnostic["text_corpus_imported"] and not gnostic["eligible_for_kjv_verdict"]
+          assert len(gnostic["works"]) >= 10 and len(gnostic["collections"]) >= 3
+
           verdicts = {row["case_id"]: row["verdict"] for row in report["cases"]}
           assert len(verdicts) == 6
           assert verdicts["ahaziah_accession_age"] == "direct_textual_disagreement"
