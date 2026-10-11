@@ -197,3 +197,7 @@ The native BEAN task engine runs only when a trusted local `BEAN_TASK_CONFIG` fi
 ## Offline capability exam and non-fabricated baselines
 
 The optional [BEAN evidence-first entrance exam](docs/bean-entrance-exam-lab012.md) provides seven reproducible fictional cases for unknown handling, verified citations, corrections, read-only probe requests, and limited cross-domain transfer. The bundled `MockLLMAdapter` is expected **not to pass** these capability criteria; fixture test doubles validate the examiner itself, never BEAN intelligence. Real capability improvements must be measured on independent unseen data with source audits. Run `python -m bean.evaluation.entrance_exam` to reproduce the honest baseline without network, private inputs, or hardware.
+
+## Embedded host-neutral reasoning interface
+
+`from bean.integration import BeanReasoningLayer` exposes a small Python lifecycle interface that records host observations, builds bounded reasoning context, and returns **review-required, stored proposals**, not actions. The mock provider works offline and a host must own permissions, execution, project isolation and authenticated input. Use **one BEAN memory store per host process**, avoiding concurrent use of the process-level singleton. See [host-neutral reasoning guide](docs/general-reasoning-layer.md). This is an optional API, not a claimed general intelligence system.
