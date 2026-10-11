@@ -8,6 +8,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
 import time
 import urllib.error
 import urllib.request
@@ -102,6 +103,16 @@ class GitHubModelsAdapter(LLMAdapterBase):
                     reason = "malformed_json"
                 elif "text/plain" in content_type.lower():
                     reason = "plaintext_not_json"
+                    # This is a synthetic-only model endpoint smoke test.
+                    # Redact tokens, URLs, emails and long opaque strings
+                    # before including a tiny diagnostic in public logs.
+                    preview = stripped[:180].replace(self.token, "[SECRET]")
+                    preview = re.sub(r"(?i)github_pat_[A-Za-z0-9_]+|gh[opsu]_[A-Za-z0-9_]+", "[SECRET]", preview)
+                    preview = re.sub(r"https?://\\S+", "[URL]", preview)
+                    preview = re.sub(r"[\\w.%-]+@[\\w.-]+", "[EMAIL]", preview)
+                    preview = re.sub(r"[A-Za-z0-9_-]{24,}", "[REDACTED]", preview)
+                    preview = "".join(ch if 32 <= ord(ch) <= 126 else " " for ch in preview)
+                    self.last_safe_diagnostic = preview
                 else:
                     reason = "unrecognized_non_json_response"
             else:
@@ -132,7 +143,10 @@ class GitHubModelsAdapter(LLMAdapterBase):
             reason = "invalid_service_response"
         self.budget.error(reason)
         # Only fixed diagnostic categories, never token, body or headers.
-        return {"ok":False,"error":reason}
+        response = {"ok":False,"error":reason}
+        if reason == "plaintext_not_json":
+            response["safe_diagnostic"] = getattr(self, "last_safe_diagnostic", "")
+        return response
 
 
 def smoke(adapter):
@@ -149,7 +163,8 @@ def smoke(adapter):
     }
     completion=adapter.complete(_prompt(payload))
     if not completion.get("ok"):
-        return {"status":"unavailable","reason":completion.get("error","provider_error")}
+        return {"status":"unavailable","reason":completion.get("error","provider_error"),
+                "safe_diagnostic":completion.get("safe_diagnostic","")}
     answer=_response(completion)
     if answer and answer["action"]=="answer" and answer["verdict"]=="nominal" and (
         "verified-smoke" in answer["evidence_refs"]
