@@ -5,7 +5,7 @@ import pytest
 
 from bean.cognition.epistemic_guard import EpistemicGuard
 from bean.evaluation.investigation_lab014 import (
-    Feedback,FictionalWorld,OfflineFixture,Observation,Scene,TOOLS,
+    Feedback,FictionalWorld,OfflineFixture,Scene,TOOLS,
     _response,episode,provider_factory,run_suite,scenes,trial,
 )
 from bean.memory.store import get_store,init_store
@@ -160,9 +160,6 @@ def test_guard_scans_every_submitted_answer(tmp_path):
     result=episode(first_case(),OfflineFixture(),memory.lessons(),guard)
     assert result["correct"]==0
     assert result["grounded"]==0
-    assert get_store().fetchone(
-        "SELECT COUNT(*) AS n FROM world_claims"
-    ) if False else True
     assert result["external_actions"]==0
 
 
