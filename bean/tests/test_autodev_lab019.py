@@ -4,6 +4,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 import sqlite3
+import shutil
 from unittest.mock import patch
 import pytest
 
@@ -14,14 +15,20 @@ from bean.optimization.autodev import (
 PROJECT = Path(__file__).resolve().parents[2] / "experiments" / "autodev" / "seed_project"
 TARGET = "bean/skills/clip_score.py"
 TASK = "Repair score clipping so values never exceed 100 or fall below zero"
+SEED = "def clip_score(score):\n    return max(0, min(score, 101))\n"
 
 
 def config(tmp_path, attempts=25):
-    return dict(project=PROJECT, target=TARGET, task=TASK,
+    # Lock the deliberately broken source independently of the source branch. This
+    # also lets a BEAN-generated repair PR retain a passing engine regression.
+    project = tmp_path / "fresh_seed_project"
+    if not project.exists():
+        shutil.copytree(PROJECT, project)
+        (project / TARGET).write_text(SEED, encoding="utf-8")
+    return dict(project=project, target=TARGET, task=TASK,
                 journal_path=tmp_path / "learning.sqlite",
                 output=tmp_path / "proposals",
-                provider=ASTBruteForce((PROJECT / TARGET).read_text(encoding="utf-8")),
-                attempts=attempts)
+                provider=ASTBruteForce(SEED), attempts=attempts)
 
 
 def test_generated_source_really_changes_and_passes_frozen_tests(tmp_path):
@@ -56,7 +63,7 @@ def test_brute_force_search_can_resume_after_failures(tmp_path):
     first = run_cycle(**config(tmp_path, attempts=2))
     assert first["status"] == "unresolved"
     assert first["new_attempts"] == 2
-    assert "min(score, 101)" in (PROJECT / TARGET).read_text()
+    assert "min(score, 101)" in (tmp_path / "fresh_seed_project" / TARGET).read_text()
     result = run_cycle(**config(tmp_path, attempts=20))
     assert result["status"] == "validated_patch_written"
     assert result["prior_attempts"] == 2
