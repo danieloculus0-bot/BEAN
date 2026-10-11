@@ -81,7 +81,7 @@ jobs:
 
   write-research-branch:
     needs: [independent-generation, engine-tests]
-    if: github.event_name == 'workflow_dispatch' && needs.independent-generation.outputs.status == 'validated_patch_written'
+    if: (github.event_name == 'workflow_dispatch' || github.event_name == 'push') && needs.independent-generation.outputs.status == 'validated_patch_written'
     permissions:
       contents: write
       pull-requests: write
@@ -114,7 +114,11 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
-          BRANCH="bean/selfdevelop-$GITHUB_RUN_ID"
+          BRANCH="bean/lab019-selfdevelop-$GITHUB_RUN_ID"
+          if git ls-remote --heads origin 'refs/heads/bean/lab019-selfdevelop-*' | grep -q .; then
+            echo "Existing BEAN Lab019 generated code branch still awaits independent review."
+            exit 0
+          fi
           cp agent-evidence/autodev-output/validated/bean/skills/clip_score.py \
              experiments/autodev/seed_project/bean/skills/clip_score.py
           git config user.name "bean-autodev-lab"
