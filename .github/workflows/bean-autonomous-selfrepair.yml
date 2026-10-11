@@ -87,7 +87,7 @@ jobs:
           python-version: '3.12'
       - name: Install local Ollama (no external model API quota)
         if: steps.inspect.outputs.needs_work == 'true'
-        uses: ai-action/setup-ollama@v2
+        uses: ai-action/setup-ollama@6782d243db5fbcbf7583532ce0b5122f64242689 # v2 pinned
       - name: Download and start Qwen 1.5B on this isolated runner
         if: steps.inspect.outputs.needs_work == 'true'
         shell: bash
