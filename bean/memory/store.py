@@ -80,7 +80,18 @@ _store: Optional[MemoryStore] = None
 
 
 def init_store(db_path: str) -> MemoryStore:
+    """Switch the current thread to this database without leaking connections.
+
+    A prior thread-local SQLite handle must never be reused for another
+    MemoryStore path. Reinitialization is a host-controlled lifecycle
+    operation; callers must finish/commit their work before switching DBs.
+    Other threads must shut down their own connections independently.
+    """
     global _store
+    previous = getattr(_local, "conn", None)
+    if previous is not None:
+        previous.close()
+        _local.conn = None
     _store = MemoryStore(db_path)
     return _store
 
