@@ -1,6 +1,6 @@
 # BEAN 🌱
 
-<p align="center"><img src="docs/bean-sprout.webp" alt="BEAN official mascot: smiling lime-green bean waving with a two-leaf sprout" width="180"></p>
+<p align="center"><img src="docs/bean-official.webp" alt="BEAN official mascot: smiling lime-green bean waving with a two-leaf sprout" width="180"></p>
 
 **Behavior Enabled Avatar Node** · Working, open-source AI technical beta
 
