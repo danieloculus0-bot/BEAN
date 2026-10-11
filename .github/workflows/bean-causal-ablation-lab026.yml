@@ -1,0 +1,167 @@
+name: BEAN Lab026 causal four-arm learning trial
+
+on:
+  push:
+    branches:
+      - experiment/bean-causal-ablation-lab026-20261011
+    paths:
+      - 'bean/evaluation/causal_ablation_lab026.py'
+      - 'bean/tests/test_causal_ablation_lab026.py'
+      - 'docs/bean-causal-ablation-lab026.md'
+      - '.github/workflows/bean-causal-ablation-lab026.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  BEAN_OLLAMA_MODEL: qwen2.5-coder:0.5b
+  PYTHONDONTWRITEBYTECODE: '1'
+
+jobs:
+  protocol:
+    name: Verify experiment controls (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 12
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install pytest
+      - run: python -m pytest bean/tests/test_causal_ablation_lab026.py -q
+
+  generate-training:
+    name: Real Ollama model authors training proposals (no execution)
+    if: contains(github.event.head_commit.message, '[lab026-live]') || github.event_name == 'workflow_dispatch'
+    needs: protocol
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install temporary Ollama and record model digest
+        run: |
+          curl -fsSL https://ollama.com/install.sh | sh
+          ollama serve > /tmp/ollama.log 2>&1 &
+          for n in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:11434/api/tags >/dev/null; then break; fi
+            sleep 2
+          done
+          ollama pull "$BEAN_OLLAMA_MODEL"
+          mkdir -p lab026
+          curl -fsS http://127.0.0.1:11434/api/tags | jq --arg model "$BEAN_OLLAMA_MODEL" -er '.models[] | select(.name==$model) | .digest' > lab026/model-digest.txt
+          ollama --version
+          cat lab026/model-digest.txt
+      - name: Train with actual model-written candidates (no generated code run)
+        run: python -m bean.evaluation.lab023_ollama train --out lab026 --model "$BEAN_OLLAMA_MODEL"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: lab026-actual-training
+          path: lab026/
+          if-no-files-found: error
+
+  offline-development:
+    name: Credential-free independent scoring of training
+    needs: generate-training
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/download-artifact@v4
+        with:
+          name: lab026-actual-training
+          path: lab026/
+      - name: Grade training proposals without an Ollama provider
+        run: python -m bean.evaluation.lab023_ollama development --out lab026
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: lab026-graded-training
+          path: lab026/
+          if-no-files-found: error
+
+  author:
+    name: Learn in persistent journal, then author all conditions
+    needs: offline-development
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/download-artifact@v4
+        with:
+          name: lab026-graded-training
+          path: lab026/
+      - name: Start same local model, check its digest against training
+        run: |
+          curl -fsSL https://ollama.com/install.sh | sh
+          ollama serve > /tmp/ollama.log 2>&1 &
+          for n in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:11434/api/tags >/dev/null; then break; fi
+            sleep 2
+          done
+          ollama pull "$BEAN_OLLAMA_MODEL"
+          curl -fsS http://127.0.0.1:11434/api/tags | jq --arg model "$BEAN_OLLAMA_MODEL" -er '.models[] | select(.name==$model) | .digest' > lab026/replay-model-digest.txt
+          diff lab026/model-digest.txt lab026/replay-model-digest.txt
+      - name: Reflect with real model, save SHA-chained journal and verify restart
+        run: |
+          python -m bean.evaluation.causal_ablation_lab026 learn --root lab026 --model "$BEAN_OLLAMA_MODEL"
+          jq -e '.eligible_for_ablation == true' lab026/lab026-preflight.json
+      - name: Produce four paired conditions on two new tasks over four rounds
+        run: python -m bean.evaluation.causal_ablation_lab026 author --state lab026/state/history.sqlite --out lab026/ablation --model "$BEAN_OLLAMA_MODEL" --trials 4
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: lab026-real-model-candidates-and-journal
+          path: lab026/
+          if-no-files-found: error
+
+  independent-verdict:
+    name: Credential-free blind replay (${{ matrix.os }})
+    needs: author
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/download-artifact@v4
+        with:
+          name: lab026-real-model-candidates-and-journal
+          path: lab026/
+      - name: Hash-check each arm and execute withheld test suites
+        run: python -m bean.evaluation.causal_ablation_lab026 judge --state lab026/state/history.sqlite --artifacts lab026/ablation --out lab026/verdict.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: lab026-independent-verdict-${{ matrix.os }}
+          path: lab026/verdict.json
+          if-no-files-found: warn
