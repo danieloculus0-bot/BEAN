@@ -13,7 +13,7 @@ from pathlib import Path
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
-MODEL = "nvidia/nemotron-3-super-120b-a12b:free"
+MODEL = "openrouter/free"
 ENDPOINT = "https://openrouter.ai/api/v1/chat/completions"
 FIELDS = ("length_mm","width_mm","height_mm","axle_bore_d_mm","bolt_bore_d_mm")
 RANGES = {
