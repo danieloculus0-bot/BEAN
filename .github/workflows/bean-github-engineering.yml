@@ -1,0 +1,38 @@
+name: BEAN GitHub engineering bridge contract
+
+on:
+  pull_request:
+    branches:
+      - main
+      - feature/bean-local-ollama-reasoning-20261011
+    paths:
+      - 'bean/integration/github_engineering.py'
+      - 'bean/tests/test_github_engineering_bridge.py'
+      - '.github/workflows/bean-github-engineering.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  offline-contract:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        python-version: ['3.10', '3.12']
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install offline test dependency
+        run: python -m pip install pytest
+      - name: Verify GitHub read-only persistence and review contract
+        run: |
+          python -m compileall -q bean/integration/github_engineering.py bean/tests/test_github_engineering_bridge.py
+          python -m pytest bean/tests/test_github_engineering_bridge.py -q -ra
