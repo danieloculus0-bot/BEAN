@@ -1,0 +1,141 @@
+name: BEAN Lab024 iterative local duel versus upstream Aider
+
+on:
+  push:
+    branches: [experiment/bean-vs-aider-iterative-lab024-20261011]
+    paths:
+      - 'experiments/agent_arena/local_duel_lab024.py'
+      - 'bean/tests/test_local_duel_lab024.py'
+      - 'docs/bean-specialist-duel-lab024.md'
+      - '.github/workflows/bean-lab024-specialist-duel.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'experiments/agent_arena/local_duel_lab024.py'
+      - 'bean/tests/test_local_duel_lab024.py'
+      - '.github/workflows/bean-lab024-specialist-duel.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  contracts:
+    name: Mock-protocol and hash-check regressions (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 14
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: python -m pip install pytest
+      - name: Python syntax and explicit mock-only protocol tests
+        run: |
+          python -m compileall -q experiments/agent_arena/local_duel_lab024.py bean/tests/test_local_duel_lab024.py
+          python -m pytest bean/tests/test_local_duel_lab024.py -q -ra
+
+  live-authors:
+    name: Same real Ollama, Aider 0.86.2 versus BEAN, three revisions apiece
+    needs: contracts
+    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && contains(github.event.head_commit.message, '[lab024-live]'))
+    runs-on: ubuntu-latest
+    timeout-minutes: 55
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install actual upstream specialist, and offline development sandbox
+        run: |
+          python -m pip install aider-chat==0.86.2
+          aider --version
+          docker pull python:3.12-slim
+      - name: Install Ollama and the exact same local coding model for each author
+        run: |
+          curl -fsSL https://ollama.com/install.sh | sh
+          OLLAMA_CONTEXT_LENGTH=8192 ollama serve > /tmp/bean-lab024-ollama.log 2>&1 &
+          python - <<'PY'
+          import time, urllib.request
+          for i in range(75):
+              try:
+                  urllib.request.urlopen('http://127.0.0.1:11434/api/tags',timeout=2).close()
+                  break
+              except OSError: time.sleep(1)
+          else: raise RuntimeError('Ollama failed startup verification')
+          PY
+          ollama pull qwen2.5-coder:1.5b
+      - name: Run bounded three-round duel against real Aider; only networkless development tests
+        env:
+          BEAN_OLLAMA_MODEL: qwen2.5-coder:1.5b
+          OPENROUTER_API_KEY: ''
+          AIDER_ANALYTICS: 'false'
+        run: |
+          python -m experiments.agent_arena.local_duel_lab024 author --out _lab024-arena --model qwen2.5-coder:1.5b
+      - name: Preserve every round candidate, sealed-feedback scores and SQLite journal
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lab024-iterative-real-authors
+          path: _lab024-arena/
+          if-no-files-found: warn
+          retention-days: 21
+
+  independent-judge:
+    name: Independent hidden holdout, no Ollama/keys (${{ matrix.os }})
+    needs: live-authors
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 16
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/download-artifact@v4
+        with:
+          name: lab024-iterative-real-authors
+          path: _lab024-arena/
+      - name: Execute only SHA-attested selected repairs against hidden tests
+        run: python -m experiments.agent_arena.local_duel_lab024 judge --out _lab024-arena
+      - name: Independent evidence to GitHub summary
+        if: always()
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json,os,pathlib
+          p=pathlib.Path('_lab024-arena/verdict.json')
+          with open(os.environ['GITHUB_STEP_SUMMARY'],'a') as f:
+              f.write('## BEAN versus specialized Aider, 3-round local model arena\n\n')
+              if p.exists():
+                  d=json.loads(p.read_text())
+                  f.write('**'+d['classification']+'**\n\n')
+                  for agent in ('bean','aider'):
+                      row=d['scores'][agent]
+                      f.write(agent+': '+str(row['tasks_passed'])+'/'+
+                              str(len(d['cases']))+' tasks; '+
+                              str(row['holdout_passed'])+'/'+
+                              str(row['holdout_total'])+' tests\n\n')
+                  f.write('Evidence SHA256: '+d['evidence_sha256']+'\n')
+              else: f.write('No verdict: experiment failed; no win is claimed.\n')
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: lab024-independent-${{ matrix.os }}
+          path: _lab024-arena/verdict.json
+          if-no-files-found: warn
+          retention-days: 21
