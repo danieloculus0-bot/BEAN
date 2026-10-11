@@ -37,6 +37,7 @@ class Corpus:
     books: tuple[str, ...]
     chapter_count: int
     sha256: str
+    repairs: tuple[dict[str, str], ...] = ()
 
     def verse(self, reference: str) -> str:
         if reference not in self.verses:
@@ -53,7 +54,7 @@ def _load_json(path: Path) -> Any:
         raise CorpusError(f"malformed JSON {path.name}") from exc
 
 
-def load_corpus(root: Path) -> Corpus:
+def load_corpus(root: Path, *, corrections_path: Path | None = None) -> Corpus:
     """Do not claim full-text ingestion unless 80 books and every chapter load."""
     names = _load_json(root / "Books.json")
     chapter_manifest = _load_json(root / "Books_chapter_count.json")
@@ -69,7 +70,35 @@ def load_corpus(root: Path) -> Corpus:
     actual_files = {p.name for p in root.glob("*.json")}
     if expected_files != actual_files:
         raise CorpusError(f"missing or unexpected book JSON files: {sorted(expected_files ^ actual_files)[:5]}")
+    # Two known empty upstream verse slots may be filled ONLY by explicit,
+    # separately sourced historical-transcription overlays. They are never
+    # represented as words from the pinned GitHub JSON checkout.
+    overlays: dict[str, dict[str, str]] = {}
+    overlay_bytes = b""
+    if corrections_path is not None:
+        raw = _load_json(corrections_path)
+        if (not isinstance(raw, dict)
+                or raw.get("schema") != "bean.kjv_transcription_gap_overlays.v1"
+                or raw.get("source_repository") != SOURCE_REPOSITORY
+                or raw.get("source_commit") != SOURCE_COMMIT
+                or not isinstance(raw.get("verses"), list)):
+            raise CorpusError("invalid or wrong-edition gap overlay")
+        overlay_bytes = corrections_path.read_bytes()
+        for record in raw["verses"]:
+            if (not isinstance(record, dict) or not isinstance(record.get("ref"), str)
+                    or not SCRIPTURE_REF.fullmatch(record["ref"])
+                    or not isinstance(record.get("text"), str)
+                    or not record["text"].strip()
+                    or not isinstance(record.get("source_url"), str)
+                    or not record["source_url"].startswith("https://")
+                    or record.get("method") != "manual_transcription_crosscheck"
+                    or record["ref"] in overlays):
+                raise CorpusError("malformed or duplicate textual repair")
+            overlays[record["ref"]] = record
+    used: set[str] = set()
     digest = hashlib.sha256()
+    if overlay_bytes:
+        digest.update(b"EXPLICIT_SOURCE_OVERLAY\0" + overlay_bytes)
     for name in sorted(expected_files):
         raw = (root / name).read_bytes()
         digest.update(name.encode() + b"\0" + len(raw).to_bytes(8, "big") + raw)
@@ -89,15 +118,27 @@ def load_corpus(root: Path) -> Corpus:
             if not isinstance(source_verses, list) or not source_verses:
                 raise CorpusError(f"empty chapter {name} {chapter_number}")
             for verse_number, row in enumerate(source_verses, 1):
+                ref = f"{name} {chapter_number}:{verse_number}"
                 if (not isinstance(row, dict) or row.get("verse") != verse_number
-                        or not isinstance(row.get("text"), str)
-                        or not row["text"].strip()):
-                    raise CorpusError(f"missing/bad verse {name} {chapter_number}:{verse_number}")
-                verses[f"{name} {chapter_number}:{verse_number}"] = html.unescape(row["text"]).strip()
+                        or not isinstance(row.get("text"), str)):
+                    raise CorpusError(f"missing/bad verse {ref}")
+                original = row["text"].strip()
+                if not original and ref in overlays:
+                    used.add(ref)
+                    original = overlays[ref]["text"]
+                if not original:
+                    raise CorpusError(f"missing/bad verse {ref}")
+                verses[ref] = html.unescape(original).strip()
             chapters += 1
     if len(verses) < 30000 or chapters != 1355:
         raise CorpusError("corpus too small for an 80-book edition")
-    return Corpus(verses, tuple(names), chapters, digest.hexdigest())
+    if set(overlays) != used:
+        raise CorpusError(f"overlays cannot overwrite existing verses: {sorted(set(overlays) - used)}")
+    applied = tuple({"ref": ref, "source_url": overlays[ref]["source_url"],
+                     "method": overlays[ref]["method"],
+                     "status": "secondary_transcription_not_facsimile_verified"}
+                    for ref in sorted(used))
+    return Corpus(verses, tuple(names), chapters, digest.hexdigest(), applied)
 
 
 def age_at_accession(text: str) -> int | None:
