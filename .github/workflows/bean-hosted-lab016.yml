@@ -3,7 +3,7 @@ name: BEAN Lab016 one-shot hosted model experiment
 on:
   pull_request:
     branches: [main]
-    types: [opened]
+    types: [opened, synchronize]
 
 permissions:
   contents: read
