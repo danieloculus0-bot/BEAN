@@ -6,11 +6,14 @@
   <title>BEAN | Persistent Reasoning &amp; Evidence Architecture</title>
   <meta name="description" content="BEAN (Behavior Enabled Avatar Node) is a public-source Python project for persistent reasoning, SQLite memory, evidence traceability, uncertainty handling and reviewable AI proposals. Explore reproducible tests and the offline quickstart.">
   <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://danieloculus0-bot.github.io/BEAN/">
+  <link rel="sitemap" type="application/xml" href="https://danieloculus0-bot.github.io/BEAN/sitemap.xml">
   <meta name="theme-color" content="#0a162e">
   <meta property="og:type" content="website">
   <meta property="og:title" content="BEAN | Persistent Reasoning & Evidence Architecture">
   <meta property="og:description" content="A public-source Python reasoning core built around memory, evidence, uncertainty and traceable proposals. Includes real code, an offline demo and reproducible research.">
   <meta property="og:site_name" content="BEAN">
+  <meta property="og:url" content="https://danieloculus0-bot.github.io/BEAN/">
   <meta name="twitter:card" content="summary">
   <script type="application/ld+json">
   {
@@ -55,6 +58,9 @@
     .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(235px,1fr)); gap:15px; }
     .tile { background:rgba(18,35,65,.8); border:1px solid var(--line); border-radius:14px; padding:24px; }
     .tile p, .muted { color:var(--muted); }
+    .proof-tag { display:inline-block; margin-bottom:12px; color:var(--accent); font-size:.75rem; font-weight:700; letter-spacing:.1em; text-transform:uppercase; }
+    .proof-result { background:#050d1a; border:1px solid var(--line); border-radius:8px; padding:10px 14px; font-family:ui-monospace,SFMono-Regular,Consolas,monospace; font-size:.94rem; color:#f6fafc; }
+    .proof-caption { color:var(--muted); font-size:.88rem; margin-top:14px; }
     pre { overflow:auto; background:#050d1a; border:1px solid var(--line); padding:23px; border-radius:12px; color:#e4f7ff; line-height:1.8; }
     code { font-family:ui-monospace,SFMono-Regular,Consolas,"Liberation Mono",monospace; font-size:.9em; }
     .notice { border-left:3px solid var(--accent); padding:14px 20px; background:rgba(18,35,65,.65); color:#d3deef; }
@@ -67,6 +73,7 @@
     <a class="logo" href="#top">BEAN</a>
     <div class="navlinks">
       <a href="#capabilities">Capabilities</a>
+      <a href="#proof">Evidence</a>
       <a href="#quickstart">Quickstart</a>
       <a href="#evidence">Research</a>
       <a href="https://github.com/danieloculus0-bot/BEAN">Source code</a>
@@ -90,6 +97,27 @@
         <div class="tile"><h3>Reviewable reasoning</h3><p>Model adapters provide reasoning proposals. Hosts retain policy, execution authority, and the ability to reject a proposal.</p></div>
         <div class="tile"><h3>Reproducible experiments</h3><p>Cross-platform tests, research branches, synthetic benchmark comparisons, and documented negative results.</p></div>
       </div>
+    </div></section>
+    <section id="proof"><div class="wrap">
+      <p class="eyebrow">Inspectable behavior, not a marketing benchmark</p>
+      <h2>Two things BEAN refuses to fake</h2>
+      <div class="grid">
+        <div class="tile">
+          <span class="proof-tag">Core · Optional Watcher</span>
+          <h3>Missing information is not zero.</h3>
+          <p>If a source report is absent, stale or lacks confirmed coverage, BEAN's Watcher reports an unknown current value. It keeps prior readings as history rather than presenting them as fresh data.</p>
+          <div class="proof-result">current_value = N/A</div>
+          <p class="proof-caption"><a href="https://github.com/danieloculus0-bot/BEAN/blob/main/docs/bean-watcher-contract.md">Read Watcher source contract</a></p>
+        </div>
+        <div class="tile">
+          <span class="proof-tag">Bridge · Opt-in Learning Loop</span>
+          <h3>A model's assertion is not evidence.</h3>
+          <p>An unsupported answer cannot approve itself. A host-supplied verifier must check corroborating provenance before a new versioned definition is recorded. Conflicts remain unresolved.</p>
+          <div class="proof-result">unverified_claim = held</div>
+          <p class="proof-caption"><a href="https://github.com/danieloculus0-bot/BEAN-AI-Bridge-/blob/main/experiments/learning_loop/README.md">Inspect evidence revision tests</a></p>
+        </div>
+      </div>
+      <p class="muted">These are separate, opt-in components with synthetic test scenarios. Report completeness and source authenticity are host responsibilities; no live ERP system or independent fact-checking service is claimed.</p>
     </div></section>
     <section id="quickstart"><div class="wrap">
       <p class="eyebrow">Start with real code</p>
