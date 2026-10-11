@@ -272,7 +272,7 @@ def trial(seed, training=240, holdout=150, drift=False):
             scheduler.poll_due(max_tasks=1)
         control = summary(control_scores)
         adapted = summary(adapted_scores)
-        return {
+        result = {
             "seed":seed,"drift":drift,"preflight":preflight,"training_windows":windows,
             "control_holdout":control,"adaptive_holdout":adapted,
             "paired_utility_gain":round(adapted["utility_per_case"]-control["utility_per_case"],4),
@@ -288,6 +288,10 @@ def trial(seed, training=240, holdout=150, drift=False):
             "guard_denials":rejected,
             "world_memory_promotions":0,"external_actions":0,
         }
+        # Windows cannot remove a TemporaryDirectory while SQLite is open.
+        # Close the current thread's BEAN store before the sandbox is deleted.
+        get_store().close()
+        return result
 
 def run_suite(seeds=(11,23,37,41,53),training=240,holdout=150):
     if not seeds or len(set(seeds)) != len(seeds):
