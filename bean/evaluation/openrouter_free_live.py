@@ -10,6 +10,7 @@ import ast
 import hashlib
 import json
 import os
+import re
 from pathlib import Path
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
@@ -23,22 +24,30 @@ TASK = ("Fix the following Python function to clamp numeric scores to 0..100 "
 
 
 def normalise(raw: str) -> str:
+    """Accept a single complete Python module, including one fenced code block.
+
+    Strip explanatory prose only when a uniquely identified python fence is
+    present. Never execute the response in the API-key-bearing job.
+    """
     if not isinstance(raw, str) or not raw.strip():
-        raise ValueError("empty response")
+        raise ValueError("empty_content")
     source = raw.strip()
     fence = chr(96) * 3
-    if source.startswith(fence):
-        lines = source.splitlines()
-        if len(lines) < 3 or not lines[-1].strip().startswith(fence):
-            raise ValueError("unclosed code fence")
-        source = "\n".join(lines[1:-1]).strip()
-    if len(source) > 12000:
-        raise ValueError("response too large")
-    parsed = ast.parse(source, filename="proposal.py")
+    if fence in source:
+        blocks = re.findall(r"```(?:python|py)?[ \\t]*\\r?\\n(.*?)```", source, re.S | re.I)
+        if len(blocks) != 1:
+            raise ValueError("ambiguous_code_fences")
+        source = blocks[0].strip()
+    if not source or len(source) > 12000:
+        raise ValueError("invalid_length")
+    try:
+        parsed = ast.parse(source, filename="proposal.py")
+    except SyntaxError as exc:
+        raise ValueError("invalid_python_syntax") from exc
     if not any(isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef)) and n.name == "clip_score"
                for n in parsed.body):
-        raise ValueError("expected clip_score function missing")
-    return source + "\n"
+        raise ValueError("required_function_missing")
+    return source + "\\n"
 
 
 def make_request(key: str, *, request_fn=urlopen) -> tuple[str, dict]:
@@ -51,8 +60,18 @@ def make_request(key: str, *, request_fn=urlopen) -> tuple[str, dict]:
     with request_fn(request, timeout=90) as response:
         reply = json.loads(response.read(400000).decode("utf-8"))
     model_used = str(reply.get("model", "unknown"))[:160]
+    if reply.get("error"):
+        raise ValueError("provider_error_payload")
     choice = (reply.get("choices") or [{}])[0]
     response_text = (choice.get("message") or {}).get("content")
+    if isinstance(response_text, list):
+        # Some completion backends return multimodal typed parts rather
+        # than a simple string, with no actual textual answer.
+        response_text = "\\n".join(
+            part.get("text", "") for part in response_text
+            if isinstance(part, dict) and part.get("type") == "text"
+            and isinstance(part.get("text"), str)
+        )
     source = normalise(response_text)
     usage = {k: v for k, v in (reply.get("usage") or {}).items()
              if k in ("prompt_tokens", "completion_tokens", "total_tokens")
@@ -83,7 +102,15 @@ def execute(output_dir: Path, *, api_key: str | None = None, request_fn=urlopen)
             receipt["reason"] = "transport unavailable: " + type(exc).__name__
         except (ValueError, KeyError, TypeError, IndexError, SyntaxError) as exc:
             receipt["provider_status"] = "invalid_response"
-            receipt["reason"] = "invalid model response: " + type(exc).__name__
+            # Only our own enumerated validation codes are disclosed. The
+            # raw provider payload and any authorization material stay private.
+            recognized = {
+                "empty_content", "ambiguous_code_fences", "invalid_length",
+                "invalid_python_syntax", "required_function_missing",
+                "provider_error_payload",
+            }
+            label = str(exc) if type(exc) is ValueError and str(exc) in recognized else "malformed_response"
+            receipt["reason"] = label
     (output_dir / "receipt.json").write_text(
         json.dumps(receipt, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     return receipt
