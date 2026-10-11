@@ -297,6 +297,16 @@ def main() -> None:
     args.out.write_text(json.dumps(report, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     for name, delta in report["learned_vs_frozen_summary"].items():
         print(name, json.dumps(delta, sort_keys=True))
+    compact = [{"iteration": item["iteration"], "shifted": item["heldout_distribution_shifted"],
+                "disagreement": item["distinction"]["disagreement_rate"],
+                "unanimous_wrong": item["distinction"]["unanimous_wrong_rate"],
+                "scores": {name: {"fixed": item["scores"][name]["fixed"]["accuracy"],
+                                  "fresh": item["scores"][name]["fresh"]["accuracy"],
+                                  "frozen_fresh": item["scores"][name]["frozen_fresh"]["accuracy"],
+                                  "fresh_brier": item["scores"][name]["fresh"]["brier"]}
+                           for name in ("A", "B", "C")}}
+               for item in report["rounds"]]
+    print("ITERATIVE_TIMELINE=" + json.dumps(compact, sort_keys=True))
     print("TRIAD_TESTS_RECORDED_NOT_PRODUCTION_APPROVED")
     print(f"iterations={len(report['rounds'])} peers=3 holdout_disjoint={report['train_test_disjoint']}")
 
