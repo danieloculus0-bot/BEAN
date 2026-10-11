@@ -28,7 +28,7 @@ def main() -> None:
             raise AssertionError(f"Tool {tool.name} incorrectly implies internet access: {advertised}")
         if advertised.get("destructiveHint") is not False:
             raise AssertionError(f"Tool {tool.name} incorrectly marked destructive: {advertised}")
-        if not tool.inputSchema:
+        if not tool.model_dump(by_alias=True).get("inputSchema"):
             raise AssertionError(f"Tool {tool.name} has no input schema")
     print("PASS BEAN MCP tool registration, four JSON schemas, read-only annotations.")
 
