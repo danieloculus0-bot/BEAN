@@ -210,11 +210,40 @@ class TaskEngine:
             conn.rollback()
             raise
 
+    @staticmethod
+    def _outcome(result) -> str:
+        """Fail-closed interpretation of task results.
+
+        'success' means the registered action finished, NOT that arbitrary
+        claims in its result have become verified real-world facts.
+        """
+        if result is None or result == {}:
+            return "n/a"
+        if not isinstance(result, dict):
+            return "success"  # successful return from an allowlisted local action
+        reported = str(result.get("status", "")).strip().lower()
+        if reported in ("failed", "failure", "error", "invalid"):
+            return "failed"
+        if reported in ("unknown", "uncertain", "indeterminate"):
+            return "unknown"
+        if reported in ("n/a", "stale", "partial", "pending", "unverified",
+                        "missing", "incomplete", "not_configured"):
+            return "n/a"
+        if reported in ("verified", "success", "ok", "ready", "completed"):
+            return "success"
+        if reported:
+            return "unknown"
+        # Existing built-in observability actions return structured snapshots,
+        # not a status. Here success means execution, not validated contents.
+        return "success"
+
     def _finish(self, task: dict, state: str, result=None, error=None) -> dict:
         now = float(self.now())
         # Don't try to catch up an arbitrary backlog after downtime.
         interval = float(task["interval_seconds"])
-        if state == "failed":
+        if state == "unknown":
+            new_state, next_due, attempt = "needs_review", now + interval, task["attempt"]
+        elif state == "failed":
             blocked = task["attempt"] >= task["max_attempts"]
             new_state = "needs_review" if blocked else "ready"
             next_due = now + min(interval, 2 ** (task["attempt"] - 1) * 10)
@@ -262,7 +291,7 @@ class TaskEngine:
                 break
             try:
                 result = self.actions[task["action"]]()
-                status = "n/a" if isinstance(result, dict) and result.get("status") == "n/a" else "success"
+                status = self._outcome(result)
                 results.append(self._finish(task,status,result=result))
             except Exception as exc:
                 results.append(self._finish(task,"failed",error=repr(exc)))
