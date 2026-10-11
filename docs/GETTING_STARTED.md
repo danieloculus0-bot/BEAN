@@ -15,6 +15,20 @@ python -m examples.quickstart_reasoning
 
 The example records a fictional observation and returns trace identifiers for a stored, review-required proposal. Its output includes `event_id`, `proposal_id`, `requires_supervisor_review`, `motion_command_generated` and `memory_written`. Identifiers vary per run. **The mock provider is a fixture, not a capable trained language model.** This demo shows the plumbing and review boundary, not BEAN's comparative intelligence or restart persistence. The temporary database is deleted after the demonstration.
 
+## Prove memory survives a real BEAN restart
+
+For a useful second demonstration, BEAN boots twice using **the same temporary SQLite database**, records a mock proposal in the first session and verifies the original event, pending-review status and boot history after reopening:
+
+```bash
+python -m examples.restart_continuity
+```
+
+This test creates **two separate BEAN sessions** and checks persistent records. It does not call a live language model, keep its database after exit, run unattended, authenticate an external source or imply learning. If continuity checks fail, the example raises an error instead of pretending it passed.
+
+For a practical business-facing output, the separate Bridge project's [Daily Exception Brief](https://github.com/danieloculus0-bot/BEAN-AI-Bridge-/blob/main/docs/DAILY_EXCEPTION_BRIEF.md) produces a private read-only report from an existing authorized local JobBOSS export ledger.
+
+The [2026-10-11 usefulness audit](BEAN_USEFULNESS_AUDIT_2026-10-11.md) distinguishes real operator value from experimental benchmarks and lists the remaining P0/P1 gaps.
+
 ## Validate the existing implementation
 
 ```bash
