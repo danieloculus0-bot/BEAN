@@ -34,6 +34,8 @@ jobs:
         run: python -m bean.runtime.boot_readiness --temp
       - name: Run offline public quickstart
         run: python -m examples.quickstart_reasoning
+      - name: Exercise crash recovery, tamper detection and concurrent mirror writers
+        run: python -m pytest bean/tests/test_audit_mirror_recovery.py -q -ra
       - name: Reproduce four consolidated offline utility proofs
         run: python -m examples.capability_proof
       - name: Run complete suite with branch coverage

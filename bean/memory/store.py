@@ -93,6 +93,11 @@ def init_store(db_path: str) -> MemoryStore:
         previous.close()
         _local.conn = None
     _store = MemoryStore(db_path)
+    # Reconcile a committed event whose process previously crashed after the
+    # SQLite commit but before JSONL fsync. Fail startup on mirror tampering or
+    # unavailable mirror storage; never pretend the log is complete.
+    from .audit_mirror import reconcile_event_mirror
+    reconcile_event_mirror(_store)
     return _store
 
 
