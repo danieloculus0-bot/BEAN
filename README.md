@@ -26,7 +26,7 @@ The current host-neutral API can record a fictional observation in a disposable 
 git clone https://github.com/danieloculus0-bot/BEAN.git
 cd BEAN
 python -m pip install psutil
-python examples/quickstart_reasoning.py
+python -m examples.quickstart_reasoning
 ```
 
 This is an executable architecture demonstration, **not** a demonstration of trained-model intelligence or unsupervised autonomy. The [BEAN AI Bridge](https://github.com/danieloculus0-bot/BEAN-AI-Bridge-) provides separate generic ERP/evidence adapters and synthetic replay. See the [public discovery and GitHub Pages activation checklist](docs/PUBLIC_DISCOVERY_LAUNCH.md). Source visibility alone does not provide a redistribution license.
