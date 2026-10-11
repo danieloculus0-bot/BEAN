@@ -55,3 +55,18 @@ This result motivated a smaller, exact function-only source excerpt and
 a JSON-Schema-guided local response contract, while preserving the
 independent validation requirements. New rejects also preserve a short
 source-response excerpt in the sanitized run receipt.
+
+### Second live neural attempt and stronger code author
+
+[Run 38172421659](https://github.com/danieloculus0-bot/BEAN/actions/runs/38172421659)
+demonstrated a valid local JSON-schema response but model-written anchors did
+not exist in the source: Qwen 1.5B proposed a non-existent `def calculate(`
+edit, then attempted to rewrite the parser's error message. Both were
+properly rejected without executing or promoting anything.
+
+The next experimental improvement uses Qwen2.5-Coder 7B on isolated GitHub
+CPU runners and supplies the actual rejected `find` anchor back as bounded
+diagnostic feedback. It explicitly distinguishes BEAN's own Python
+`call_model()` function from any fictional ERP code discussed inside its
+prompt strings. The same independent holdout, frozen provider transport
+and cross-OS acceptance remain mandatory.
