@@ -38,7 +38,7 @@ READ_ONLY = ToolAnnotations(readOnlyHint=True, destructiveHint=False,
                             idempotentHint=True, openWorldHint=False)
 
 
-@mcp.tool(annotations=ToolAnnotations(
+@mcp.tool(structured_output=True, annotations=ToolAnnotations(
     title="BEAN: Audit a claim", readOnlyHint=True, destructiveHint=False,
     idempotentHint=True, openWorldHint=False,
 ))
@@ -59,7 +59,7 @@ def bean_audit_claim(
     return audit_claim(claim, source_ref, evidence_refs, confidence, falsification_test)
 
 
-@mcp.tool(annotations=ToolAnnotations(
+@mcp.tool(structured_output=True, annotations=ToolAnnotations(
     title="BEAN: Compare conflicting statements", readOnlyHint=True,
     destructiveHint=False, idempotentHint=True, openWorldHint=False,
 ))
@@ -74,7 +74,7 @@ def bean_compare_evidence(question: str, observations: list[dict[str, str]]) -> 
     return compare_evidence(question, observations)
 
 
-@mcp.tool(annotations=ToolAnnotations(
+@mcp.tool(structured_output=True, annotations=ToolAnnotations(
     title="BEAN: Screen a proposed plan", readOnlyHint=True,
     destructiveHint=False, idempotentHint=True, openWorldHint=False,
 ))
@@ -92,7 +92,7 @@ def bean_screen_proposal(
     return screen_proposal(summary, steps, evidence_refs, uncertainties)
 
 
-@mcp.tool(annotations=ToolAnnotations(
+@mcp.tool(structured_output=True, annotations=ToolAnnotations(
     title="BEAN: Demonstrate durable memory", readOnlyHint=True,
     destructiveHint=False, idempotentHint=True, openWorldHint=False,
 ))
