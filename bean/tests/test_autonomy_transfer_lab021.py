@@ -175,3 +175,29 @@ def test_no_secret_provider_yields_unavailable_not_fake_success(tmp_path):
     assert all(x["provider_status"] == "unavailable" for x in receipt["tasks"])
     result = grade(output, tmp_path / "feedback.json", phase="development")
     assert result["initial_total"] == 0
+
+
+
+def test_safe_lambda_sort_and_list_insert_are_not_false_rejections():
+    interval_source = (
+        "def merge_time_windows(windows):\n"
+        "    return sorted(windows, key=lambda x: (x[0], x[1]))\n"
+    )
+    graph_source = (
+        "def resolve_dependency_order(graph):\n"
+        "    names = []\n"
+        "    names.insert(0, 'x')\n"
+        "    return names\n"
+    )
+    assert validate_source(interval_source, "merge_time_windows")
+    assert validate_source(graph_source, "resolve_dependency_order")
+
+
+def test_lambda_cannot_hide_imports_or_introspection():
+    for forbidden in (
+        "lambda x: __import__('os').system('id')",
+        "lambda x: getattr(x, '__class__')",
+    ):
+        source = "def merge_time_windows(windows):\n    return sorted(windows, key=" + forbidden + ")\n"
+        with pytest.raises(ValueError):
+            validate_source(source, "merge_time_windows")
