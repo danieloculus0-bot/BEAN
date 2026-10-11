@@ -188,7 +188,7 @@ def transfer(state, output, *, api_key=None, author=bean_author):
             if candidate is not None:
                 dest = output / "candidates" / name / (arm + ".py")
                 dest.parent.mkdir(parents=True, exist_ok=True)
-                dest.write_text(candidate, encoding="utf-8")
+                dest.write_bytes(candidate.encode("utf-8"))
             by_case[name][arm] = receipt
     result = {
         "schema": SCHEMA, "stage": "authored", "journal_tip": tip,
