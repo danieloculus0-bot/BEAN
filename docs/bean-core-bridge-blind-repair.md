@@ -17,6 +17,10 @@ The goal is a much harder, genuinely cross-project proof: BEAN Core's working mo
 - Separate Linux and Windows runner jobs, without model credentials or GitHub write scope, run the existing Bridge verifier: an independently failing red baseline, all ordinary Bridge tests, and the untouched sealed Midnight RMA oracle. They then run the candidate against 60 fixed synthetic metamorphic trials and 120 additional fresh trials seeded by run ID with a strict no-finding acceptance gate.
 - On failure, retain status and result artifacts. This workflow **never merges, pushes a fix or executes generated code in the secret-bearing author job**. A manually reviewed candidate PR can follow if the independent tests pass.
 
+## Provider selection after failed experiments
+
+The first two live Core-to-Bridge runs supplied a real `openrouter/free` route, but the dynamically chosen models produced no valid candidate. The second recorded an empty/not-usable content response from `cohere/north-mini-code:free`. The subsequent attempt uses two **explicitly free** routes already demonstrated on BEAN Core's separate 7/7 Python repair trials: `nvidia/nemotron-3-super-120b-a12b:free` followed by `nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free` only if the first returns an invalid edit plan. This is not a paid fallback. The model receives only exact excerpts of relevant source, while the host continues to validate against the entire pinned module. The hidden acceptance test remains unseen by both models. Actual novel repair ability has to be earned by the independent Bridge CI jobs.
+
 ## What qualifies as proven progress?
 
 A genuine model response, a hashed candidate produced from its concrete edits, a preexisting red baseline, positive full-suite and untouched-oracle results, and fresh hidden metamorphic acceptance on both platforms. Model parse errors, HTTP 402, incomplete responses and untouched source count as **unsuccessful attempts**. A green author job does not certify a code fix.

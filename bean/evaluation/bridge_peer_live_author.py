@@ -19,7 +19,8 @@ BRIDGE_SHA = "d06315bf05cae24131b19f3ce17b57d2d0b4351a"
 CHALLENGE_SHA = "75b12233c243b61c61b2f9b205951cb8ae45f4b7"
 TARGET = Path("src/ezbean/core.py")
 ORACLE = Path("tests/test_peer_midnight_cutoff_challenge.py")
-ROUTE = "openrouter/free"
+ROUTE = "nvidia/nemotron-3-super-120b-a12b:free"
+BACKUP = "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free"
 ENDPOINT = "https://openrouter.ai/api/v1/chat/completions"
 MAX_CALLS = 2
 PROBLEM = (
@@ -48,8 +49,10 @@ def inputs(bridge, challenge):
     return (bridge / TARGET).read_text(encoding="utf-8"), sha((challenge / ORACLE).read_bytes())
 
 def parse_plan(text):
-    if not isinstance(text, str) or not text.strip() or len(text) > 16000:
-        raise ValueError("empty or oversized edit plan")
+    if not isinstance(text, str) or not text.strip():
+        raise ValueError("model reply contained no edit text")
+    if len(text) > 16000:
+        raise ValueError("model reply exceeded edit-size budget")
     s = text.strip()
     fence = chr(96) * 3
     if s.startswith(fence):
@@ -104,7 +107,7 @@ def apply_edits(original, edits):
         raise ValueError("candidate changed over 100 lines")
     return current, changes
 
-def call_model(key, original, *, request_fn=urlopen, feedback=None):
+def call_model(key, original, *, request_fn=urlopen, feedback=None, model=ROUTE):
     if not key:
         raise RuntimeError("OPENROUTER_KEY_NOT_CONFIGURED")
     # Focus attention on the existing source contracts, not on a human patch
@@ -112,7 +115,7 @@ def call_model(key, original, *, request_fn=urlopen, feedback=None):
     import_lines = [line for line in original.splitlines()
                     if line.startswith("from datetime import ")]
     functions = original.split("def calculate(", 1)
-    nearby = ("\n".join(("def calculate(" + functions[1]).splitlines()[:22])
+    nearby = ("\n".join(("def calculate(" + functions[1]).splitlines()[:34])
               if len(functions) == 2 else "")
     parser_context = original.split("def utc_datetime(", 1)
     time_parser = ("def utc_datetime(" + parser_context[1].split("\n\n", 1)[0]
@@ -127,11 +130,11 @@ def call_model(key, original, *, request_fn=urlopen, feedback=None):
         "test edits or claims of success. " + PROBLEM
         + "\nRELEVANT EXISTING SOURCE SPANS:\n"
         + "\n".join(import_lines) + "\n" + time_parser + "\n" + nearby
-        + "\nCOMPLETE ORIGINAL SOURCE:\n" + original
+        + "\nSOURCE EXCERPTS ABOVE ARE EXACT. Apply edits to the original module."
     )
     if feedback:
         prompt += "\nPrior response rejected: " + feedback[:150] + ". Return valid JSON edits."
-    data = json.dumps({"model": ROUTE, "temperature": 0.15,
+    data = json.dumps({"model": model, "temperature": 0.15,
                        "max_tokens": 1500, "stream": False,
                        "messages": [{"role": "user", "content": prompt}]}).encode()
     req = Request(ENDPOINT, data=data, method="POST", headers={
@@ -153,7 +156,7 @@ def call_model(key, original, *, request_fn=urlopen, feedback=None):
     if not isinstance(choice, dict) or not isinstance(choice.get("message"), dict):
         raise RuntimeError("OPENROUTER_MESSAGE_UNAVAILABLE")
     return choice["message"].get("content"), {
-        "model_requested": ROUTE,
+        "model_requested": model,
         "model_served": str(reply.get("model", "unknown"))[:100],
         "finish_reason": str(choice.get("finish_reason", ""))[:60],
     }
@@ -171,12 +174,12 @@ def author(*, bridge, challenge, out, key, request_fn=urlopen):
         original, oracle_hash = inputs(bridge, challenge)
         report.update(source_sha256=sha(original), oracle_sha256=oracle_hash)
         feedback = None
-        for attempt in range(MAX_CALLS):
+        for attempt, model in enumerate((ROUTE, BACKUP)):
             report["attempted_requests"] += 1
             metadata = {}
             try:
                 content, metadata = call_model(key, original, request_fn=request_fn,
-                                               feedback=feedback)
+                                               feedback=feedback, model=model)
                 edited, changes = apply_edits(original, parse_plan(content))
                 candidate = {
                     "schema": "bean.novel-repair.v1",
@@ -184,7 +187,8 @@ def author(*, bridge, challenge, out, key, request_fn=urlopen):
                     "challenge_commit": CHALLENGE_SHA,
                     "path": str(TARGET), "source_sha256": sha(original),
                     "oracle_sha256": oracle_hash, "replacement_sha256": sha(edited),
-                    "changed_lines": changes, "model": ROUTE, "provider": "openrouter",
+                    "changed_lines": changes, "model": metadata["model_requested"],
+                    "provider": "openrouter",
                     "replacement": edited,
                 }
                 save(out / "candidate.json", candidate)
