@@ -23,7 +23,7 @@ SAFE_BUILTINS = {
     "len": len, "range": range, "enumerate": enumerate, "zip": zip,
     "sum": sum, "min": min, "max": max, "abs": abs, "sorted": sorted,
     "set": set, "dict": dict, "list": list, "tuple": tuple, "str": str,
-    "int": int, "bool": bool, "any": any, "all": all, "isinstance": isinstance,
+    "int": int, "bool": bool, "type": type, "any": any, "all": all, "isinstance": isinstance,
     "ValueError": ValueError, "TypeError": TypeError, "KeyError": KeyError,
     "reversed": reversed,
 }
