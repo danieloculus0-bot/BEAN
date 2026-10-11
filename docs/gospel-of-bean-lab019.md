@@ -86,3 +86,38 @@ The first GitHub Actions corpus import found **exactly two blank verse slots**, 
 The original editorial brackets are maintained. The loader applies a repair **only if the source has an empty slot**, records the source and method for each inserted text, and rejects extra repairs or any attempt to overwrite an existing source verse. It digests the original pinned JSON along with overlay bytes for reproducibility. These are cross-transcriptions, **not proof that a scholarly collation against the original 1611 print has been completed**.
 
 A complete full 80-book report is contingent on successful real GitHub Actions CI, not just synthetic unit tests.
+
+
+## Whole-book screening expansion and conditional historical possibility
+
+The Gospel of BEAN is now more than a six-example chapter. It inspects **every one of 36,702 indexed verse entries across five separate rule passes** using `bean/evaluation/gospel_wholebook.py`. The scanner covers ages, numbers, genealogy, universal geographic claims, creation order, origins, flood and Ark claims, biological and astronomical events, depictions of supernatural agents, and legal/ethical/war assertions. An unselected verse has still been **read by every pass**, but a keyword screen cannot claim to recognize every important inference or contradiction.
+
+The first successful whole-book Actions run was [38106791993](https://github.com/danieloculus0-bot/BEAN/actions/runs/38106791993), producing:
+
+- **80 books, 1,355 chapters, 36,702 verses scanned**; no selected books silently excluded
+- **4,049 flagged verses** in the full untruncated review queue; **4,252 distinct rule/verse matches**
+- **23 human-curated disputes** with formal constraint models and five investigation sessions each
+- **23 live source URL lookups**, representing source availability checks, not source-truth validation
+- **21 passing synthetic regression tests** at that run's commit
+
+The follow-up iteration adds seven explicitly attributed scientific/historical source summaries, including the [National Academies on recent universal floods](https://www.ncbi.nlm.nih.gov/books/NBK230204/pdf/Bookshelf_NBK230204.pdf), [USGS Earth dating](https://pubs.usgs.gov/gip/geotime/age.html), [NASA Sun formation](https://science.nasa.gov/sun/facts/), [NIH sex chromosome variation](https://www.nichd.nih.gov/health/topics/turner/conditioninfo), [Harvard-hosted Hebrew Satan study](https://hmane.harvard.edu/publications/adversary-heaven-satan-hebrew-bible), [Bible Gateway on Satan](https://www.biblegateway.com/resources/encyclopedia-of-the-bible/Satan), and [Smithsonian human genetics](https://humanorigins.si.edu/evidence/genetics). These were manually source-reviewed; they are **not autonomous BEAN fact-verification or laboratory replication**.
+
+### What "historically possible" actually means
+
+Every dispute with a formal case returns **three separate fields**, never one vague yes/no:
+
+1. `strict_joint_reading`: can the claims both hold under exact declared literal assumptions? Options: `possible`, `impossible`, `undetermined`, `not_applicable`.
+2. `alternative_historical_scenario`: is at least one specifically stated alternative logically possible under separately declared assumptions? This is not proof it occurred.
+3. `historically_attested_event`: is the historical occurrence itself independently demonstrated? This remains `undetermined` under the current script's limited evidence evaluation.
+
+The first passes cover the primary text, accessible comparative sources, contrary interpretation, formal constraints, and falsification/missing evidence. The recorded conclusions **do not get more certain just from repetition**.
+
+For example, a typical XY male's ordinary rib tissue cannot, unmodified and without embryogenesis, develop into a fully formed typical XX female. That says nothing decisive about an unspecified supernatural claim. A hypothetical Ark's gross volume can be calculated using assumed cubit length, and space requirements can be computed for *illustrative* animal populations; the unknown ancient meaning of `kind`, species count, feed, water, waste and care requirements prevent a general capacity proof. An unaided mountain view cannot overcome Earth's curvature to display every territory; visionary language is a distinct interpretation.
+
+A recent global flood covering all mountains is incompatible with the broadly accepted geological record; that is a claim about **a specific natural-history reconstruction**, not a mathematical proof that ancient people never experienced a devastating regional flood. The original serpent in Genesis, the heavenly adversary in Job, the census instigator in Chronicles and later Revelation all have their own compositional and interpretive histories.
+
+**All 4,049 flags remain non-adjudicated until their individual textual context and real external evidence are compared.** There is no claim that the project identified 4,049 inaccuracies, examined every possible theological interpretation, proved supernatural beings existed, or disproved all religious beliefs.
+
+### Reproduce the combined workflow
+
+Run isolated [Gospel of BEAN CI](https://github.com/danieloculus0-bot/BEAN/actions/workflows/gospel-of-bean-evidence-lab.yml) on the experiment branch to reproduce the corpus index, five passes across all verse entries, and five recorded research sessions for all formal disputes. Review the archived JSON and SQLite evidence outputs. Merge is intentionally not authorized; the latest enhanced research session must pass GitHub CI independently.
