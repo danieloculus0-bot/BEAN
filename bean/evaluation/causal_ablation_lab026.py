@@ -154,7 +154,9 @@ def author_candidates(state, output, *, model_requested, writer, trials=1):
                         raise ValueError("candidate hash doesn't match author receipt")
                     dest = output / rel
                     dest.parent.mkdir(parents=True, exist_ok=True)
-                    dest.write_text(candidate, encoding="utf-8")
+                    # Preserve original model output bytes across Windows/Linux:
+                    # text-mode writes translate LF to CRLF on Windows.
+                    dest.write_bytes(candidate.encode("utf-8"))
                 elif candidate is not None:
                     raise ValueError("unsuccessful author emitted a candidate")
                 result["calls"][f"{trial}:{name}:{arm}"] = rec
