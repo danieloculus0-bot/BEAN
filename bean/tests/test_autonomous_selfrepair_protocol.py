@@ -303,3 +303,23 @@ def test_model_patch_cannot_add_shell_or_secret_access():
             "    prompt = source" + chr(10) + bad_statement)
         with pytest.raises(ValueError, match="forbidden|dynamic execution"):
             safe_transport_unchanged(before, candidate)
+
+def test_local_author_uses_real_python_function_not_decoy_text():
+    messages = []
+    def fake(req, timeout):
+        messages.append(json.loads(req.data)["messages"][0]["content"])
+        return LocalReply(EDIT)
+    code = (
+        "def call_model(key, original):\n"
+        "    prompt = 'def calculate(' + original\n"
+        "    if True:\n"
+        "        prompt += 'repeated source'\n"
+        "    return prompt\n"
+        "\ndef save(path, value): pass\n"
+    )
+    lab.local_model_request(code, "rejected find (not in source): fake()",
+                            request_fn=fake)
+    assert "ACTUAL CALL_MODEL PYTHON FUNCTION" in messages[0]
+    assert "prompt += 'repeated source'" in messages[0]
+    assert "not from an error description" in messages[0]
+    assert "fake()" in messages[0]

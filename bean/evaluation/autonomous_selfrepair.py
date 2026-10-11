@@ -7,6 +7,7 @@ a prewritten fix. Model code is never executed while credentials exist.
 from __future__ import annotations
 
 import argparse
+import ast
 import hashlib
 import json
 import os
@@ -134,32 +135,42 @@ def local_model_request(source, previous_issue, *, request_fn=urlopen, model=LOC
     # Smaller, exact source excerpts help small local coding models concentrate
     # on the witnessed failure instead of drowning in unrelated modules.
     # The model sees neither the sealed oracle nor the verifier's tests.
-    parts = source.split("def call_model(", 1)
-    if len(parts) == 2:
-        function_source = "def call_model(" + parts[1].split("\ndef save(", 1)[0]
-    else:
-        # Small mock modules exercise the same provider/parser contracts.
+    # AST identifies the actual function, ignoring deceptive code-shaped strings.
+    try:
+        module = ast.parse(source)
+        node = next(item for item in module.body
+                    if isinstance(item, (ast.FunctionDef, ast.AsyncFunctionDef))
+                    and item.name == "call_model")
+        function_source = "\n".join(source.splitlines()[node.lineno-1:node.end_lineno])
+    except (SyntaxError, StopIteration, ValueError, TypeError, AttributeError):
         function_source = source[:7500]
+    prompt_section = "\n".join(
+        line for line in function_source.splitlines()
+        if ("prompt" in line or "feedback" in line or "RELEVANT" in line)
+    )[:2300]
     prompt = (
-        "You are BEAN independently repairing the source of YOUR OWN code "
-        "generation function, call_model(). This is a Python source maintenance "
-        "task, NOT a repair of the external ERP sample code that may be "
-        "mentioned inside call_model's prompt-building strings. "
-        "Return only a valid JSON object with an edits array. "
-        "Each edit must contain find and replace strings; find must be an "
-        "EXACT, whitespace-identical, unique substring copied from the "
-        "CURRENT PYTHON FUNCTION printed below. Do not invent symbol names "
-        "or repair an error message itself. The host rejects unmatched anchors. "
-        "A failed previous model response should cause a materially different "
-        "and smaller retry context preserving the relevant source contracts. "
-        "Choose your own implementation. Keep signatures, imports, provider "
-        "routing, HTTP configuration, authentication, result handling, and "
-        "every unrelated function unchanged. No commands, test edits, "
-        "explanations, demonstrations or claims of success. "
-        "\nREAL HISTORICAL FAILURE:\n" + PROBLEM
-        + "\nPREVIOUS REJECTED RESPONSE DIAGNOSTIC:\n"
+        "You are BEAN independently repairing your own Python function "
+        "call_model(). This is a maintenance task for the real code author, "
+        "NOT for example ERP source mentioned inside its prompt strings. "
+        "Return ONLY a JSON object with an edits array. Every edit must "
+        "have find and replace strings. Copy find exactly, whitespace and "
+        "punctuation included, from the existing code below. It must occur "
+        "exactly once in that original code. Never invent a symbol or quote "
+        "a fabricated RuntimeError. Do not send unchanged edits. "
+        "Prefer a single meaningful, short edit. The failure is repeated "
+        "invalid or oversized model output, followed by ineffective retries "
+        "of essentially the same author prompt. Repair the retry design "
+        "so rejected output causes a genuinely different bounded strategy "
+        "without bypassing error checks. Choose the implementation yourself. "
+        "Preserve function signatures, provider routing, authentication, "
+        "model endpoints, and all unrelated functions. Never edit tests, "
+        "execute commands or change the caller's external source. "
+        "\nPREVIOUS REJECTED PROPOSAL:\n"
         + (previous_issue or "none")[:350]
-        + "\nEXACT FUNCTION SOURCE TO EDIT:\n" + function_source
+        + "\nREAL SOURCE LINES TO ANCHOR AN EDIT:\n" + prompt_section
+        + "\nACTUAL CALL_MODEL PYTHON FUNCTION:\n" + function_source
+        + "\nYour find anchor must be copied from these actual lines, "
+        "not from an error description or embedded sample code. "
     )
     schema = {
         "type": "object",
