@@ -17,7 +17,7 @@ from urllib.request import Request, urlopen
 
 from bean.evaluation import bridge_peer_live_author as source_contract
 
-SOURCE_COMMIT = "e71ead1068ecde6c4c7db4ae43b0e956ec12175c"
+SOURCE_COMMIT = "3aaec786ad8b9d5685573c62bb4fc39119c0d65b"
 TARGET = Path("bean/evaluation/bridge_peer_live_author.py")
 FREE_ROUTE = "openrouter/free"
 ENDPOINT = "https://openrouter.ai/api/v1/chat/completions"
