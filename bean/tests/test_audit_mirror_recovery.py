@@ -122,7 +122,12 @@ def test_multiple_python_processes_append_without_duplicate_or_missing_uuids(tmp
                          cwd=root, env=env, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     for child in (a, b):
         out, err = child.communicate(timeout=35)
-        assert child.returncode == 0, (out.decode(errors="replace"), err.decode(errors="replace"))
+        if child.returncode != 0:
+            # Print the ORIGINAL child traceback as separate captured stdout.
+            # Do not let pytest truncate it inside AssertionError repr.
+            print("CHILD_STDOUT:\n" + out.decode(errors="replace"))
+            print("CHILD_STDERR:\n" + err.decode(errors="replace"))
+        assert child.returncode == 0
     init_store(str(db))
     rows = _rows(db)
     uuids = [row["event_uuid"] for row in rows]
