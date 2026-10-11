@@ -3,7 +3,7 @@
 
 No hosted model, network call, ERP credentials, robot or persistent user data.
 The database is temporary; the mock provider does not demonstrate intelligence.
-Run from the repository root: python examples/quickstart_reasoning.py
+Run from the repository root: python -m examples.quickstart_reasoning
 """
 from __future__ import annotations
 
