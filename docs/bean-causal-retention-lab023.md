@@ -125,3 +125,20 @@ The provider selection is explicit, and no OpenRouter credit is consumed
 by the Ollama path. Performance still depends on CPU, GPU, and RAM.
 
 Real local-inference trial is opt-in, independently scored, and retains failure evidence.
+
+
+### Automatic OpenRouter-to-Ollama switchover
+
+For local experiments, this command tries OpenRouter only if a key is set,
+but starts/restarts the **entire** trial on installed local Ollama whenever the
+cloud author returns HTTP 429 (or reflections cannot supply enough verified
+lessons). If remote requests fail partway through transfer with 429, all
+cloud artifacts are discarded and BEAN starts the local experiment from a
+clean state. This prevents an invalid comparison of cold and memory arms
+using different model backends.
+
+    python -m bean.evaluation.lab023_ollama auto --out .\bean-lab023-auto
+
+Unlike the hosted GitHub alternative, this automatic mode requires the
+local Ollama server and chosen model if the cloud service is unavailable.
+Only explicit local model artifacts carry the Ollama provider identity.
