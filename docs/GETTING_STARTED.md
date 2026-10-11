@@ -10,7 +10,7 @@ Requirements: Python 3.10+ and Git. The demo uses a **temporary local SQLite dat
 git clone https://github.com/danieloculus0-bot/BEAN.git
 cd BEAN
 python -m pip install psutil
-python examples/quickstart_reasoning.py
+python -m examples.quickstart_reasoning
 ```
 
 The example records a fictional observation and returns trace identifiers for a stored, review-required proposal. Its output includes `event_id`, `proposal_id`, `requires_supervisor_review`, `motion_command_generated` and `memory_written`. Identifiers vary per run. **The mock provider is a fixture, not a capable trained language model.** This demo shows the plumbing and review boundary, not BEAN's comparative intelligence or restart persistence. The temporary database is deleted after the demonstration.
