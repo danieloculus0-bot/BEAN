@@ -213,7 +213,8 @@ def test_restore_older_records_cannot_replace_newer_history():
     clock.advance(61)
     items.append(report(clock.utc(), values={"rma_count": 4}))
     watcher.poll_due()
-    restarted, _, _, _ = make()
+    restarted, restart_clock, _, _ = make()
+    restart_clock.advance(70)
     # Do not require callers to pass the history in chronological order.
     restarted.restore_events([events[1], events[0]])
     state = restarted.snapshot("rma")
