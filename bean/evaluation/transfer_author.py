@@ -100,7 +100,7 @@ def generate(output_dir: Path, *, api_key: str | None = None,
             record["request_count"] = 1
             try:
                 source, model = ask_model(task, key, feedback=prior, request_fn=request_fn)
-                (output_dir / (task.task_id + ".py")).write_text(source, encoding="utf-8")
+                (output_dir / (task.task_id + ".py")).write_bytes(source.encode("utf-8"))
                 record.update(provider_status="proposal_generated", served=model,
                               source_sha256=hashlib.sha256(source.encode("utf-8")).hexdigest())
             except HTTPError as exc:
