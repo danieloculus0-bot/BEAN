@@ -130,7 +130,7 @@ def call_model(key, original, *, request_fn=urlopen, feedback=None, model=ROUTE)
         "test edits or claims of success. " + PROBLEM
         + "\nRELEVANT EXISTING SOURCE SPANS:\n"
         + "\n".join(import_lines) + "\n" + time_parser + "\n" + nearby
-        + "\nCOMPLETE ORIGINAL SOURCE EXCERPT ABOVE. Edit anchors match the same\n"\n        "module exactly; return the JSON edits only."
+        + "\nSOURCE EXCERPTS ABOVE ARE EXACT. Apply edits to the original module."
     )
     if feedback:
         prompt += "\nPrior response rejected: " + feedback[:150] + ". Return valid JSON edits."
