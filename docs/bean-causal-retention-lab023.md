@@ -92,3 +92,34 @@ per improvement, full cross-platform evidence, and scoped review.
 ## First live attempt: capacity-limited, not an intelligence result
 
 The run on October 10, 2026 (local time), [38111995546](https://github.com/danieloculus0-bot/BEAN/actions/runs/38111995546), passed the Ubuntu and Windows laboratory contract tests. The live training-author step attempted all three tasks but received **HTTP 429** from OpenRouter for all three requests. The independent development report correctly showed **0/174** candidate passes, while the deliberately defective code baseline was 57/174. The learning stage therefore had zero legitimate candidates or lessons, and no transfer holdout ran. **Classification: inconclusive due to provider rate limiting.** Changing to another free-model route does not necessarily bypass platform-wide free-tier limits. No provider credits were purchased. The live workflow now requires explicit activation on its branch to avoid silently exhausting shared quotas.
+
+
+## Local Ollama fallback (no OpenRouter quota required)
+
+BEAN Lab023 now supports the genuine local Ollama API for model-generated
+source and reflections. The existing BEAN append-only Journal persists its
+lessons, and the independent Lab021 and arena graders check results.
+The model identity is recorded; if a different provider is used in one arm,
+the holdout is inconclusive. Local Ollama does NOT retrain model weights.
+
+For Windows PowerShell, install and start Ollama from https://ollama.com,
+then from a freshly updated BEAN repository run:
+
+    ollama pull qwen2.5-coder:1.5b
+    python -m bean.evaluation.lab023_ollama all --out .\bean-lab023-local
+
+The model download is approximately 1 GB. The output directory must be new
+and empty. Keep the generated local SQLite database, grading outputs, and
+proposals out of source control.
+
+The GitHub workflow at .github/workflows/bean-lab023-ollama.yml can also
+run a REAL Ollama model on a temporary hosted Ubuntu runner (the smaller
+qwen2.5-coder:0.5b model, approximately 398 MB), then carry its artifacts
+to separate credential-free Linux and Windows evaluator jobs. Trigger the
+real stages on the experiment branch with an explicitly labeled commit
+[lab023-ollama-live]; ordinary pushes run offline contract tests only.
+
+The hosted Ollama is independent of the user's local PC: a standard cloud
+GitHub runner cannot connect to the Ollama server on their Windows machine.
+The provider selection is explicit, and no OpenRouter credit is consumed
+by the Ollama path. Performance still depends on CPU, GPU, and RAM.
