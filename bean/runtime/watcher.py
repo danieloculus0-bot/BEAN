@@ -255,7 +255,7 @@ class BeanWatcher:
             if not isinstance(event, dict) or event.get("type") != "watcher_transition":
                 continue
             key = event.get("key")
-            if key not in self._state:
+            if not isinstance(key, str) or key not in self._state:
                 continue
             record = event.get("last_verified")
             if not isinstance(record, dict):
