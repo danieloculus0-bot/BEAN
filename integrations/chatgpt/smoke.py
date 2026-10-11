@@ -19,12 +19,15 @@ def main() -> None:
         raise AssertionError(f"Unexpected public tool set: {names!r}")
     for tool in tools:
         annotations = tool.annotations
-        if not annotations or annotations.readOnlyHint is not True:
-            raise AssertionError(f"Tool {tool.name} is not marked read-only")
-        if annotations.openWorldHint is not False:
-            raise AssertionError(f"Tool {tool.name} incorrectly implies internet access")
-        if annotations.destructiveHint is not False:
-            raise AssertionError(f"Tool {tool.name} incorrectly marked destructive")
+        advertised = annotations.model_dump(by_alias=True, exclude_none=True) if annotations else {}
+        # SDK 2 uses snake_case Python fields and JSON aliases; ChatGPT
+        # receives the serialized (camelCase) wire representation.
+        if advertised.get("readOnlyHint") is not True:
+            raise AssertionError(f"Tool {tool.name} is not advertised read-only: {advertised}")
+        if advertised.get("openWorldHint") is not False:
+            raise AssertionError(f"Tool {tool.name} incorrectly implies internet access: {advertised}")
+        if advertised.get("destructiveHint") is not False:
+            raise AssertionError(f"Tool {tool.name} incorrectly marked destructive: {advertised}")
         if not tool.inputSchema:
             raise AssertionError(f"Tool {tool.name} has no input schema")
     print("PASS BEAN MCP tool registration, four JSON schemas, read-only annotations.")
