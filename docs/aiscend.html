@@ -85,6 +85,27 @@ footer{border-top:1px solid #3b5540;padding:23px 0;color:var(--muted);font-size:
 @media(max-width:600px){.wrap{width:calc(100% - 24px)}.nav{gap:6px;padding:10px 0}.links{gap:11px;font-size:12px}.hero{padding:29px 0 21px}.console{padding:10px}.metrics{grid-template-columns:1fr 1fr}.column:first-child{grid-template-columns:1fr}.school-grid{grid-template-columns:1fr 1fr}.features{grid-template-columns:1fr}.notice{font-size:10px}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
 </style>
+
+<style>
+.paper-lab{margin:0 0 17px;padding:18px;border:1px solid #54885b;border-radius:17px;background:linear-gradient(135deg,#203526,#14231a)}
+.paper-lab-head{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap;align-items:center}
+.paper-lab h3{font-size:16px;margin:0;color:#ddf8d2}
+.paper-lab p{font-size:12px;color:#b6cbb5;margin:5px 0 12px}
+.paper-controls{display:flex;gap:9px;align-items:end;flex-wrap:wrap;margin:12px 0}
+.paper-controls label{font-size:11px;color:#c8e6c1;display:grid;gap:5px}
+.paper-controls select,.paper-controls input{border:1px solid #628567;border-radius:8px;background:#101d14;color:#f0f9eb;padding:9px;min-height:39px}
+.paper-controls input{width:90px}
+.paper-controls button{border:1px solid #709b73;border-radius:9px;padding:9px 14px;min-height:39px;background:#304b33;color:#f2faee;font-weight:750}
+.paper-controls button:hover{background:#426c46}
+.paper-controls button.trade-buy{background:#9be57c;color:#152615}
+.paper-controls button.trade-sell{background:#5b4234;color:#ffe7cd}
+.paper-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:10px 0}
+.paper-stats div{border:1px solid #426448;background:#14261a;border-radius:10px;padding:10px}
+.paper-stats strong{display:block;font-size:19px;font-variant-numeric:tabular-nums}
+#paperChart{width:100%;height:188px;background:#101d14;border:1px solid #39593e;border-radius:10px}
+#paperJournal{font:12px/1.65 ui-monospace,monospace;color:#cce5c6;min-height:25px;max-height:110px;overflow:auto;margin-top:10px}
+@media(max-width:650px){.paper-stats{grid-template-columns:repeat(2,1fr)}}
+</style>
 </head>
 <body>
 <header><div class="wrap nav">
@@ -131,6 +152,19 @@ footer{border-top:1px solid #3b5540;padding:23px 0;color:var(--muted);font-size:
     </a>
   </div>
   <p class="market-freshness" id="marketFreshness" role="status" aria-live="polite">Connecting to public Coinbase Exchange quotes… No credentials required.</p>
+</section>
+
+<section class="paper-lab" id="paper-lab" aria-labelledby="paperLabHeading">
+<div class="paper-lab-head"><div><h3 id="paperLabHeading">PAPER TRADING LAB</h3><p>A functional, entirely local simulation. Generated prices, simulated fills and no exchange connection.</p></div><span class="console-state">SIMULATED · NO REAL ORDERS</span></div>
+<div class="paper-controls">
+<label>Market scenario<select id="paperScenario"><option value="range">Sideways</option><option value="bull">Trending up</option><option value="bear">Trending down</option><option value="wild">High volatility</option></select></label>
+<label>Order USD<input id="paperAmount" type="number" min="1" max="100" step="1" value="5"></label>
+<button id="paperStep" type="button">Next candle</button><button id="paperAuto" type="button" aria-pressed="false">Auto-run</button>
+<button id="paperBuy" class="trade-buy" type="button">Paper buy</button><button id="paperSell" class="trade-sell" type="button">Paper sell</button><button id="paperReset" type="button">Reset</button>
+</div>
+<div class="paper-stats" aria-live="polite"><div><span class="label">Market price</span><strong id="paperPrice">$100.00</strong></div><div><span class="label">Equity</span><strong id="paperEquity">$100.00</strong></div><div><span class="label">Cash</span><strong id="paperCash">$100.00</strong></div><div><span class="label">Unrealized + realized P/L</span><strong id="paperPnl">$0.00</strong></div></div>
+<canvas id="paperChart" width="1000" height="230" aria-label="Simulated market price chart" role="img"></canvas><div id="paperJournal" role="status">Ready. Start with Next candle, or place a paper order.</div>
+<p>Starting paper capital: $100. One synthetic asset; market orders filled at displayed synthetic price with a simulated 0.2% fee. Scenario changes affect future candles only. This sandbox is not BEAN's production engine or a profitability claim.</p>
 </section>
 <div class="dashboard">
 <div class="column">
@@ -468,6 +502,36 @@ setInterval(refreshPublicMarkets,60000);
 document.addEventListener("visibilitychange",()=>{if(!document.hidden)refreshPublicMarkets()});
 setInterval(()=>{petBlink=true;drawPet();setTimeout(()=>{petBlink=false;drawPet()},160)},5300);
 setInterval(()=>{petQuipIndex++;drawPet()},8600);
+</script>
+
+<script>
+(()=>{'use strict';
+const $=id=>document.getElementById(id),fmt=n=>'
+</html>+n.toFixed(2);
+let cash,units,price,candles,seed,interval,stepNumber,events;
+const rand=()=>{seed=(Math.imul(1664525,seed)+1013904223)>>>0;return seed/4294967296};
+function note(message){events.unshift('['+String(stepNumber).padStart(3,'0')+'] '+message);events=events.slice(0,7);$('paperJournal').textContent=events.join(' | ')}
+function render(){
+ $('paperPrice').textContent=fmt(price);$('paperEquity').textContent=fmt(cash+units*price);$('paperCash').textContent=fmt(cash);
+ const pnl=cash+units*price-100;$('paperPnl').textContent=(pnl>=0?'+':'')+fmt(pnl);
+ $('paperPnl').style.color=pnl>=0?'#a5ec90':'#f2a09c';
+ const c=$('paperChart'),ctx=c.getContext('2d'),w=c.width,h=c.height;ctx.clearRect(0,0,w,h);
+ const lo=Math.min(...candles),hi=Math.max(...candles),span=Math.max(.02,hi-lo),pad=24;
+ ctx.strokeStyle='#35533a';ctx.lineWidth=1;for(let i=1;i<5;i++){let y=i*h/5;ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(w,y);ctx.stroke()}
+ ctx.strokeStyle='#9deb7d';ctx.lineWidth=3;ctx.beginPath();candles.forEach((p,i)=>{let x=pad+(w-2*pad)*i/Math.max(1,candles.length-1),y=h-pad-(p-lo)/span*(h-2*pad);if(!i)ctx.moveTo(x,y);else ctx.lineTo(x,y)});ctx.stroke();
+ ctx.fillStyle='#d4f4c8';ctx.font='17px monospace';ctx.fillText('Synthetic asset · '+stepNumber+' candles · '+$('paperScenario').value,20,24);
+}
+function step(){const mode=$('paperScenario').value;const drift={range:0,bull:.003,bear:-.003,wild:0}[mode];const vol=mode==='wild'?.055:.018;price=Math.max(.01,price*(1+drift+(rand()+rand()+rand()-1.5)*vol));stepNumber++;candles.push(price);if(candles.length>100)candles.shift();render()}
+function trade(buy){const amount=Number($('paperAmount').value);if(!Number.isFinite(amount)||amount<=0){note('Enter a positive order amount');return}
+ const fee=.002;if(buy){const cost=amount*(1+fee);if(cost>cash+1e-8){note('BUY declined: insufficient simulated cash');return}cash-=cost;units+=amount/price;note('PAPER BUY '+fmt(amount)+' + '+fmt(amount*fee)+' fee')}
+ else{const qty=amount/price;if(qty>units+1e-9){note('SELL declined: insufficient synthetic asset');return}units-=qty;cash+=amount*(1-fee);note('PAPER SELL '+fmt(amount)+' - '+fmt(amount*fee)+' fee')}
+ render()}
+function stop(){if(interval){clearInterval(interval);interval=null}$('paperAuto').setAttribute('aria-pressed','false');$('paperAuto').textContent='Auto-run'}
+function reset(){stop();cash=100;units=0;price=100;candles=[100];seed=314159265;stepNumber=0;events=[];note('Simulation reset');render()}
+$('paperStep').addEventListener('click',step);$('paperBuy').addEventListener('click',()=>trade(true));$('paperSell').addEventListener('click',()=>trade(false));$('paperReset').addEventListener('click',reset);
+$('paperAuto').addEventListener('click',()=>{if(interval){stop();return}interval=setInterval(step,700);$('paperAuto').textContent='Pause';$('paperAuto').setAttribute('aria-pressed','true')});
+document.addEventListener('visibilitychange',()=>{if(document.hidden)stop()});reset();
+})();
 </script>
 </body>
 </html>
