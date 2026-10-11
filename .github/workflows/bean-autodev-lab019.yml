@@ -1,0 +1,135 @@
+name: BEAN Lab019 persistent autonomous source growth
+on:
+  push:
+    branches: [experiment/bean-autonomous-code-growth-lab019-20261010]
+  pull_request:
+    branches: [main, experiment/bean-autonomous-code-growth-lab019-20261010]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  engine-tests:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        python-version: ['3.10', '3.12']
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - run: python -m pip install pytest
+      - name: Validate real source-writing engine, replay and model API
+        run: |
+          python -m compileall -q bean/optimization/autodev.py bean/tests/test_autodev_lab019.py
+          python -m pytest bean/tests/test_autodev_lab019.py -q -ra
+
+  independent-generation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    outputs:
+      status: ${{ steps.generation.outputs.status }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Generate and ACTUALLY TEST self-authored source in disposable trial
+        id: generation
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p autodev-output autodev-state
+          python -m bean.optimization.autodev \
+            --project experiments/autodev/seed_project \
+            --target bean/skills/clip_score.py \
+            --task "Repair score clipping so values never exceed 100 or fall below zero" \
+            --journal autodev-state/learning.sqlite \
+            --output autodev-output \
+            --provider ast --attempts 25
+          python - <<'PY'
+          import hashlib, json, pathlib
+          report=json.loads(pathlib.Path('autodev-output/report.json').read_text())
+          assert report['status']=='validated_patch_written', report
+          assert report['baseline']['test_count']==7 and not report['baseline']['passed']
+          assert report['tests_passed']==7 and report['new_attempts']>=2
+          target=pathlib.Path('autodev-output/validated/bean/skills/clip_score.py')
+          assert target.is_file()
+          assert hashlib.sha256(target.read_bytes()).hexdigest()==report['accepted_source']
+          print('BEAN generated source SHA256:', report['accepted_source'])
+          print('BEAN tried', report['new_attempts'], 'candidates and found a 7/7 repair')
+          PY
+          echo "status=validated_patch_written" >> "$GITHUB_OUTPUT"
+      - name: Save ALL code attempts and durable learning journal
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bean-autodev-lab019-evidence
+          path: |
+            autodev-output/
+            autodev-state/learning.sqlite
+          if-no-files-found: warn
+
+  write-research-branch:
+    needs: [independent-generation, engine-tests]
+    if: github.event_name == 'workflow_dispatch' && needs.independent-generation.outputs.status == 'validated_patch_written'
+    permissions:
+      contents: write
+      pull-requests: write
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: experiment/bean-autonomous-code-growth-lab019-20261010
+          persist-credentials: false
+      - uses: actions/download-artifact@v4
+        with:
+          name: bean-autodev-lab019-evidence
+          path: agent-evidence
+      - name: Verify generated file integrity before any GitHub write credentials
+        shell: bash
+        run: |
+          python - <<'PY'
+          import hashlib,json,pathlib
+          report=json.loads(pathlib.Path("agent-evidence/autodev-output/report.json").read_text())
+          source=pathlib.Path("agent-evidence/autodev-output/validated/bean/skills/clip_score.py")
+          assert report["status"]=="validated_patch_written"
+          assert report["tests_passed"]==7
+          assert hashlib.sha256(source.read_bytes()).hexdigest()==report["accepted_source"]
+          assert "return max(0, min(score, 100))" in source.read_text()
+          PY
+      - name: BEAN writes validated source to a NEW review branch, never main
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          BRANCH="bean/selfdevelop-$GITHUB_RUN_ID"
+          cp agent-evidence/autodev-output/validated/bean/skills/clip_score.py \
+             experiments/autodev/seed_project/bean/skills/clip_score.py
+          git config user.name "bean-autodev-lab"
+          git config user.email "bean-autodev-lab@users.noreply.github.com"
+          git switch -c "$BRANCH"
+          git add -- experiments/autodev/seed_project/bean/skills/clip_score.py
+          git diff --cached --quiet && { echo "Already fixed; no duplicate branch"; exit 0; }
+          git commit -m "fix(lab019): BEAN self-authored and independently verified source"
+          gh auth setup-git
+          git push origin "HEAD:refs/heads/$BRANCH"
+          if ! gh pr create \
+            --base experiment/bean-autonomous-code-growth-lab019-20261010 \
+            --head "$BRANCH" \
+            --title "BEAN self-written source repair — run $GITHUB_RUN_ID" \
+            --body "Generated by the research-only BEAN AST search (not an LLM) and validated by independent 7-case fixture, with full candidate history in Actions artifact. Human review before any merge; no core runtime or production main effects."; then
+            echo "::warning::GitHub settings disallow CI-created PRs. Source branch was written."
+            echo "https://github.com/$GITHUB_REPOSITORY/pull/new/$BRANCH" >> "$GITHUB_STEP_SUMMARY"
+          fi
