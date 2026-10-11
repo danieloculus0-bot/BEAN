@@ -17,6 +17,7 @@ from enum import Enum
 from typing import Any, Optional
 
 from .store import get_store
+from .audit_mirror import reconcile_event_mirror, AuditMirrorError
 
 
 class EventType(str, Enum):
@@ -120,51 +121,17 @@ def log_event(
     )
     store.commit()
 
-    # Also append to JSONL audit log
-    _append_jsonl(
-        session_uuid=session_uuid,
-        event_id=cursor.lastrowid,
-        event_uuid=event_uuid,
-        event_type=event_type.value,
-        subtype=subtype,
-        summary=summary,
-        source=source.value,
-        severity=severity.value,
-        data=data,
-    )
-
+    # SQLite was committed first. If mirror I/O fails, raise an explicit
+    # error with the committed ID so no caller retries the event blindly.
+    # Next init_store/boot replays missing events from authoritative SQLite.
+    try:
+        reconcile_event_mirror(store)
+    except AuditMirrorError as exc:
+        raise AuditMirrorError(
+            f"Committed BEAN event id={cursor.lastrowid} uuid={event_uuid}, "
+            f"but JSONL mirror is unhealthy: {exc}"
+        ) from exc
     return cursor.lastrowid
-
-
-def _append_jsonl(session_uuid, event_id, event_uuid, event_type,
-                   subtype, summary, source, severity, data):
-    """
-    Append to the JSONL audit log. Belt-and-suspenders.
-    The JSONL log is not the truth — the SQLite DB is.
-    But the JSONL is an independent human-readable audit trail.
-    """
-    import os
-    from pathlib import Path
-
-    log_dir = Path(__file__).parent.parent / "logs"
-    log_dir.mkdir(exist_ok=True)
-    log_path = log_dir / "events.jsonl"
-
-    record = {
-        "id": event_id,
-        "session_uuid": session_uuid,
-        "event_uuid": event_uuid,
-        "event_type": event_type,
-        "subtype": subtype,
-        "summary": summary,
-        "source": source,
-        "severity": severity,
-        "data": data,
-        "ts": datetime.now(timezone.utc).isoformat(),
-    }
-
-    with open(log_path, "a", encoding="utf-8") as f:
-        f.write(json.dumps(record) + "\n")
 
 
 def get_recent_events(session_uuid: str, limit: int = 50) -> list[dict]:
