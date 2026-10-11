@@ -22,6 +22,14 @@ The public-source **[BEAN Evidence Companion](integrations/chatgpt/README.md)** 
 
 **Status: developer preview.** The MCP server is runnable locally but **not hosted, submitted, reviewed, approved, installable or published** in ChatGPT yet. A stable HTTPS deployment, privacy controls, confirmed developer identity and OpenAI directory review are required. The plugin does **not** authenticate internet evidence or maintain a user's personal memory. No ERP, trading, robot or network actions are exposed.
 
+## Local Ollama reasoning and GitHub engineering evidence
+
+BEAN Core now supports an **opt-in local Ollama reasoning provider**. A running model supplies structured proposals; BEAN's persistent reasoning layer validates and journals the results. The model does not become BEAN's identity or inherit permission to execute commands. See [the live Ollama reasoning example](examples/ollama_reasoning.py) and [Windows voice-chat setup](docs/bean-local-voice.md).
+
+A separate **[GitHub engineering evidence bridge](docs/bean-github-engineering-bridge.md)** reads repository branches, pull requests, and CI outcomes, retaining hash-chained receipts in BEAN's own SQLite journal. It can help identify failing checks and work needing review, but this v0.1 bridge itself does not merge code or issue remote commands.
+
+These integrations are now included in `main`. Live Ollama performance and connected GitHub access depend on the local installation and authorization.
+
 ## Try BEAN and verify its claims
 
 **[Updated usefulness audit — what BEAN actually helps with, where it doesn't, and the next proof](docs/BEAN_USEFULNESS_AUDIT_2026-10-11.md)**
