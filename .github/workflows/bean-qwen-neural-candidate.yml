@@ -1,0 +1,76 @@
+name: BEAN Qwen 1.5B neural repair independent test
+
+on:
+  pull_request:
+    branches: [feature/bean-local-ollama-reasoning-20261011]
+    paths:
+      - 'experiments/autodev/neural_candidate_qwen_1p5b/**'
+      - '.github/workflows/bean-qwen-neural-candidate.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  candidate-evaluation:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Verify candidate matches BEAN Windows Ollama receipt
+        shell: bash
+        run: |
+          python - <<'PY'
+          import hashlib
+          from pathlib import Path
+          p = Path("experiments/autodev/neural_candidate_qwen_1p5b/bean/skills/clip_score.py")
+          digest = hashlib.sha256(p.read_bytes()).hexdigest()
+          expected = "d8754155f5e568077c7e526528884f5dc596137b04bc85b94a802fbf39aaac08"
+          print("NEURAL_CANDIDATE_SHA256:", digest)
+          assert digest == expected, "Candidate differs from the locally generated Python bytes"
+          PY
+      - name: Evaluate neural repair against unchanged independent seven tests
+        shell: bash
+        run: |
+          python - <<'PY'
+          import os
+          import shutil
+          import subprocess
+          import sys
+          import tempfile
+          from pathlib import Path
+
+          original = Path("experiments/autodev/seed_project")
+          candidate = Path("experiments/autodev/neural_candidate_qwen_1p5b/bean/skills/clip_score.py")
+          assert original.is_dir() and candidate.is_file()
+          with tempfile.TemporaryDirectory(prefix="bean-neural-independent-") as root:
+              project = Path(root) / "project"
+              shutil.copytree(original, project)
+              (project / "bean/skills/clip_score.py").write_bytes(candidate.read_bytes())
+              env = {
+                  "PATH": os.environ.get("PATH", ""),
+                  "PYTHONPATH": str(project),
+                  "PYTHONDONTWRITEBYTECODE": "1",
+                  "PYTHONIOENCODING": "utf-8",
+              }
+              if os.name == "nt":
+                  env.update(SYSTEMROOT=os.environ.get("SYSTEMROOT", ""), TEMP=root)
+              result = subprocess.run(
+                  [sys.executable, "-m", "unittest", "discover", "-s", "tests", "-v"],
+                  cwd=project, env=env, capture_output=True, text=True, timeout=15,
+              )
+              transcript = result.stdout + "\n" + result.stderr
+              print(transcript)
+              assert "Ran 7 tests" in transcript, "Expected seven evaluator cases"
+              assert result.returncode == 0, "Neural repair failed independent tests"
+              print("BEAN_QWEN_1P5B_NEURAL_REPAIR: 7/7 PASS")
+          PY
