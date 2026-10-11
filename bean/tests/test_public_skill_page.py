@@ -75,6 +75,23 @@ class PublicSkillsPageTests(unittest.TestCase):
                 self.assertIn("https://github.com/danieloculus0-bot/BEAN/blob/main/" + path,
                               self.parser.links)
 
+    def test_crypto_application_is_citable_and_scoped(self):
+        self.assertIn("applications", self.parser.anchors)
+        self.assertIn("#applications", self.parser.links)
+        for phrase in ("BEAN is helping power a real crypto trader.",
+                       "Research selection by itself does not activate a live trading strategy.",
+                       "AIscend's trading engines execute orders.",
+                       "An accepted order is not necessarily a verified fill"):
+            with self.subTest(phrase=phrase):
+                self.assertIn(phrase, self.page)
+        for path in ("src/live.py", "src/advanced_live.py", "src/bean.py",
+                     "src/bean_strategy_lab.py", "src/bean_policy.py"):
+            with self.subTest(path=path):
+                self.assertIn("https://github.com/danieloculus0-bot/AIscend/blob/main/" + path,
+                              self.parser.links)
+        self.assertIn("https://github.com/danieloculus0-bot/AIscend/actions/runs/38168385198",
+                      self.parser.links)
+
     def test_new_skills_have_reproducible_refs(self):
         links = self.parser.links
         required = [

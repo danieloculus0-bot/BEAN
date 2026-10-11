@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>BEAN | Real AI Skills · Public Technical Beta</title>
-  <meta name="description" content="BEAN combines real neural-model inference through local Ollama with persistent SQLite memory, evidence checks, reviewed AI proposals and reproducible engineering experiments. Inspect the working technical beta.">
+  <meta name="description" content="BEAN combines neural-model reasoning, evidence-aware memory, working engineering skills and AIscend, a Coinbase crypto-trading beta with live execution and documented tests.">
   <meta name="robots" content="index, follow">
   <meta name="theme-color" content="#101713">
   <link rel="icon" type="image/webp" href="./bean-official.webp">
@@ -13,7 +13,7 @@
 
   <meta property="og:type" content="website">
   <meta property="og:title" content="BEAN | Little Bean. Serious AI Skills.">
-  <meta property="og:description" content="Neural-model-powered reasoning with BEAN memory, evidence review, local voice, engineering tools and reproducible test receipts.">
+  <meta property="og:description" content="Real neural reasoning, persistent memory and working applications including AIscend, a live-capable Coinbase trading beta with a tested Windows build.">
   <meta property="og:url" content="https://danieloculus0-bot.github.io/BEAN/">
   <meta property="og:site_name" content="BEAN">
   <meta property="og:image" content="https://danieloculus0-bot.github.io/BEAN/bean-official.webp">
@@ -720,6 +720,25 @@
       .neural-note{padding:16px}
     }
 
+
+    /* AIscend: grounded application showcase in existing dark Linux Mint theme */
+    .application-section{background:radial-gradient(ellipse at 12% 18%,rgba(99,176,84,.12),transparent 55%)}
+    .application-intro{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(260px,.75fr);gap:27px;align-items:center;margin:18px 0 24px}
+    .application-status{display:grid;gap:11px;min-width:0;padding:24px;border-radius:22px;background:linear-gradient(155deg,#29412e,#18281d);border:1px solid #507455;box-shadow:var(--shadow)}
+    .application-status span{color:#b7ec9e;font-size:.77rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase}
+    .application-status strong{color:#effbea;font-size:1.35rem;line-height:1.3}
+    .application-status small{color:#b8cab8;font-size:.92rem;line-height:1.6}
+    .application-status .btn{margin-top:8px;text-align:center}
+    .application-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin-bottom:18px}
+    .application-grid>.card{min-width:0}
+    .application-grid a{font-weight:700}
+    .application-footer{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:22px;background:rgba(27,47,33,.9);border:1px solid #45674a;border-radius:18px}
+    .application-footer div{max-width:780px}
+    .application-footer strong{color:#d7f8c8}
+    .application-footer p{margin:7px 0 0}
+    .application-footer .btn{flex:0 0 auto;text-align:center}
+    @media(max-width:980px){.application-intro{grid-template-columns:minmax(0,1fr)}.application-footer{flex-direction:column;align-items:stretch}}
+    @media(max-width:760px){.application-grid{grid-template-columns:minmax(0,1fr)}.application-intro{gap:15px}.application-status,.application-footer{padding:19px}}
     /* Mobile-first containment while preserving the existing dark Linux Mint desktop. */
     html{width:100%;max-width:100%;scroll-padding-top:86px}
     body{width:100%;max-width:100%;overflow-x:clip}
@@ -842,6 +861,7 @@
         <a href="#milestones">Verified tests</a>
         <a href="#neural">Neural AI</a>
         <a href="#skills">Skills</a>
+        <a href="#applications">AIscend</a>
         <a href="#benchmarks">Benchmarks</a>
         <a href="#proof">Proof</a>
         <a href="#quickstart">Quickstart</a>
@@ -854,7 +874,7 @@
 
   <main id="top">
     <nav class="mobile-jumps" aria-label="Quick section links">
-      <a href="#skills">Skills</a><a href="#neural">Neural AI</a><a href="#milestones">Verified tests</a><a href="#latest">Build log</a><a href="#benchmarks">Benchmarks</a><a href="#proof">Proof</a><a href="#quickstart">Quickstart</a><a href="#research">Research</a><a href="#community">Follow BEAN</a>
+      <a href="#skills">Skills</a><a href="#applications">Crypto beta</a><a href="#neural">Neural AI</a><a href="#milestones">Verified tests</a><a href="#latest">Build log</a><a href="#benchmarks">Benchmarks</a><a href="#proof">Proof</a><a href="#quickstart">Quickstart</a><a href="#research">Research</a><a href="#community">Follow BEAN</a>
     </nav>
     <section class="hero">
       <div class="wrap hero-grid">
@@ -871,7 +891,8 @@
             <span class="strong">BEAN is working software, not a waiting list.</span>
             Persistent memory. Evidence-aware reasoning. Useful manufacturing reports.
             Scheduled investigation. Neural-network-powered local AI conversations.
-            Engineering audits. Tested robotics logic. All in public, inspectable code.
+            Engineering audits. BEAN-assisted crypto trading through AIscend.
+            Tested robotics logic. All in public, inspectable code.
           </p>
           <p class="hero-beta-line"><strong>Public technical beta.</strong> The skills are real; enterprise hosting is optional.
             Pick a capability, run the command, and inspect the test receipts.</p>
@@ -888,6 +909,7 @@
             <span class="pill">Python + SQLite</span>
             <span class="pill">Practical daily reporting</span>
             <span class="pill">Real neural-model inference</span>
+            <span class="pill">AIscend crypto-trading beta</span>
             <span class="pill">Local voice chat</span>
             <span class="pill">Robot optional</span>
             <span class="pill">Local MCP tools</span>
@@ -898,6 +920,7 @@
             <a class="btn btn-primary" href="#skills">See what BEAN can do</a>
             <a class="btn btn-secondary" href="https://github.com/danieloculus0-bot/BEAN">Browse the code</a>
             <a class="btn btn-secondary" href="#quickstart">Run it yourself</a>
+            <a class="btn btn-secondary" href="#applications">See crypto application</a>
           </div>
         </div>
 
@@ -1093,6 +1116,61 @@
           <strong>Neural network versus native neural training:</strong>
           BEAN currently orchestrates external or locally hosted trained neural models; it does not claim a separately trained BEAN foundation model, its own backpropagation engine or general autonomous intelligence. The model-generated code-repair studies are bounded experiments, not evidence of universal self-improvement.
           <a href="https://github.com/danieloculus0-bot/BEAN/blob/main/docs/PRODUCTION_READINESS_AUDIT_2026-10-11.md">Read the readiness boundaries</a>.
+        </div>
+      </div>
+    </section>
+
+
+    <section id="applications" class="section application-section" aria-labelledby="applications-heading">
+      <div class="wrap">
+        <div class="eyebrow"><span class="dot"></span> Working application · BEAN + AIscend</div>
+        <div class="application-intro">
+          <div>
+            <h2 id="applications-heading">BEAN is helping power a real crypto trader.</h2>
+            <p class="lead"><strong class="strong">AIscend</strong> is a runnable Windows crypto-trading beta with live-capable Coinbase execution. Its BEAN-style market memory records predictions, evidence and outcomes. Strategy School evaluates research candidates against historical prices. A separate fresh-candle gate can confirm or veto an existing proposed buy.</p>
+            <p>This is functioning application software, not just a hypothetical simulation. AIscend supports wallet-connected orders, a persistent decision journal and a reproducible Windows release build. Measured profitability and complete trade reconciliation are still separate verification tasks.</p>
+          </div>
+          <div class="application-status">
+            <span>AIscend · Windows beta</span>
+            <strong>Live-capable crypto execution</strong>
+            <small>BEAN contributes research and decision-support signals. AIscend's trading engines execute orders.</small>
+            <a class="btn btn-primary" href="https://github.com/danieloculus0-bot/AIscend">Explore AIscend on GitHub</a>
+          </div>
+        </div>
+        <div class="application-grid">
+          <article class="card">
+            <div class="skill-kicker">Implemented · Coinbase integrations</div>
+            <h3>Autonomous trading engines</h3>
+            <p>AIscend implements buy, sell and hold decisions, Base smart-wallet USDC/WETH swaps, Coinbase Advanced spot orders, persistent journal entries and a risk governor.</p>
+            <a href="https://github.com/danieloculus0-bot/AIscend/blob/main/src/live.py">Base live engine</a> ·
+            <a href="https://github.com/danieloculus0-bot/AIscend/blob/main/src/advanced_live.py">Advanced spot engine</a>
+          </article>
+          <article class="card">
+            <div class="skill-kicker">Implemented · BEAN-style cognition</div>
+            <h3>Evidence-aware market memory</h3>
+            <p>AIscend's embedded BEAN memory tracks observations, hypotheses, predictions, contradictions, outcome grades and learned source trust. This is distinct from BEAN Core's separate reasoning database.</p>
+            <a href="https://github.com/danieloculus0-bot/AIscend/blob/main/src/bean.py">Inspect market-memory code</a>
+          </article>
+          <article class="card">
+            <div class="skill-kicker">Working research · Historical evaluation</div>
+            <h3>BEAN Strategy School</h3>
+            <p>Tests strategy candidates with chronological Coinbase candle histories, records lessons in SQLite and selects research candidates. Research selection by itself does not activate a live trading strategy.</p>
+            <a href="https://github.com/danieloculus0-bot/AIscend/blob/main/src/bean_strategy_lab.py">Read the research engine</a> ·
+            <a href="https://github.com/danieloculus0-bot/AIscend/blob/main/tests/test_bean_strategy_lab.py">Inspect its tests</a>
+          </article>
+          <article class="card">
+            <div class="skill-kicker">Implemented · Current-data gate</div>
+            <h3>BEAN can veto an existing buy</h3>
+            <p>An optional policy gate checks fully closed Coinbase hourly candles against saved research rules. It can confirm or block a proposed buy but cannot originate an order. Partial data remains unavailable, not an invented signal.</p>
+            <a href="https://github.com/danieloculus0-bot/AIscend/blob/main/src/bean_policy.py">Inspect the buy-confirmation gate</a>
+          </article>
+        </div>
+        <div class="application-footer">
+          <div>
+            <strong>Shippable beta with real test receipts.</strong>
+            <p>GitHub Actions passed the Windows build for the linked AIscend revision, including regression tests and release packaging. Successful packaging does not establish live trading returns. An accepted order is not necessarily a verified fill; full fees, fills and portfolio valuation still require reconciliation.</p>
+          </div>
+          <a class="btn btn-secondary" href="https://github.com/danieloculus0-bot/AIscend/actions/runs/38168385198">Inspect the Windows build</a>
         </div>
       </div>
     </section>
