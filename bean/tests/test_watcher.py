@@ -173,6 +173,53 @@ def test_replay_keeps_history_but_needs_fresh_source():
     assert restored.poll_due()["rma"]["status"] == "verified"
 
 
+
+def test_restore_skips_corrupt_future_and_non_record_evidence():
+    watcher, clock, events, items = make()
+    items.append(report(values={"rma_count": 3}))
+    watcher.poll_due()
+    valid = events[0]
+    corrupted = [
+        None,
+        {"type": "watcher_transition", "key": [], "last_verified": valid["last_verified"]},
+        {"type": "watcher_transition", "key": "rma", "last_verified": {"values": None}},
+        {"type": "watcher_transition", "key": "rma", "last_verified": {
+            **valid["last_verified"], "observed_at": "invalid"
+        }},
+        {"type": "watcher_transition", "key": "rma", "last_verified": {
+            **valid["last_verified"], "evidence_ids": []
+        }},
+        {"type": "watcher_transition", "key": "rma", "last_verified": {
+            **valid["last_verified"], "values": {"rma_count": float("nan")}
+        }},
+        {"type": "watcher_transition", "key": "rma", "last_verified": {
+            **valid["last_verified"], "observed_at": (START + timedelta(days=1)).isoformat(),
+            "values": {"rma_count": 999}
+        }},
+    ]
+    restarted, _, _, _ = make()
+    restarted.restore_events(corrupted + [valid] + corrupted)
+    state = restarted.snapshot("rma")
+    assert state["reason"] == "awaiting_recheck"
+    assert state["status"] == "n/a"
+    assert state["values"]["rma_count"] is None
+    assert state["last_verified"]["values"]["rma_count"] == 3
+
+
+def test_restore_older_records_cannot_replace_newer_history():
+    watcher, clock, events, items = make()
+    items.append(report(values={"rma_count": 3}))
+    watcher.poll_due()
+    clock.advance(61)
+    items.append(report(clock.utc(), values={"rma_count": 4}))
+    watcher.poll_due()
+    restarted, _, _, _ = make()
+    # Do not require callers to pass the history in chronological order.
+    restarted.restore_events([events[1], events[0]])
+    state = restarted.snapshot("rma")
+    assert state["last_verified"]["values"]["rma_count"] == 4
+    assert state["status"] == "n/a"
+
 def test_directory_reader_change_triggers_early_recall(tmp_path):
     config = tmp_path / "config.json"
     config.write_text(json.dumps({"reports": [
