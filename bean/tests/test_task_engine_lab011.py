@@ -176,10 +176,13 @@ def test_event_sink_does_not_trigger_duplicate_side_effects(env):
     eng = TaskEngine({"task":lambda: called.append(1)}, utc_timestamp=clock.now,
                      event_sink=bad_sink)
     eng.configure([TaskSpec("one","task",60)])
-    assert eng.poll_due()[0]["status"] == "success"
+    # The action mutated an in-memory list but returned no receipt:
+    # the scheduler must not invent a verified result. The sink failure
+    # must also never trigger duplicate execution.
+    assert eng.poll_due()[0]["status"] == "n/a"
     assert called == [1]
     assert eng.poll_due() == []
-    assert eng.history("one")[0]["state"] == "success"
+    assert eng.history("one")[0]["state"] == "n/a"
 
 
 def test_declared_disabled_task_never_runs(env):
