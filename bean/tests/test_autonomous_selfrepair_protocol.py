@@ -159,7 +159,9 @@ def test_ollama_fallback_on_free_provider_rate_limit(tmp_path):
     assert result["attempts"][0]["rejection"] == "OPENROUTER_HTTP_429"
     assert called[0]["model"] == "qwen2.5-coder:1.5b"
     assert called[0]["stream"] is False
+    assert called[0]["format"]["properties"]["edits"]["minItems"] == 1
     assert "def useful()" in called[0]["messages"][0]["content"]
+    assert "CURRENT PYTHON FUNCTION" in called[0]["messages"][0]["content"]
     candidate = json.loads((tmp_path / "out" / "candidate.json").read_text())
     assert candidate["provider_route"] == "ollama_local"
     assert candidate["replacement"] == ORIGINAL.replace("return 1", "return 2")
@@ -193,6 +195,19 @@ def test_local_neural_author_and_invalid_backend(tmp_path):
     assert (tmp_path / "neural" / "candidate.json").is_file()
     with pytest.raises(ValueError, match="unsupported provider backend"):
         lab.generate(root=root, destination=tmp_path / "bad", key="", backend="paid")
+
+
+def test_local_model_receipt_retains_rejected_source_excerpt(tmp_path):
+    root = setup(tmp_path)
+    def invalid(req, timeout):
+        return LocalReply('{"edits":[]}')
+    with patch.object(lab, "current_commit", return_value=lab.SOURCE_COMMIT):
+        report = lab.generate(root=root, destination=tmp_path / "bad_neural",
+                              key="", backend="ollama", local_request_fn=invalid)
+    assert report["status"] == "no_valid_candidate"
+    assert len(report["attempts"]) == lab.MAX_CALLS
+    assert report["attempts"][0]["response_excerpt"] == '{"edits":[]}'
+    assert not (tmp_path / "bad_neural" / "candidate.json").exists()
 
 
 def test_provider_402_never_triggers_local_fallback(tmp_path):
