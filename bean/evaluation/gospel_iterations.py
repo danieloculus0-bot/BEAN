@@ -33,7 +33,7 @@ ALLOWED_DOMAINS = frozenset({
     "ibri.org", "pubs.usgs.gov", "humanorigins.si.edu",
     "en.wikisource.org", "www.biblegateway.com", "www.ncbi.nlm.nih.gov",
     "oceanservice.noaa.gov", "www.nationalacademies.org", "science.nasa.gov",
-    "hmane.harvard.edu",
+    "hmane.harvard.edu", "www.nichd.nih.gov", "humanorigins.si.edu",
 })
 OUTCOMES = {"possible", "impossible", "undetermined", "not_applicable"}
 PASS_NAMES = (
@@ -312,14 +312,100 @@ def _validated_models(cases: list[dict], model_packet: dict) -> dict:
     return {row["id"]: row for row in models}
 
 
+
+def read_documented_facts(path: Path, *, valid_case_ids: set[str]) -> dict[str, list[dict]]:
+    """Inspect curated *source claims*; do not promote to verified historic events."""
+    catalog = _load_json(path)
+    if (not isinstance(catalog, dict)
+            or catalog.get("schema") != "bean.gospel_sourced_fact_context.v1"
+            or catalog.get("source_verification_method") != (
+                "Text of cited public sources inspected by research assistant via web retrieval; "
+                "interpretations cross-checked when feasible, not a BEAN autonomous validation "
+                "or replicated experiment.")
+            or not isinstance(catalog.get("records"), list)):
+        raise CorpusError("invalid independently documented context catalog")
+    records: dict[str, list[dict]] = {cid: [] for cid in valid_case_ids}
+    ids = set()
+    for row in catalog["records"]:
+        if not isinstance(row, dict) or not isinstance(row.get("fact_id"), str):
+            raise CorpusError("invalid contextual source record")
+        if row["fact_id"] in ids:
+            raise CorpusError("duplicate source observation")
+        ids.add(row["fact_id"])
+        _safe_https_url(row.get("source_url"))
+        refs = row.get("related_cases")
+        if not isinstance(refs, list) or not refs or any(cid not in valid_case_ids for cid in refs):
+            raise CorpusError("source fact references unknown dispute")
+        if any(not isinstance(row.get(k), str) or not row[k].strip() for k in
+               ("statement", "source_org", "confidence_scope", "contra", "evidence_weight")):
+            raise CorpusError("missing attributed source statement or limitation")
+        item = {
+            "record_id": row["fact_id"], "url": row["source_url"],
+            "organization": row["source_org"], "source_summary": row["statement"],
+            "limitation": row["contra"], "scope": row["confidence_scope"],
+            "observation_type": row.get("kind"),
+            "evidence_role": "externally_documented_context_not_automatic_historical_truth",
+            "autonomously_verified_by_BEAN": False,
+            "experimentally_reproduced_by_BEAN": False,
+        }
+        for cid in refs:
+            records[cid].append(dict(item))
+    return records
+
+
+def _session_probe(iteration: int, case: dict, model: dict, best: dict,
+                   source_records: list[dict], documented: list[dict]) -> dict:
+    """Exactly one different falsifiable assignment on each pass."""
+    refs = list(case["scripture_evidence"])
+    if iteration == 1:
+        return {
+            "activity": "establish_primary_text",
+            "observations": refs,
+            "open_question": "Do these passages refer to one event and describe it literally?",
+        }
+    if iteration == 2:
+        return {
+            "activity": "test_external_source_access_and_documented_science",
+            "sources_observed": [r["url"] for r in source_records],
+            "reviewed_source_context_ids": [r["record_id"] for r in documented],
+            "historical_fact_independently_attested_by_engine": False,
+            "open_question": "Does independent evidence confirm the particular event, not just a text about it?",
+        }
+    if iteration == 3:
+        return {
+            "activity": "attempt_counterinterpretation",
+            "strongest_known_alternative": model["alternative_model"],
+            "requires_test": "What facts would discriminate the literal model from this alternative?",
+        }
+    if iteration == 4:
+        return {
+            "activity": "quantify_conditional_feasibility",
+            "logical_outcome_under_stated_assumptions": best["strict_joint_reading"],
+            "assumptions": model["literal_model"],
+            "limit": best["limitations"],
+        }
+    return {
+        "activity": "falsification_and_missing_evidence",
+        "documented_context_count": len(documented),
+        "requested_next_research": (
+            "Find an independently authenticated primary historical witness or "
+            "replicable physical result addressing this exact event; compare manuscript "
+            "and genre counterinterpretations. Otherwise keep unknown."),
+        "certainty_increased_from_repetition_alone": False,
+    }
+
+
 def investigate(corpus: Corpus, case_packet: dict, model_packet: dict, *,
                 rounds: int = 5, source_fetcher: Callable[[str], dict] | None = None,
-                gnostic_catalog: Path | None = None) -> dict:
+                gnostic_catalog: Path | None = None,
+                documented_fact_catalog: Path | None = None) -> dict:
     if type(rounds) is not int or not 2 <= rounds <= 10:
         raise CorpusError("iterations must be between 2 and 10")
     cases = audited_cases(corpus, case_packet)
     models = _validated_models(cases, model_packet)
     case_map = {row["case_id"]: row for row in cases}
+    documented = (read_documented_facts(documented_fact_catalog, valid_case_ids=set(case_map))
+                  if documented_fact_catalog is not None else {k: [] for k in case_map})
     catalog = (read_reference_only_catalog(gnostic_catalog)
                if gnostic_catalog is not None else None)
     observed: dict[str, dict] = {}
@@ -381,6 +467,9 @@ def investigate(corpus: Corpus, case_packet: dict, model_packet: dict, *,
                 "source_truth_independently_verified": 0,
                 "basis": info["reason"], "limitations": info["limitations"],
                 "all_verses": dict(case["scripture_evidence"]),
+                "externally_documented_context": list(documented[mid]),
+                "iteration_research_assignment": _session_probe(
+                    i, case, model, info, relevant, documented[mid]),
             }
         journal.append({
             "iteration": i,
@@ -405,6 +494,9 @@ def investigate(corpus: Corpus, case_packet: dict, model_packet: dict, *,
         "historical_certainty_claimed": False,
         "text_input_sha256": corpus.sha256,
         "source_observations": list(observed.values()),
+        "curated_source_context_records_used": sorted({
+            r["record_id"] for records in documented.values() for r in records}),
+        "curated_source_context_not_autonomous_verification": True,
         "gnostic_reference_only": True,
         "gnostic_catalog_loaded": catalog is not None,
         "gnostic_texts_in_historical_verdicts": 0,
@@ -429,6 +521,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--gnostic-reference-catalog", type=Path, required=True)
     parser.add_argument("--report", type=Path, required=True)
     parser.add_argument("--iterations", type=int, default=5)
+    parser.add_argument("--documented-facts", type=Path, default=None)
     parser.add_argument("--live-sources", action="store_true", help="Perform bounded HTTPS source lookups")
     args = parser.parse_args(argv)
     corpus = load_corpus(args.corpus, corrections_path=args.corrections)
@@ -437,6 +530,7 @@ def main(argv: list[str] | None = None) -> int:
         rounds=args.iterations,
         source_fetcher=fetch_source if args.live_sources else None,
         gnostic_catalog=args.gnostic_reference_catalog,
+        documented_fact_catalog=args.documented_facts,
     )
     args.report.parent.mkdir(parents=True, exist_ok=True)
     args.report.write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n",
