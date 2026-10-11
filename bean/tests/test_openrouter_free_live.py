@@ -91,3 +91,30 @@ def test_invalid_fences_and_empty_codes_rejected():
     for value in ("", "Hello, world!", (chr(96) * 3) + "python\nx=3\n"):
         with pytest.raises((ValueError, SyntaxError)):
             normalise(value)
+
+def test_mixed_text_and_fenced_python_is_normalized_to_one_module():
+    from bean.evaluation.openrouter_free_live import normalise
+    raw = "I made the following repair:\n\x60\x60\x60python\ndef clip_score(score):\n    return max(0, min(score, 100))\n\x60\x60\x60\n"
+    assert normalise(raw) == "def clip_score(score):\n    return max(0, min(score, 100))\n"
+
+
+def test_openrouter_typed_text_parts_and_verification(tmp_path):
+    def fake(req, timeout):
+        return FakeResponse({
+            "model": "fixture/free",
+            "choices": [{"message": {"content": [
+                {"type": "text", "text": "def clip_score(score):\n    return max(0, min(score, 100))"}
+            ]}}],
+        })
+    result = execute(tmp_path, api_key="fixture-never-log", request_fn=fake)
+    assert result["provider_status"] == "proposal_generated"
+    assert verify(artifact=tmp_path, project=PROJECT,
+                  output=tmp_path / "verified")["verdict"] == "model_trial_passed"
+
+
+def test_provider_error_payload_is_sanitized(tmp_path):
+    def fake(req, timeout):
+        return FakeResponse({"error": {"message": "sensitive vendor trace"}})
+    result = execute(tmp_path, api_key="fixture-never-log", request_fn=fake)
+    assert result["reason"] == "provider_error_payload"
+    assert "sensitive vendor trace" not in (tmp_path / "receipt.json").read_text()
