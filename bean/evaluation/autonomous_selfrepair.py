@@ -139,8 +139,8 @@ def local_model_request(source, previous_issue, *, request_fn=urlopen, model=LOC
         "\"replace\" string occurring once in the source. Do not give a "
         "whole rewritten module, markdown, tests, commands or explanations. "
         "Make a real, meaningful improvement that fixes the failure: "
-        + PROBLEM + "\\nPrevious attempt: " + (previous_issue or "none")[:170]
-        + "\\nYour current Python module:\\n" + source
+        + PROBLEM + "\nPrevious attempt: " + (previous_issue or "none")[:170]
+        + "\nYour current Python module:\n" + source
     )
     request = Request(
         LOCAL_ENDPOINT, method="POST",
