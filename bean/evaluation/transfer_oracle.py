@@ -125,9 +125,9 @@ ORACLES = {
 
 
 def fixtures(task_id: str, phase: str):
-    if phase not in ("development", "holdout"):
+    if phase not in ("development", "holdout", "final"):
         raise ValueError("invalid phase")
-    rng = random.Random(21041 if phase == "development" else 91733)
+    rng = random.Random({"development": 21041, "holdout": 91733, "final": 73489}[phase])
     if task_id == "intervals":
         cases = [
             [], [(1, 3), (3, 5)], [(1, 5), (2, 3)],
@@ -302,7 +302,7 @@ def grade(artifact_dir: Path, output: Path, *, phase: str,
         "revision_attempts": sum(x["revision"] is not None for x in results),
         "external_provider_requests": first.get("total_requests", 0) +
             (second.get("total_requests", 0) if second else 0),
-        "independent_holdout": phase == "holdout",
+        "independent_holdout": phase in ("holdout", "final"),
         "constraints": [
             "Never pass holdout samples to a code-authoring model",
             "Scores are for independent, synthetic algorithmic tasks",
@@ -318,7 +318,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--initial", type=Path)
     parser.add_argument("--revised", type=Path)
-    parser.add_argument("--phase", choices=("development", "holdout"))
+    parser.add_argument("--phase", choices=("development", "holdout", "final"))
     parser.add_argument("--output", type=Path)
     parser.add_argument("--worker", action="store_true")
     parser.add_argument("worker_args", nargs="*")
