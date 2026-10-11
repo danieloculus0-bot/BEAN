@@ -388,7 +388,7 @@ def test_real_local_model_schema_targets_stable_statement_ids():
     lab.local_model_request(code, None, request_fn=mocked)
     item = seen[0]["format"]["properties"]["edits"]["items"]
     assert set(item["properties"]["target_id"]["enum"]) == {"feedback"}
-    assert "STATEMENT_ID=prompt" in seen[0]["messages"][0]["content"]
+    assert "STATEMENT_ID=prompt" not in seen[0]["messages"][0]["content"]
     assert "STATEMENT_ID=feedback" in seen[0]["messages"][0]["content"]
 
 
