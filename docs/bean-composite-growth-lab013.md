@@ -109,3 +109,17 @@ changes via branch review and human permission.
 Lab 013 builds on draft Lab 012, which builds on draft Lab 011. Keep the
 experiment unmerged until dependencies are reviewed. The separate trust/care
 Lab 010 remains independent.
+
+
+## Regression exposed by integration
+
+The first composite run found that MemoryStore.init_store could swap a database
+path without closing its existing thread-local SQLite connection. A later test
+case could silently keep writing to the previous database. That made simulated
+retention and feedback measurements invalid. Lab 013 changes init_store to
+close the current thread's prior connection before constructing a new store,
+and adds an explicit two-database isolation/round-trip regression.
+
+This is a code-lifecycle fix and not evidence of improvements in BEAN's
+general reasoning. Connections held in other threads are not closed here;
+the host must coordinate shutdown/reinitialization of worker threads.
