@@ -79,13 +79,35 @@ def test_historical_tampering_is_detected(tmp_path):
         Journal(path)
 
 
-def test_target_path_traversal_and_symlink_are_refused(tmp_path):
+def test_target_path_traversal_is_refused():
     for path in ("../secret.py", "bean/__init__.py", "bean/skills/missing.py"):
         with pytest.raises(ValueError):
             target_file(PROJECT, path)
+
+
+def test_target_symlink_guard_is_refused_without_special_os_privileges(tmp_path, monkeypatch):
+    # Exercise the security decision on Windows even where creating a real
+    # symlink requires developer mode or SeCreateSymbolicLinkPrivilege.
     alias = tmp_path / "linked"
-    alias.symlink_to(PROJECT, target_is_directory=True)
-    with pytest.raises(ValueError):
+    original_is_symlink = Path.is_symlink
+    monkeypatch.setattr(
+        Path,
+        "is_symlink",
+        lambda self: self == alias or original_is_symlink(self),
+    )
+    with pytest.raises(ValueError, match="trusted project"):
+        target_file(alias, TARGET)
+
+
+def test_target_real_symlink_is_refused_when_supported(tmp_path):
+    alias = tmp_path / "linked"
+    try:
+        alias.symlink_to(PROJECT, target_is_directory=True)
+    except OSError as exc:
+        if getattr(exc, "winerror", None) == 1314:
+            pytest.skip("Windows account has no symlink creation privilege; mocked guard is tested separately")
+        raise
+    with pytest.raises(ValueError, match="trusted project"):
         target_file(alias, TARGET)
 
 
