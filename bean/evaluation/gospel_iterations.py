@@ -31,6 +31,9 @@ ALLOWED_DOMAINS = frozenset({
     "www.catholic.com", "www.thetorah.com", "www.cambridge.org",
     "textandcanon.org", "manuscriptwitness.com", "biblia.com",
     "ibri.org", "pubs.usgs.gov", "humanorigins.si.edu",
+    "en.wikisource.org", "www.biblegateway.com", "www.ncbi.nlm.nih.gov",
+    "oceanservice.noaa.gov", "www.nationalacademies.org", "science.nasa.gov",
+    "hmane.harvard.edu",
 })
 OUTCOMES = {"possible", "impossible", "undetermined", "not_applicable"}
 PASS_NAMES = (
@@ -180,6 +183,93 @@ def analyze_possibility(case: dict, model: dict) -> Possibility:
             "The alleged numerical Earth age is a later interpretive inference, not asserted in the selected verses.",
             tuple(refs),
             "Earth-age estimates require separately evaluated scientific dating methods; do not blame the text for an unstated claim.")
+    if kind == "capacity_bound":
+        dim = literal.get("dimensions_cubits", [])
+        cubit_m = literal.get("cubit_m")
+        frac = literal.get("usable_fraction_assumed")
+        pairs = literal.get("hypothetical_pairs")
+        per_animal = literal.get("volume_per_animal_and_supplies_m3")
+        if (not isinstance(dim, list) or len(dim) != 3
+                or any(type(x) not in (int, float) or x <= 0 for x in dim)
+                or type(cubit_m) not in (int, float) or not 0.3 <= cubit_m <= 0.6
+                or type(frac) not in (int, float) or not 0 < frac <= 1
+                or not isinstance(pairs, list) or len(pairs) != 2
+                or any(type(x) is not int or x <= 0 for x in pairs)
+                or type(per_animal) not in (int, float) or per_animal <= 0):
+            raise CorpusError("invalid conditional Ark capacity assumptions")
+        gross_m3 = dim[0] * dim[1] * dim[2] * cubit_m ** 3
+        usable_m3 = gross_m3 * frac
+        requirements = [round(2 * n * per_animal) for n in pairs]
+        feasible = [req <= usable_m3 for req in requirements]
+        return Possibility(
+            "undetermined", "possible" if any(feasible) else "undetermined",
+            "undetermined",
+            (f"Illustrative gross Ark space {gross_m3:,.0f} m^3 and assumed "
+             f"usable {usable_m3:,.0f} m^3. Hypothetical {pairs[0]} vs "
+             f"{pairs[1]} pairs need {requirements[0]:,} vs {requirements[1]:,} "
+             f"m^3; corresponding fit states {feasible}. None is a measured historical count."),
+            tuple(refs),
+            "Explicit biblical 'kinds' and net usable cargo volume are unknown; this is not validation of Ark logistics.")
+    if kind == "category_exception":
+        return Possibility(
+            "possible", "possible", "undetermined",
+            "A general two-animal instruction can be qualified by clean-animal and bird exceptions.",
+            tuple(refs),
+            "The meaning of 'by sevens' needs close Hebrew textual comparison; do not assert exactly seven pairs.")
+    if kind == "observational_conflict":
+        if not literal.get("scientific_evidence"):
+            raise CorpusError("scientific model lacks a described evidence test")
+        return Possibility(
+            "undetermined", "possible", "undetermined",
+            "The narrowly specified recent literal interpretation conflicts with externally "
+            "reported scientific observations; their content has not been authenticated by this engine.",
+            tuple(refs),
+            "Scientific evidence can disconfirm a natural-history claim without logically disproving every supernatural interpretation.")
+    if kind in {"mechanism_unknown", "population_founders"}:
+        if kind == "mechanism_unknown" and not literal.get("mechanism"):
+            raise CorpusError("biological or physical model missing mechanism")
+        if kind == "population_founders" and literal.get("founders_per_lineage_assumed") != 2:
+            raise CorpusError("founder model must explicitly state its assumed population size")
+        return Possibility(
+            "undetermined", "undetermined", "undetermined",
+            "Natural-process feasibility cannot be established from this passage alone; "
+            "specific quantitative constraints and independently assessed records are required.",
+            tuple(refs),
+            "Unknown is not a positive compatibility verdict; do not invent a genetic or ecological reconstruction.")
+    if kind == "donor_cell_only":
+        if (literal.get("donor_karyotype") != "46,XY"
+                or literal.get("target_karyotype") != "46,XX"):
+            raise CorpusError("explicit donor and target chromosome assumptions required")
+        return Possibility(
+            "impossible", "undetermined", "undetermined",
+            "Ordinary expansion of XY rib tissue alone cannot produce an independent "
+            "fully developed typical XX female without developmental and genetic interventions.",
+            tuple(refs),
+            "Conditional finding concerns the assumed unmodified XY somatic-cell-only process. "
+            "Some women are not XX; the text does not specify chromosomes or exclude divine intervention.")
+    if kind == "later_identity":
+        return Possibility(
+            "undetermined", "possible", "undetermined",
+            "A later text or interpretation can identify earlier figures without the earlier passage naming them.",
+            tuple(refs),
+            "Literary identification is evidence of a belief or tradition, not evidence of a supernatural entity.")
+    if kind in {"narrative_sequence", "layered_cause"}:
+        if not literal.get("assumptions"):
+            raise CorpusError("narrative compatibility needs explicit added assumptions")
+        return Possibility(
+            "possible", "possible", "undetermined",
+            "Under the specified temporal or multiple-causation assumptions these descriptions can coexist.",
+            tuple(refs),
+            "Coexistence is conditional; literary history could still reflect genuinely competing traditions.")
+    if kind == "line_of_sight":
+        if literal.get("assumption") != "literal simultaneous unaided visual line-of-sight from one Earth mountain":
+            raise CorpusError("line-of-sight scenario lacks precise physically testable assumption")
+        return Possibility(
+            "impossible", "possible", "undetermined",
+            "Earth curvature and obstructed sight lines prevent unaided simultaneous "
+            "visibility of all global territories from a mountain.",
+            tuple(refs),
+            "An implied vision or figurative description is not ruled out by ordinary visual geometry.")
     if kind in {"textual_interpretation_open", "manuscript_origin_open"}:
         return Possibility(
             "undetermined",
