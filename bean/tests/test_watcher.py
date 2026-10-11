@@ -221,6 +221,23 @@ def test_restore_older_records_cannot_replace_newer_history():
     assert state["last_verified"]["values"]["rma_count"] == 4
     assert state["status"] == "n/a"
 
+
+def test_smoke_runner_rejects_missing_required_source(tmp_path):
+    import os
+    import subprocess
+    if os.name != "posix":
+        pytest.skip("Bash smoke runner regression is executed on Unix CI")
+    script = Path(__file__).resolve().parents[2] / "scripts" / "run_brain_smoke_tests.sh"
+    fake_scripts = tmp_path / "scripts"
+    fake_scripts.mkdir()
+    fake_script = fake_scripts / script.name
+    fake_script.write_text(script.read_text(encoding="utf-8"), encoding="utf-8")
+    # No required test files exist in the synthetic project.
+    result = subprocess.run(["bash", str(fake_script)], capture_output=True, text=True, check=False)
+    assert result.returncode != 0
+    assert "FAIL missing required test:" in result.stderr
+
+
 def test_directory_reader_change_triggers_early_recall(tmp_path):
     config = tmp_path / "config.json"
     config.write_text(json.dumps({"reports": [
