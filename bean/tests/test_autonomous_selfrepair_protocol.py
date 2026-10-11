@@ -157,7 +157,7 @@ def test_ollama_fallback_on_free_provider_rate_limit(tmp_path):
     assert result["status"] == "candidate_drafted_not_verified"
     assert [x["provider"] for x in result["attempts"]] == ["openrouter", "ollama"]
     assert result["attempts"][0]["rejection"] == "OPENROUTER_HTTP_429"
-    assert called[0]["model"] == "qwen2.5-coder:1.5b"
+    assert called[0]["model"] == "qwen2.5-coder:7b"
     assert called[0]["stream"] is False
     assert called[0]["format"]["properties"]["edits"]["minItems"] == 1
     assert "def useful()" in called[0]["messages"][0]["content"]
@@ -177,7 +177,7 @@ class LocalReply:
         return False
     def read(self, *_):
         return json.dumps({
-            "model": "qwen2.5-coder:1.5b",
+            "model": "qwen2.5-coder:7b",
             "message": {"content": self.value},
             "done_reason": "stop",
         }).encode()
@@ -245,3 +245,38 @@ def test_selfrepair_scope_never_changes_provider_transport():
                               "prompt = source" + chr(10) + "    open('/tmp/exfil','w').write(key)")
     with pytest.raises(ValueError, match="file access"):
         safe_transport_unchanged(before, injected)
+
+def test_rejected_neural_anchor_informs_next_model_attempt(tmp_path):
+    root = setup(tmp_path)
+    seen = []
+    missing = json.dumps({"edits": [
+        {"find": "def unrelated_fake_function(", "replace": "def unrelated_fake_function(x):"}
+    ]})
+    responses = [missing, EDIT]
+    def local(req, timeout):
+        data = json.loads(req.data)
+        seen.append(data["messages"][0]["content"])
+        return LocalReply(responses.pop(0))
+    with patch.object(lab, "current_commit", return_value=lab.SOURCE_COMMIT):
+        report = lab.generate(
+            root=root, destination=tmp_path / "retry", key="",
+            backend="ollama", local_request_fn=local)
+    assert report["status"] == "candidate_drafted_not_verified"
+    assert len(seen) == 2
+    assert "def unrelated_fake_function(" in seen[1]
+    assert "rejected find (not in source)" in seen[1]
+    assert report["attempts"][0]["status"] == "model_candidate_rejected"
+    assert report["attempts"][0]["rejected_find"] == "def unrelated_fake_function("
+
+
+def test_neural_prompt_distinguishes_own_source_from_external_example():
+    seen = []
+    def mock(req, timeout):
+        seen.append(json.loads(req.data)["messages"][0]["content"])
+        return LocalReply(EDIT)
+    lab.local_model_request(
+        "def call_model(key, original):\\n    prompt = 'def calculate('\\n"
+        "    return prompt\\n\\ndef save(path): pass\\n",
+        None, request_fn=mock)
+    assert "NOT a repair of the external ERP sample code" in seen[0]
+    assert "def call_model(key, original)" in seen[0]

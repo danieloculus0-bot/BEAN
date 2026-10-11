@@ -22,8 +22,8 @@ SOURCE_COMMIT = "3aaec786ad8b9d5685573c62bb4fc39119c0d65b"
 TARGET = Path("bean/evaluation/bridge_peer_live_author.py")
 FREE_ROUTE = "openrouter/free"
 ENDPOINT = "https://openrouter.ai/api/v1/chat/completions"
-MAX_CALLS = 3
-LOCAL_MODEL = "qwen2.5-coder:1.5b"
+MAX_CALLS = 4
+LOCAL_MODEL = "qwen2.5-coder:7b"
 LOCAL_ENDPOINT = "http://127.0.0.1:11434/api/chat"
 FAILURE_RUN = "https://github.com/danieloculus0-bot/BEAN/actions/runs/38108896676"
 PROBLEM = (
@@ -141,16 +141,25 @@ def local_model_request(source, previous_issue, *, request_fn=urlopen, model=LOC
         # Small mock modules exercise the same provider/parser contracts.
         function_source = source[:7500]
     prompt = (
-        "You are BEAN repairing YOUR OWN Python source author. "
-        "Return a JSON object with an edits array only. Each entry must have "
-        "find and replace strings, where find is an EXACT unique excerpt "
-        "from the function below. Edit only the existing call_model function, "
-        "not module imports or network request construction. No markdown, "
-        "no whole-file rewrite, no simulated success, no test changes. "
-        "Choose your own engineering solution from the observed failure. "
-        "\nWITNESSED DEFECT:\n" + PROBLEM
-        + "\nLAST REJECTION:\n" + (previous_issue or "none")[:180]
-        + "\nCURRENT PYTHON FUNCTION (verbatim):\n" + function_source
+        "You are BEAN independently repairing the source of YOUR OWN code "
+        "generation function, call_model(). This is a Python source maintenance "
+        "task, NOT a repair of the external ERP sample code that may be "
+        "mentioned inside call_model's prompt-building strings. "
+        "Return only a valid JSON object with an edits array. "
+        "Each edit must contain find and replace strings; find must be an "
+        "EXACT, whitespace-identical, unique substring copied from the "
+        "CURRENT PYTHON FUNCTION printed below. Do not invent symbol names "
+        "or repair an error message itself. The host rejects unmatched anchors. "
+        "A failed previous model response should cause a materially different "
+        "and smaller retry context preserving the relevant source contracts. "
+        "Choose your own implementation. Keep signatures, imports, provider "
+        "routing, HTTP configuration, authentication, result handling, and "
+        "every unrelated function unchanged. No commands, test edits, "
+        "explanations, demonstrations or claims of success. "
+        "\nREAL HISTORICAL FAILURE:\n" + PROBLEM
+        + "\nPREVIOUS REJECTED RESPONSE DIAGNOSTIC:\n"
+        + (previous_issue or "none")[:350]
+        + "\nEXACT FUNCTION SOURCE TO EDIT:\n" + function_source
     )
     schema = {
         "type": "object",
@@ -180,7 +189,7 @@ def local_model_request(source, previous_issue, *, request_fn=urlopen, model=LOC
             "stream": False,
             "format": schema,
             "messages": [{"role": "user", "content": prompt}],
-            "options": {"temperature": 0.2, "num_predict": 2300}
+            "options": {"temperature": 0.15, "num_predict": 2900}
         }).encode("utf-8"),
         headers={"Content-Type": "application/json"},
     )
@@ -189,7 +198,7 @@ def local_model_request(source, previous_issue, *, request_fn=urlopen, model=LOC
     if parsed.scheme != "http" or parsed.hostname not in ("localhost", "127.0.0.1", "::1"):
         raise ValueError("neural fallback must remain on loopback")
     try:
-        with request_fn(request, timeout=180) as response:
+        with request_fn(request, timeout=330) as response:
             payload = json.loads(response.read(160000).decode("utf-8"))
     except (OSError, TimeoutError, URLError):
         raise RuntimeError("OLLAMA_UNAVAILABLE") from None
@@ -234,6 +243,7 @@ def generate(*, root, destination, key, request_fn=urlopen, local_request_fn=url
                        "provider": provider}
             receipt["attempts"].append(attempt)
             try:
+                response = None
                 if provider == "ollama":
                     response, metadata = local_model_request(
                         original, last_error, request_fn=local_request_fn)
@@ -269,8 +279,25 @@ def generate(*, root, destination, key, request_fn=urlopen, local_request_fn=url
                 return receipt
             except (ValueError, SyntaxError) as exc:
                 last_error = type(exc).__name__ + ": " + str(exc)[:135]
+                # Feed the next model its ACTUAL bad source anchor, not just
+                # the generic parser exception. Keep the response untrusted.
+                if isinstance(response, str):
+                    try:
+                        parsed = json.loads(response)
+                        if isinstance(parsed, dict) and isinstance(parsed.get("edits"), list):
+                            for edit in parsed["edits"][:5]:
+                                if not isinstance(edit, dict):
+                                    continue
+                                find = edit.get("find")
+                                if isinstance(find, str) and original.count(find) != 1:
+                                    rejected = find[:170].replace("\\n", " ")
+                                    attempt["rejected_find"] = rejected
+                                    last_error += "; rejected find (not in source): " + rejected
+                                    break
+                    except (ValueError, TypeError):
+                        pass
                 attempt.update(status="model_candidate_rejected",
-                               rejection=last_error)
+                               rejection=last_error[:380])
             except RuntimeError as exc:
                 failure = str(exc)[:100]
                 attempt.update(status="provider_failure", rejection=failure)
