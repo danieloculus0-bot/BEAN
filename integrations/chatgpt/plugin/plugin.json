@@ -1,0 +1,40 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "bean-evidence-companion",
+  "version": "0.1.0",
+  "description": "BEAN applies bounded evidence checks, contradiction review, proposal screening, and a real SQLite continuity demonstration.",
+  "homepage": "https://danieloculus0-bot.github.io/BEAN/",
+  "repository": "https://github.com/danieloculus0-bot/BEAN",
+  "keywords": [
+    "evidence",
+    "uncertainty",
+    "reasoning",
+    "memory",
+    "python"
+  ],
+  "author": {
+    "name": "BEAN project",
+    "url": "https://github.com/danieloculus0-bot/BEAN"
+  },
+  "extensions": {
+    "com.openai": {
+      "interface": {
+        "displayName": "BEAN — Evidence Companion",
+        "shortDescription": "Cute name. Serious reasoning. Evidence checks with receipts.",
+        "longDescription": "Review reported evidence, spot disagreements, screen proposals and inspect BEAN's persistence proof. No external source verification or persistent user memory.",
+        "developerName": "BEAN project",
+        "category": "Productivity",
+        "capabilities": [
+          "Read"
+        ],
+        "websiteURL": "https://danieloculus0-bot.github.io/BEAN/",
+        "brandColor": "#7ED957",
+        "defaultPrompt": [
+          "Use BEAN to identify what's missing from this claim's evidence.",
+          "Ask BEAN to compare these conflicting source statements.",
+          "Show me BEAN's real SQLite persistence demonstration."
+        ]
+      }
+    }
+  }
+}
