@@ -50,8 +50,10 @@ def validate(*, root, challenge, candidate_file, receipt_file, validated):
             raise ValueError("candidate receipt does not match exact accepted contract")
         if candidate["source_commit"] != SOURCE_COMMIT or candidate["target"] != TARGET.as_posix():
             raise ValueError("source commit or write path differs")
-        if candidate["provider_route"] != FREE_ROUTE:
-            raise ValueError("not the required no-cost model route")
+        if candidate["provider_route"] not in (FREE_ROUTE, "ollama_local"):
+            raise ValueError("unrecognized model provider")
+        if candidate["provider_route"] == "ollama_local" and not candidate["model_served"].startswith("qwen2.5-coder:"):
+            raise ValueError("unrecognized local neural model")
         source_path = root / TARGET
         if source_path.is_symlink():
             raise ValueError("source path unexpectedly symlinked")
@@ -70,6 +72,24 @@ def validate(*, root, challenge, candidate_file, receipt_file, validated):
             raise ValueError("candidate outside measured edit budget")
         if len(replacement.encode("utf-8")) > 50000:
             raise ValueError("candidate file too large")
+        # Prevent model-generated code from altering imports, credentials,
+        # global routing, or unrelated BEAN code. Fix only the witnessed
+        # author function while independent tests examine that new behavior.
+        old_tree, new_tree = ast.parse(original), ast.parse(replacement)
+        def exports(tree):
+            return [(getattr(n, "name", "anonymous_" + str(i)), n)
+                    for i, n in enumerate(tree.body)]
+        old_exports, new_exports = exports(old_tree), exports(new_tree)
+        if [name for name, _ in old_exports] != [name for name, _ in new_exports]:
+            raise ValueError("source changed unrelated module structure")
+        if "call_model" not in [name for name, _ in old_exports]:
+            raise ValueError("repair target missing from source")
+        for (old_name, old_node), (new_name, new_node) in zip(old_exports, new_exports):
+            if old_name == "call_model":
+                continue
+            if ast.dump(old_node, include_attributes=False) != ast.dump(
+                    new_node, include_attributes=False):
+                raise ValueError("source changed imports, globals or unrelated code")
         src_oracle = challenge / ORACLE
         local_oracle = root / LOCAL_ORACLE
         if src_oracle.is_symlink() or local_oracle.exists():

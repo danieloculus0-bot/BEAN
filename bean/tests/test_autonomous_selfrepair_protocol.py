@@ -140,3 +140,73 @@ def test_model_sees_failures_and_source_but_not_holdout_tests():
     assert "test_failed_model_reply_causes_substantively_different_retry_strategy" not in sent
     assert "bean/tests/test_autonomous_selfrepair_oracle.py" not in sent
     assert meta["model_served"] == "example/verified-free-route"
+
+def test_ollama_fallback_on_free_provider_rate_limit(tmp_path):
+    """A real neural fallback is invoked instead of ending at OpenRouter 429."""
+    root = setup(tmp_path)
+    called = []
+    def hosted(req, timeout):
+        raise HTTPError(req.full_url, 429, "quota", None, BytesIO(b""))
+    def local(req, timeout):
+        called.append(json.loads(req.data))
+        return LocalReply(EDIT)
+    with patch.object(lab, "current_commit", return_value=lab.SOURCE_COMMIT):
+        result = lab.generate(
+            root=root, destination=tmp_path / "out", key="fake",
+            request_fn=hosted, local_request_fn=local, backend="auto")
+    assert result["status"] == "candidate_drafted_not_verified"
+    assert [x["provider"] for x in result["attempts"]] == ["openrouter", "ollama"]
+    assert result["attempts"][0]["rejection"] == "OPENROUTER_HTTP_429"
+    assert called[0]["model"] == "qwen2.5-coder:1.5b"
+    assert called[0]["stream"] is False
+    assert "def useful()" in called[0]["messages"][0]["content"]
+    candidate = json.loads((tmp_path / "out" / "candidate.json").read_text())
+    assert candidate["provider_route"] == "ollama_local"
+    assert candidate["replacement"] == "def useful():\\n    return 2\\n"
+    assert (root / lab.TARGET).read_text() == ORIGINAL
+
+
+class LocalReply:
+    def __init__(self, value):
+        self.value = value
+    def __enter__(self):
+        return self
+    def __exit__(self, *_):
+        return False
+    def read(self, *_):
+        return json.dumps({
+            "model": "qwen2.5-coder:1.5b",
+            "message": {"content": self.value},
+            "done_reason": "stop",
+        }).encode()
+
+
+def test_local_neural_author_and_invalid_backend(tmp_path):
+    root = setup(tmp_path)
+    with patch.object(lab, "current_commit", return_value=lab.SOURCE_COMMIT):
+        report = lab.generate(
+            root=root, destination=tmp_path / "neural", key="",
+            local_request_fn=lambda *_ , **kw: LocalReply(EDIT),
+            backend="ollama")
+    assert report["status"] == "candidate_drafted_not_verified"
+    assert report["attempts"][0]["provider"] == "ollama"
+    assert (tmp_path / "neural" / "candidate.json").is_file()
+    with pytest.raises(ValueError, match="unsupported provider backend"):
+        lab.generate(root=root, destination=tmp_path / "bad", key="", backend="paid")
+
+
+def test_provider_402_never_triggers_local_fallback(tmp_path):
+    root = setup(tmp_path)
+    called = []
+    def paid(req, timeout):
+        raise HTTPError(req.full_url, 402, "payment required", None, BytesIO(b""))
+    def local(req, timeout):
+        called.append(req)
+        return LocalReply(EDIT)
+    with patch.object(lab, "current_commit", return_value=lab.SOURCE_COMMIT):
+        report = lab.generate(
+            root=root, destination=tmp_path / "no_paid", key="fake",
+            backend="auto", request_fn=paid, local_request_fn=local)
+    assert report["status"] == "provider_unavailable"
+    assert len(report["attempts"]) == 1
+    assert not called
