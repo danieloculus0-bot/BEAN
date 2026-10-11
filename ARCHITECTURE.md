@@ -1,3 +1,5 @@
+> **Historical document:** This page describes the original Memory Core 0.1 design, not BEAN's complete current architecture. Current Core includes modular cognition, evidence/uncertainty handling, replaceable reasoning providers, local task runtime and optional host/embodiment adapters. For the maintained scope and reproducible acceptance tests, see [README](README.md) and [Verified Utility and Evidence](docs/VERIFIED_UTILITY_AND_EVIDENCE_2026-10-11.md). The robot is an optional host, not BEAN's required identity.
+
 # BEAN Architecture — Memory Core 0.1
 
 ## Philosophy

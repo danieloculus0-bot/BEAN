@@ -34,6 +34,8 @@ jobs:
         run: python -m bean.runtime.boot_readiness --temp
       - name: Run offline public quickstart
         run: python -m examples.quickstart_reasoning
+      - name: Reproduce four consolidated offline utility proofs
+        run: python -m examples.capability_proof
       - name: Run complete suite with branch coverage
         run: python -m pytest bean/tests -q -ra --tb=short --junitxml=bean-core-tests.xml --cov=bean --cov-branch --cov-report=term-missing --cov-report=xml:bean-core-coverage.xml
       - name: Attach test evidence
