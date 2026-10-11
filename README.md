@@ -1,5 +1,7 @@
 # BEAN 🌱
 
+<p align="center"><img src="docs/bean-sprout.webp" alt="BEAN official mascot: smiling lime-green bean waving with a two-leaf sprout" width="180"></p>
+
 **Behavior Enabled Avatar Node** · Public-source persistent reasoning and evidence architecture
 
 [**Live site**](https://danieloculus0-bot.github.io/BEAN/) · [**Verified utility and evidence**](docs/VERIFIED_UTILITY_AND_EVIDENCE_2026-10-11.md) · [**Five-minute quickstart**](docs/GETTING_STARTED.md) · [**Research index**](docs/experimental-research-index-2026-10.md) · [**Contribute**](CONTRIBUTING.md)
