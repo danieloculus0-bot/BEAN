@@ -18,6 +18,11 @@ Those are things BEAN can use.
 
 ## Try BEAN and verify its claims
 
+**[Updated usefulness audit — what BEAN actually helps with, where it doesn't, and the next proof](docs/BEAN_USEFULNESS_AUDIT_2026-10-11.md)**
+
+The real two-session persistence demonstration is available as `python -m examples.restart_continuity`; unlike the one-shot mock proposal quickstart, it explicitly verifies that the SQLite event and pending proposal survive a clean BEAN shutdown and reopen. It still uses a mock reasoning provider and temporary local data. The separate [Bridge Daily Exception Brief](https://github.com/danieloculus0-bot/BEAN-AI-Bridge-/blob/main/docs/DAILY_EXCEPTION_BRIEF.md) now provides a practical, private, read-only management summary from authorized local export ledgers.
+
+
 [![BEAN full core regression](https://github.com/danieloculus0-bot/BEAN/actions/workflows/brain-smoke.yml/badge.svg)](https://github.com/danieloculus0-bot/BEAN/actions/workflows/brain-smoke.yml)
 
 **New to BEAN?** Start with the [offline quickstart](docs/GETTING_STARTED.md), [live project website](https://danieloculus0-bot.github.io/BEAN/), or [research evidence index](docs/experimental-research-index-2026-10.md).
