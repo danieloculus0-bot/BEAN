@@ -1,0 +1,132 @@
+name: BEAN peer code revision from independent failed evidence
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'bean/evaluation/bridge_feedback_revision.py'
+      - 'bean/tests/test_bridge_feedback_revision.py'
+      - '.github/workflows/bean-bridge-feedback-revision.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: bean-bridge-feedback-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  peer_revision:
+    name: Real free-model source revision from prior failed CI (not executed here)
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    permissions:
+      contents: read
+      actions: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/checkout@v4
+        with:
+          repository: danieloculus0-bot/BEAN-AI-Bridge-
+          ref: d06315bf05cae24131b19f3ce17b57d2d0b4351a
+          path: _bridge
+          persist-credentials: false
+      - uses: actions/checkout@v4
+        with:
+          repository: danieloculus0-bot/BEAN-AI-Bridge-
+          ref: 75b12233c243b61c61b2f9b205951cb8ae45f4b7
+          path: _challenge
+          persist-credentials: false
+      - uses: actions/download-artifact@v4
+        with:
+          name: bean-bridge-blind-author-38109084399
+          run-id: 38109084399
+          github-token: ${{ github.token }}
+          path: _prior
+      - uses: actions/download-artifact@v4
+        with:
+          name: bean-bridge-blind-verified-ubuntu-latest-38109084399
+          run-id: 38109084399
+          github-token: ${{ github.token }}
+          path: _failed
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Independently test author and feedback integrity contracts
+        run: |
+          python -m pip install pytest
+          python -m pytest bean/tests/test_bridge_peer_live_author.py bean/tests/test_bridge_feedback_revision.py -q -ra
+      - name: BEAN revises its own failing model-written source from saved evidence
+        env:
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+        run: |
+          python -m bean.evaluation.bridge_feedback_revision --bridge _bridge --challenge _challenge --previous _prior --verification _failed --out _revision
+      - name: Preserve failed prior SHA, independent CI evidence, and new model source
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bean-feedback-revised-candidate-${{ github.run_id }}
+          path: _revision/
+          retention-days: 21
+          if-no-files-found: warn
+
+  hidden_verify:
+    name: Sealed Bridge acceptance for BEAN's revised model code (${{ matrix.os }})
+    needs: peer_revision
+    if: always()
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/checkout@v4
+        with:
+          repository: danieloculus0-bot/BEAN-AI-Bridge-
+          ref: d06315bf05cae24131b19f3ce17b57d2d0b4351a
+          path: _bridge
+          persist-credentials: false
+      - uses: actions/checkout@v4
+        with:
+          repository: danieloculus0-bot/BEAN-AI-Bridge-
+          ref: 75b12233c243b61c61b2f9b205951cb8ae45f4b7
+          path: _challenge
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/download-artifact@v4
+        with:
+          name: bean-feedback-revised-candidate-${{ github.run_id }}
+          path: _revision
+      - name: Test real revised code against original source, hidden oracle and all regressions
+        run: |
+          python _bridge/tools/bean_novel_repair.py validate --root _bridge --challenge _challenge --candidate _revision/candidate.json --receipt _verified/verify-receipt.json --validated-dir _verified/payload
+      - name: Validate additional unseen invariant scenarios
+        env:
+          PYTHONPATH: _bridge/src
+        run: |
+          python -c "from shutil import copyfile; copyfile('_verified/payload/src/ezbean/core.py','_bridge/src/ezbean/core.py')"
+          python _bridge/tools/bean_metamorphic_hunter.py --seed 20261010 --trials 60 --fail-on-finding --receipt _verified/fixed-evidence.json
+          python -c "import os,subprocess,sys; subprocess.run([sys.executable,'_bridge/tools/bean_metamorphic_hunter.py','--seed',os.environ['GITHUB_RUN_ID'],'--trials','120','--fail-on-finding','--receipt','_verified/fresh-evidence.json'],check=True)"
+      - name: Preserve independent revision verdict and exact candidate bytes
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bean-feedback-verified-${{ matrix.os }}-${{ github.run_id }}
+          path: |
+            _verified/verify-receipt.json
+            _verified/payload/src/ezbean/core.py
+            _verified/fixed-evidence.json
+            _verified/fresh-evidence.json
+          retention-days: 21
+          if-no-files-found: warn
