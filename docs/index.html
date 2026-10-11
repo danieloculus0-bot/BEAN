@@ -680,6 +680,112 @@
     @media(max-width:980px){.experiment-grid{grid-template-columns:1fr 1fr}}
     @media(max-width:640px){.experiment-grid{grid-template-columns:1fr}.experiment-card{padding:22px}}
 
+
+    /* Mobile-first containment while preserving the existing dark Linux Mint desktop. */
+    html{width:100%;max-width:100%;scroll-padding-top:86px}
+    body{width:100%;max-width:100%;overflow-x:clip}
+    body,main,header,footer,.wrap{min-width:0}
+    .wrap{max-width:var(--max)}
+    .hero-grid,.split,.grid-2,.grid-3,.experiment-grid,.skill-grid,.skill-support{min-width:0}
+    .hero-grid>*,
+    .split>*,
+    .grid-2>*,
+    .grid-3>*,
+    .experiment-grid>*,
+    .skill-grid>*,
+    .skill-support>*{min-width:0}
+    .hero-grid{grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr)}
+    .mascot-art{
+      aspect-ratio:auto;
+      width:100%;
+      max-width:420px;
+      height:auto;
+      max-height:525px;
+      object-fit:contain;
+      border-radius:0;
+      box-shadow:none;
+      background:transparent;
+      filter:drop-shadow(0 16px 25px rgba(0,0,0,.18));
+    }
+    .mobile-nav-toggle,.mobile-jumps{display:none}
+    .section[id]{scroll-margin-top:96px}
+    .card,.experiment-card,.skill-card,.mascot-panel,.hero-card{min-width:0}
+    pre,code{max-width:100%}
+    @media(max-width:980px){
+      .hero-grid{grid-template-columns:minmax(0,1fr)}
+      .mascot-panel{min-height:0}
+      .experiment-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+    }
+    @media(max-width:760px){
+      html{scroll-padding-top:74px}
+      .site-header{position:sticky;top:0;z-index:40}
+      .nav{min-height:64px;padding:9px 0;display:flex;flex-wrap:nowrap;gap:12px;position:relative}
+      .brand{min-width:0;flex:1}
+      .brand-badge{flex:0 0 40px}
+      .mobile-nav-toggle{
+        display:inline-flex;align-items:center;justify-content:center;gap:9px;
+        flex:0 0 auto;border:1px solid #456b4a;border-radius:12px;
+        background:#273b2b;color:#e3f8df;padding:9px 12px;
+        font:700 .93rem/1.3 inherit;cursor:pointer;min-height:44px;
+      }
+      .mobile-nav-toggle:focus-visible,.navlinks a:focus-visible,.mobile-jumps a:focus-visible{outline:2px solid #a6ed82;outline-offset:3px}
+      .navlinks{
+        display:none;position:absolute;top:calc(100% + 1px);left:0;right:0;
+        z-index:45;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px;
+        margin:0;padding:12px;background:#18261c;border:1px solid #405d43;
+        border-radius:0 0 18px 18px;box-shadow:0 20px 36px rgba(0,0,0,.4);
+        max-height:min(70dvh,490px);overflow-y:auto;overscroll-behavior:contain;
+      }
+      .navlinks.is-open{display:grid}
+      .navlinks a{display:block;padding:12px 10px;line-height:1.25;border-radius:9px;overflow-wrap:anywhere}
+      .navlinks a:hover,.navlinks a:focus-visible{background:#29422d}
+      .mobile-jumps{
+        display:flex;gap:9px;overflow-x:auto;overscroll-behavior-x:contain;
+        scroll-snap-type:x proximity;scrollbar-width:thin;
+        padding:13px max(12px,env(safe-area-inset-left)) 8px;
+        width:100%;max-width:100%;-webkit-overflow-scrolling:touch;
+      }
+      .mobile-jumps a{
+        flex:0 0 auto;scroll-snap-align:start;white-space:nowrap;
+        background:#203326;border:1px solid #406346;border-radius:999px;
+        color:#d4f6cc;padding:7px 13px;font-size:.86rem;font-weight:700;
+      }
+      .section,.section.tight{padding:38px 0}
+      .section+.section{border-top:1px solid rgba(135,174,132,.14)}
+      .hero{padding:12px 0 28px}
+      .hero-grid,.split,.grid-2,.grid-3,.skill-grid,.skill-support,.experiment-grid,.mini-proof{
+        grid-template-columns:minmax(0,1fr);gap:14px;
+      }
+      .hero-card,.mascot-panel,.cta{padding:23px 19px}
+      .card,.experiment-card,.skill-card{padding:20px 18px}
+      .mascot-panel{min-height:0;gap:16px}
+      .mascot-art{max-height:440px;max-width:340px;margin-inline:auto}
+      h1{font-size:clamp(2.05rem,8.6vw,3.1rem);overflow-wrap:break-word}
+      h2{font-size:clamp(1.65rem,6.5vw,2.35rem);overflow-wrap:break-word}
+      h3{overflow-wrap:break-word}
+      .lead{font-size:1.04rem;line-height:1.6}
+      .hero-actions,.research-links{gap:10px}
+      .hero-actions .btn{min-height:44px;max-width:100%;text-align:center}
+      .code{max-width:100%;overflow-x:auto}
+      .code pre{padding:14px;font-size:12px;white-space:pre-wrap;overflow-wrap:anywhere}
+      .proof-line,.skill-command{max-width:100%;white-space:pre-wrap;overflow-wrap:anywhere}
+      .footer-inner{gap:10px}
+      .section[id]{scroll-margin-top:72px}
+    }
+    @media(max-width:380px){
+      .wrap{width:calc(100% - 20px)}
+      .hero-card,.mascot-panel,.cta{padding:20px 15px}
+      .card,.experiment-card,.skill-card{padding:17px 15px}
+      .navlinks{grid-template-columns:minmax(0,1fr)}
+      .navlinks a{padding:9px}
+      .hero-actions .btn{width:100%}
+      .mascot-art{max-height:380px}
+    }
+    @media(prefers-reduced-motion:reduce){
+      html{scroll-behavior:auto}
+      .btn{transition:none}
+    }
+
   </style>
 </head>
 <body>
@@ -691,7 +797,8 @@
         <span>BEAN</span>
       </a>
 
-      <nav class="navlinks">
+      <button class="mobile-nav-toggle" type="button" aria-controls="primary-navigation" aria-expanded="false" aria-label="Show site sections"><span aria-hidden="true">☰</span> Sections</button>
+      <nav class="navlinks" id="primary-navigation" aria-label="Site sections">
         <a href="#latest">Latest</a>
         <a href="#milestones">Verified tests</a>
         <a href="#difference">Why BEAN</a>
@@ -707,6 +814,9 @@
   </header>
 
   <main id="top">
+    <nav class="mobile-jumps" aria-label="Quick section links">
+      <a href="#latest">Latest</a><a href="#milestones">Verified tests</a><a href="#skills">Skills</a><a href="#benchmarks">Benchmarks</a><a href="#proof">Proof</a><a href="#quickstart">Quickstart</a><a href="#research">Research</a><a href="#community">Follow BEAN</a>
+    </nav>
     <section class="hero">
       <div class="wrap hero-grid">
 
@@ -1239,6 +1349,37 @@ python -m examples.quickstart_reasoning</code></pre>
       </div>
     </div>
   </footer>
+
+
+  <script>
+    (() => {
+      const toggle = document.querySelector('.mobile-nav-toggle');
+      const nav = document.getElementById('primary-navigation');
+      if (!toggle || !nav) return;
+      function closeMenu() {
+        nav.classList.remove('is-open');
+        toggle.setAttribute('aria-expanded', 'false');
+        toggle.setAttribute('aria-label', 'Show site sections');
+      }
+      toggle.addEventListener('click', () => {
+        const opened = nav.classList.toggle('is-open');
+        toggle.setAttribute('aria-expanded', String(opened));
+        toggle.setAttribute('aria-label', opened ? 'Hide site sections' : 'Show site sections');
+      });
+      nav.addEventListener('click', (event) => {
+        if (event.target.closest('a')) closeMenu();
+      });
+      document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape') closeMenu();
+      });
+      document.addEventListener('click', (event) => {
+        if (!event.target.closest('.nav')) closeMenu();
+      });
+      window.addEventListener('resize', () => {
+        if (window.innerWidth > 760) closeMenu();
+      });
+    })();
+  </script>
 
 </body>
 </html>
