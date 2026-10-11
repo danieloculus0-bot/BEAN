@@ -739,6 +739,23 @@
     .application-footer .btn{flex:0 0 auto;text-align:center}
     @media(max-width:980px){.application-intro{grid-template-columns:minmax(0,1fr)}.application-footer{flex-direction:column;align-items:stretch}}
     @media(max-width:760px){.application-grid{grid-template-columns:minmax(0,1fr)}.application-intro{gap:15px}.application-status,.application-footer{padding:19px}}
+
+    /* Self-development presentation preserves the established dark Mint theme. */
+    .autonomy-section{background:radial-gradient(ellipse at 70% 12%,rgba(121,194,101,.095),transparent 58%)}
+    .autonomy-lead{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(240px,.8fr);gap:23px;align-items:start;margin:18px 0 27px}
+    .autonomy-lead>*{min-width:0}
+    .autonomy-verdict{display:grid;gap:10px;padding:22px;border-radius:19px;border:1px solid #507651;background:linear-gradient(155deg,#293f2c,#192a1f)}
+    .autonomy-verdict span,.autonomy-pipeline span{display:block;font-size:.77rem;font-weight:850;letter-spacing:.05em;color:#b7ee9d;text-transform:uppercase}
+    .autonomy-verdict strong{font-size:1.13rem;color:#e2f9d9;line-height:1.4}
+    .autonomy-verdict p{font-size:.92rem;line-height:1.55;margin:0}
+    .autonomy-pipeline{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
+    .autonomy-pipeline article{min-width:0;padding:19px 16px;border:1px solid #425d46;border-radius:17px;background:linear-gradient(145deg,#283b2b,#1b2a20)}
+    .autonomy-pipeline strong{display:block;line-height:1.3;margin:9px 0 8px;color:#f0f9e9}
+    .autonomy-pipeline p{font-size:.91rem;line-height:1.6;margin:0}
+    .autonomy-resources{display:flex;flex-wrap:wrap;gap:12px 20px;margin-top:22px}
+    .autonomy-resources a{font-weight:730}
+    @media(max-width:980px){.autonomy-lead{grid-template-columns:minmax(0,1fr)}.autonomy-pipeline{grid-template-columns:repeat(2,minmax(0,1fr))}}
+    @media(max-width:760px){.autonomy-pipeline{grid-template-columns:minmax(0,1fr)}.autonomy-verdict{padding:19px}.autonomy-pipeline article{padding:18px}}
     /* Mobile-first containment while preserving the existing dark Linux Mint desktop. */
     html{width:100%;max-width:100%;scroll-padding-top:86px}
     body{width:100%;max-width:100%;overflow-x:clip}
@@ -874,6 +891,7 @@
         <a href="#latest">Build log</a>
         <a href="#milestones">Verified tests</a>
         <a href="#neural">Neural AI</a>
+        <a href="#autonomy">Autonomy</a>
         <a href="#skills">Skills</a>
         <a href="#applications">AIscend</a>
         <a href="./aiscend.html" target="_blank" rel="noopener noreferrer">Demo</a>
@@ -889,7 +907,7 @@
 
   <main id="top">
     <nav class="mobile-jumps" aria-label="Quick section links">
-      <a href="#skills">Skills</a><a href="#applications">Crypto beta</a><a href="./aiscend.html" target="_blank" rel="noopener noreferrer">Demo</a><a href="#neural">Neural AI</a><a href="#milestones">Verified tests</a><a href="#latest">Build log</a><a href="#benchmarks">Benchmarks</a><a href="#proof">Proof</a><a href="#quickstart">Quickstart</a><a href="#research">Research</a><a href="#community">Follow BEAN</a>
+      <a href="#skills">Skills</a><a href="#applications">Crypto beta</a><a href="./aiscend.html" target="_blank" rel="noopener noreferrer">Demo</a><a href="#neural">Neural AI</a><a href="#autonomy">Autonomy</a><a href="#milestones">Verified tests</a><a href="#latest">Build log</a><a href="#benchmarks">Benchmarks</a><a href="#proof">Proof</a><a href="#quickstart">Quickstart</a><a href="#research">Research</a><a href="#community">Follow BEAN</a>
     </nav>
     <section class="hero">
       <div class="wrap hero-grid">
@@ -1072,6 +1090,14 @@
             <a href="https://github.com/danieloculus0-bot/BEAN/blob/main/docs/bean-autonomous-code-growth-lab019.md">Inspect the source-writing engine and test record</a>
           </article>
           <article class="card">
+            <div class="skill-kicker">Bridge main · Reproducible research</div>
+            <div class="skill-icon" aria-hidden="true">🧩</div>
+            <h3>Metamorphic defect hunter</h3>
+            <p>Explore fictional ERP fixtures for timezone-equivalence, observation-order and source-coverage inconsistencies, recording seeded, hash-bound failure witnesses. A discovery finding requires independent investigation; it is not itself a repaired defect.</p>
+            <a href="https://github.com/danieloculus0-bot/BEAN-AI-Bridge-/blob/main/docs/BEAN_METAMORPHIC_DISCOVERY_LAB.md">Inspect the discovery evidence →</a>
+          </article>
+
+          <article class="card">
             <div class="skill-kicker">Core main · Event monitoring</div>
             <div class="skill-icon" aria-hidden="true">📡</div>
             <h3>Evidence-aware Watcher</h3>
@@ -1136,6 +1162,38 @@
     </section>
 
 
+
+    <section id="autonomy" class="section autonomy-section" aria-labelledby="autonomy-heading">
+      <div class="wrap">
+        <div class="eyebrow"><span class="dot"></span> BEAN Core · Autonomous Engineering</div>
+        <div class="autonomy-lead">
+          <div>
+            <h2 id="autonomy-heading">BEAN writes real code. Independent tests decide what ships.</h2>
+            <p class="lead">BEAN's scheduled self-repair laboratory can use local Qwen coding inference or a free hosted model to propose bounded modifications to its own Python code. AST statement IDs avoid fragile source-string matching. Independent Windows and Ubuntu verifiers must pass on the same source hash before automatic adoption is attempted.</p>
+            <p>The pipeline is operational, but verified recursive self-improvement remains an open research goal. Failed attempts stay in the evidence trail rather than being described as upgrades.</p>
+          </div>
+          <aside class="autonomy-verdict">
+            <span>Latest checked Core self-repair</span>
+            <strong>Model-written candidates produced · Zero verified promotions</strong>
+            <p>The latest October 11 run rejected an unchanged source edit and later lost its local inference provider. No self-authored patch from that run passed the independent promotion gate.</p>
+            <a href="https://github.com/danieloculus0-bot/BEAN/actions/runs/38175931431">Inspect the actual experiment result →</a>
+          </aside>
+        </div>
+        <div class="autonomy-pipeline" aria-label="Evidence-based autonomous engineering pipeline">
+          <article><span>01 · Witness</span><strong>Reproduce the defect</strong><p>Use a real failing baseline with pinned source, not an invented problem.</p></article>
+          <article><span>02 · Write</span><strong>Model proposes code</strong><p>Generate exact bounded source changes and preserve every rejection.</p></article>
+          <article><span>03 · Challenge</span><strong>Independent tests</strong><p>Windows and Linux reproduce the defect and run acceptance plus Core regression suites.</p></article>
+          <article><span>04 · Decide</span><strong>Promote or reject</strong><p>Only matching verified source hashes qualify for automatic mainline adoption.</p></article>
+        </div>
+        <div class="autonomy-resources">
+          <a href="https://github.com/danieloculus0-bot/BEAN/blob/main/bean/evaluation/autonomous_selfrepair.py">Inspect the neural author</a>
+          <a href="https://github.com/danieloculus0-bot/BEAN/blob/main/bean/evaluation/autonomous_selfrepair_verify.py">Independent verification</a>
+          <a href="https://github.com/danieloculus0-bot/BEAN/blob/main/docs/bean-lab022-autonomous-selfrepair.md">Research record</a>
+          <a href="https://github.com/danieloculus0-bot/BEAN/actions/workflows/bean-autonomous-selfrepair.yml">Live workflow history</a>
+        </div>
+      </div>
+    </section>
+
     <section id="applications" class="section application-section" aria-labelledby="applications-heading">
       <div class="wrap">
         <div class="eyebrow"><span class="dot"></span> Working application · BEAN + AIscend</div>
@@ -1192,13 +1250,34 @@
             <p>An optional policy gate checks fully closed Coinbase hourly candles against saved research rules. It can confirm or block a proposed buy but cannot originate an order. Partial data remains unavailable, not an invented signal.</p>
             <a href="https://github.com/danieloculus0-bot/AIscend/blob/main/src/bean_policy.py">Inspect the buy-confirmation gate</a>
           </article>
+
+          <article class="card">
+            <div class="skill-kicker">AIscend main · 300-second data windows</div>
+            <h3>Five-minute strategy research</h3>
+            <p>The local research supervisor reviews newly completed Coinbase five-minute candles and starts bounded causal experiments. An independent hourly Strategy School checks newly settled hourly data. Progress is persisted across restarts when its local Python server is operating.</p>
+            <a href="https://github.com/danieloculus0-bot/AIscend/blob/main/src/bean_research_supervisor.py">Inspect research scheduling</a> ·
+            <a href="https://github.com/danieloculus0-bot/AIscend/blob/main/src/bean_five_minute.py">Five-minute source</a>
+          </article>
+          <article class="card">
+            <div class="skill-kicker">AIscend main · Forward-only evaluation</div>
+            <h3>Independent forward paper trials</h3>
+            <p>Selected research candidates run against later five-minute candles with modeled trading costs, next-bar hypothetical fills and a BTC comparison. Final grades require at least 288 forward observations. These are paper results, not independently verified exchange profits.</p>
+            <a href="https://github.com/danieloculus0-bot/AIscend/blob/main/src/bean_five_minute.py">Inspect the paper book</a> ·
+            <a href="https://github.com/danieloculus0-bot/AIscend/blob/main/tests/test_bean_five_minute.py">Read its tests</a>
+          </article>
+          <article class="card">
+            <div class="skill-kicker">AIscend main · Optional local engineering</div>
+            <h3>Ollama-powered code engineer</h3>
+            <p>When explicitly started on Windows, a separate local AIscend engineer can propose source edits, compile and test them in temporary Git worktrees and adopt passing changes into a clean checkout. The local launcher must run; green cloud research alone does not edit a user's PC.</p>
+            <a href="https://github.com/danieloculus0-bot/AIscend/blob/main/docs/BEAN_UNATTENDED_LOCAL_ENGINEER.md">See how it runs and its boundaries</a>
+          </article>
         </div>
         <div class="application-footer">
           <div>
             <strong>Shippable beta with real test receipts.</strong>
             <p>GitHub Actions passed the Windows build for the linked AIscend revision, including regression tests and release packaging. Successful packaging does not establish live trading returns. An accepted order is not necessarily a verified fill; full fees, fills and portfolio valuation still require reconciliation.</p>
           </div>
-          <a class="btn btn-secondary" href="https://github.com/danieloculus0-bot/AIscend/actions/runs/38168385198">Inspect the Windows build</a>
+          <a class="btn btn-secondary" href="https://github.com/danieloculus0-bot/AIscend/actions/runs/38174689361">Inspect the Windows build</a>
         </div>
       </div>
     </section>
