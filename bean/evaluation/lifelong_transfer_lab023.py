@@ -99,7 +99,9 @@ def learn(proposals, scores, state, output, *, api_key=None, reflector=reflect):
             path = proposals / (task.task_id + ".py")
             valid = (
                 rec.get("provider_status") == "proposal_generated" and
-                rec.get("model_requested") == ROUTE and path.is_file() and
+                (rec.get("model_requested") == ROUTE or
+                 str(rec.get("model_requested", "")).startswith("ollama/")) and
+                path.is_file() and
                 filehash(path) == rec.get("source_sha256") and
                 grade.get("status") == "evaluated" and
                 type(grade.get("passed")) is int and
@@ -122,6 +124,8 @@ def learn(proposals, scores, state, output, *, api_key=None, reflector=reflect):
                 "source_sha256": rec.get("source_sha256") if valid else None,
                 "lesson": lesson["lesson"] if lesson else None,
                 "reflection_model": lesson.get("model_served") if lesson else None,
+                "training_model_requested": rec.get("model_requested") if valid else None,
+                "training_model_served": rec.get("served") if valid else None,
                 "train_phase": "development",
             })
         saved = journal.export()
@@ -160,13 +164,18 @@ def retained_lessons(journal):
     return lessons
 
 
-def transfer(state, output, *, api_key=None, author=bean_author):
+def transfer(state, output, *, api_key=None, author=bean_author,
+             model_requested=MODEL):
     """Counterbalanced same-model calls; memory is the sole intentional variable."""
     state, output = Path(state), Path(output)
     journal = Journal(state)
     try:
         lessons = retained_lessons(journal)
         tip = journal.export()["tip"]
+        training_routes = {e.get("training_model_requested") for e in journal.events()
+                           if e.get("lesson")}
+        if model_requested.startswith("ollama/") and training_routes != {model_requested}:
+            raise ValueError("Ollama transfer provider differs from retained training")
     finally:
         journal.close()
     note = ("\n\nUNTRUSTED MEMORY FROM EARLIER UNRELATED TASKS. These notes "
@@ -192,7 +201,7 @@ def transfer(state, output, *, api_key=None, author=bean_author):
             by_case[name][arm] = receipt
     result = {
         "schema": SCHEMA, "stage": "authored", "journal_tip": tip,
-        "model_requested": MODEL, "cases": by_case,
+        "model_requested": model_requested, "cases": by_case,
         "lesson_count": len(lessons), "memory_reopened_in_new_process": True,
         "candidates_tested_by_author": False,
     }
@@ -200,7 +209,8 @@ def transfer(state, output, *, api_key=None, author=bean_author):
     return result
 
 
-def judge(artifacts, state, out, *, grader=test_source):
+def judge(artifacts, state, out, *, grader=test_source,
+          model_requested=MODEL):
     """Separate, credential-free judge; no feedback used in transfer authoring."""
     artifacts, state, out = Path(artifacts), Path(state), Path(out)
     doc = load(artifacts / "manifest.json")
@@ -212,7 +222,7 @@ def judge(artifacts, state, out, *, grader=test_source):
         journal.close()
     if (doc.get("schema") != SCHEMA or doc.get("stage") != "authored" or
             doc.get("journal_tip") != tip or doc.get("lesson_count") != count or
-            doc.get("model_requested") != MODEL or
+            doc.get("model_requested") != model_requested or
             set(doc.get("cases", {})) != set(CASES)):
         raise ValueError("memory digest or model author manifest mismatch")
     result, complete, same_model = {}, True, True
@@ -226,7 +236,7 @@ def judge(artifacts, state, out, *, grader=test_source):
             rec = doc["cases"][name][arm]
             if (rec.get("case_id") != name or rec.get("memory_arm") != arm or
                     rec.get("public_source_sha256") != sha(spec["source"]) or
-                    rec.get("model_requested") != MODEL):
+                    rec.get("model_requested") != model_requested):
                 raise ValueError("task input or model identity was changed")
             path = artifacts / "candidates" / name / (arm + ".py")
             if rec.get("status") == "candidate_drafted_not_tested":
