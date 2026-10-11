@@ -131,23 +131,54 @@ def local_model_request(source, previous_issue, *, request_fn=urlopen, model=LOC
     """Ask an actual local neural model, never a synthetic canned repair."""
     if not model or len(model) > 80 or any(c not in "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789._:-/" for c in model):
         raise ValueError("invalid local model name")
-    # Local Qwen gets the same witnessed failure and original source as the
-    # hosted author. The frozen acceptance tests stay out of the prompt.
+    # Smaller, exact source excerpts help small local coding models concentrate
+    # on the witnessed failure instead of drowning in unrelated modules.
+    # The model sees neither the sealed oracle nor the verifier's tests.
+    parts = source.split("def call_model(", 1)
+    if len(parts) == 2:
+        function_source = "def call_model(" + parts[1].split("\ndef save(", 1)[0]
+    else:
+        # Small mock modules exercise the same provider/parser contracts.
+        function_source = source[:7500]
     prompt = (
-        "You are BEAN improving your OWN failing Python source author. "
-        "Return ONLY compact JSON with 1 to 5 edits, each an exact \"find\" and "
-        "\"replace\" string occurring once in the source. Do not give a "
-        "whole rewritten module, markdown, tests, commands or explanations. "
-        "Make a real, meaningful improvement that fixes the failure: "
-        + PROBLEM + "\nPrevious attempt: " + (previous_issue or "none")[:170]
-        + "\nYour current Python module:\n" + source
+        "You are BEAN repairing YOUR OWN Python source author. "
+        "Return a JSON object with an edits array only. Each entry must have "
+        "find and replace strings, where find is an EXACT unique excerpt "
+        "from the function below. Edit only the existing call_model function, "
+        "not module imports or network request construction. No markdown, "
+        "no whole-file rewrite, no simulated success, no test changes. "
+        "Choose your own engineering solution from the observed failure. "
+        "\nWITNESSED DEFECT:\n" + PROBLEM
+        + "\nLAST REJECTION:\n" + (previous_issue or "none")[:180]
+        + "\nCURRENT PYTHON FUNCTION (verbatim):\n" + function_source
     )
+    schema = {
+        "type": "object",
+        "properties": {
+            "edits": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 5,
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "find": {"type": "string"},
+                        "replace": {"type": "string"},
+                    },
+                    "required": ["find", "replace"],
+                    "additionalProperties": False,
+                },
+            },
+        },
+        "required": ["edits"],
+        "additionalProperties": False,
+    }
     request = Request(
         LOCAL_ENDPOINT, method="POST",
         data=json.dumps({
             "model": model,
             "stream": False,
-            "format": "json",
+            "format": schema,
             "messages": [{"role": "user", "content": prompt}],
             "options": {"temperature": 0.2, "num_predict": 2300}
         }).encode("utf-8"),
@@ -210,6 +241,8 @@ def generate(*, root, destination, key, request_fn=urlopen, local_request_fn=url
                     response, metadata = model_request(
                         key, original, last_error, request_fn=request_fn)
                 attempt.update(metadata)
+                if provider == "ollama" and isinstance(response, str):
+                    attempt["response_excerpt"] = response[:750]
                 edits = source_contract.parse_plan(response)
                 updated, diff = source_contract.apply_edits(original, edits)
                 if len(updated.encode("utf-8")) > 50000:
