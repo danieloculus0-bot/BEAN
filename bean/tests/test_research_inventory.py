@@ -55,7 +55,7 @@ def test_review_inventory_produces_evidence_for_both_repos_without_mutation():
                 return {"truncated": False, "tree": [
                     {"type": "blob", "path": "tests/test_bridge.py"},
                 ]}
-            if path.startswith("/compare/main..."):
+            if path == "/compare/" + "a" * 40 + "..." + "b" * 40:
                 return {"status": "ahead", "ahead_by": 1,
                         "behind_by": 0, "files": [{"filename": "tests/test_bridge.py"}]}
             raise AssertionError("Unexpected read: " + path)
