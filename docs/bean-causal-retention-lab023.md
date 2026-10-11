@@ -1,0 +1,89 @@
+# BEAN Lab023: Causal Retention, Not Just More Code
+
+**Status:** research experiment. This lab is designed to fail honestly. It
+does not establish artificial general intelligence, model-weight updates,
+unattended production autonomy, or guaranteed improvement.
+
+## The next threshold
+
+BEAN has previously written candidate repairs across unrelated tasks and kept
+source-hashed attempt histories. That is not sufficient evidence of transferable
+learning. This experiment tests the missing causal question:
+
+> After training on three tasks, does restarting BEAN with only its saved
+> general lessons improve performance on *different* tasks over the same model
+> run without those lessons?
+
+## Procedure
+
+1. **Model proposals:** BEAN Lab021's existing author requests fresh source
+   for three public training tasks: intervals, graph dependencies, inventory.
+   Training source is not executed in the job holding the model API key.
+2. **Independent supervision:** the existing Lab021 grader runs synthetic
+   development cases with no provider key. Source is checked against its
+   original SHA256 receipt.
+3. **Learning:** the external coding model receives the public specification,
+   its candidate, and aggregate development passes. It generates a short
+   transferable hypothesis without seeing individual expected answers or
+   hidden tests. BEAN's actual append-only SQLite Journal saves each claim,
+   source digest and score. The journal closes and reopens before use.
+4. **Transfer:** a *different job/process* reads and verifies the persistent
+   journal. For each fresh repair challenge from the existing neutral agent
+   arena, BEAN uses the same specified provider and source, once with no
+   history and once with learned notes. Task ordering is counterbalanced.
+   Model-produced files are saved as SHA256-bound candidates, not executed.
+5. **Blind evaluation:** Windows and Linux credential-free jobs check
+   receipt hashes, reject missing candidates, confirm comparable model
+   identity, execute withheld tests and publish both scores and failures.
+
+The withheld objectives are an as-of revision ledger and a transitive
+permission graph, distinct from the original interval, dependency-order and
+inventory exercises. These tasks are already public in the repository; their
+tests are *not* supplied to the author. This is only a controlled pilot, not
+a claim the problems are unknowable or that BEAN discovered them.
+
+## Reproduce
+
+Run the workflow named **BEAN Lab023 causal memory transfer, independent
+verdict** on its experiment branch, or rerun the exact source from its commit.
+The workflow has a Windows/Linux preflight that needs no credentials. Its
+model stages require the existing repository OpenRouter secret; without a
+valid configured provider, no model success is asserted.
+
+Local contract tests (mock author is explicitly a fake, NOT an AI result):
+
+    python -m pip install pytest
+    python -m pytest bean/tests/test_lifelong_transfer_lab023.py -v
+
+Inspect the workflow artifacts:
+
+- lab023-training-authors: original candidate byte hashes and author receipts
+- lab023-development-score: credential-free scores from training
+- lab023-persisted-learning: actual SQLite journal and restart proof
+- lab023-unseen-author-candidates: cold and memory-arm model sources
+- lab023-independent-verdict-* : independent Windows/Linux final report
+
+## Predeclared grading
+
+- **INCONCLUSIVE**: model or source absent, model identities do not agree,
+  incomplete evidence, or verified lessons insufficient to proceed.
+- **NOT_DEMONSTRATED**: both arms are comparable but learned notes failed
+  to improve both tasks without regressions.
+- **POSITIVE_CAUSAL_RETENTION_PILOT**: at least one new task shows more
+  withheld test passes after memory restoration and the other does not regress,
+  with both candidate sets present and same served model per task.
+
+Even a positive pilot must be replicated on more unseen task families,
+multiple randomized runs and an equally long *irrelevant-memory placebo*
+before making strong claims about a transferable capability. More context,
+order effects, stochastic model outputs and contamination of public tasks
+remain possible confounds. A failure is preserved, not rewritten as a pass.
+
+This experiment uses BEAN's real hash-chained Journal and existing coding
+author, but relies on external models for programming/reflection. No
+checkpoint weights are modified. No generated candidate is executed in a job
+with OpenRouter credentials. No source is automatically promoted to main.
+
+**Production promotion gate:** independently replicated positive effect,
+a no-memory and placebo ablation, unseen task distributions, documented cost
+per improvement, full cross-platform evidence, and scoped review.
