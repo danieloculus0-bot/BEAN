@@ -2,7 +2,9 @@
 
 <p align="center"><img src="docs/bean-sprout.webp" alt="BEAN official mascot: smiling lime-green bean waving with a two-leaf sprout" width="180"></p>
 
-**Behavior Enabled Avatar Node** · Public-source persistent reasoning and evidence architecture
+**Behavior Enabled Avatar Node** · Working, open-source AI technical beta
+
+**BEAN has usable skills today.** Persistent SQLite memory and recovery, evidence-first reasoning and revision, offline quality briefings, scheduled tasks, engineering audit reports, local Ollama/Windows voice and read-only MCP tools all have runnable code. The Bridge also has independently tested Arduino Nano/ESP32 emulator logic. Those are real capabilities even without enterprise hosting. [**Explore the skill showcase**](https://danieloculus0-bot.github.io/BEAN/#skills) or [**inspect the evidence ledger**](docs/VERIFIED_UTILITY_AND_EVIDENCE_2026-10-11.md). Specific local setup and source authentication requirements still apply; a technical beta isn't an unattended hardware or trading release.
 
 [**Live site**](https://danieloculus0-bot.github.io/BEAN/) · [**Production-readiness audit**](docs/PRODUCTION_READINESS_AUDIT_2026-10-11.md) · [**Verified utility and evidence**](docs/VERIFIED_UTILITY_AND_EVIDENCE_2026-10-11.md) · [**Five-minute quickstart**](docs/GETTING_STARTED.md) · [**Research index**](docs/experimental-research-index-2026-10.md) · [**Contribute**](CONTRIBUTING.md)
 
