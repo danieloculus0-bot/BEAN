@@ -30,7 +30,7 @@ SAFE_BUILTINS = {
 BANNED = (
     ast.Import, ast.ImportFrom, ast.ClassDef, ast.AsyncFunctionDef,
     ast.Global, ast.Nonlocal, ast.With, ast.AsyncWith, ast.Await,
-    ast.Lambda, ast.Yield, ast.YieldFrom, ast.Try, ast.Raise if False else ast.AsyncFor,
+    ast.Lambda, ast.Yield, ast.YieldFrom, ast.Try, ast.AsyncFor,
 )
 # Raise ValueError is allowed by design. The explicit allowed attributes
 # exclude introspection, reflection, I/O and subprocess facilities.
@@ -272,18 +272,29 @@ def grade(artifact_dir: Path, output: Path, *, phase: str,
             return subprocess_grade(task.task_id, path, phase)
         primary = assess(first, index.get(task.task_id), artifact_dir)
         new = assess(second, updated.get(task.task_id), revision_dir) if second else None
-        # A revision isn't chosen on the holdout. Report both separately, so
-        # improvements and regressions cannot be hidden by opportunistic choice.
+        # Selection is determined by previous DEVELOPMENT feedback alone.
+        # This HOLDOUT must never be used to choose the winning candidate.
+        revised_was_generated = bool(second and updated.get(task.task_id, {}).get(
+            "provider_status") == "proposal_generated")
+        selected = new if revised_was_generated else primary
+        with tempfile.TemporaryDirectory(prefix="bean021_baseline_") as td:
+            p = Path(td) / "baseline.py"
+            p.write_text(task.original, encoding="utf-8")
+            baseline = subprocess_grade(task.task_id, p, phase)
         results.append({
             "task_id": task.task_id,
             "passed": primary["passed"], "total": primary["total"],
-            "status": primary["status"],
-            "revision": new,
+            "status": primary["status"], "revision": new,
+            "baseline_passed": baseline["passed"],
+            "selected": "revision" if revised_was_generated else "initial",
+            "selected_passed": selected["passed"],
         })
     summary = {
         "schema": "bean.autonomy.lab021.evaluation.v1", "phase": phase,
         "tasks": results,
         "initial_total": sum(x["passed"] for x in results),
+        "baseline_total": sum(x["baseline_passed"] for x in results),
+        "selected_total": sum(x["selected_passed"] for x in results),
         "possible_total": sum(x["total"] for x in results),
         "revision_total": sum(x["revision"]["passed"] for x in results
                               if x["revision"] is not None),
