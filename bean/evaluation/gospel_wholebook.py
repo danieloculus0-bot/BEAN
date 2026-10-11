@@ -16,6 +16,7 @@ from pathlib import Path
 
 from bean.evaluation.gospel_lab import (
     Corpus, CorpusError, load_corpus, _load_json, read_reference_only_catalog,
+    age_at_accession,
 )
 
 SCHEMA = "bean.gospel_wholebook_screen.v1"
@@ -65,6 +66,55 @@ PASS_RULES = (
     ("05_cross_check_all_flags", {row[0] for row in RULES}),
 )
 COMPILED = {name: re.compile(regex, re.I) for name, _, regex, _ in RULES}
+
+
+
+def _named_accession_age(text: str) -> tuple[str, int] | None:
+    """Discover similar dated accession texts; do not infer same historic king."""
+    if not re.search(r"\bbegan\s+to\s+reign[e]?\b", text, flags=re.I):
+        return None
+    age = age_at_accession(text)
+    if age is None:
+        return None
+    # Early-modern spelling, and both "Name was X years old" / "X old was Name".
+    patterns = (
+        r"\b(?:yeeres?|yeares?|years?)\s+old\s+was\s+([A-Z][a-z]{2,})\b",
+        r"\b([A-Z][a-z]{2,})\s+was\s+[^.!?;:]{1,55}?\b(?:yeeres?|yeares?|years?)\s+old\b",
+    )
+    for pattern in patterns:
+        match = re.search(pattern, text)
+        if match and match[1].lower() not in {"and", "king", "lord", "god", "also"}:
+            return match[1].lower(), age
+    return None
+
+
+def mine_cross_book_accession_age_pairs(corpus: Corpus) -> list[dict]:
+    """Unseeded, cross-book comparison of *possible* same-king dates."""
+    named: dict[str, list[tuple[str, int]]] = collections.defaultdict(list)
+    for ref, text in corpus.verses.items():
+        name_age = _named_accession_age(text)
+        if name_age is not None:
+            name, age = name_age
+            named[name].append((ref, age))
+    links = []
+    for name, rows in sorted(named.items()):
+        for i, (ref1, age1) in enumerate(rows):
+            for ref2, age2 in rows[i + 1:]:
+                book1, book2 = (ref.rsplit(" ", 1)[0] for ref in (ref1, ref2))
+                if book1 == book2 or age1 == age2:
+                    continue
+                links.append({
+                    "candidate_name": name, "reference_a": ref1, "age_a": age1,
+                    "reference_b": ref2, "age_b": age2,
+                    "hypothesis": "different accession ages if this is the same ruler and event",
+                    "same_historical_person_verified": False,
+                    "same_event_verified": False,
+                    "verdict": "review_required",
+                    "proven_inaccuracy": False,
+                })
+    return sorted(links, key=lambda row: (
+        row["candidate_name"], row["reference_a"], row["reference_b"]
+    ))
 
 
 def screen_corpus(corpus: Corpus, *, comparison_case_refs: dict[str, list[str]] | None = None,
@@ -117,6 +167,7 @@ def screen_corpus(corpus: Corpus, *, comparison_case_refs: dict[str, list[str]] 
             "review": "not_individually_adjudicated",
             "hypothesis_status": "candidate_only",
         })
+    age_parallel_candidates = mine_cross_book_accession_age_pairs(corpus)
     indexed_refs = comparison_case_refs or {}
     crosslinks = [
         {
@@ -141,6 +192,8 @@ def screen_corpus(corpus: Corpus, *, comparison_case_refs: dict[str, list[str]] 
         "flagged_verses_by_book": dict(sorted(books.items())),
         "all_screened_candidate_entries": queue,
         "formal_dispute_links": crosslinks,
+        "automatically_mined_age_parallels": age_parallel_candidates,
+        "unseeded_age_parallel_candidates": len(age_parallel_candidates),
         "gnostic_reference_catalog_loaded": reference_only is not None,
         "gnostic_sources_used_to_confirm_claims": 0,
         "all_possible_inaccuracies_discovered": False,
