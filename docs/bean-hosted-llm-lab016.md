@@ -86,3 +86,30 @@ silently replacing model answers with emulator fixtures.
 
 Lab 016 stacks onto Lab 015 → Lab 014 → Lab 013 → Lab 012 → Lab 011. No merge
 to main is implied.
+
+
+## Actual access probe outcome — October 10, 2026
+
+GitHub Actions workflow: https://github.com/danieloculus0-bot/BEAN/actions/runs/38101281642
+
+The offline hosted-adapter regression passed **11 tests**. The workflow made
+exactly **one** HTTPS request for the synthetic smoke question and did not
+execute either hosted holdout arm.
+
+The HTTP response was plain text **"OK"** rather than a model chat-completions
+JSON object. The adapter rejected it and marked the hosted inference
+**unavailable**. This is not evidence that a neural model answered the prompt;
+a successful Actions job means only the experimental runner executed and
+reported the unavailable state correctly.
+
+The GitHub Models route cannot currently support an empirically verified
+neural LLM score in this environment. No model scores, learning gains or
+benchmarks have been invented. The final report distinguishes
+hosted_request_attempted from verified_real_model_response. All neural-model
+results remain N/A.
+
+The PR has been retargeted to its experimental parent (Lab 015) and remains
+draft. The hosted workflow is bound to a PR targeting main, so it is no longer
+triggered by updates to this stacked draft. The real-model route can be
+revisited using a proven inference gateway or explicitly connected API access,
+still without using any Jetson or robot hardware.
