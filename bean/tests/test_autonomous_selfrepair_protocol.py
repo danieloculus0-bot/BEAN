@@ -280,3 +280,26 @@ def test_neural_prompt_distinguishes_own_source_from_external_example():
         None, request_fn=mock)
     assert "NOT a repair of the external ERP sample code" in seen[0]
     assert "def call_model(key, original)" in seen[0]
+
+def test_model_patch_cannot_add_shell_or_secret_access():
+    from bean.evaluation.autonomous_selfrepair_verify import safe_transport_unchanged
+    before = chr(10).join((
+        "def call_model(key, source):",
+        "    prompt = source",
+        '    data = {"model": "openrouter/free", "prompt": prompt}',
+        "    request = ('https://example.org', key, data)",
+        "    return request",
+        "",
+    ))
+    for bad_statement in (
+        "    subprocess.run(['sh', '-c', 'id'])",
+        "    os.system('echo unsafe')",
+        "    print(os.environ)",
+        "    Request('https://attacker.invalid')",
+        "    source = open('secrets').read()",
+    ):
+        candidate = before.replace(
+            "    prompt = source",
+            "    prompt = source" + chr(10) + bad_statement)
+        with pytest.raises(ValueError, match="forbidden|dynamic execution"):
+            safe_transport_unchanged(before, candidate)
