@@ -117,9 +117,12 @@ def audit_repository(reader: GitHubReader, repo: str) -> dict:
         if name == "main":
             continue
         try:
-            comparison = reader.get(repo, "/compare/main..." + quote(name, safe=""))
+            head_sha = (ref.get("commit") or {}).get("sha")
+            if not head_sha:
+                raise ValueError("branch head SHA was missing")
+            comparison = reader.get(repo, "/compare/" + result["main_sha"] + "..." + head_sha)
             summary = summarize_compare(name, comparison)
-            summary["head_sha"] = (ref.get("commit") or {}).get("sha")
+            summary["head_sha"] = head_sha
             result["branches"].append(summary)
         except (RuntimeError, ValueError, KeyError) as exc:
             result["comparison_errors"].append({"branch": name, "error": str(exc)})
