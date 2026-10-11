@@ -6,7 +6,7 @@
   <title>BEAN | Persistent Reasoning, Memory & Evidence</title>
   <meta name="description" content="BEAN (Behavior Enabled Avatar Node) is a persistent reasoning architecture for memory, evidence traceability, uncertainty handling, and reviewable AI proposals. Cute name. Serious reasoning.">
   <meta name="robots" content="index, follow">
-  <meta name="theme-color" content="#7ed957">
+  <meta name="theme-color" content="#101713">
   <link rel="icon" type="image/svg+xml" href="./bean-icon.svg" sizes="any">
   <link rel="canonical" href="https://danieloculus0-bot.github.io/BEAN/">
   <link rel="sitemap" type="application/xml" href="https://danieloculus0-bot.github.io/BEAN/sitemap.xml">
@@ -584,6 +584,96 @@
         border-radius:22px;
       }
     }
+
+    /* BEAN dark Mint desktop theme, design-only. Research results remain evidence-gated. */
+    :root{
+      color-scheme:dark;
+      --bg:#101713;
+      --bg-2:#19231c;
+      --panel:#202b23;
+      --panel-soft:rgba(31,43,35,.88);
+      --line:#36483a;
+      --line-strong:#5a795d;
+      --text:#ecf5ed;
+      --muted:#b2c5b5;
+      --green:#91e274;
+      --green-2:#7ed45f;
+      --green-3:#65bc54;
+      --green-deep:#aceb8d;
+      --shadow:0 16px 40px rgba(0,0,0,.26);
+      --shadow-strong:0 20px 55px rgba(0,0,0,.34);
+    }
+    body{
+      color:var(--text);
+      background:
+        radial-gradient(ellipse at 8% 1%,rgba(90,168,77,.15),transparent 34%),
+        radial-gradient(ellipse at 98% 16%,rgba(63,116,66,.12),transparent 31%),
+        linear-gradient(170deg,#131d16 0%,#101713 49%,#141d17 100%);
+    }
+    a{color:#a8ec91}
+    a:hover{color:#d6fbc7}
+    .site-header{background:rgba(15,23,18,.91);border-bottom:1px solid rgba(103,154,101,.22)}
+    .brand-badge,.icon-badge,.skill-icon{
+      background:linear-gradient(145deg,#28382c,#1b2720);
+      border-color:#3b5540;
+      color:var(--green);
+      box-shadow:0 6px 22px rgba(0,0,0,.14);
+    }
+    .brand-badge img{width:31px;height:31px;object-fit:contain}
+    .navlinks a{color:#c2d6c6}
+    .navlinks a:hover{color:#fff}
+    .eyebrow,.pill{background:rgba(38,56,43,.86);border-color:var(--line);color:#bbf1a4;box-shadow:none}
+    .pill{color:#b9ccba}
+    .hero-card{
+      background:linear-gradient(155deg,rgba(36,50,40,.97),rgba(21,32,25,.97));
+      border-color:#405645;
+    }
+    .mascot-panel{
+      background:radial-gradient(circle at 48% 35%,rgba(89,151,69,.16),transparent 53%),
+                 linear-gradient(160deg,#263428,#1a261e);
+      border-color:#405645;
+    }
+    .mascot-glow{background:radial-gradient(circle,rgba(124,202,97,.13),transparent 72%)}
+    .mini-card,.card,.card.soft,.skill-card{
+      background:linear-gradient(160deg,rgba(39,53,43,.96),rgba(27,39,31,.96));
+      border-color:#3a5140;
+      box-shadow:var(--shadow);
+    }
+    .card:hover,.skill-card:hover{border-color:#638d69;box-shadow:0 18px 39px rgba(0,0,0,.28)}
+    .mini-label,.skill-kicker,.tagline{color:#a4e78a}
+    .proof-box,.skill-disclaimer{background:rgba(29,46,33,.84);border-color:#426048}
+    .proof-line,.skill-command{background:#141f17;border-color:#3a5941;color:#dcf6d3}
+    .skill-card:before{background:radial-gradient(circle,rgba(110,191,84,.13),transparent 72%)}
+    .skill-steps li:before{color:#98e17b}
+    .skill-disclaimer{color:var(--muted)}
+    .cta{background:radial-gradient(circle at top right,rgba(97,185,79,.12),transparent 34%),linear-gradient(160deg,#293a2d,#1a2920);border-color:#466047}
+    .btn-primary{background:linear-gradient(180deg,#a1ee7d,#7acf5c);color:#112417;box-shadow:0 9px 28px rgba(57,112,44,.28)}
+    .btn-primary:hover{color:#102514;box-shadow:0 12px 30px rgba(69,141,52,.34)}
+    .btn-secondary{background:#273b2b;border-color:#4e6d50;color:#d8f4d0}
+    .btn-secondary:hover{background:#314a35;color:#fff}
+    .code{background:#0d1510;border-color:#354b37;box-shadow:0 16px 42px rgba(0,0,0,.28)}
+    .footer{color:#9daf9f}
+    .footer-inner{border-color:#35473a}
+    .experiment-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;margin-top:26px}
+    .experiment-card{padding:25px;border:1px solid var(--line);border-radius:22px;background:linear-gradient(158deg,#263529,#1a271e);box-shadow:var(--shadow)}
+    .experiment-card h3{font-size:1.17rem;margin:13px 0 10px;line-height:1.28}
+    .experiment-card p{font-size:.94rem}
+    .experiment-card a{font-weight:700}
+    .status-tag{display:inline-block;border:1px solid #49674e;background:#203928;color:#b5ed9d;border-radius:8px;padding:5px 9px;font-size:.71rem;letter-spacing:.07em;text-transform:uppercase;font-weight:850}
+    .status-tag.warning{border-color:#806f48;background:#353021;color:#ead49c}
+    .result-number{font-weight:900;letter-spacing:-.04em;font-size:clamp(1.65rem,3.4vw,2.6rem);line-height:1.15;color:#d0f6bd}
+    .result-number small{font-size:.5em;font-weight:650;letter-spacing:0;color:var(--muted)}
+    .meter-group{margin:22px 0 14px}
+    .meter-label{display:flex;justify-content:space-between;gap:12px;font-size:.8rem;color:#cbdccc;font-weight:650;margin:11px 0 6px}
+    .meter-label strong{color:#f0fbec}
+    .meter{height:9px;border-radius:9px;background:#111b14;border:1px solid #354b38;overflow:hidden}
+    .meter span{display:block;height:100%;border-radius:9px;background:linear-gradient(90deg,#5ca64e,#a6ed82)}
+    .meter.baseline span{background:#738678}
+    .benchmark-note{margin-top:22px;padding:17px 20px;background:#19261d;border:1px solid #3b5840;border-radius:15px;color:var(--muted);font-size:.92rem}
+    .research-links{display:flex;flex-wrap:wrap;gap:14px;margin-top:14px}
+    @media(max-width:980px){.experiment-grid{grid-template-columns:1fr 1fr}}
+    @media(max-width:640px){.experiment-grid{grid-template-columns:1fr}.experiment-card{padding:22px}}
+
   </style>
 </head>
 <body>
@@ -591,13 +681,15 @@
   <header class="site-header">
     <div class="wrap nav" aria-label="Main navigation">
       <a class="brand" href="#top">
-        <span class="brand-badge">🫘</span>
+        <span class="brand-badge"><img src="./bean-icon.svg" alt="" width="31" height="31"></span>
         <span>BEAN</span>
       </a>
 
       <nav class="navlinks">
+        <a href="#latest">Latest</a>
         <a href="#difference">Why BEAN</a>
         <a href="#skills">New skills</a>
+        <a href="#benchmarks">Benchmarks</a>
         <a href="#proof">Proof</a>
         <a href="#quickstart">Quickstart</a>
         <a href="#research">Research</a>
@@ -634,6 +726,7 @@
             <span class="pill">Reviewable proposals</span>
             <span class="pill">Python + SQLite</span>
             <span class="pill">Practical daily reporting</span>
+            <span class="pill">Local voice chat</span>
           </div>
 
           <div class="hero-actions">
@@ -643,7 +736,7 @@
             <a class="btn btn-secondary" href="#quickstart">
               Run the quickstart
             </a>
-            <a class="btn btn-secondary" href="#skills">See his new skills ↓</a>
+            <a class="btn btn-secondary" href="#benchmarks">Inspect the comparisons</a>
           </div>
         </div>
 
@@ -705,6 +798,35 @@
           </div>
         </aside>
 
+      </div>
+    </section>
+
+
+    <section id="latest" class="section tight" aria-labelledby="latest-heading">
+      <div class="wrap">
+        <div class="eyebrow"><span class="dot"></span> October 11, 2026 · Verified development log</div>
+        <h2 id="latest-heading" style="margin-top:17px">What's new in BEAN</h2>
+        <p class="lead">Real code, actual test outcomes, and experiments still under review. Green CI means the stated tests ran successfully, not that BEAN has achieved general intelligence.</p>
+        <div class="experiment-grid">
+          <article class="experiment-card">
+            <span class="status-tag">In Core main</span>
+            <h3>Talk to BEAN: local Ollama + Windows speech</h3>
+            <p>An opt-in conversation interface uses a locally installed Ollama model. Windows can speak responses and listen for one utterance when prompted. BEAN's verified identity record can be loaded read-only. Chat history is session-only.</p>
+            <a href="https://github.com/danieloculus0-bot/BEAN/blob/main/docs/bean-local-voice.md">Read the actual setup and limitations</a>
+          </article>
+          <article class="experiment-card">
+            <span class="status-tag">In Core main</span>
+            <h3>Model-backed reasoning and GitHub evidence integration</h3>
+            <p>Opt-in localhost Ollama inference and a bounded engineering-evidence bridge are available in Core. These are supervised components, not automatic code deployment, independent fact authentication, or a hidden engineering team.</p>
+            <a href="https://github.com/danieloculus0-bot/BEAN/blob/main/docs/bean-github-engineering-bridge.md">Inspect the evidence bridge</a>
+          </article>
+          <article class="experiment-card">
+            <span class="status-tag warning">Draft Bridge experiment</span>
+            <h3>Real conversations exposed a real weakness</h3>
+            <p>Two hosted Qwen 2.5 Coder 1.5B trials showed BEAN incorrectly reversing a straightforward out-of-tolerance measurement after the user disagreed. Contract checks passed on Linux and Windows, but factual resistance did not. Full transcripts are retained.</p>
+            <a href="https://github.com/danieloculus0-bot/BEAN-AI-Bridge-/pull/31">Review the failures and test evidence</a>
+          </article>
+        </div>
       </div>
     </section>
 
@@ -809,6 +931,64 @@
 
         <div class="skill-disclaimer">
           <strong class="strong">What the demos mean:</strong> The daily brief reads previously exported local data, not a live ERP. The restart demonstration uses a mock provider and verifies clean close/reopen of SQLite, not an operating-system reboot or model learning. Source authenticity and business KPI rules still require a responsible host.
+        </div>
+      </div>
+    </section>
+
+
+    <section id="benchmarks" class="section" aria-labelledby="benchmarks-heading">
+      <div class="wrap">
+        <div class="eyebrow"><span class="dot"></span> Head-to-head results · Inspect the receipts</div>
+        <h2 id="benchmarks-heading" style="margin-top:17px">Where BEAN's approach pulled ahead.</h2>
+        <p class="lead">Some comparisons produced substantial wins against <strong class="strong">fixed algorithms</strong>. BEAN has also faced another real coding agent. We keep those categories separate and report the tie honestly.</p>
+        <div class="experiment-grid">
+          <article class="experiment-card">
+            <span class="status-tag">Strong synthetic baseline win</span>
+            <h3>Evidence-aware search vs. popularity-first ranking</h3>
+            <div class="result-number">91.25% <small>vs 18.75%</small></div>
+            <p>Lab 005 claim accuracy on a deliberately syndicated, synthetic misinformation dataset. BEAN's evidence-sensitive method also inspected an average of 3.61 pages versus 6.00 for the popularity-first baseline.</p>
+            <div class="meter-group">
+              <div class="meter-label"><span>Evidence-aware policy</span><strong>91.25%</strong></div>
+              <div class="meter"><span style="width:91.25%"></span></div>
+              <div class="meter-label"><span>Popularity baseline</span><strong>18.75%</strong></div>
+              <div class="meter baseline"><span style="width:18.75%"></span></div>
+            </div>
+            <a href="https://github.com/danieloculus0-bot/BEAN-AI-Bridge-/actions/runs/38029876766">See Lab 005 tests and report</a>
+          </article>
+          <article class="experiment-card">
+            <span class="status-tag">Strong synthetic condition win</span>
+            <h3>Detecting a source that suddenly changes</h3>
+            <div class="result-number">78.57% <small>vs 7.14%</small></div>
+            <p>Lab 003 change recall in <em>one</em> 80-episode source-drift condition, relative to its previous controller. Other tested conditions regressed. This is a narrow experimental result, not a universal learning score.</p>
+            <div class="meter-group">
+              <div class="meter-label"><span>Updated controller</span><strong>78.57%</strong></div>
+              <div class="meter"><span style="width:78.57%"></span></div>
+              <div class="meter-label"><span>Previous controller</span><strong>7.14%</strong></div>
+              <div class="meter baseline"><span style="width:7.14%"></span></div>
+            </div>
+            <a href="https://github.com/danieloculus0-bot/BEAN-AI-Bridge-/blob/experiment/bean-evidence-intelligence-20261010/experiments/evolution_lab/LAB003_FINDINGS.md">Read the full findings, including regressions</a>
+          </article>
+          <article class="experiment-card">
+            <span class="status-tag warning">Real agent match · Tie</span>
+            <h3>BEAN vs. Aider 0.86.2</h3>
+            <div class="result-number">16/16 <small>both agents</small></div>
+            <p>BEAN faced the actual Aider coding agent on two neutral synthetic repair tasks with the same named model and an independent hidden-test judge. Both passed all 16 functional tests. The subsequent optimization study was inconclusive. No agent victory is claimed.</p>
+            <div class="meter-group">
+              <div class="meter-label"><span>BEAN hidden tests</span><strong>16/16</strong></div>
+              <div class="meter"><span style="width:100%"></span></div>
+              <div class="meter-label"><span>Aider hidden tests</span><strong>16/16</strong></div>
+              <div class="meter baseline"><span style="width:100%"></span></div>
+            </div>
+            <a href="https://github.com/danieloculus0-bot/BEAN/actions/runs/38110050070">Open independent Aider match receipts</a>
+          </article>
+        </div>
+        <div class="benchmark-note">
+          <strong class="strong">What about OpenCode, Goose, OpenHands, Continue and Cline?</strong>
+          BEAN has a five-specialist tournament harness, but an implemented harness is not a recorded victory. Its model-backed matches require valid independent verdicts before their scores belong here.
+          <div class="research-links">
+            <a href="https://github.com/danieloculus0-bot/BEAN/blob/main/docs/bean-specialists-lab025.md">Inspect the specialist tournament protocol</a>
+            <a href="https://github.com/danieloculus0-bot/BEAN/blob/main/docs/experimental-research-index-2026-10.md">All research, including negative results</a>
+          </div>
         </div>
       </div>
     </section>
