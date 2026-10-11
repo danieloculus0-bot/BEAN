@@ -16,7 +16,8 @@ from bean.evaluation.autonomous_selfrepair import (
     SOURCE_COMMIT, TARGET, FREE_ROUTE, current_commit, sha, json_file
 )
 
-ORACLE = Path("bean/tests/test_autonomous_selfrepair_oracle.py")
+ORACLE = Path("experiments/autonomous_selfrepair/test_selfrepair_holdout.py")
+LOCAL_ORACLE = Path("bean/tests/test_autonomous_selfrepair_oracle.py")
 
 
 def run_suite(root, *args):
@@ -70,12 +71,12 @@ def validate(*, root, challenge, candidate_file, receipt_file, validated):
         if len(replacement.encode("utf-8")) > 50000:
             raise ValueError("candidate file too large")
         src_oracle = challenge / ORACLE
-        local_oracle = root / ORACLE
+        local_oracle = root / LOCAL_ORACLE
         if src_oracle.is_symlink() or local_oracle.exists():
             raise ValueError("sealed oracle missing or already exists")
         shutil.copyfile(src_oracle, local_oracle)
         created_oracle = True
-        baseline = run_suite(root, ORACLE.as_posix())
+        baseline = run_suite(root, LOCAL_ORACLE.as_posix())
         report["baseline_red"] = (
             baseline.returncode != 0
             and "test_failed_model_reply_causes_substantively_different_retry_strategy"
@@ -105,7 +106,7 @@ def validate(*, root, challenge, candidate_file, receipt_file, validated):
         if original is not None:
             (root / TARGET).write_text(original, encoding="utf-8")
         if created_oracle:
-            (root / ORACLE).unlink(missing_ok=True)
+            (root / LOCAL_ORACLE).unlink(missing_ok=True)
         json_file(receipt_file, report)
 
 
