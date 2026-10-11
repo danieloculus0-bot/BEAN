@@ -216,15 +216,13 @@ class TestEventLogger:
             summary="Test note for JSONL audit.",
             source=Source.HUMAN,
         )
-        log_path = Path(db_path).parent.parent.parent / "bean" / "logs" / "events.jsonl"
-        # The JSONL path is relative to the bean package; check it exists somewhere
-        # In test context, look for any events.jsonl that was written
-        # (path is hardcoded relative to module in event_logger.py)
-        from bean.memory import event_logger
-        module_log = Path(event_logger.__file__).parent.parent / "logs" / "events.jsonl"
-        assert module_log.exists(), f"JSONL log not found at {module_log}"
-        content = module_log.read_text()
-        assert "Test note for JSONL audit" in content
+        from bean.memory.audit_mirror import mirror_path
+        log_path = mirror_path(db_path)
+        assert log_path.exists(), f"Per-database JSONL mirror missing: {log_path}"
+        records = [json.loads(line) for line in log_path.read_text().splitlines()]
+        assert any(row["summary"] == "Test note for JSONL audit." for row in records)
+        # Never let a temporary database write into the installed package.
+        assert log_path.parent == Path(db_path).parent
 
     def test_severity_levels_stored_correctly(self, session):
         session_uuid, _ = session
