@@ -13,6 +13,7 @@ import json
 import os
 from pathlib import Path
 import subprocess
+import textwrap
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 from urllib.parse import urlparse
@@ -128,6 +129,89 @@ def model_request(key, source, previous_issue, *, request_fn=urlopen):
 
 
 
+
+# Stable host-defined statement IDs eliminate fragile model-written substring
+# anchors. The model can select only these existing prompt-related AST nodes.
+# Independent verification still rejects changes to provider transport.
+EDITABLE_ASSIGNMENTS = frozenset({
+    "prompt", "import_lines", "functions", "nearby",
+    "parser_context", "time_parser",
+})
+
+
+def statement_targets(source):
+    tree = ast.parse(source)
+    function = next(
+        (node for node in tree.body
+         if isinstance(node, ast.FunctionDef) and node.name == "call_model"), None
+    )
+    if function is None:
+        return {}
+    targets = {}
+    for node in function.body:
+        identifier = None
+        if isinstance(node, ast.Assign):
+            assigned = [x.id for x in node.targets if isinstance(x, ast.Name)]
+            if len(assigned) == 1 and assigned[0] in EDITABLE_ASSIGNMENTS:
+                identifier = assigned[0]
+        elif isinstance(node, ast.If) and isinstance(node.test, ast.Name) and node.test.id == "feedback":
+            identifier = "feedback"
+        if identifier is not None and identifier not in targets:
+            targets[identifier] = (node.lineno, node.end_lineno)
+    return targets
+
+
+def apply_statement_plan(original, edits):
+    """Apply model-authored replacement Python to exact AST-selected blocks."""
+    if not isinstance(edits, list) or not 1 <= len(edits) <= 3:
+        raise ValueError("expected one to three statement edits")
+    targets = statement_targets(original)
+    if not targets:
+        raise ValueError("original has no allowed statement targets")
+    seen = set()
+    original_lines = original.splitlines(keepends=True)
+    modifications = []
+    for item in edits:
+        if not isinstance(item, dict) or set(item) != {"target_id", "replacement"}:
+            raise ValueError("invalid statement edit schema")
+        target_id = item["target_id"]
+        replacement = item["replacement"]
+        if not isinstance(target_id, str) or target_id not in targets or target_id in seen:
+            raise ValueError("unknown or duplicated statement ID")
+        if not isinstance(replacement, str) or not 2 <= len(replacement) <= 4800:
+            raise ValueError("invalid statement replacement")
+        seen.add(target_id)
+        first, last = targets[target_id]
+        old = "".join(original_lines[first-1:last])
+        # A replacement is a Python statement expressed at zero indentation.
+        # The host reinstates the original function indentation.
+        code = textwrap.dedent(replacement.strip("\n"))
+        code = textwrap.indent(code, "    ")
+        if old.endswith("\n"):
+            code = code.rstrip("\n") + "\n"
+        if code == old:
+            raise ValueError("unchanged statement replacement")
+        modifications.append({"find": old, "replace": code})
+    return source_contract.apply_edits(original, modifications)
+
+
+def apply_model_response(original, response):
+    """Accept new stable statement IDs or legacy exact-text edits."""
+    if isinstance(response, str):
+        try:
+            parsed = json.loads(response)
+        except ValueError:
+            parsed = None
+        if isinstance(parsed, dict) and isinstance(parsed.get("edits"), list):
+            edits = parsed["edits"]
+            if any(isinstance(edit, dict) and "target_id" in edit for edit in edits):
+                if set(parsed) != {"edits"}:
+                    raise ValueError("unexpected statement plan fields")
+                return apply_statement_plan(original, edits)
+    return source_contract.apply_edits(original, source_contract.parse_plan(response))
+
+
+
 def local_model_request(source, previous_issue, *, request_fn=urlopen, model=LOCAL_MODEL):
     """Ask an actual local neural model, never a synthetic canned repair."""
     if not model or len(model) > 80 or any(c not in "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789._:-/" for c in model):
@@ -148,29 +232,41 @@ def local_model_request(source, previous_issue, *, request_fn=urlopen, model=LOC
         line for line in function_source.splitlines()
         if ("prompt" in line or "feedback" in line or "RELEVANT" in line)
     )[:2300]
+    target_spans = statement_targets(source)
+    raw_lines = source.splitlines()
+    marked = []
+    for target_id, (start_line, end_line) in target_spans.items():
+        marked.append(
+            "STATEMENT_ID=" + target_id + "\n"
+            + "\n".join(raw_lines[start_line-1:end_line])
+        )
+    if not marked:
+        marked = [function_source[:3000]]
     prompt = (
-        "You are BEAN independently repairing your own Python function "
-        "call_model(). This is a maintenance task for the real code author, "
-        "NOT a repair of the external ERP sample code that may be mentioned inside call_model's prompt strings. "
-        "Return ONLY a JSON object with an edits array. Every edit must "
-        "have find and replace strings. Copy find exactly, whitespace and "
-        "punctuation included, from the existing code below. It must occur "
-        "exactly once in that original code. Never invent a symbol or quote "
-        "a fabricated RuntimeError. Do not send unchanged edits. "
-        "Prefer a single meaningful, short edit. The failure is repeated "
-        "invalid or oversized model output, followed by ineffective retries "
-        "of essentially the same author prompt. Repair the retry design "
-        "so rejected output causes a genuinely different bounded strategy "
-        "without bypassing error checks. Choose the implementation yourself. "
-        "Preserve function signatures, provider routing, authentication, "
-        "model endpoints, and all unrelated functions. Never edit tests, "
-        "execute commands or change the caller's external source. "
+        "You are BEAN repairing the source of YOUR OWN Python code generator. "
+        "This is NOT a repair of the external ERP sample code mentioned inside "
+        "the current prompt strings. Independent validators will check your "
+        "real change. Produce ONLY JSON with an edits array, 1 to 3 items. "
+        "For each edit use target_id (one of the real statement IDs below) "
+        "and replacement (complete Python statement source). Do NOT create "
+        "a find string; the host maps IDs to exact Python AST locations. "
+        "Write replacement Python at ZERO indentation; the host indents it "
+        "inside the original call_model function. Do not duplicate the whole "
+        "function, supply markdown, or repeat identical code. "
+        "The witnessed defect: unusable model replies lead to essentially "
+        "the same author prompt being sent on retry. Design a genuinely "
+        "smaller and more relevant retry strategy, keeping useful source "
+        "context, original public function signatures and the objective. "
+        "Choose the implementation yourself; preserve provider routing, "
+        "authentication and result processing. The external tests are hidden. "
+        "One meaningful edit is preferable to several speculative ones. "
         "\nPREVIOUS REJECTED PROPOSAL:\n"
         + (previous_issue or "none")[:350]
-        + "\nREAL SOURCE LINES TO ANCHOR AN EDIT:\n" + prompt_section
-        + "\nCURRENT PYTHON FUNCTION (ACTUAL CALL_MODEL PYTHON FUNCTION):\n" + function_source
-        + "\nYour find anchor must be copied from these actual lines, "
-        "not from an error description or embedded sample code. "
+        + "\nEDITABLE EXISTING STATEMENTS:\n" + "\n\n".join(marked)
+        + "\nCURRENT PYTHON FUNCTION (ACTUAL CALL_MODEL PYTHON FUNCTION):\n"
+        + function_source
+        + "\nSelect existing STATEMENT_ID values and write valid replacements, "
+        "not example code quoted inside the source. "
     )
     schema = {
         "type": "object",
@@ -178,14 +274,17 @@ def local_model_request(source, previous_issue, *, request_fn=urlopen, model=LOC
             "edits": {
                 "type": "array",
                 "minItems": 1,
-                "maxItems": 5,
+                "maxItems": 3,
                 "items": {
                     "type": "object",
                     "properties": {
-                        "find": {"type": "string"},
-                        "replace": {"type": "string"},
+                        "target_id": {
+                            "type": "string",
+                            "enum": list(target_spans) or ["prompt", "feedback"],
+                        },
+                        "replacement": {"type": "string"},
                     },
-                    "required": ["find", "replace"],
+                    "required": ["target_id", "replacement"],
                     "additionalProperties": False,
                 },
             },
@@ -200,7 +299,7 @@ def local_model_request(source, previous_issue, *, request_fn=urlopen, model=LOC
             "stream": False,
             "format": schema,
             "messages": [{"role": "user", "content": prompt}],
-            "options": {"temperature": 0.15, "num_predict": 2900}
+            "options": {"temperature": 0.1, "num_predict": 1900}
         }).encode("utf-8"),
         headers={"Content-Type": "application/json"},
     )
@@ -264,8 +363,7 @@ def generate(*, root, destination, key, request_fn=urlopen, local_request_fn=url
                 attempt.update(metadata)
                 if provider == "ollama" and isinstance(response, str):
                     attempt["response_excerpt"] = response[:750]
-                edits = source_contract.parse_plan(response)
-                updated, diff = source_contract.apply_edits(original, edits)
+                updated, diff = apply_model_response(original, response)
                 if len(updated.encode("utf-8")) > 50000:
                     raise ValueError("source exceeds bound")
                 # The original source contract limits changes to 100 lines,

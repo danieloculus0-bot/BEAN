@@ -323,3 +323,97 @@ def test_local_author_uses_real_python_function_not_decoy_text():
     assert "prompt += 'repeated source'" in messages[0]
     assert "not from an error description" in messages[0]
     assert "fake()" in messages[0]
+
+
+def test_ast_statement_ids_can_change_real_prompt_without_literal_anchors():
+    base = (
+        "def call_model(key, original, feedback=None):\n"
+        "    import_lines = []\n"
+        "    prompt = original\n"
+        "    if feedback:\n"
+        "        prompt += feedback\n"
+        "    data = {'prompt': prompt}\n"
+        "    return data\n"
+    )
+    result, changed = lab.apply_statement_plan(base, [
+        {"target_id": "feedback",
+         "replacement": "if feedback:\n    prompt = prompt[:75] + feedback"}
+    ])
+    assert "prompt = prompt[:75] + feedback" in result
+    assert "data = {'prompt': prompt}" in result
+    assert changed > 0
+    assert "prompt" in lab.statement_targets(base)
+    assert "feedback" in lab.statement_targets(base)
+    assert "data" not in lab.statement_targets(base)
+
+
+def test_ast_statement_ids_refuse_unknown_or_duplicate_targets():
+    code = (
+        "def call_model(key, original, feedback=None):\n"
+        "    prompt = original\n"
+        "    if feedback:\n"
+        "        prompt += feedback\n"
+        "    data = {'payload': prompt}\n"
+        "    return data\n"
+    )
+    for edits in (
+        [{"target_id": "data", "replacement": "data = {}"}],
+        [{"target_id": "prompt", "replacement": "prompt = 'x'"},
+         {"target_id": "prompt", "replacement": "prompt = 'y'"}],
+        [{"target_id": "prompt", "replacement": "prompt = original", "extra": "bad"}],
+    ):
+        with pytest.raises(ValueError):
+            lab.apply_statement_plan(code, edits)
+    with pytest.raises(ValueError):
+        lab.apply_model_response(code, json.dumps({
+            "edits": [{"target_id": "prompt", "replacement": "prompt = None"}],
+            "action": "write_file",
+        }))
+
+
+def test_real_local_model_schema_targets_stable_statement_ids():
+    seen = []
+    def mocked(req, timeout):
+        body = json.loads(req.data)
+        seen.append(body)
+        return LocalReply(EDIT)
+    code = (
+        "def call_model(key, original, feedback=None):\n"
+        "    prompt = original\n"
+        "    if feedback:\n"
+        "        prompt += feedback\n"
+        "    data = {'prompt': prompt}\n"
+        "    return data\n"
+    )
+    lab.local_model_request(code, None, request_fn=mocked)
+    item = seen[0]["format"]["properties"]["edits"]["items"]
+    assert set(item["properties"]["target_id"]["enum"]) == {"prompt", "feedback"}
+    assert "STATEMENT_ID=prompt" in seen[0]["messages"][0]["content"]
+    assert "STATEMENT_ID=feedback" in seen[0]["messages"][0]["content"]
+
+
+def test_generated_statement_edit_is_really_applied_not_preselected(tmp_path):
+    code = (
+        "def call_model(key, original, feedback=None):\n"
+        "    prompt = original\n"
+        "    if feedback:\n"
+        "        prompt += feedback\n"
+        "    data = {'prompt': prompt}\n"
+        "    return data\n"
+    )
+    reply = json.dumps({"edits": [
+        {"target_id": "feedback",
+         "replacement": "if feedback:\n    prompt = prompt[:200] + feedback"}
+    ]})
+    root = tmp_path / "baseline"
+    source = root / lab.TARGET
+    source.parent.mkdir(parents=True)
+    source.write_text(code, encoding="utf-8")
+    with patch.object(lab, "current_commit", return_value=lab.SOURCE_COMMIT):
+        report = lab.generate(root=root, destination=tmp_path / "output",
+                              key="", backend="ollama",
+                              local_request_fn=lambda *_args, **_kwargs: LocalReply(reply))
+    assert report["status"] == "candidate_drafted_not_verified"
+    candidate = json.loads((tmp_path / "output" / "candidate.json").read_text())
+    assert "prompt[:200]" in candidate["replacement"]
+    assert candidate["replacement_sha256"] == lab.sha(candidate["replacement"])
