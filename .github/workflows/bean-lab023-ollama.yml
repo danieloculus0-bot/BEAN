@@ -1,0 +1,177 @@
+name: BEAN Lab023 offline Ollama fallback and independent holdout
+
+on:
+  push:
+    branches: [experiment/bean-causal-retention-lab023-20261010]
+    paths:
+      - 'bean/evaluation/lab023_ollama.py'
+      - 'bean/evaluation/lifelong_transfer_lab023.py'
+      - 'bean/evaluation/transfer_oracle.py'
+      - 'bean/tests/test_lab023_ollama.py'
+      - 'bean/tests/test_lifelong_transfer_lab023.py'
+      - '.github/workflows/bean-lab023-ollama.yml'
+      - 'docs/bean-causal-retention-lab023.md'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify-local-api-and-contracts:
+    name: Offline Ollama contracts (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 14
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install pytest
+      - name: Native BEAN journal, local provider, and independent grader regression
+        run: |
+          python -m pytest bean/tests/test_lab023_ollama.py bean/tests/test_lifelong_transfer_lab023.py -q -ra --tb=short
+
+  model-author:
+    name: Real locally hosted Qwen proposal generation; no candidate execution
+    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && contains(github.event.head_commit.message, '[lab023-ollama-live]'))
+    needs: verify-local-api-and-contracts
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install local Ollama engine and 0.5B coding model on this disposable runner
+        run: |
+          curl -fsSL https://ollama.com/install.sh | sh
+          ollama serve >/tmp/ollama-lab023.log 2>&1 &
+          python - <<'PY'
+          import time, urllib.request
+          for attempt in range(60):
+              try:
+                  urllib.request.urlopen('http://127.0.0.1:11434/api/tags',timeout=2).close()
+                  break
+              except OSError:
+                  time.sleep(1)
+          else:
+              raise RuntimeError('Ollama startup was not verified')
+          PY
+          ollama pull qwen2.5-coder:0.5b
+      - name: Generate 3 actual independent training candidates without OpenRouter
+        env:
+          BEAN_OLLAMA_MODEL: qwen2.5-coder:0.5b
+        run: python -m bean.evaluation.lab023_ollama train --out _lab023_ollama/
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: lab023-ollama-training-source
+          path: _lab023_ollama/training/
+          if-no-files-found: warn
+
+  independent-training-score:
+    needs: model-author
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/download-artifact@v4
+        with:
+          name: lab023-ollama-training-source
+          path: _lab023_ollama/training/
+      - name: Score development on independent scorer without model
+        run: python -m bean.evaluation.lab023_ollama development --out _lab023_ollama/
+      - uses: actions/upload-artifact@v4
+        with:
+          name: lab023-ollama-development
+          path: _lab023_ollama/development.json
+          if-no-files-found: error
+
+  model-reflection-transfer:
+    needs: independent-training-score
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/download-artifact@v4
+        with:
+          name: lab023-ollama-training-source
+          path: _lab023_ollama/training/
+      - uses: actions/download-artifact@v4
+        with:
+          name: lab023-ollama-development
+          path: _lab023_ollama/
+      - name: Install same actual coding model on separate runner
+        run: |
+          curl -fsSL https://ollama.com/install.sh | sh
+          ollama serve >/tmp/ollama-lab023.log 2>&1 &
+          python - <<'PY'
+          import time, urllib.request
+          for attempt in range(60):
+              try:
+                  urllib.request.urlopen('http://127.0.0.1:11434/api/tags',timeout=2).close()
+                  break
+              except OSError:
+                  time.sleep(1)
+          else:
+              raise RuntimeError('Ollama startup was not verified')
+          PY
+          ollama pull qwen2.5-coder:0.5b
+      - name: Generate REAL general lessons and attempt new cold-vs-memory problems
+        env:
+          BEAN_OLLAMA_MODEL: qwen2.5-coder:0.5b
+        run: python -m bean.evaluation.lab023_ollama reflect-transfer --out _lab023_ollama/
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: lab023-ollama-retained-memory-and-transfer
+          path: |
+            _lab023_ollama/state/
+            _lab023_ollama/transfer/
+          if-no-files-found: warn
+
+  independent-heldout:
+    needs: model-reflection-transfer
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 14
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/download-artifact@v4
+        with:
+          name: lab023-ollama-retained-memory-and-transfer
+          path: _lab023_ollama/
+      - name: Independently grade unknown coding tasks and fail closed on missing proof
+        run: python -m bean.evaluation.lab023_ollama judge --out _lab023_ollama/
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: lab023-ollama-heldout-${{ matrix.os }}
+          path: _lab023_ollama/verdict.json
+          if-no-files-found: warn
