@@ -227,13 +227,25 @@ def subprocess_grade(task_id: str, path: Path, phase: str) -> dict:
             [sys.executable, "-I", "-S", str(Path(__file__).resolve()),
              "--worker", task_id, str(src), phase],
             capture_output=True, text=True, timeout=12,
-            cwd=td, env={"PATH": os.environ.get("PATH", ""),
-                         "PYTHONIOENCODING": "utf-8"},
+            cwd=td, env={
+                "PATH": os.environ.get("PATH", ""),
+                "PYTHONIOENCODING": "utf-8",
+                # Windows CPython 3.10 may require SystemRoot and WinDir to
+                # find its own runtime assemblies; no credentials are copied.
+                **{key: os.environ[key] for key in ("SYSTEMROOT", "WINDIR", "TEMP", "TMP")
+                   if key in os.environ},
+            },
         )
     if result.returncode != 0:
+        # Report only an exception class, never raw model output, process
+        # stdout/stderr, environment data, or potentially sensitive text.
+        diagnostics = ("module_import_failure" if "ModuleNotFoundError" in result.stderr
+                       else "argument_parse_error" if "unrecognized arguments" in result.stderr
+                       else "runtime_failure" if "Traceback" in result.stderr
+                       else "worker_exit_" + str(result.returncode))
         return {"passed": 0, "total": len(fixtures(task_id, phase)),
                 "failure_count": len(fixtures(task_id, phase)),
-                "status": "rejected_or_crashed"}
+                "status": "rejected_or_crashed", "diagnostic": diagnostics}
     try:
         data = json.loads(result.stdout)
         if type(data["passed"]) is not int or data["passed"] < 0 or data["passed"] > data["total"]:
