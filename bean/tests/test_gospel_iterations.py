@@ -213,3 +213,33 @@ def test_five_sessions_change_research_assignments_not_certainty():
     ]
     assert probes[4]["certainty_increased_from_repetition_alone"] is False
     assert probes[1]["historical_fact_independently_attested_by_engine"] is False
+
+
+def test_shared_historical_source_is_attributed_to_every_dependent_dispute():
+    corpus = small_corpus()
+    cases = {"cases": [
+        {"id": "first", "kind": "narrative",
+         "references": ["Matthew 27:5", "Acts 1:18"]},
+        {"id": "second", "kind": "narrative",
+         "references": ["Matthew 27:5", "Acts 1:18"]},
+    ]}
+    common_url = "https://www.biblegateway.com/resources/encyclopedia-of-the-bible/Satan"
+    first = _model("first", "sequence_possible",
+                   ["Matthew 27:5", "Acts 1:18"], assumptions=["one interpretation"])
+    second = _model("second", "sequence_possible",
+                    ["Matthew 27:5", "Acts 1:18"], assumptions=["another interpretation"])
+    first["research"] = [{"url": common_url, "claim": "first use", "role": "source"}]
+    second["research"] = [{"url": common_url, "claim": "second use", "role": "source"}]
+    calls = []
+    def fake(url):
+        calls.append(url)
+        return {"transport": "http_response", "http_code": 200, "factual_claim_verified": False}
+    result = investigate(corpus, cases,
+                         {"schema": "bean.gospel_historical_models.v1",
+                          "cases": [first, second]}, rounds=5, source_fetcher=fake)
+    assert calls == [common_url]
+    assert len(result["source_observations"]) == 1
+    assert result["source_observations"][0]["linked_case_ids"] == ["first", "second"]
+    assert len(result["source_observations"][0]["all_research_uses"]) == 2
+    assert result["iterations"][-1]["cases"]["first"]["source_observations"] == 1
+    assert result["iterations"][-1]["cases"]["second"]["source_observations"] == 1
