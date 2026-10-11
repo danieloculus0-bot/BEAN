@@ -1,0 +1,39 @@
+name: BEAN Breakout learning, real journal and fresh holdout
+on:
+  push:
+    branches:
+      - experiment/bean-breakout-learning-20261011
+    paths:
+      - 'experiments/breakout_learning/**'
+      - '.github/workflows/bean-breakout-learning.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  breakout:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install numpy
+      - name: Train, journal, restart and run independent holdout
+        run: python -m experiments.breakout_learning
+      - name: Upload data and SHA-chained journal
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: breakout-real-BEAN-journal-${{ matrix.os }}
+          path: |
+            breakout-proof/results.json
+            breakout-proof/bean_learning.sqlite
+            breakout-proof/best_policy.npy
+          if-no-files-found: warn
