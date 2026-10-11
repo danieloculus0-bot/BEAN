@@ -5,6 +5,8 @@ on:
     branches: [main]
     paths:
       - 'experiments/agent_arena/optimize.py'
+      - 'experiments/agent_arena/author.py'
+      - 'bean/tests/test_agent_arena_adaptive.py'
       - 'experiments/agent_arena/opt_judge.py'
       - 'bean/tests/test_agent_arena_optimization.py'
       - '.github/workflows/bean-vs-aider-optimize.yml'
@@ -12,6 +14,8 @@ on:
     branches: [main]
     paths:
       - 'experiments/agent_arena/optimize.py'
+      - 'experiments/agent_arena/author.py'
+      - 'bean/tests/test_agent_arena_adaptive.py'
       - 'experiments/agent_arena/opt_judge.py'
       - 'bean/tests/test_agent_arena_optimization.py'
       - '.github/workflows/bean-vs-aider-optimize.yml'

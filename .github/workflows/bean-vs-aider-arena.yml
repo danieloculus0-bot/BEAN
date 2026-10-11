@@ -6,12 +6,14 @@ on:
     paths:
       - 'experiments/agent_arena/**'
       - 'bean/tests/test_agent_arena_protocol.py'
+      - 'bean/tests/test_agent_arena_adaptive.py'
       - '.github/workflows/bean-vs-aider-arena.yml'
   push:
     branches: [main]
     paths:
       - 'experiments/agent_arena/**'
       - 'bean/tests/test_agent_arena_protocol.py'
+      - 'bean/tests/test_agent_arena_adaptive.py'
       - '.github/workflows/bean-vs-aider-arena.yml'
   workflow_dispatch:
 
@@ -41,7 +43,7 @@ jobs:
       - name: Compile the source, independent test cases, and judge
         run: python -m compileall -q experiments/agent_arena bean/tests/test_agent_arena_protocol.py
       - name: Verify original code is actually broken and agents share inputs
-        run: python -m unittest bean.tests.test_agent_arena_protocol -v
+        run: python -m unittest bean.tests.test_agent_arena_protocol bean.tests.test_agent_arena_adaptive -v
 
   author:
     name: Genuine same-model BEAN/Aider coding contest; no test execution

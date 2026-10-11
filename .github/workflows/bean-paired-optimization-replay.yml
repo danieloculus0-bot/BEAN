@@ -1,0 +1,116 @@
+name: BEAN Round 2 paired cross-platform optimization replay
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'experiments/agent_arena/paired_replay.py'
+      - 'bean/tests/test_agent_arena_paired_replay.py'
+      - '.github/workflows/bean-paired-optimization-replay.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'experiments/agent_arena/paired_replay.py'
+      - 'bean/tests/test_agent_arena_paired_replay.py'
+      - '.github/workflows/bean-paired-optimization-replay.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: bean-paired-replay-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  protocol:
+    name: Paired speed and correctness instrument tests (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 9
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Compile judge and independently falsify benchmark assumptions
+        run: |
+          python -m compileall -q experiments/agent_arena/paired_replay.py bean/tests/test_agent_arena_paired_replay.py
+          python -m unittest bean.tests.test_agent_arena_paired_replay -v
+
+  replay:
+    name: Original artifacts, paired CPU timing (${{ matrix.os }})
+    needs: protocol
+    if: github.event_name != 'pull_request'
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      actions: read
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Exact original Round 1 model-generated sources
+        uses: actions/download-artifact@v4
+        with:
+          name: bean-vs-aider-authors-38110050070
+          run-id: 38110050070
+          github-token: ${{ github.token }}
+          path: _round1/
+      - name: Exact unchanged Round 2 optimization attempts
+        uses: actions/download-artifact@v4
+        with:
+          name: bean-vs-aider-optimization-authors-38110686371
+          run-id: 38110686371
+          github-token: ${{ github.token }}
+          path: _round2/
+      - name: Rejudge on alternating original and optimized runs in same interpreter
+        run: |
+          python -m experiments.agent_arena.paired_replay --round1 _round1 --round2 _round2 --output _paired/receipt.json
+      - name: Explain what the replay does and does not establish
+        if: always()
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json, os
+          from pathlib import Path
+          file=Path('_paired/receipt.json')
+          with open(os.environ['GITHUB_STEP_SUMMARY'],'a',encoding='utf-8') as out:
+              out.write('## BEAN vs Aider: paired Round 2 timing replay\n\n')
+              if not file.exists():
+                  out.write('No verdict produced. This is an instrumentation failure, not a BEAN win.\n')
+              else:
+                  r=json.loads(file.read_text())
+                  out.write('Original Round 2 is **NOT rescored or modified**.\n\n')
+                  for agent in ('bean','aider'):
+                      for case,row in r['outcomes'][agent].items():
+                          metric=row['paired_result'] or {}
+                          out.write(f'**{agent} / {case}:** {row["paired_interpretation"]}; '
+                                    f'paired speedup {metric.get("median_paired_speedup","N/A")}x; '
+                                    f'12-pair agreement {metric.get("pairs_over_5pct","N/A")}/12\n\n')
+                  out.write('Evidence SHA256: '+r['evidence_sha256']+'\n\n')
+                  out.write('CI timing is noisy. Missing candidate or mixed-OS verdict '
+                            'does not establish robust optimization.\n')
+          PY
+      - name: Preserve reproducible paired measurement receipts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bean-paired-replay-${{ matrix.os }}-${{ github.run_id }}
+          path: _paired/
+          if-no-files-found: warn
+          retention-days: 21
