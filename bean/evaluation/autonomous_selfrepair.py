@@ -14,6 +14,7 @@ from pathlib import Path
 import subprocess
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
+from urllib.parse import urlparse
 
 from bean.evaluation import bridge_peer_live_author as source_contract
 
@@ -22,6 +23,8 @@ TARGET = Path("bean/evaluation/bridge_peer_live_author.py")
 FREE_ROUTE = "openrouter/free"
 ENDPOINT = "https://openrouter.ai/api/v1/chat/completions"
 MAX_CALLS = 3
+LOCAL_MODEL = "qwen2.5-coder:1.5b"
+LOCAL_ENDPOINT = "http://127.0.0.1:11434/api/chat"
 FAILURE_RUN = "https://github.com/danieloculus0-bot/BEAN/actions/runs/38108896676"
 PROBLEM = (
     "BEAN's real code-author failed to produce any candidate despite two "
@@ -123,27 +126,89 @@ def model_request(key, source, previous_issue, *, request_fn=urlopen):
     }
 
 
+
+def local_model_request(source, previous_issue, *, request_fn=urlopen, model=LOCAL_MODEL):
+    """Ask an actual local neural model, never a synthetic canned repair."""
+    if not model or len(model) > 80 or any(c not in "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789._:-/" for c in model):
+        raise ValueError("invalid local model name")
+    # Local Qwen gets the same witnessed failure and original source as the
+    # hosted author. The frozen acceptance tests stay out of the prompt.
+    prompt = (
+        "You are BEAN improving your OWN failing Python source author. "
+        "Return ONLY compact JSON with 1 to 5 edits, each an exact \"find\" and "
+        "\"replace\" string occurring once in the source. Do not give a "
+        "whole rewritten module, markdown, tests, commands or explanations. "
+        "Make a real, meaningful improvement that fixes the failure: "
+        + PROBLEM + "\nPrevious attempt: " + (previous_issue or "none")[:170]
+        + "\nYour current Python module:\n" + source
+    )
+    request = Request(
+        LOCAL_ENDPOINT, method="POST",
+        data=json.dumps({
+            "model": model,
+            "stream": False,
+            "format": "json",
+            "messages": [{"role": "user", "content": prompt}],
+            "options": {"temperature": 0.2, "num_predict": 2300}
+        }).encode("utf-8"),
+        headers={"Content-Type": "application/json"},
+    )
+    # Loopback endpoint only: no OpenRouter key is sent to this backend.
+    parsed = urlparse(request.full_url)
+    if parsed.scheme != "http" or parsed.hostname not in ("localhost", "127.0.0.1", "::1"):
+        raise ValueError("neural fallback must remain on loopback")
+    try:
+        with request_fn(request, timeout=180) as response:
+            payload = json.loads(response.read(160000).decode("utf-8"))
+    except (OSError, TimeoutError, URLError):
+        raise RuntimeError("OLLAMA_UNAVAILABLE") from None
+    except (UnicodeError, ValueError):
+        raise RuntimeError("OLLAMA_NON_JSON_RESPONSE") from None
+    if not isinstance(payload, dict):
+        raise RuntimeError("OLLAMA_INVALID_RESPONSE")
+    message = payload.get("message")
+    if not isinstance(message, dict):
+        raise RuntimeError("OLLAMA_NO_MESSAGE")
+    content = message.get("content")
+    return content, {
+        "model_served": str(payload.get("model", model))[:100],
+        "finish_reason": str(payload.get("done_reason", "unknown"))[:70],
+        "has_content": isinstance(content, str) and bool(content.strip()),
+        "provider_backend": "local_ollama",
+    }
+
+
 def json_file(path, value):
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(value, indent=2, sort_keys=True) + "\n",
                     encoding="utf-8")
 
 
-def generate(*, root, destination, key, request_fn=urlopen):
+def generate(*, root, destination, key, request_fn=urlopen, local_request_fn=urlopen, backend="openrouter"):
+    if backend not in ("openrouter", "ollama", "auto"):
+        raise ValueError("unsupported provider backend")
     receipt = {"schema": "bean.autonomous.self-repair.v1",
                "source_commit": SOURCE_COMMIT, "failure_run": FAILURE_RUN,
-               "route": FREE_ROUTE, "status": "not_started",
+               "route": FREE_ROUTE if backend != "ollama" else LOCAL_MODEL,
+               "backend": backend, "status": "not_started",
                "attempts": [], "candidate_sha256": None}
     try:
         original = pinned_source(root)
         receipt["original_sha256"] = sha(original)
         last_error = None
+        fallback = backend == "ollama"
         for index in range(MAX_CALLS):
-            attempt = {"number": index+1, "status": "requested"}
+            provider = "ollama" if fallback else "openrouter"
+            attempt = {"number": index+1, "status": "requested",
+                       "provider": provider}
             receipt["attempts"].append(attempt)
             try:
-                response, metadata = model_request(
-                    key, original, last_error, request_fn=request_fn)
+                if provider == "ollama":
+                    response, metadata = local_model_request(
+                        original, last_error, request_fn=local_request_fn)
+                else:
+                    response, metadata = model_request(
+                        key, original, last_error, request_fn=request_fn)
                 attempt.update(metadata)
                 edits = source_contract.parse_plan(response)
                 updated, diff = source_contract.apply_edits(original, edits)
@@ -158,7 +223,7 @@ def generate(*, root, destination, key, request_fn=urlopen):
                     "original_sha256": sha(original),
                     "replacement_sha256": sha(updated),
                     "diff_lines": diff,
-                    "provider_route": FREE_ROUTE,
+                    "provider_route": FREE_ROUTE if provider == "openrouter" else "ollama_local",
                     "model_served": metadata["model_served"],
                     "base_failed_run": FAILURE_RUN,
                     "replacement": updated,
@@ -174,7 +239,17 @@ def generate(*, root, destination, key, request_fn=urlopen):
                 attempt.update(status="model_candidate_rejected",
                                rejection=last_error)
             except RuntimeError as exc:
-                attempt.update(status="provider_failure", rejection=str(exc)[:100])
+                failure = str(exc)[:100]
+                attempt.update(status="provider_failure", rejection=failure)
+                # Never spend money or silently fabricate a proposal. A free
+                # hosted 429/missing key can switch to an already installed
+                # local neural model; the decision is explicit in the receipt.
+                if backend == "auto" and not fallback and failure in (
+                    "OPENROUTER_HTTP_429", "OPENROUTER_KEY_NOT_CONFIGURED",
+                    "OPENROUTER_TRANSPORT_FAILURE"):
+                    fallback = True
+                    last_error = failure
+                    continue
                 receipt["status"] = "provider_unavailable"
                 break
         if receipt["status"] == "not_started":
@@ -192,9 +267,12 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--source", type=Path, default=Path("_core"))
     ap.add_argument("--out", type=Path, default=Path("_selfrepair"))
+    ap.add_argument("--backend", choices=("openrouter", "ollama", "auto"),
+                    default="openrouter")
     args = ap.parse_args()
     result = generate(root=args.source, destination=args.out,
-                      key=os.environ.get("OPENROUTER_API_KEY", ""))
+                      key=os.environ.get("OPENROUTER_API_KEY", ""),
+                      backend=args.backend)
     print(json.dumps(result, indent=2, sort_keys=True))
     return 0 if result["status"] == "candidate_drafted_not_verified" else 1
 
