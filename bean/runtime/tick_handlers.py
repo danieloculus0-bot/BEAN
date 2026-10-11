@@ -79,9 +79,12 @@ def build_default_handlers(
     coherence_interval: int = 60,
     consolidation_interval: int = 300,
     watcher=None,
+    task_engine=None,
 ) -> TickHandlerRegistry:
     registry = TickHandlerRegistry()
 
+    if task_engine is not None:
+        registry.register("bean_tasks", lambda tick, session_uuid, ctx: task_engine.poll_due(), interval=1)
     if watcher is not None:
         registry.register("bean_watcher", lambda tick, session_uuid, ctx: watcher.poll_due(), interval=1)
     if inbox is not None:
