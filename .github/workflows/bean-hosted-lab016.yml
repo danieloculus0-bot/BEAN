@@ -1,0 +1,39 @@
+name: BEAN Lab016 one-shot hosted model experiment
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize]
+
+permissions:
+  contents: read
+  models: read
+
+jobs:
+  hosted-simulation-only:
+    if: github.event.pull_request.head.ref == 'experiment/bean-github-hosted-llm-lab016-20261010' && github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout experimental commit
+        uses: actions/checkout@v4
+      - name: Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install offline test requirements
+        run: python -m pip install pytest psutil
+      - name: Verify hosted adapter without network
+        run: python -m pytest bean/tests/test_hosted_models_lab016.py -q
+      - name: One-shot real GitHub Models simulation experiment
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BEAN_GITHUB_MODEL: openai/gpt-4.1-mini
+        run: python -m bean.evaluation.hosted_models_lab016 --report bean-hosted-llm-lab016.json --train 12 --holdout 12 --max-calls 72 --interval 7
+      - name: Attach model evidence or explicit unavailable result
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bean-hosted-llm-lab016-evidence
+          path: bean-hosted-llm-lab016.json
+          if-no-files-found: ignore
