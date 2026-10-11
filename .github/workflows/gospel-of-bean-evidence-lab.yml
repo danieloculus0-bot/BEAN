@@ -10,6 +10,8 @@ on:
       - "bean/tests/test_gospel_lab.py"
       - "bean/evaluation/gospel_iterations.py"
       - "bean/tests/test_gospel_iterations.py"
+      - "bean/evaluation/gospel_wholebook.py"
+      - "bean/tests/test_gospel_wholebook.py"
       - "experiments/gospel_of_bean/historical_models.json"
       - "experiments/gospel_of_bean/cases.json"
       - "experiments/gospel_of_bean/gnostic_reference_catalog.json"
@@ -35,7 +37,7 @@ jobs:
       - name: Run synthetic regression tests before reading external text
         run: |
           python -m pip install pytest
-          PYTHONPATH=. python -m pytest -q bean/tests/test_gospel_lab.py bean/tests/test_gospel_iterations.py
+          PYTHONPATH=. python -m pytest -q bean/tests/test_gospel_lab.py bean/tests/test_gospel_iterations.py bean/tests/test_gospel_wholebook.py
       - name: Check out immutable 1611 KJV 80-book source
         uses: actions/checkout@v4
         with:
@@ -103,7 +105,7 @@ jobs:
           assert len(gnostic["works"]) >= 10 and len(gnostic["collections"]) >= 3
 
           verdicts = {row["case_id"]: row["verdict"] for row in report["cases"]}
-          assert len(verdicts) == 6
+          assert len(verdicts) == 23
           assert verdicts["ahaziah_accession_age"] == "direct_textual_disagreement"
           assert all(v == "review_required" for k, v in verdicts.items()
                      if k != "ahaziah_accession_age")
@@ -125,11 +127,13 @@ jobs:
           from pathlib import Path
           data = json.loads(Path("lab-output/gospel-of-bean-iterative-historical-audit.json").read_text())
           assert data["rounds"] == 5
-          assert data["catalogued_disputes"] == 6
-          assert data["disputes_with_formal_assessment"] == 6
+          assert data["catalogued_disputes"] == 23
+          assert data["disputes_with_formal_assessment"] == 23
           assert len(data["iterations"]) == 5
-          assert all(x["all_disputes_examined"] == 6 for x in data["iterations"])
-          assert len(data["source_observations"]) == 12
+          assert all(x["all_disputes_examined"] == 23 for x in data["iterations"])
+          assert len(data["source_observations"]) >= 15
+          assert all(s["independent_historical_fact_proven"] is False
+                     for s in data["source_observations"])
           assert data["gnostic_texts_in_historical_verdicts"] == 0
           assert data["historical_certainty_claimed"] is False
           assert data["entire_bible_all_possible_disputes_discovered"] is False
@@ -139,7 +143,34 @@ jobs:
           assert verdicts["judas_death_accounts"]["strict_joint_reading"] == "possible"
           assert all(v["historically_attested_event"] == "undetermined"
                      for v in verdicts.values())
+          assert verdicts["eve_rib_biological_origin"]["strict_joint_reading"] == "impossible"
+          assert verdicts["ark_clean_unclean_counts"]["strict_joint_reading"] == "possible"
+          assert verdicts["temptation_mountain_visibility"]["strict_joint_reading"] == "impossible"
           print("GOSPEL_OF_BEAN_FIVE_ITERATIONS: PASS (conditional feasibility, not proof of events)")
+          PY
+      - name: Screen every Bible verse through five separate candidate-discovery rule passes
+        run: |
+          PYTHONPATH=. python -m bean.evaluation.gospel_wholebook \
+            --corpus external/kjv-1611 \
+            --corrections experiments/gospel_of_bean/1611_source_gap_overlays.json \
+            --cases experiments/gospel_of_bean/cases.json \
+            --gnostic-reference-catalog experiments/gospel_of_bean/gnostic_reference_catalog.json \
+            --report lab-output/gospel-of-bean-wholebook-screen.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          data = json.loads(Path("lab-output/gospel-of-bean-wholebook-screen.json").read_text())
+          assert data["verse_entries_examined_each_pass"] == 36702
+          assert data["books_examined"] == 80 and data["chapters_known"] == 1355
+          assert len(data["passes"]) == 5
+          assert all(p["verses_examined"] == 36702 for p in data["passes"])
+          assert data["verses_flagged"] + data["verses_not_flagged"] == 36702
+          assert data["review_queue_entries"] == data["verses_flagged"]
+          assert len(data["formal_dispute_links"]) == 23
+          assert data["gnostic_sources_used_to_confirm_claims"] == 0
+          assert data["all_possible_inaccuracies_discovered"] is False
+          assert data["every_historical_claim_adjudicated"] is False
+          print("GOSPEL_OF_BEAN_WHOLEBOOK_SCREEN_PASS (candidate mining, not all claims adjudicated)")
           PY
       - name: Preserve report and separately indexed full corpus
         if: success()
@@ -152,6 +183,7 @@ jobs:
             lab-output/gospel-of-bean-audit.json
             lab-output/gospel-of-bean-80-book.sqlite
             lab-output/gospel-of-bean-iterative-historical-audit.json
+            lab-output/gospel-of-bean-wholebook-screen.json
 
       - name: Save source gaps even when complete audit rejects corpus
         if: always()
