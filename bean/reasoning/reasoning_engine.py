@@ -3,6 +3,7 @@
 from .context_builder import build_reasoning_context
 from .mock_llm import MockLLMAdapter
 from .openai_provider import OpenAIProvider
+from .ollama_provider import OllamaProvider
 from .prompt_builder import build_prompt
 from .proposal_filter import all_passed, filter_proposal
 from .proposal_store import create_filter_result, create_proposal, create_request, create_response
@@ -13,6 +14,8 @@ from .schema import init_reasoning_schema
 def adapter_from_name(name: str | None):
     if name == "openai":
         return OpenAIProvider()
+    if name == "ollama":
+        return OllamaProvider()
     return MockLLMAdapter()
 
 
