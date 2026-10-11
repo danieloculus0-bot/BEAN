@@ -1,7 +1,5 @@
 name: BEAN Lab020 live LLM revisions vs AST on real Core code
 on:
-  push:
-    branches: [experiment/bean-llm-vs-ast-growth-lab020-20261011]
   workflow_dispatch:
 
 permissions:
