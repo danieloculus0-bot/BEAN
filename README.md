@@ -14,6 +14,23 @@ Those are things BEAN can use.
 
 **BEAN is the persistent logic that remains.**
 
+## Try BEAN and verify its claims
+
+[![BEAN full core regression](https://github.com/danieloculus0-bot/BEAN/actions/workflows/brain-smoke.yml/badge.svg)](https://github.com/danieloculus0-bot/BEAN/actions/workflows/brain-smoke.yml)
+
+**New to BEAN?** Start with the [offline quickstart](docs/GETTING_STARTED.md), [public project overview](docs/index.html), or [research evidence index](docs/experimental-research-index-2026-10.md).
+
+The current host-neutral API can record a fictional observation in a disposable local SQLite database and produce a stored, review-required proposal using a **mock** provider:
+
+```bash
+git clone https://github.com/danieloculus0-bot/BEAN.git
+cd BEAN
+python -m pip install psutil
+python examples/quickstart_reasoning.py
+```
+
+This is an executable architecture demonstration, **not** a demonstration of trained-model intelligence or unsupervised autonomy. The [BEAN AI Bridge](https://github.com/danieloculus0-bot/BEAN-AI-Bridge-) provides separate generic ERP/evidence adapters and synthetic replay. See the [public discovery and GitHub Pages activation checklist](docs/PUBLIC_DISCOVERY_LAUNCH.md). Source visibility alone does not provide a redistribution license.
+
 ## What BEAN does
 
 Most software starts each decision with whatever state the application explicitly hands it. Most AI systems are extremely capable reasoners but are only as good as the context, evidence, memory, boundaries, and feedback around the current request.
