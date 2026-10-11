@@ -845,6 +845,20 @@
     }
 
   </style>
+
+<style>
+.aiscend-preview{margin:8px 0 23px;border:1px solid #547c58;border-radius:19px;overflow:hidden;background:linear-gradient(155deg,#203327,#111e16);box-shadow:0 15px 40px #0004}
+.aiscend-preview-bar{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:11px 17px;border-bottom:1px solid #47654b;color:#b8e99e;font-size:11px;font-weight:850;letter-spacing:.07em}
+.aiscend-preview-bar span:first-child{display:flex;gap:9px;align-items:center;color:#ebf7e6}
+.aiscend-preview-screen{display:block;padding:17px 22px 23px;color:#f0fbee;text-decoration:none}
+.aiscend-preview-screen:hover{background:#29442d;color:#fff}
+.aiscend-preview-graph{height:105px;background:#101e14;border:1px solid #3e6042;border-radius:11px;margin-bottom:16px;overflow:hidden}
+.aiscend-preview-graph svg{width:100%;height:100%;display:block}
+.aiscend-preview-title{font-size:21px;font-weight:850;letter-spacing:-.03em}
+.aiscend-preview-screen p{color:#c2d6c0;margin:5px 0 15px;font-size:14px}
+.aiscend-preview-foot{color:#b3cbb1;border-top:1px solid #36513c;padding:10px 16px;font-size:11px}
+@media(max-width:600px){.aiscend-preview-screen{padding:14px}.aiscend-preview-bar{flex-wrap:wrap}}
+</style>
 </head>
 <body>
 
@@ -1139,6 +1153,17 @@
             <a class="btn btn-primary" href="./aiscend.html" target="_blank" rel="noopener noreferrer">Explore the public AIscend demo</a>
             <a class="btn btn-secondary" href="https://github.com/danieloculus0-bot/AIscend">Inspect AIscend on GitHub</a>
           </div>
+        </div>
+
+        <div class="aiscend-preview" aria-label="AIscend interactive demo preview">
+          <div class="aiscend-preview-bar"><span><img src="./bean-official.webp" alt="" width="28" height="28"> BEAN / AIscend</span><span>PUBLIC SIMULATION</span></div>
+          <a class="aiscend-preview-screen" href="./aiscend.html#paper-lab" aria-label="Open AIscend's full interactive paper trading simulator">
+            <div class="aiscend-preview-graph" aria-hidden="true"><svg viewBox="0 0 800 140" preserveAspectRatio="none"><path d="M0 112 L45 103 L90 110 L140 70 L188 86 L240 57 L296 74 L344 48 L398 65 L449 31 L505 54 L559 30 L606 46 L661 22 L718 35 L770 9 L800 19" stroke="#a7f58b" stroke-width="4" fill="none"/></svg></div>
+            <div class="aiscend-preview-title">AIscend · Paper Trading Lab</div>
+            <p>Practice with synthetic markets, explore BEAN research states and test simulated buy/sell orders.</p>
+            <span class="btn btn-primary">Launch full interactive demo</span>
+          </a>
+          <div class="aiscend-preview-foot">Illustrative display · Real trading disabled · Browser-only sandbox</div>
         </div>
         <div class="application-grid">
           <article class="card">
