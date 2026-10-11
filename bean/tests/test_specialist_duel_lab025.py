@@ -106,3 +106,5 @@ def test_public_manifest_is_predeclared():
         assert public_case(name)["source_sha256"]
         assert "unittest" in task["dev"] and "unittest" in task["holdout"]
         assert task["dev"]!=task["holdout"]
+
+# Explicit live-test marker: case fixtures remain unchanged.
