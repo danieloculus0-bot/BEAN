@@ -91,7 +91,19 @@ class GitHubModelsAdapter(LLMAdapterBase):
             try:
                 parsed = json.loads(body)
             except (ValueError, TypeError):
-                reason = "non_json_service_response"
+                stripped = body.lstrip()
+                if not stripped:
+                    reason = "empty_http_response"
+                elif stripped.startswith(("data:", "event:")):
+                    reason = "sse_not_json"
+                elif stripped.startswith(("<", "<!")):
+                    reason = "html_not_json"
+                elif stripped.startswith(("{", "[")):
+                    reason = "malformed_json"
+                elif "text/plain" in content_type.lower():
+                    reason = "plaintext_not_json"
+                else:
+                    reason = "unrecognized_non_json_response"
             else:
                 if not isinstance(parsed, dict):
                     reason = "unexpected_json_envelope"
