@@ -36,10 +36,11 @@ def file_memory(value, *, accuracy, relevance, provenance, sample_count):
                                 provenance=provenance, sample_count=sample_count)
     raw = canonical(value)
     digest = hashlib.sha256(raw).hexdigest()
+    assessment_digest = hashlib.sha256(canonical({"memory_sha256": digest, "score": assessment})).hexdigest()
     compressed = zlib.compress(raw, 9)
     return {"format": FORMAT, "sha256": digest,
             "mnemonic": "-".join(digest[i:i+4] for i in (0,4,8,12)),
-            "score": assessment, "raw_bytes": len(raw),
+            "score": assessment, "assessment_sha256": assessment_digest, "raw_bytes": len(raw),
             "compressed_bytes": len(compressed),
             "payload": base64.b85encode(compressed).decode("ascii")}
 
@@ -49,6 +50,8 @@ def recover_memory(capsule, *, require_eligible=False):
     score = capsule.get("score")
     if not isinstance(score, dict) or type(score.get("retrieval_eligible")) is not bool:
         raise ValueError("unscored memory")
+    if (capsule.get("assessment_sha256") != hashlib.sha256(canonical({"memory_sha256": capsule.get("sha256"), "score": score})).hexdigest()):
+        raise ValueError("assessment integrity mismatch")
     if require_eligible and not score["retrieval_eligible"]:
         raise ValueError("memory is ineligible for use")
     expected = capsule.get("sha256")
