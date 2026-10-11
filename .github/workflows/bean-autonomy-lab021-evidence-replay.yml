@@ -1,0 +1,56 @@
+name: BEAN Lab021 regrade saved model code without provider calls
+
+on:
+  push:
+    branches:
+      - experiment/bean-autonomy-transfer-lab021-20261011
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  independent-replay:
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 12
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Prove evaluator accepts safe genuine Python models
+        run: |
+          python -m pip install pytest
+          python -m pytest bean/tests/test_autonomy_transfer_lab021.py -q
+      - uses: actions/download-artifact@v4
+        with:
+          name: lab021-first-proposals
+          run-id: 38108649668
+          github-token: ${{ github.token }}
+          path: first-a/
+      - uses: actions/download-artifact@v4
+        with:
+          name: lab021-first-proposals
+          run-id: 38108708826
+          github-token: ${{ github.token }}
+          path: first-b/
+      - name: Regrade both saved original source artifacts with fresh holdout
+        run: |
+          python -m bean.evaluation.transfer_oracle --initial first-a --phase holdout --output report-a.json
+          python -m bean.evaluation.transfer_oracle --initial first-b --phase holdout --output report-b.json
+      - name: Upload unmodified proposal verdicts
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: bean021-saved-code-regrade-${{ matrix.os }}
+          path: |
+            report-a.json
+            report-b.json
+          if-no-files-found: warn
