@@ -248,7 +248,7 @@ def subprocess_grade(task_id: str, path: Path, phase: str) -> dict:
 def grade(artifact_dir: Path, output: Path, *, phase: str,
           revision_dir: Path | None = None) -> dict:
     from bean.evaluation.transfer_tasks import TASKS
-    if phase not in ("development", "holdout"):
+    if phase not in ("development", "holdout", "final"):
         raise ValueError("bad phase")
     first = json.loads((artifact_dir / "receipt.json").read_text(encoding="utf-8"))
     second = (json.loads((revision_dir / "receipt.json").read_text(encoding="utf-8"))
