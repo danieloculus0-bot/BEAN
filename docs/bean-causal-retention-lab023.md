@@ -123,3 +123,5 @@ The hosted Ollama is independent of the user's local PC: a standard cloud
 GitHub runner cannot connect to the Ollama server on their Windows machine.
 The provider selection is explicit, and no OpenRouter credit is consumed
 by the Ollama path. Performance still depends on CPU, GPU, and RAM.
+
+Real local-inference trial is opt-in, independently scored, and retains failure evidence.
