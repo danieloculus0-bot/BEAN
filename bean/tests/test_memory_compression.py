@@ -23,6 +23,12 @@ class MemoryCompressionTests(unittest.TestCase):
             b=dict(a);b[field]=value
             with self.assertRaises(ValueError):
                 recover_memory(b)
+    def test_score_tampering_detected(self):
+        a=file_memory({"x":1},accuracy=1,relevance=1,provenance=1,sample_count=200)
+        b=dict(a);b["score"]=dict(a["score"]);b["score"]["value"]=0
+        with self.assertRaises(ValueError):
+            recover_memory(b)
+
     def test_score_limits(self):
         with self.assertRaises(ValueError):
             score_evidence(accuracy=1.1,relevance=1,provenance=1,sample_count=30)
