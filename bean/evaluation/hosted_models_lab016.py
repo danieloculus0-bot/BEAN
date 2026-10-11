@@ -180,7 +180,9 @@ def run_real(*, token=None, model=DEFAULT_MODEL, seed=7,
     first=smoke(factory())
     report={
         "lab":"BEAN_HOSTED_LLM_016","provider":"github_models",
-        "real_llm_invoked":budget.used>0,"model":model,
+        "hosted_request_attempted":budget.used>0,
+        "verified_real_model_response":first["status"]=="passed",
+        "model":model,
         "fictional_simulation_only":True,"smoke":first,
         "status":"unavailable" if first["status"]=="unavailable" else "smoke_failed",
         "model_weights_trained":False,"general_learning_proven":False,
