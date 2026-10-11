@@ -121,3 +121,81 @@ def test_complete_synthetic_report_keeps_uncertainty(tmp_path):
     assert report["cases"][0]["verdict"] == "review_required"
     assert report["external_references_fetched_and_verified_by_lab"] is False
     assert report["textual_edition_collation_with_1611_facsimile"] == "not_performed"
+
+
+def test_explicit_source_repairs_fill_only_blank_verses(tmp_path):
+    fake_large_corpus(tmp_path)
+    path = tmp_path / "Ecclesiasticus.json"
+    book = json.loads(path.read_text())
+    book["chapters"][0]["verses"][6]["text"] = ""
+    book["chapters"][16]["verses"][4]["text"] = ""
+    path.write_text(json.dumps(book))
+    with pytest.raises(CorpusError, match="missing/bad verse Ecclesiasticus 1:7"):
+        load_corpus(tmp_path)
+    repairs = {
+        "schema": "bean.kjv_transcription_gap_overlays.v1",
+        "source_repository": "aruljohn/Bible-kjv-1611",
+        "source_commit": "8ef066868ad1b7204d7be48658ea3bd1783d409b",
+        "verses": [
+            {"ref": "Ecclesiasticus 1:7", "text": "[Test historically derived verse]",
+             "source_url": "https://example.org/source", "method": "manual_transcription_crosscheck"},
+            {"ref": "Ecclesiasticus 17:5", "text": "[Another checked passage]",
+             "source_url": "https://example.org/source", "method": "manual_transcription_crosscheck"},
+        ]
+    }
+    c = tmp_path.parent / "source-repairs.json"
+    c.write_text(json.dumps(repairs))
+    corpus = load_corpus(tmp_path, corrections_path=c)
+    assert corpus.verse("Ecclesiasticus 1:7") == "[Test historically derived verse]"
+    assert len(corpus.repairs) == 2
+    assert all(r["status"] == "secondary_transcription_not_facsimile_verified"
+               for r in corpus.repairs)
+    # Reject false repair attempts, including changes to nonblank original verses.
+    repairs["verses"].append({
+        "ref": "Genesis 1:1", "text": "attempt overwrite",
+        "source_url": "https://example.org/source", "method": "manual_transcription_crosscheck",
+    })
+    c.write_text(json.dumps(repairs))
+    with pytest.raises(CorpusError, match="cannot overwrite"):
+        load_corpus(tmp_path, corrections_path=c)
+
+
+def test_gnostic_index_is_never_kjv_evidence(tmp_path):
+    from bean.evaluation.gospel_lab import read_reference_only_catalog
+    fake_large_corpus(tmp_path)
+    cases_path = tmp_path.parent / "case-catalog.json"
+    cases_path.write_text(json.dumps({
+        "cases": [{"id": "narrative", "kind": "narrative",
+                   "references": ["Genesis 1:1", "Genesis 1:2"]}]
+    }))
+    catalog_path = tmp_path.parent / "gnostic-ref.json"
+    catalog = {
+        "schema": "bean.reference_only_gnostic.v1",
+        "policy": {
+            "collection_role": "cross_reference_only",
+            "can_confirm_or_falsify_kjv_claims": False,
+            "can_count_as_independent_corrobation": False,
+            "can_be_used_in_kjv_numeric_verdict": False,
+            "translations_imported": False,
+        },
+        "collections": [{"title": "Manuscript catalog", "url": "https://example.org/index"}],
+        "works": [{"id": "gospel-thomas", "title": "Gospel of Thomas",
+                   "source": "https://example.org/work",
+                   "evidence_role": "reference_only", "full_text_imported": False}]
+    }
+    catalog_path.write_text(json.dumps(catalog))
+    baseline = analyze(tmp_path, cases_path)
+    with_ref = analyze(tmp_path, cases_path, reference_catalog=catalog_path)
+    assert baseline["cases"] == with_ref["cases"]
+    assert with_ref["gnostic_reference_catalog"]["eligible_for_kjv_verdict"] is False
+    assert with_ref["gnostic_reference_catalog"]["text_corpus_imported"] is False
+    assert len(with_ref["gnostic_reference_catalog"]["works"]) == 1
+    catalog["works"][0]["evidence_role"] = "independent_proof"
+    catalog_path.write_text(json.dumps(catalog))
+    with pytest.raises(CorpusError, match="evidentiary"):
+        read_reference_only_catalog(catalog_path)
+    catalog["works"][0]["evidence_role"] = "reference_only"
+    catalog["policy"]["can_confirm_or_falsify_kjv_claims"] = True
+    catalog_path.write_text(json.dumps(catalog))
+    with pytest.raises(CorpusError, match="cannot become proof"):
+        read_reference_only_catalog(catalog_path)
