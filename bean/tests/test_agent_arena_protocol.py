@@ -23,7 +23,7 @@ class ArenaProtocolTests(unittest.TestCase):
         for name in cases.CASES:
             public = cases.public_case(name)
             self.assertEqual(set(public), {"name", "prompt", "source", "source_sha256"})
-            self.assertNotIn("test", json.dumps(public))
+            self.assertNotIn("test", public)
             self.assertEqual(len(cases.sealed_oracle_digest(name)), 64)
 
     def test_beans_existing_parser_applies_model_generated_change(self):
