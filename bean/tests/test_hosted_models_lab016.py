@@ -78,7 +78,8 @@ def test_403_response_keeps_error_not_claims():
 def test_missing_key_never_falls_back_to_emulator():
     result=run_real(token="",max_calls=2,interval=0)
     assert result["status"]=="unavailable"
-    assert result["real_llm_invoked"] is False
+    assert result["hosted_request_attempted"] is False
+    assert result["verified_real_model_response"] is False
     assert "hosted" not in result
     assert "comparison" not in result
     assert result["requests_used"]==0
