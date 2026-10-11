@@ -1,0 +1,183 @@
+name: BEAN Lab025 five-specialist authentic Ollama tournament
+
+on:
+  push:
+    branches: [experiment/bean-five-specialists-lab025-20261011]
+    paths:
+      - 'experiments/agent_arena/specialist_cases_lab025.py'
+      - 'experiments/agent_arena/specialist_duel_lab025.py'
+      - 'bean/tests/test_specialist_duel_lab025.py'
+      - 'docs/bean-specialists-lab025.md'
+      - '.github/workflows/bean-five-specialists-lab025.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'experiments/agent_arena/specialist_cases_lab025.py'
+      - 'experiments/agent_arena/specialist_duel_lab025.py'
+      - 'bean/tests/test_specialist_duel_lab025.py'
+      - '.github/workflows/bean-five-specialists-lab025.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  offline-contracts:
+    name: Five challenge protocols, no LLM (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 14
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install pytest
+      - name: Syntax and all five independent source/tamper/missing-agent tests
+        run: |
+          python -m compileall -q experiments/agent_arena/specialist_cases_lab025.py experiments/agent_arena/specialist_duel_lab025.py bean/tests/test_specialist_duel_lab025.py
+          python -m pytest bean/tests/test_specialist_duel_lab025.py -q -ra
+
+  live-authors:
+    name: Actual BEAN vs ${{ matrix.agent }} on local Ollama
+    needs: offline-contracts
+    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && contains(github.event.head_commit.message, '[lab025-live]'))
+    runs-on: ubuntu-latest
+    timeout-minutes: 62
+    strategy:
+      fail-fast: false
+      max-parallel: 3
+      matrix:
+        agent: [opencode, goose, openhands, continue, cline]
+    env:
+      OPPONENT: ${{ matrix.agent }}
+      BEAN_OLLAMA_MODEL: qwen2.5-coder:1.5b
+      OPENROUTER_API_KEY: ''
+      GITHUB_TOKEN: ''
+      GH_TOKEN: ''
+      AIDER_ANALYTICS: 'false'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Fetch isolated no-network test container
+        run: docker pull python:3.12-slim
+      - name: Install real upstream CLI; preserve setup error, never fake it
+        shell: bash
+        run: |
+          set +e
+          case "$OPPONENT" in
+            opencode) npm install -g opencode-ai ;;
+            goose)
+              curl -fsSL https://github.com/aaif-goose/goose/releases/download/stable/download_cli.sh | CONFIGURE=false bash
+              echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+              ;;
+            openhands) python -m pip install openhands ;;
+            continue) npm install -g @continuedev/cli ;;
+            cline) npm install -g cline ;;
+          esac
+          status=$?
+          echo "SPECIALIST_INSTALL_EXIT=$status" >> "$GITHUB_ENV"
+          echo "Specialist $OPPONENT install exit: $status"
+          exit 0
+      - name: Start isolated localhost Ollama (not OpenRouter)
+        shell: bash
+        run: |
+          curl -fsSL https://ollama.com/install.sh | sh
+          OLLAMA_CONTEXT_LENGTH=65536 ollama serve >/tmp/bean-lab025-ollama.log 2>&1 &
+          python - <<'PY'
+          import time, urllib.request
+          for i in range(90):
+              try:
+                  urllib.request.urlopen('http://127.0.0.1:11434/api/tags',timeout=2).close()
+                  break
+              except OSError: time.sleep(1)
+          else: raise RuntimeError('local Ollama did not start')
+          PY
+          ollama pull qwen2.5-coder:1.5b
+      - name: Run three rounds for BEAN and real CLI against discipline-specific task
+        timeout-minutes: 46
+        run: |
+          python -m experiments.agent_arena.specialist_duel_lab025 author --opponent "$OPPONENT" --out "_lab025-$OPPONENT"
+      - name: Save all original model outputs, round receipts, and BEAN journal
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lab025-${{ matrix.agent }}-authors
+          path: _lab025-${{ matrix.agent }}/
+          if-no-files-found: warn
+          retention-days: 21
+
+  independent-holdouts:
+    name: Secret-free independent ${{ matrix.agent }} withheld judge
+    needs: live-authors
+    if: always() && (needs.live-authors.result == 'success' || needs.live-authors.result == 'failure')
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    strategy:
+      fail-fast: false
+      max-parallel: 3
+      matrix:
+        agent: [opencode, goose, openhands, continue, cline]
+    env:
+      OPPONENT: ${{ matrix.agent }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: docker pull python:3.12-slim
+      - uses: actions/download-artifact@v4
+        with:
+          name: lab025-${{ matrix.agent }}-authors
+          path: _lab025-${{ matrix.agent }}/
+        continue-on-error: true
+      - name: Grade only attested candidate in networkless Docker
+        shell: bash
+        run: |
+          if [ -f "_lab025-$OPPONENT/manifest.json" ]; then
+            python -m experiments.agent_arena.specialist_duel_lab025 judge --opponent "$OPPONENT" --out "_lab025-$OPPONENT"
+          else
+            mkdir -p "_lab025-$OPPONENT"
+            python - <<'PY'
+          import json,os,pathlib
+          p=pathlib.Path('_lab025-'+os.environ['OPPONENT'])/'verdict.json'
+          p.write_text(json.dumps(dict(classification='INCONCLUSIVE',reason='author job or artifacts unavailable',opponent=os.environ['OPPONENT']))+'\n')
+          PY
+          fi
+      - name: Final objective scorecard for this agent
+        if: always()
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json,os,pathlib
+          who=os.environ['OPPONENT']
+          p=pathlib.Path('_lab025-'+who)/'verdict.json'
+          with open(os.environ['GITHUB_STEP_SUMMARY'],'a') as f:
+              f.write('## BEAN vs '+who+'\n\n')
+              if p.exists():
+                  r=json.loads(p.read_text())
+                  f.write('Classification: **'+r['classification']+'**\n\n')
+                  for agent,score in r.get('results',{}).items():
+                      f.write(agent+': '+str(score['passed'])+'/'+str(score['total'])+' hidden tests\n\n')
+                  f.write('Not a general superiority claim.\n')
+              else:
+                  f.write('No result file; infrastructure failure, NOT a BEAN win.\n')
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: lab025-${{ matrix.agent }}-independent-verdict
+          path: _lab025-${{ matrix.agent }}/verdict.json
+          if-no-files-found: warn
+          retention-days: 21
