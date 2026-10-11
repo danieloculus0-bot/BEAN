@@ -32,6 +32,8 @@ TASK = ("Fix BEAN Core's actual ImprovementOpportunity identity collision bug. "
 TARGET = "bean/optimization/selection.py"
 SCHEMA = "bean.llm-growth.lab020.v1"
 HERE = Path(__file__).resolve().parent
+# Reproducible historical benchmark; current BEAN Core already has this fix.
+FROZEN_SOURCE = HERE / "fixtures" / "selection_pre_fix.py"
 
 
 def packed(value):
@@ -263,7 +265,7 @@ def main():
     v = subs.add_parser("validate")
     a = subs.add_parser("ast")
     for p in (g, v, a):
-        p.add_argument("--source", type=Path, default=Path(TARGET))
+        p.add_argument("--source", type=Path, default=FROZEN_SOURCE)
         p.add_argument("--out", type=Path, required=True)
     for p in (g, v):
         p.add_argument("--round", type=int, required=True)
