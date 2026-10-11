@@ -65,7 +65,7 @@ class PublicAiscendDemoTests(unittest.TestCase):
         self.assertEqual(set(self.markup.actions),
                          {"watch", "experiment", "paper", "gate"})
         for marker in ("DEMO", "Read-only", "Sample", "NO WALLET CONNECTED",
-                       "research-only", "not a real", "simulated"):
+                       "research-only", "not a private", "simulated"):
             self.assertIn(marker.casefold(), self.html.casefold())
         self.assertIn("document.querySelectorAll", self.html)
         self.assertNotIn("fetch('/api/", self.html)
@@ -76,10 +76,10 @@ class PublicAiscendDemoTests(unittest.TestCase):
 
     def test_identity_and_account_identifiers_are_not_published(self):
         for pattern in (
-            r"0x[0-9a-fA-F]{40}\\b",
-            r"\\bsk-(?:or|proj)-[A-Za-z0-9_-]{12,}",
-            r"\\b[A-F0-9]{32,}\\b",
-            r"\\b(?:seed phrase|private key is|api secret:)\\s*\\S+",
+            r"0x[0-9a-fA-F]{40}\b",
+            r"\bsk-(?:or|proj)-[A-Za-z0-9_-]{12,}",
+            r"\b[A-F0-9]{32,}\b",
+            r"\b(?:seed phrase|private key is|api secret:)\s*\S+",
         ):
             self.assertIsNone(re.search(pattern, self.html, re.IGNORECASE), pattern)
         self.assertIn("Numeric tiles are illustrative", self.html)
@@ -88,7 +88,7 @@ class PublicAiscendDemoTests(unittest.TestCase):
 
     @unittest.skipUnless(shutil.which("node"), "Node.js needed for browser script syntax check")
     def test_inline_browser_javascript_parses(self):
-        scripts = re.findall(r"<script[^>]*>([\\s\\S]*?)</script>", self.html)
+        scripts = re.findall(r"<script[^>]*>([\s\S]*?)</script>", self.html)
         self.assertEqual(len(scripts), 1)
         out = subprocess.run([shutil.which("node"), "--check"],
                              input=scripts[0], text=True, capture_output=True)
