@@ -1,0 +1,46 @@
+name: BEAN local Ollama voice-chat checks
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'bean/voice/**'
+      - 'bean/tests/test_local_voice.py'
+      - 'docs/bean-local-voice.md'
+      - 'scripts/bean_talk.ps1'
+      - '.github/workflows/bean-local-voice.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'bean/voice/**'
+      - 'bean/tests/test_local_voice.py'
+      - 'docs/bean-local-voice.md'
+      - 'scripts/bean_talk.ps1'
+      - '.github/workflows/bean-local-voice.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  offline_voice:
+    name: BEAN voice and local Ollama offline safety (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 8
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Compile local voice modules without Ollama or microphone
+        run: python -m compileall -q bean/voice bean/tests/test_local_voice.py
+      - name: Model/message guards, Windows speech mocks and BEAN identity boundaries
+        run: python -m unittest bean.tests.test_local_voice -v
+      - name: Confirm locally usable entrypoint and no Ollama network calls
+        run: python -m bean.voice --help
