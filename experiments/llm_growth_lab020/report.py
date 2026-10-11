@@ -82,6 +82,12 @@ def main():
     data = make_report(artifacts=args.artifacts, source=args.source,
                        holdout=args.holdout, out=args.out)
     print(json.dumps(data, indent=2, sort_keys=True))
+    import os
+    if "GITHUB_OUTPUT" in os.environ:
+        with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as f:
+            f.write("verdict=" + data["verdict"] + "\n")
+            if data["best_dev"] is not None:
+                f.write("best_round=" + str(data["best_dev"]["iteration"]) + "\n")
 
 
 if __name__ == "__main__":
