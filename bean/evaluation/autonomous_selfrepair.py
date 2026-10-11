@@ -238,9 +238,15 @@ def local_model_request(source, previous_issue, *, request_fn=urlopen, model=LOC
         if ("prompt" in line or "feedback" in line or "RELEVANT" in line)
     )[:2300]
     target_spans = statement_targets(source)
+    # A retry defect belongs to the feedback path. Changing the first-request
+    # prompt cannot fix it, as the independently rejected trial demonstrated.
+    # The model still authors the replacement block without seeing the oracle.
+    available = (["feedback"] if "feedback" in target_spans
+                 else list(target_spans))
     raw_lines = source.splitlines()
     marked = []
-    for target_id, (start_line, end_line) in target_spans.items():
+    for target_id in available:
+        start_line, end_line = target_spans[target_id]
         marked.append(
             "STATEMENT_ID=" + target_id + "\n"
             + "\n".join(raw_lines[start_line-1:end_line])
@@ -259,9 +265,12 @@ def local_model_request(source, previous_issue, *, request_fn=urlopen, model=LOC
         "inside the original call_model function. Do not duplicate the whole "
         "function, supply markdown, or repeat identical code. "
         "The witnessed defect: unusable model replies lead to essentially "
-        "the same author prompt being sent on retry. Design a genuinely "
-        "smaller and more relevant retry strategy, keeping useful source "
-        "context, original public function signatures and the objective. "
+        "the same author prompt being sent on retry. Preserve the initial "
+        "request's full original source. The only faulty behavior is what "
+        "happens when the feedback path runs after a rejected response. "
+        "Replace the existing feedback-handling block with your own "
+        "meaningfully different retry strategy. The next prompt must stay "
+        "focused on relevant code and retain the key function contracts. "
         "Choose the implementation yourself; preserve provider routing, "
         "authentication and result processing. The external tests are hidden. "
         "One meaningful edit is preferable to several speculative ones. "
@@ -285,7 +294,7 @@ def local_model_request(source, previous_issue, *, request_fn=urlopen, model=LOC
                     "properties": {
                         "target_id": {
                             "type": "string",
-                            "enum": list(target_spans) or ["prompt", "feedback"],
+                            "enum": available or ["prompt", "feedback"],
                         },
                         "replacement": {"type": "string"},
                     },
