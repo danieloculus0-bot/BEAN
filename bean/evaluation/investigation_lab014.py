@@ -198,6 +198,11 @@ class LocalOllamaAdapter(LLMAdapterBase):
 
 
 def provider_factory(name: str) -> Callable[[], LLMAdapterBase]:
+    if name == "simulated":
+        # Import lazily to avoid a circular dependency with Lab 015's
+        # runner. This is NOT an actual language model.
+        from bean.evaluation.simulated_llm_lab015 import SimulatedLLMAdapter
+        return SimulatedLLMAdapter
     options={
         "fixture":OfflineFixture,"mock":MockLLMAdapter,
         "ollama":LocalOllamaAdapter,"openai":OpenAIProvider,
@@ -469,7 +474,7 @@ def run_suite(provider:str="fixture",seeds:tuple[int,...]=(7,19,43),
 
 def main(argv=None):
     p=argparse.ArgumentParser(description="BEAN Lab 014 simulated investigation")
-    p.add_argument("--provider",choices=("fixture","mock","openai","ollama"),default="fixture")
+    p.add_argument("--provider",choices=("fixture","mock","simulated","openai","ollama"),default="fixture")
     p.add_argument("--report",type=Path)
     p.add_argument("--train",type=int,default=80)
     p.add_argument("--holdout",type=int,default=75)
