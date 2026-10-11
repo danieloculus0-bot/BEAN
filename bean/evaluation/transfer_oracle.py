@@ -30,13 +30,14 @@ SAFE_BUILTINS = {
 BANNED = (
     ast.Import, ast.ImportFrom, ast.ClassDef, ast.AsyncFunctionDef,
     ast.Global, ast.Nonlocal, ast.With, ast.AsyncWith, ast.Await,
-    ast.Lambda, ast.Yield, ast.YieldFrom, ast.Try, ast.AsyncFor,
+    ast.Yield, ast.YieldFrom, ast.Try, ast.AsyncFor,
 )
 # Raise ValueError is allowed by design. The explicit allowed attributes
 # exclude introspection, reflection, I/O and subprocess facilities.
 METHODS = {
     "get", "items", "keys", "values", "append", "sort", "copy", "setdefault",
     "update", "pop", "add", "remove", "discard", "count", "index",
+    "insert", "extend",
 }
 
 
