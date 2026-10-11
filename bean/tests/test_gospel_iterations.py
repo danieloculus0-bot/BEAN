@@ -161,3 +161,55 @@ def test_source_transport_never_means_verified_historical_facts():
     assert report["source_observations"][0]["source_claim_authenticated"] is False
     assert report["independent_historical_source_semantic_validation"] is False
     assert report["historical_certainty_claimed"] is False
+
+
+def test_source_attributed_context_does_not_automatically_prove_events(tmp_path):
+    from bean.evaluation.gospel_iterations import read_documented_facts
+    packet = {
+        "schema": "bean.gospel_sourced_fact_context.v1",
+        "source_verification_method": (
+            "Text of cited public sources inspected by research assistant via web retrieval; "
+            "interpretations cross-checked when feasible, not a BEAN autonomous validation "
+            "or replicated experiment."),
+        "records": [
+            {"fact_id": "sun", "kind": "measurement_summary",
+             "source_url": "https://science.nasa.gov/sun/facts/",
+             "source_org": "NASA",
+             "statement": "The solar system is about 4.6 billion years old.",
+             "related_cases": ["creation"],
+             "confidence_scope": "astronomical history",
+             "contra": "Literary-day readings differ from literal formation timetables.",
+             "evidence_weight": "established physical chronology"}
+        ],
+    }
+    path = tmp_path / "facts.json"
+    path.write_text(json.dumps(packet))
+    parsed = read_documented_facts(path, valid_case_ids={"creation"})
+    assert len(parsed["creation"]) == 1
+    assert parsed["creation"][0]["record_id"] == "sun"
+    assert not parsed["creation"][0]["autonomously_verified_by_BEAN"]
+    assert not parsed["creation"][0]["experimentally_reproduced_by_BEAN"]
+    packet["records"][0]["related_cases"] = ["unreferenced_case"]
+    path.write_text(json.dumps(packet))
+    with pytest.raises(CorpusError, match="unknown dispute"):
+        read_documented_facts(path, valid_case_ids={"creation"})
+
+
+def test_five_sessions_change_research_assignments_not_certainty():
+    from bean.evaluation.gospel_iterations import _session_probe
+    model = {"alternative_model": {"type": "other", "statement": "Other model"},
+             "literal_model": {"type": "date_overlap", "source_refs": ["Matthew 2:1"]}}
+    case = {"scripture_evidence": {"Matthew 2:1": "Herod"}}
+    info = {"strict_joint_reading": "impossible", "limitations": "premise-dependent"}
+    probes = [
+        _session_probe(i, case, model, info, [], []) for i in range(1, 6)
+    ]
+    assert [x["activity"] for x in probes] == [
+        "establish_primary_text",
+        "test_external_source_access_and_documented_science",
+        "attempt_counterinterpretation",
+        "quantify_conditional_feasibility",
+        "falsification_and_missing_evidence",
+    ]
+    assert probes[4]["certainty_increased_from_repetition_alone"] is False
+    assert probes[1]["historical_fact_independently_attested_by_engine"] is False
