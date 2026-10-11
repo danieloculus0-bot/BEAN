@@ -38,7 +38,8 @@ class ReasoningEngine:
         parsed = parse_response(raw)
         # A syntactically valid JSON object can still violate the provider's
         # contract. Treat schema omissions/malformed fields as untrusted.
-        if adapter.adapter_name == "ollama" and parsed.get("parse_success"):
+        if (adapter.adapter_name == "ollama" and completion.get("ok")
+                and parsed.get("parse_success")):
             required = ("summary", "observations", "interpretations", "assumptions",
                         "uncertainties", "evidence_refs", "candidate_steps",
                         "risk_flags", "confidence")
