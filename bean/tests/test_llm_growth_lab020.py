@@ -11,7 +11,9 @@ from experiments.llm_growth_lab020.lab020 import (
 )
 
 ROOT = Path(__file__).resolve().parents[2]
-SOURCE = ROOT / TARGET
+# Compare against an exact pre-fix production source, not today's repaired Core.
+SOURCE = ROOT / "experiments/llm_growth_lab020/fixtures/selection_pre_fix.py"
+CURRENT_SOURCE = ROOT / TARGET
 TESTS = ROOT / "experiments/llm_growth_lab020/test_selection_identity.py"
 
 
@@ -42,11 +44,18 @@ def patched(source):
         needle, "candidate.identifier.strip().casefold() for candidate in opportunities")
 
 
-def test_real_core_baseline_is_demonstrably_broken():
+def test_frozen_historical_baseline_is_demonstrably_broken():
     baseline = score_candidate(SOURCE.read_text(encoding="utf-8"), test_source=TESTS)
     assert not baseline["passed"]
     assert baseline["total"] == 14
     assert baseline["passed_tests"] <= 11
+
+
+def test_current_core_already_passes_the_historical_defect_contract():
+    current = CURRENT_SOURCE.read_text(encoding="utf-8")
+    assert score_candidate(current, test_source=TESTS)["passed"]
+    held = ROOT / "experiments/llm_growth_lab020/test_selection_holdout.py"
+    assert score_candidate(current, test_source=held)["passed"]
 
 
 def test_revised_full_source_passes_core_reproduction_and_sealed_holdout():
