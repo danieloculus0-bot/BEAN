@@ -117,10 +117,18 @@ class PublicAiscendDemoTests(unittest.TestCase):
     @unittest.skipUnless(shutil.which("node"), "Node.js needed for browser script syntax check")
     def test_inline_browser_javascript_parses(self):
         scripts = re.findall(r"<script[^>]*>([\s\S]*?)</script>", self.html)
-        self.assertEqual(len(scripts), 1)
-        out = subprocess.run([shutil.which("node"), "--check"],
-                             input=scripts[0], text=True, capture_output=True)
-        self.assertEqual(out.returncode, 0, out.stderr)
+        self.assertGreaterEqual(len(scripts), 2)
+        for index, script in enumerate(scripts):
+            with self.subTest(script=index):
+                out = subprocess.run([shutil.which("node"), "--check"],
+                                     input=script, text=True, capture_output=True)
+                self.assertEqual(out.returncode, 0, out.stderr)
+        self.assertIn("fmt=n=>'
+
+
+if __name__ == "__main__":
+    unittest.main()
++n.toFixed(2)", scripts[-1])
 
 
 if __name__ == "__main__":
