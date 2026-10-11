@@ -42,7 +42,7 @@ On October 11, 2026, [Core's previous green four-platform regression](https://gi
 | Model-written selector repair | **14/14** development checks and **7/7** fresh holdout checks | Limited bounded source repair, not autonomous general software engineering; [study](docs/BEAN_LLM_REPAIR_EXPERIMENT_20261011.md) |
 | Synthetic evidence-sensitive ranking | **91.25% vs 18.75%** on a deliberate source-echo benchmark | Bridge research, not live Google or browser superiority; [lab](https://github.com/danieloculus0-bot/BEAN-AI-Bridge-/actions/runs/38029876766) |
 | Five specialist competitors | **5 INCONCLUSIVE** independent judgments | No claim BEAN defeated OpenCode, Goose, OpenHands, Continue or Cline; [judge run](https://github.com/danieloculus0-bot/BEAN/actions/runs/38126634979) |
-| Arduino Nano and ESP32 | **2 emulator pass markers** on simavr and QEMU | Bridge draft; Wokwi not run (token missing), no physical robot movement; [run](https://github.com/danieloculus0-bot/BEAN-AI-Bridge-/actions/runs/38128794018) |
+| Arduino Nano and ESP32 | **2 CPU emulator targets passed**, plus 6,144 native fault transitions and a seeded E-stop mutation canary | [Bridge main lab](https://github.com/danieloculus0-bot/BEAN-AI-Bridge-/blob/main/experiments/robot_motion/README.md); no physical motor control. ESP32 FreeRTOS logical watchdog tested; Wokwi NOT_RUN (missing token). [Fresh evidence](https://github.com/danieloculus0-bot/BEAN-AI-Bridge-/actions/runs/38161744114) |
 
 **Not proven:** AGI, consciousness, autonomous physical control, independently authenticated external truth, profitable trading, production ERP connectivity or universal coding superiority.
 
