@@ -1,0 +1,122 @@
+name: BEAN Lab021b evidence-directed unsolved task and final transfer
+
+on:
+  push:
+    branches:
+      - experiment/bean-autonomy-transfer-lab021-20261011
+    paths:
+      - '.github/workflows/bean-autonomy-targeted-transfer-lab021b.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  select-next-task:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Verify benchmark and AST constraints
+        run: |
+          python -m pip install pytest
+          python -m pytest bean/tests/test_autonomy_transfer_lab021.py -q
+      - uses: actions/download-artifact@v4
+        with:
+          name: bean021-saved-code-regrade-ubuntu-latest
+          run-id: 38108973767
+          github-token: ${{ github.token }}
+          path: verified/
+      - name: BEAN chooses unresolved task from cross-run verified evidence
+        run: |
+          python -m bean.evaluation.transfer_memory prepare \
+            --a verified/report-a.json --b verified/report-b.json \
+            --out prior/feedback.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: lab021b-learning-state
+          path: prior/
+          if-no-files-found: error
+
+  targeted-llm-repair:
+    needs: select-next-task
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/download-artifact@v4
+        with:
+          name: lab021b-learning-state
+          path: prior/
+      - name: One free-model request for only the unsolved task
+        env:
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+        run: |
+          python -m bean.evaluation.transfer_author \
+            --feedback prior/feedback.json --out inventory-attempt/
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: lab021b-new-inventory-proposal
+          path: inventory-attempt/
+          if-no-files-found: warn
+
+  final-secret-free-holdout:
+    needs: targeted-llm-repair
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/download-artifact@v4
+        with:
+          name: lab021-first-proposals
+          run-id: 38108649668
+          github-token: ${{ github.token }}
+          path: solved-a/
+      - uses: actions/download-artifact@v4
+        with:
+          name: lab021-first-proposals
+          run-id: 38108708826
+          github-token: ${{ github.token }}
+          path: solved-b/
+      - uses: actions/download-artifact@v4
+        with:
+          name: lab021b-new-inventory-proposal
+          path: inventory-attempt/
+      - name: Test unmodified model sources on previously unused final cases
+        run: |
+          python -m bean.evaluation.transfer_oracle \
+            --initial solved-a/ --phase final --output final-a.json
+          python -m bean.evaluation.transfer_oracle \
+            --initial solved-b/ --phase final --output final-b.json
+          python -m bean.evaluation.transfer_oracle \
+            --initial inventory-attempt/ --phase final --output final-c.json
+          python -m bean.evaluation.transfer_memory compile \
+            --a final-a.json --b final-b.json --c final-c.json \
+            --out lab021b-results.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: lab021b-final-unseen-seed-verdict
+          path: |
+            final-a.json
+            final-b.json
+            final-c.json
+            lab021b-results.json
+          if-no-files-found: warn
