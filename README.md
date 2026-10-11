@@ -16,6 +16,12 @@ Those are things BEAN can use.
 
 **BEAN is the persistent logic that remains.**
 
+## BEAN inside ChatGPT — early MCP plugin preview
+
+The public-source **[BEAN Evidence Companion](integrations/chatgpt/README.md)** now has a bounded, optional MCP implementation that calls real BEAN Core epistemic guard, evidence bridge, proposal filters, and SQLite restart-proof routines. Four read-only tools let a ChatGPT-compatible MCP client check the structure of claims, compare unverified reports, screen a proposal, and inspect BEAN's persistence demonstration.
+
+**Status: developer preview.** The MCP server is runnable locally but **not hosted, submitted, reviewed, approved, installable or published** in ChatGPT yet. A stable HTTPS deployment, privacy controls, confirmed developer identity and OpenAI directory review are required. The plugin does **not** authenticate internet evidence or maintain a user's personal memory. No ERP, trading, robot or network actions are exposed.
+
 ## Try BEAN and verify its claims
 
 **[Updated usefulness audit — what BEAN actually helps with, where it doesn't, and the next proof](docs/BEAN_USEFULNESS_AUDIT_2026-10-11.md)**
