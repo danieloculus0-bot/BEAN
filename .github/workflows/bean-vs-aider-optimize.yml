@@ -1,0 +1,158 @@
+name: BEAN vs Aider Round 2 performance optimization
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'experiments/agent_arena/optimize.py'
+      - 'experiments/agent_arena/opt_judge.py'
+      - 'bean/tests/test_agent_arena_optimization.py'
+      - '.github/workflows/bean-vs-aider-optimize.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'experiments/agent_arena/optimize.py'
+      - 'experiments/agent_arena/opt_judge.py'
+      - 'bean/tests/test_agent_arena_optimization.py'
+      - '.github/workflows/bean-vs-aider-optimize.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: bean-vs-aider-optimize-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  preflight:
+    name: Verify performance bench oracle and immutable Round 1 contract (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 12
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Syntax and baseline correctness/stress validation
+        run: |
+          python -m compileall -q experiments/agent_arena bean/tests/test_agent_arena_optimization.py
+          python -m unittest bean.tests.test_agent_arena_optimization -v
+
+  author:
+    name: BEAN and Aider optimize their own original perfect-score code
+    needs: preflight
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    permissions:
+      contents: read
+      actions: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Obtain immutable actual 16/16 BEAN and Aider source artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: bean-vs-aider-authors-38110050070
+          run-id: 38110050070
+          github-token: ${{ github.token }}
+          path: _round1/
+      - name: Install genuine upstream Aider release
+        run: |
+          python -m pip install aider-chat==0.86.2
+          aider --version
+      - name: Ask BEAN and Aider to optimize original passing sources
+        env:
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          AIDER_ANALYTICS: 'false'
+          PYTHONDONTWRITEBYTECODE: '1'
+        run: |
+          python -m experiments.agent_arena.optimize --baseline _round1 --out _round2
+      - name: Save all proposals and non-successful attempt receipts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bean-vs-aider-optimization-authors-${{ github.run_id }}
+          path: _round2/
+          if-no-files-found: warn
+          retention-days: 21
+
+  judge:
+    name: Independent new stress accuracy + median timings (${{ matrix.os }})
+    needs: author
+    if: needs.author.result == 'success'
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    permissions:
+      contents: read
+      actions: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/download-artifact@v4
+        with:
+          name: bean-vs-aider-authors-38110050070
+          run-id: 38110050070
+          github-token: ${{ github.token }}
+          path: _round1/
+      - uses: actions/download-artifact@v4
+        with:
+          name: bean-vs-aider-optimization-authors-${{ github.run_id }}
+          path: _round2/
+      - name: Independently recheck original 16 tests plus new large stress cases
+        run: |
+          python -m experiments.agent_arena.opt_judge --round1 _round1 --round2 _round2 --out _opt_verdict/verdict.json
+      - name: Explain honest performance result
+        if: always()
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json, os
+          from pathlib import Path
+          path=Path('_opt_verdict/verdict.json')
+          with open(os.environ['GITHUB_STEP_SUMMARY'],'a',encoding='utf-8') as f:
+              f.write('## BEAN vs Aider Round 2: optimization\n\n')
+              if not path.exists():
+                  f.write('No valid optimized verdict. Infrastructure error, not a victory.\n')
+              else:
+                  r=json.loads(path.read_text())
+                  f.write('**Outcome:** '+r['winner']+'\n\n')
+                  for a in ['bean','aider']:
+                      f.write('### '+a.upper()+'\n\n')
+                      for c,v in r['cases'][a].items():
+                          f.write(c+': original '+str(v['baseline_tests']['passed_tests'])+'/'+str(v['baseline_tests']['total_tests'])
+                                  +', optimized '+(str(v['optimized_tests']['passed_tests'])+'/'+str(v['optimized_tests']['total_tests'])
+                                      if v['optimized_tests'] else 'no candidate')
+                                  +', speedup '+str(v['speedup'])+'x'
+                                  +', stress valid '+str(v['eligible'])+'\n\n')
+                  f.write('Evidence: '+r['evidence_sha256']+'\n\n')
+                  f.write('**Small two-task pilot, noisy CI timing; no broad superiority claim.**\n')
+          PY
+      - name: Preserve before/after times, full stress verdict and hash
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bean-vs-aider-opt-verdict-${{ matrix.os }}-${{ github.run_id }}
+          path: _opt_verdict/
+          if-no-files-found: warn
+          retention-days: 21
