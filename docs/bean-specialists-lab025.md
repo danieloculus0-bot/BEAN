@@ -84,3 +84,11 @@ necessarily matched. A headless CLI may require external login or
 lack support for a 1.5B tool-calling model. Such situations must
 show INCONCLUSIVE and be fixed separately before a fair victory claim.
 No model weights are trained by these iterative trials.
+
+## Authorized tournament rerun — 2026-10-11
+
+Owner requested another live five-specialist tournament. This entry documents
+only the execution request; it does not change tests, scenarios, models, score
+rules, candidate source, or the baseline and is not a declaration of a win.
+All results must come from independently recorded GitHub Actions verdicts,
+including failures and inconclusive matches.
