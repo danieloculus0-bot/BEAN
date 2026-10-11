@@ -137,3 +137,25 @@ def test_http402_never_triggers_paid_fallback(tmp_path):
     assert report["reason"] == "OPENROUTER_HTTP_402"
     assert len(calls) == 1
     assert "private" not in (tmp_path/"out"/"author-receipt.json").read_text()
+
+
+def test_free_model_prose_wrapper_is_not_mistaken_for_a_bad_edit_plan():
+    content = (
+        "I found a likely change.\n"
+        + json.dumps({"edits":[{"find":"x=1", "replace":"x=2"}]})
+        + "\nPlease test it independently."
+    )
+    assert author.parse_plan(content) == [{"find": "x=1", "replace": "x=2"}]
+
+
+def test_invalid_edit_receipt_explains_failure_without_copying_raw_model_text(tmp_path):
+    bridge, challenge = setup(tmp_path)
+    with patch.object(author, "head", side_effect=[author.BRIDGE_SHA, author.CHALLENGE_SHA]):
+        report = author.author(bridge=bridge, challenge=challenge, out=tmp_path/"out",
+                               key="nonloggable-secret",
+                               request_fn=lambda *_ , **kw: Reply("nonsensical provider text"))
+    assert report["status"] == "invalid_model_edit_plan"
+    assert report["rejected_stage"] == "model response has no usable JSON edits"
+    assert report["attempted_requests"] == 2
+    assert "nonloggable-secret" not in json.dumps(report)
+    assert "nonsensical provider text" not in json.dumps(report)
