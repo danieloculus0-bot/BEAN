@@ -182,3 +182,26 @@ def test_invalid_small_experiment_rejected():
         run_suite(seeds=(11,11),training=50,holdout=50)
     with pytest.raises(ValueError):
         make_cases(1,10,"answer_key")
+
+
+def test_reinitializing_store_disconnects_previous_database(tmp_path):
+    first = tmp_path / "first.sqlite"
+    second = tmp_path / "second.sqlite"
+    init_store(str(first))
+    db = get_store()
+    db.execute("CREATE TABLE sandbox_unique (value INTEGER NOT NULL)")
+    db.execute("INSERT INTO sandbox_unique(value) VALUES (17)")
+    db.commit()
+
+    init_store(str(second))
+    db2 = get_store()
+    attached_path = db2.fetchone("PRAGMA database_list")[2]
+    assert attached_path.endswith("second.sqlite")
+    assert db2.fetchone(
+        "SELECT COUNT(*) AS n FROM sqlite_master WHERE name='sandbox_unique'"
+    )["n"] == 0
+
+    init_store(str(first))
+    assert get_store().fetchone(
+        "SELECT value FROM sandbox_unique LIMIT 1"
+    )["value"] == 17
