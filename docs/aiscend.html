@@ -506,7 +506,7 @@ setInterval(()=>{petQuipIndex++;drawPet()},8600);
 
 <script>
 (()=>{'use strict';
-const $=id=>document.getElementById(id),fmt=n=>'
+const $=id=>document.getElementById(id),fmt=n=>String.fromCharCode(36)+n.toFixed(2);
 let cash,units,price,candles,seed,interval,stepNumber,events;
 const rand=()=>{seed=(Math.imul(1664525,seed)+1013904223)>>>0;return seed/4294967296};
 function note(message){events.unshift('['+String(stepNumber).padStart(3,'0')+'] '+message);events=events.slice(0,7);$('paperJournal').textContent=events.join(' | ')}
