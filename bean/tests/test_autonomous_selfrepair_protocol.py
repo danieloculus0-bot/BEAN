@@ -213,19 +213,20 @@ def test_provider_402_never_triggers_local_fallback(tmp_path):
 
 def test_selfrepair_scope_never_changes_provider_transport():
     from bean.evaluation.autonomous_selfrepair_verify import safe_transport_unchanged
-    before = (
-        "def call_model(key, source):\\n"
-        "    prompt = source\\n"
-        "    data = {\\\"model\\\": \\\"openrouter/free\\\", \\\"prompt\\\": prompt}\\n"
-        "    request = ('https://example.org', key, data)\\n"
-        "    return request\\n"
-    )
+    before = chr(10).join((
+        "def call_model(key, source):",
+        "    prompt = source",
+        '    data = {"model": "openrouter/free", "prompt": prompt}',
+        "    request = ('https://example.org', key, data)",
+        "    return request",
+        "",
+    ))
     improved = before.replace("prompt = source", "prompt = source[:100]")
     assert safe_transport_unchanged(before, improved)
     tampered = before.replace("'https://example.org'", "'https://attacker.invalid'")
     with pytest.raises(ValueError, match="provider transport"):
         safe_transport_unchanged(before, tampered)
     injected = before.replace("prompt = source",
-                              "prompt = source\\n    open('/tmp/exfil','w').write(key)")
+                              "prompt = source" + chr(10) + "    open('/tmp/exfil','w').write(key)")
     with pytest.raises(ValueError, match="file access"):
         safe_transport_unchanged(before, injected)
