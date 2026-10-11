@@ -112,7 +112,7 @@ def call_model(key, original, *, request_fn=urlopen, feedback=None):
     import_lines = [line for line in original.splitlines()
                     if line.startswith("from datetime import ")]
     functions = original.split("def calculate(", 1)
-    nearby = ("def calculate(" + functions[1].split("\n\n", 1)[0]
+    nearby = ("\n".join(("def calculate(" + functions[1]).splitlines()[:22])
               if len(functions) == 2 else "")
     parser_context = original.split("def utc_datetime(", 1)
     time_parser = ("def utc_datetime(" + parser_context[1].split("\n\n", 1)[0]
