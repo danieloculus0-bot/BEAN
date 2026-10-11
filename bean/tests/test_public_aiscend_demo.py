@@ -74,6 +74,34 @@ class PublicAiscendDemoTests(unittest.TestCase):
         self.assertNotIn("walletSecret", self.html)
         self.assertNotIn("keyfile", self.html)
 
+    def test_public_market_prices_and_direct_links_are_read_only(self):
+        self.assertIn("id=\"markets\"", self.html)
+        self.assertIn("id=\"marketFreshness\"", self.html)
+        self.assertIn("Coinbase Exchange public last-trade quotes", self.html)
+        self.assertIn("https://api.exchange.coinbase.com/products/", self.html)
+        self.assertIn("fetch(endpoint,{signal:abort.signal,cache:\"no-store\"})",
+                      self.html)
+        self.assertIn("response.ok", self.html)
+        self.assertIn("Math.abs(Date.now()-timestamp)>15*60*1000", self.html)
+        self.assertIn("Open any Coinbase market link", self.html)
+        for ticker, slug in (
+            ("BTC", "bitcoin"), ("ETH", "ethereum"),
+            ("SOL", "solana"), ("DOGE", "dogecoin"),
+        ):
+            self.assertIn('id="market' + ticker + '"', self.html)
+            self.assertIn("https://www.coinbase.com/price/" + slug,
+                          self.markup.links)
+        self.assertIn("https://exchange.coinbase.com/markets",
+                      self.markup.links)
+        # Live market reads are distinct from demo balance/research numbers.
+        self.assertIn("sample", self.html)
+        self.assertNotIn("Authorization: Bearer", self.html)
+
+    def test_main_site_opens_demo_in_new_tab(self):
+        self.assertIn('href="./aiscend.html" target="_blank" '
+                      'rel="noopener noreferrer"', self.home)
+        self.assertIn("Explore the public AIscend demo", self.home)
+
     def test_identity_and_account_identifiers_are_not_published(self):
         for pattern in (
             r"0x[0-9a-fA-F]{40}\b",
