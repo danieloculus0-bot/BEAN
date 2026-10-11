@@ -198,6 +198,10 @@ class LocalOllamaAdapter(LLMAdapterBase):
 
 
 def provider_factory(name: str) -> Callable[[], LLMAdapterBase]:
+    if name == "simulated":
+        # Symbolic provider, not a neural language model; lazy import avoids a cycle.
+        from bean.evaluation.simulated_llm_lab015 import SimulatedLLMAdapter
+        return SimulatedLLMAdapter
     options={
         "fixture":OfflineFixture,"mock":MockLLMAdapter,
         "ollama":LocalOllamaAdapter,"openai":OpenAIProvider,
