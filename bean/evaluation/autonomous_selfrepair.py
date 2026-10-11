@@ -238,11 +238,11 @@ def local_model_request(source, previous_issue, *, request_fn=urlopen, model=LOC
         if ("prompt" in line or "feedback" in line or "RELEVANT" in line)
     )[:2300]
     target_spans = statement_targets(source)
-    # A retry defect belongs to the feedback path. Changing the first-request
-    # prompt cannot fix it, as the independently rejected trial demonstrated.
-    # The model still authors the replacement block without seeing the oracle.
-    available = (["feedback"] if "feedback" in target_spans
-                 else list(target_spans))
+    # The source-author problem spans both first-request context selection and
+    # the feedback retry. Model-generated alternatives can touch either/both
+    # AST statements; immutable transport remains outside these targets.
+    available = ([name for name in ("prompt", "feedback")
+                  if name in target_spans] or list(target_spans))
     raw_lines = source.splitlines()
     marked = []
     for target_id in available:
@@ -264,13 +264,14 @@ def local_model_request(source, previous_issue, *, request_fn=urlopen, model=LOC
         "Write replacement Python at ZERO indentation; the host indents it "
         "inside the original call_model function. Do not duplicate the whole "
         "function, supply markdown, or repeat identical code. "
-        "The witnessed defect: unusable model replies lead to essentially "
-        "the same author prompt being sent on retry. Preserve the initial "
-        "request's full original source. The only faulty behavior is what "
-        "happens when the feedback path runs after a rejected response. "
-        "Replace the existing feedback-handling block with your own "
-        "meaningfully different retry strategy. The next prompt must stay "
-        "focused on relevant code and retain the key function contracts. "
+        "The witnessed defect spans BOTH first-request context selection "
+        "and rejected-response retry behavior. The initial prompt must give "
+        "the model enough actual source to locate an exact code edit, even "
+        "when the target contains lots of irrelevant functions. After "
+        "invalid model output the retry must be materially more focused "
+        "without losing the target's public function contracts. "
+        "You may redesign both the prompt and feedback Python statements. "
+        "Do not simply append another short suffix to the same long prompt. "
         "Choose the implementation yourself; preserve provider routing, "
         "authentication and result processing. The external tests are hidden. "
         "One meaningful edit is preferable to several speculative ones. "

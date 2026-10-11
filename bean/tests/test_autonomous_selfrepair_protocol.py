@@ -387,8 +387,8 @@ def test_real_local_model_schema_targets_stable_statement_ids():
     )
     lab.local_model_request(code, None, request_fn=mocked)
     item = seen[0]["format"]["properties"]["edits"]["items"]
-    assert set(item["properties"]["target_id"]["enum"]) == {"feedback"}
-    assert "STATEMENT_ID=prompt" not in seen[0]["messages"][0]["content"]
+    assert set(item["properties"]["target_id"]["enum"]) == {"prompt", "feedback"}
+    assert "STATEMENT_ID=prompt" in seen[0]["messages"][0]["content"]
     assert "STATEMENT_ID=feedback" in seen[0]["messages"][0]["content"]
 
 
@@ -419,7 +419,7 @@ def test_generated_statement_edit_is_really_applied_not_preselected(tmp_path):
     assert candidate["replacement_sha256"] == lab.sha(candidate["replacement"])
 
 
-def test_retry_repair_model_is_focused_on_feedback_branch():
+def test_neural_repair_anchors_both_initial_context_and_retry():
     seen = []
     def fake(req, timeout):
         seen.append(json.loads(req.data))
@@ -435,8 +435,28 @@ def test_retry_repair_model_is_focused_on_feedback_branch():
     lab.local_model_request(code, "invalid source edit", request_fn=fake)
     body = seen[0]
     content = body["messages"][0]["content"]
-    assert "Preserve the initial" in content
-    assert "feedback-handling block" in content
+    assert "BOTH first-request context selection" in content
+    assert "You may redesign both the prompt and feedback" in content
     assert "STATEMENT_ID=feedback" in content
-    assert "STATEMENT_ID=prompt" not in content
-    assert body["format"]["properties"]["edits"]["items"]["properties"]["target_id"]["enum"] == ["feedback"]
+    assert "STATEMENT_ID=prompt" in content
+    assert body["format"]["properties"]["edits"]["items"]["properties"]["target_id"]["enum"] == ["prompt", "feedback"]
+
+
+def test_two_statement_model_response_can_update_initial_context_and_retry():
+    code = (
+        "def call_model(key, original, feedback=None):\n"
+        "    prompt = 'initial' + original\n"
+        "    if feedback:\n"
+        "        prompt += feedback\n"
+        "    data = {'prompt': prompt}\n"
+        "    return data\n"
+    )
+    response = json.dumps({"edits": [
+        {"target_id": "prompt", "replacement": "prompt = original"},
+        {"target_id": "feedback", "replacement": "if feedback:\n    prompt = prompt[-300:] + feedback"},
+    ]})
+    edited, changed = lab.apply_model_response(code, response)
+    assert "prompt = original" in edited
+    assert "prompt = prompt[-300:] + feedback" in edited
+    assert "data = {'prompt': prompt}" in edited
+    assert changed > 0
