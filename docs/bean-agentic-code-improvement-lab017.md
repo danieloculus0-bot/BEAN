@@ -10,10 +10,10 @@ program synthesis or demonstrated open-ended software self-improvement.
 
 1. The trusted Bridge host inspects its own source and tests, and runs a
    concrete baseline witness showing a defect or inefficiency.
-2. BEAN's reusable \`bean.optimization.selection.rank_improvements\` scores
+2. BEAN's reusable `bean.optimization.selection.rank_improvements` scores
    opportunities by impact, reproducibility, confidence, risk, and test
    readiness. Candidates require evidence references.
-3. The existing BEAN \`SelfOptimizationGovernor\` records the selected
+3. The existing BEAN `SelfOptimizationGovernor` records the selected
    proposal, its intended benefit and validation/rollback criteria, and the
    trusted host's scoped sandbox approval.
 4. A distinct Bridge executor performs one reviewed source transformation
@@ -38,7 +38,7 @@ before merging. Code, tests and the independent BEAN execution receipts
 are linked rather than recreated as imagined outputs.
 
 The first agent push revealed two real workflow defects: it staged
-generated \`__pycache__\` bytecode and GitHub Actions was not permitted to
+generated `__pycache__` bytecode and GitHub Actions was not permitted to
 create a PR. The cache entries were removed before promotion, and
 [Bridge PR #16](https://github.com/danieloculus0-bot/BEAN-AI-Bridge-/pull/16)
 added precise staging, ignores, duplicate-PR suppression and an explicit
