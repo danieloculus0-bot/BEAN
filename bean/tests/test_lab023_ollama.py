@@ -114,3 +114,40 @@ def test_ollama_training_is_valid_under_independent_grade(tmp_path):
     assert result["baseline_total"] > 0
     # Broken generated code does NOT win; passing source receipt alone is insufficient.
     assert result["selected_total"] < result["possible_total"]
+
+
+
+def test_auto_provider_recovers_from_remote_429_with_clean_local_restart(
+        monkeypatch, tmp_path):
+    import bean.evaluation.lab023_ollama as lab
+    monkeypatch.setenv("OPENROUTER_API_KEY", "fictional-fake-key")
+    calls = []
+    def unavailable_cloud(out, api_key):
+        calls.append("cloud")
+        assert api_key == "fictional-fake-key"
+        out.mkdir(parents=True)
+        (out / "receipt.json").write_text(json.dumps({
+            "schema": "bean.autonomy.lab021.generation.v1",
+            "tasks": [{"task_id": "intervals", "reason": "http_429"}],
+        }))
+        (out / "stale_candidate.py").write_text("partial provider attempt")
+    def local_replay(client, root):
+        calls.append("ollama")
+        assert not root.exists()  # no mixed-mode artifacts survive
+        return {"classification": "INCONCLUSIVE", "reason": "fixture_only"}
+    monkeypatch.setattr(lab, "ollama_all", local_replay)
+    result = lab.auto_stage(object(), tmp_path / "run",
+                            cloud_generator=unavailable_cloud)
+    assert calls == ["cloud", "ollama"]
+    assert result["classification"] == "INCONCLUSIVE"
+
+
+def test_auto_without_cloud_key_never_uses_openrouter(monkeypatch, tmp_path):
+    import bean.evaluation.lab023_ollama as lab
+    monkeypatch.delenv("OPENROUTER_API_KEY", raising=False)
+    calls = []
+    monkeypatch.setattr(lab, "ollama_all", lambda client, root: calls.append("local"))
+    def cloud_not_allowed(*args, **kwargs):
+        raise AssertionError("cloud must not be called without a configured key")
+    lab.auto_stage(object(), tmp_path / "out", cloud_generator=cloud_not_allowed)
+    assert calls == ["local"]
