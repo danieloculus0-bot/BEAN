@@ -204,6 +204,12 @@ For non-Jetson development:
 
     BEAN_ALLOW_NON_JETSON_INSTALL=1 bash install/jetson_brain_install.sh
 
+## Evidence-pinned peer review and safe code drafts (opt-in)
+
+The [peer development protocol](docs/bean-peer-development-lab017.md) provides reusable Python objects for **immutable, digest-linked selector/builder/validator review messages** and *disposable* code-change proposals pinned to a source SHA and original content hash. It detects reordered receipts, orphan test results and modified source before creating a preview. No module automatically runs generated code, signs off a change, merges branches or grants production permissions.
+
+`from bean.optimization.peer_dialogue import PeerDialogue, PeerMessage` and `from bean.optimization.code_candidate import draft_candidate` expose these review-only primitives. SHA256 integrity is not identity verification: the host must independently check CI results, repository access and trusted evidence origins. See [regression tests](bean/tests/test_peer_dialogue_lab017.py).
+
 ## Development direction
 
 The near-term work is organizational as much as additive: make BEAN's persistent reasoning primitives easier to understand, isolate from old embodiment assumptions, and reuse without copying logic into every new project.
