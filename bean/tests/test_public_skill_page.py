@@ -89,8 +89,32 @@ class PublicSkillsPageTests(unittest.TestCase):
             with self.subTest(path=path):
                 self.assertIn("https://github.com/danieloculus0-bot/AIscend/blob/main/" + path,
                               self.parser.links)
-        self.assertIn("https://github.com/danieloculus0-bot/AIscend/actions/runs/38168385198",
+        self.assertIn("https://github.com/danieloculus0-bot/AIscend/actions/runs/38174689361",
                       self.parser.links)
+
+    def test_autonomous_engineering_and_fast_market_research_are_scoped(self):
+        self.assertIn("autonomy", self.parser.anchors)
+        self.assertIn("#autonomy", self.parser.links)
+        for claim in (
+            "BEAN writes real code. Independent tests decide what ships.",
+            "Zero verified promotions",
+            "Five-minute strategy research",
+            "Independent forward paper trials",
+            "Ollama-powered code engineer",
+            "Metamorphic defect hunter",
+        ):
+            with self.subTest(claim=claim):
+                self.assertIn(claim, self.page)
+        for url in (
+            "https://github.com/danieloculus0-bot/BEAN/actions/runs/38175931431",
+            "https://github.com/danieloculus0-bot/BEAN/blob/main/bean/evaluation/autonomous_selfrepair_verify.py",
+            "https://github.com/danieloculus0-bot/AIscend/blob/main/src/bean_five_minute.py",
+            "https://github.com/danieloculus0-bot/AIscend/blob/main/src/bean_research_supervisor.py",
+            "https://github.com/danieloculus0-bot/AIscend/blob/main/docs/BEAN_UNATTENDED_LOCAL_ENGINEER.md",
+            "https://github.com/danieloculus0-bot/BEAN-AI-Bridge-/blob/main/docs/BEAN_METAMORPHIC_DISCOVERY_LAB.md",
+        ):
+            with self.subTest(url=url):
+                self.assertIn(url, self.parser.links)
 
     def test_new_skills_have_reproducible_refs(self):
         links = self.parser.links
