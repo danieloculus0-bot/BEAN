@@ -65,3 +65,5 @@ of their PC and unaffected by free OpenRouter 429 limits.
 
 Do not publish generated candidates to production/main or present a
 synthetic-mock test as evidence of BEAN coding ability.
+
+First real no-OpenRouter 3-round trial requested on local Ollama hosted CI.
