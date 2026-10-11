@@ -11,7 +11,6 @@ import json
 import os
 from pathlib import Path
 from urllib.error import HTTPError, URLError
-from urllib.parse import quote
 from urllib.request import Request, urlopen
 
 REPOSITORIES = ("danieloculus0-bot/BEAN", "danieloculus0-bot/BEAN-AI-Bridge-")
@@ -145,7 +144,7 @@ def render_markdown(results: list[dict]) -> str:
         lines += [
             f"## {name}",
             "",
-            f"- Main commit: \`{repo['main_sha']}\`",
+            f"- Main commit: `{repo['main_sha']}`",
             f"- Branches discovered including main: {repo['branch_count']}",
             f"- Main Python test modules: {len(tree['test_files'])}",
             f"- Main GitHub workflow files: {len(tree['workflow_files'])}",
@@ -160,21 +159,21 @@ def render_markdown(results: list[dict]) -> str:
         ]
         for b in repo["branches"]:
             n = b["branch"].replace("|", "\\|")
-            lines.append(f"| \`{n}\` | {b['ahead_by']} | {b['behind_by']} | "
+            lines.append(f"| `{n}` | {b['ahead_by']} | {b['behind_by']} | "
                          f"{b['comparison_file_count']} | "
                          f"{'yes' if b['touches_tests'] else 'no'} | "
                          f"{'yes' if b['touches_workflows'] else 'no'} |")
         if repo["comparison_errors"]:
             lines += ["", "### Comparison failures: inspection required", ""]
             for e in repo["comparison_errors"]:
-                lines.append(f"- \`{e['branch']}\`: {e['error']}")
+                lines.append(f"- `{e['branch']}`: {e['error']}")
         lines += ["", "### Test module inventory", ""]
-        lines.extend("- \`" + p + "\`" for p in tree["test_files"])
+        lines.extend("- `" + p + "`" for p in tree["test_files"])
         lines += ["", "### Workflow inventory", ""]
-        lines.extend("- \`" + p + "\`" for p in tree["workflow_files"])
+        lines.extend("- `" + p + "`" for p in tree["workflow_files"])
         lines += ["", "### Open review queue", ""]
         lines.extend(f"- [#{p['number']}: {p['title']}]({p['url']}) "
-                     f"(head: \`{p['head']}\`; draft: {p['draft']})"
+                     f"(head: `{p['head']}`; draft: {p['draft']})"
                      for p in repo["open_pull_requests"])
         lines += ["", "---", ""]
     return "\n".join(lines) + "\n"
