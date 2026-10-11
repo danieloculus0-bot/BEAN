@@ -2,7 +2,7 @@
 
 **Behavior Enabled Avatar Node** · Public-source persistent reasoning and evidence architecture
 
-[**Live site**](https://danieloculus0-bot.github.io/BEAN/) · [**Verified utility and evidence**](docs/VERIFIED_UTILITY_AND_EVIDENCE_2026-10-11.md) · [**Five-minute quickstart**](docs/GETTING_STARTED.md) · [**Research index**](docs/experimental-research-index-2026-10.md) · [**Contribute**](CONTRIBUTING.md)
+[**Live site**](https://danieloculus0-bot.github.io/BEAN/) · [**Production-readiness audit**](docs/PRODUCTION_READINESS_AUDIT_2026-10-11.md) · [**Verified utility and evidence**](docs/VERIFIED_UTILITY_AND_EVIDENCE_2026-10-11.md) · [**Five-minute quickstart**](docs/GETTING_STARTED.md) · [**Research index**](docs/experimental-research-index-2026-10.md) · [**Contribute**](CONTRIBUTING.md)
 
 [![Core regression: Windows and Ubuntu](https://github.com/danieloculus0-bot/BEAN/actions/workflows/brain-smoke.yml/badge.svg)](https://github.com/danieloculus0-bot/BEAN/actions/workflows/brain-smoke.yml)
 
