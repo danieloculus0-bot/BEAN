@@ -4,7 +4,7 @@ import json
 import pytest
 
 from bean.evaluation.composite_growth import (
-    AdaptivePolicy, Decision, Episode, FixedPolicy, Memory, Observation,
+    AdaptivePolicy, Decision, Episode, FrozenPolicy, Memory, Observation,
     SOURCES, TEST_DOMAINS, TRAIN_DOMAINS, make_cases, run_suite, score,
     summary, trial,
 )
@@ -36,7 +36,7 @@ def test_truth_is_not_a_field_of_observation():
 
 def test_missing_is_unknown_not_zero():
     episode = Episode("quality", 0, (), "missing")
-    decision = FixedPolicy().choose(episode.records)
+    decision = FrozenPolicy().choose(episode.records)
     assert decision.answer is None
     result = score(episode, decision)
     assert result["correct"] == 0
@@ -46,14 +46,14 @@ def test_missing_is_unknown_not_zero():
 
 def test_verified_zero_equivalent_is_a_real_reading_not_missing():
     o = Observation("synthetic-zero", "dashboard", 0)
-    decision = FixedPolicy().choose((o,))
+    decision = FrozenPolicy().choose((o,))
     assert decision.answer == 0
     assert score(Episode("energy",0,(o,),"routine"),decision)["correct"] == 1
 
 
 def test_stale_only_record_does_not_get_promoted():
     o = Observation("old-scan","inspector",1,"stale")
-    assert FixedPolicy().choose((o,)).answer is None
+    assert FrozenPolicy().choose((o,)).answer is None
 
 
 def test_conflict_cases_exist_without_true_answer_leakage():
