@@ -149,3 +149,38 @@ def test_rejects_broken_remote_shapes():
     remote["/actions/runs?per_page=50"] = {"workflow_runs": "not a list"}
     with pytest.raises(ValueError, match="runs shape"):
         GitHubReadClient("danieloculus0-bot/BEAN", fetch_json=remote.__getitem__).snapshot()
+
+
+def test_newer_success_supersedes_old_failed_ci_in_priority_queue(tmp_path):
+    db = tmp_path / "bean.db"
+    remote = remote_fixture(failed=True)
+    remote["/actions/runs?per_page=50"]["workflow_runs"].insert(0, {
+        "id": 12346, "name": "BEAN CI peer test",
+        "head_branch": "experiment/peer-lab", "head_sha": "b" * 40,
+        "status": "completed", "conclusion": "success",
+        "html_url": "https://github.com/danieloculus0-bot/BEAN/actions/runs/12346",
+        "pull_requests": [{"number": 74}],
+        "updated_at": "2026-10-11T07:06:00Z",
+    })
+    result = run_bridge("danieloculus0-bot/BEAN", db, fetch_json=remote.__getitem__)
+    assert not any(item["subject"] == "workflow_run" for item in result["work_queue"])
+    # A historical failed receipt is still available in BEAN's SQLite history.
+    with sqlite3.connect(db) as conn:
+        assert conn.execute(
+            "SELECT COUNT(*) FROM github_engineering_events WHERE kind='workflow_run'"
+        ).fetchone()[0] == 2
+
+
+def test_newer_running_ci_also_supersedes_prior_failure(tmp_path):
+    db = tmp_path / "bean.db"
+    remote = remote_fixture(failed=True)
+    remote["/actions/runs?per_page=50"]["workflow_runs"].insert(0, {
+        "id": 12346, "name": "BEAN CI peer test",
+        "head_branch": "experiment/peer-lab", "head_sha": "b" * 40,
+        "status": "in_progress", "conclusion": None,
+        "html_url": "https://github.com/danieloculus0-bot/BEAN/actions/runs/12346",
+        "pull_requests": [{"number": 74}],
+        "updated_at": "2026-10-11T07:06:00Z",
+    })
+    result = run_bridge("danieloculus0-bot/BEAN", db, fetch_json=remote.__getitem__)
+    assert not any(item["subject"] == "workflow_run" for item in result["work_queue"])
