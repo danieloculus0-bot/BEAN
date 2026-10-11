@@ -12,6 +12,7 @@ user memory, filesystem access, browser search, credentials, effectors or writes
 from __future__ import annotations
 
 import os
+from typing import Any
 
 from mcp.server import MCPServer
 from mcp.types import ToolAnnotations
@@ -48,7 +49,7 @@ def bean_audit_claim(
     evidence_refs: list[str] | None = None,
     confidence: float | None = None,
     falsification_test: str | None = None,
-) -> dict:
+) -> dict[str, Any]:
     """Flag missing evidence, confidence, falsification paths and overclaims.
 
     BEAN applies its actual rule-based epistemic guard in a disposable local
@@ -63,7 +64,7 @@ def bean_audit_claim(
     title="BEAN: Compare conflicting statements", readOnlyHint=True,
     destructiveHint=False, idempotentHint=True, openWorldHint=False,
 ))
-def bean_compare_evidence(question: str, observations: list[dict[str, str]]) -> dict:
+def bean_compare_evidence(question: str, observations: list[dict[str, str]]) -> dict[str, Any]:
     """Triage 1..12 user-supplied origin/statement pairs for disagreement.
 
     Example observations: [{"origin":"report A","statement":"machine ready"},
@@ -83,7 +84,7 @@ def bean_screen_proposal(
     steps: list[str],
     evidence_refs: list[str] | None = None,
     uncertainties: list[str] | None = None,
-) -> dict:
+) -> dict[str, Any]:
     """Run BEAN's real, limited proposal heuristics without performing actions.
 
     A pass is NOT a security certification, professional review, or permission
@@ -96,7 +97,7 @@ def bean_screen_proposal(
     title="BEAN: Demonstrate durable memory", readOnlyHint=True,
     destructiveHint=False, idempotentHint=True, openWorldHint=False,
 ))
-def bean_demo_restart() -> dict:
+def bean_demo_restart() -> dict[str, Any]:
     """Demonstrate BEAN's real two-session SQLite event and proposal persistence.
 
     Uses fictional data and the mock reasoning adapter. The temporary DB is
