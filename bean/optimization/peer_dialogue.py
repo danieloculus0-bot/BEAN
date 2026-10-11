@@ -89,6 +89,7 @@ class PeerMessage:
 
     def canonical(self) -> dict:
         payload = asdict(self)
+        payload["evidence_refs"] = list(self.evidence_refs)
         payload["schema"] = SCHEMA
         return payload
 
