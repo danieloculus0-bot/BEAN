@@ -86,20 +86,40 @@ class GitHubModelsAdapter(LLMAdapterBase):
         )
         try:
             with urllib.request.urlopen(request, timeout=35) as response:
-                parsed = json.loads(response.read(100000).decode())
-            text = parsed["choices"][0]["message"]["content"]
-            if not isinstance(text, str) or not text.strip():
-                raise ValueError("empty model response")
-            return {"ok":True,"raw_text":text,"adapter_name":self.adapter_name,
-                    "model_name":self.model_name}
+                content_type = str(response.headers.get("Content-Type", "")) if hasattr(response, "headers") else ""
+                body = response.read(100000).decode("utf-8")
+            try:
+                parsed = json.loads(body)
+            except (ValueError, TypeError):
+                reason = "non_json_service_response"
+            else:
+                if not isinstance(parsed, dict):
+                    reason = "unexpected_json_envelope"
+                elif "error" in parsed:
+                    reason = "service_error_envelope"
+                elif not isinstance(parsed.get("choices"), list):
+                    reason = "missing_choices"
+                elif not parsed["choices"]:
+                    reason = "empty_choices"
+                else:
+                    message = parsed["choices"][0].get("message", {})
+                    text = message.get("content")
+                    if isinstance(text, list):
+                        text = "".join(x.get("text","") for x in text if isinstance(x,dict))
+                    if not isinstance(text,str) or not text.strip():
+                        reason = "missing_output_text"
+                    else:
+                        return {"ok":True,"raw_text":text,
+                                "adapter_name":self.adapter_name,
+                                "model_name":self.model_name}
         except urllib.error.HTTPError as exc:
             reason = "http_"+str(exc.code)
         except (urllib.error.URLError, TimeoutError):
             reason = "network_unavailable"
-        except (ValueError, KeyError, IndexError, TypeError, UnicodeError):
+        except (ValueError, KeyError, IndexError, TypeError, UnicodeError, AttributeError):
             reason = "invalid_service_response"
         self.budget.error(reason)
-        # Do not echo token, response body or headers in Actions logs.
+        # Only fixed diagnostic categories, never token, body or headers.
         return {"ok":False,"error":reason}
 
 
