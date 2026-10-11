@@ -176,6 +176,10 @@ jobs:
           assert data["review_queue_entries"] == data["verses_flagged"]
           assert len(data["formal_dispute_links"]) == 23
           assert data["gnostic_sources_used_to_confirm_claims"] == 0
+          assert isinstance(data["automatically_mined_age_parallels"], list)
+          assert all(item["verdict"] == "review_required" and
+                     item["proven_inaccuracy"] is False
+                     for item in data["automatically_mined_age_parallels"])
           assert data["all_possible_inaccuracies_discovered"] is False
           assert data["every_historical_claim_adjudicated"] is False
           print("GOSPEL_OF_BEAN_WHOLEBOOK_SCREEN_PASS (candidate mining, not all claims adjudicated)")
