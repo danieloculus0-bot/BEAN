@@ -68,8 +68,37 @@ def safe_transport_unchanged(original, replacement):
         if isinstance(node, (ast.Import, ast.ImportFrom, ast.Global, ast.Nonlocal)):
             raise ValueError("new executable import or global scope forbidden")
         if isinstance(node, ast.Call) and isinstance(node.func, ast.Name) and node.func.id in (
-                "exec", "eval", "compile", "open", "__import__"):
+                "exec", "eval", "compile", "open", "__import__",
+                "setattr", "getattr", "delattr", "globals", "locals",
+                "vars", "breakpoint", "input"):
             raise ValueError("dynamic execution or file access forbidden")
+    # The immutable suffix has its original approved network transport.
+    # Prompt-building changes must not add commands, network calls, secret
+    # access or filesystem writes before that suffix.
+    def before_transport(function):
+        for index, statement in enumerate(function.body):
+            if isinstance(statement, ast.Assign) and any(
+                    isinstance(target, ast.Name) and target.id == "data"
+                    for target in statement.targets):
+                return ast.Module(body=function.body[:index], type_ignores=[])
+        raise ValueError("missing immutable network transport boundary")
+    guarded = before_transport(new_function)
+    forbidden_names = {"os", "subprocess", "socket", "urllib", "request_fn",
+                       "urlopen", "Request", "sys"}
+    forbidden_attributes = {
+        "system", "popen", "Popen", "run", "check_call", "check_output",
+        "spawn", "fork", "execv", "urlopen", "connect", "write_text",
+        "write_bytes", "unlink", "rmdir", "remove", "chmod", "chown",
+        "environ", "write", "read_text", "read_bytes"
+    }
+    for node in ast.walk(guarded):
+        if isinstance(node, ast.Name) and node.id in forbidden_names:
+            raise ValueError("prompt author attempted forbidden system access")
+        if isinstance(node, ast.Call):
+            if isinstance(node.func, ast.Name) and node.func.id in forbidden_names:
+                raise ValueError("prompt author attempted forbidden system call")
+            if isinstance(node.func, ast.Attribute) and node.func.attr in forbidden_attributes:
+                raise ValueError("prompt author attempted forbidden system call")
     return True
 
 
