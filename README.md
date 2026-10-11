@@ -95,10 +95,22 @@ BEAN is being built around a small set of durable behaviors:
 | Supervised self-optimization records and rollback planning | Implemented / evolving |
 | Standalone runtime, inbox, system monitoring, durable state | Implemented |
 | RAM-backed BEAN Watcher, configurable recall and N/A-aware source status | Implemented as opt-in local report adapter |
+| Host-neutral evidence/uncertainty bridge and scheduled independent-source review | Implemented, Bridge smoke-verified (host-attested evidence; opt-in) |
 | Generic host integration | Active development |
 | Physical embodiment | Optional future host |
 
 BEAN is developed against real host projects and changing domains rather than being designed as a sealed demo. The architecture is expected to keep evolving as those deployments expose better abstractions.
+
+### Core ↔ Bridge evidence-continuity smoke
+
+A [host-neutral evidence cycle](docs/EVIDENCE_BRIDGE_READINESS.md) connects typed
+external source observations to BEAN Core's actual SQLite memory, uncertainty
+garden and epistemic audits. A host can optionally schedule **bounded**
+read-only review using BEAN's existing durable TaskEngine. Revisions,
+contradictions and restart continuity are verified using a separate
+[Bridge cross-platform smoke branch](https://github.com/danieloculus0-bot/BEAN-AI-Bridge-/tree/smoke/core-evidence-contract-20261010).
+A declared source or verification ID is **host-attested**, not independent
+authentication or proof of truth. No new physical or financial action is enabled.
 
 ## Research experiments and published findings
 
