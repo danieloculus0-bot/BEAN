@@ -88,7 +88,7 @@ jobs:
       - name: Install local Ollama (no external model API quota)
         if: steps.inspect.outputs.needs_work == 'true'
         uses: ai-action/setup-ollama@6782d243db5fbcbf7583532ce0b5122f64242689 # v2 pinned
-      - name: Download and start Qwen 1.5B on this isolated runner
+      - name: Download and start Qwen 7B on this isolated runner
         if: steps.inspect.outputs.needs_work == 'true'
         shell: bash
         run: |
@@ -99,7 +99,7 @@ jobs:
             sleep 2
           done
           curl -fsS http://127.0.0.1:11434/api/tags >/dev/null
-          ollama pull qwen2.5-coder:1.5b
+          ollama pull qwen2.5-coder:7b
           ollama list
       - name: BEAN authors actual changes to its own code, without executing them here
         if: steps.inspect.outputs.needs_work == 'true'
