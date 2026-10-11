@@ -189,6 +189,53 @@ def main():
                     severity=Severity.WARN, data={"skipped_events": corrupt_count},
                 )
             ctx["watcher"] = watcher
+        # Lab 011 is opt-in. The trusted local config may select only the
+        # explicitly registered safe actions below; arbitrary commands are
+        # never deserialized into Python callables, shell or network effects.
+        task_engine = None
+        task_config = os.environ.get("BEAN_TASK_CONFIG")
+        if task_config:
+            from bean.runtime.task_engine import TaskEngine, load_task_specs
+            from bean.relationship.maintenance import RelationshipMaintenanceEngine
+            from bean.cognition.inner_weather import InnerWeatherEngine
+
+            def task_integrity_check():
+                result = get_store().fetchone("PRAGMA quick_check")
+                checked = result[0] if result else None
+                if checked is None:
+                    return {"status": "n/a", "reason": "database_unavailable"}
+                if checked != "ok":
+                    raise RuntimeError("SQLite quick_check failed")
+                return {"status": "verified", "database": "ok"}
+
+            def task_watch_reports():
+                if watcher is None:
+                    return {"status": "n/a", "reason": "watcher_not_configured"}
+                reports = watcher.poll_due(force=True)
+                if not reports:
+                    return {"status": "n/a", "reason": "no_report_snapshots"}
+                statuses = [entry.get("status") for entry in reports.values()]
+                aggregate = ("verified" if all(s == "verified" for s in statuses)
+                             else "n/a" if all(s in ("n/a", "stale") for s in statuses)
+                             else "partial")
+                return {"status": aggregate, "reports": reports}
+
+            safe_actions = {
+                "integrity_check": task_integrity_check,
+                "watch_reports": task_watch_reports,
+                "inner_weather": lambda: InnerWeatherEngine().generate(session_uuid).to_dict(),
+                "relationship_review": lambda: RelationshipMaintenanceEngine().run(
+                    session_uuid=session_uuid, event_limit=50),
+            }
+            def log_task_result(event):
+                log_event(session_uuid, EventType.OBSERVATION,
+                          "Task transition: " + event["task_id"],
+                          Source.SYSTEM, subtype="durable_task_transition", data=event)
+            task_engine = TaskEngine(safe_actions, event_sink=log_task_result)
+            task_engine.recover_interrupted()
+            task_engine.configure(load_task_specs(task_config))
+            ctx["task_engine"] = task_engine
+
         handlers = build_default_handlers(
             monitor,
             inbox,
@@ -197,6 +244,7 @@ def main():
             consolidation_engine=consolidation,
             coherence_engine=coherence,
             watcher=watcher,
+            task_engine=task_engine,
         )
         loop = BeanLoop(ctx, handlers, tick_rate_hz=tick_rate, max_ticks=args.ticks)
         register_all(
