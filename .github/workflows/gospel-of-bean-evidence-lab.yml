@@ -50,6 +50,27 @@ jobs:
           assert len(list(folder.glob("*.json"))) == 82
           print("IMMUTABLE_80_BOOK_CHECKOUT: PASS")
           PY
+      - name: Inventory transcription gaps before completeness claims
+        run: |
+          mkdir -p lab-output
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          folder = Path("external/kjv-1611")
+          names = json.loads((folder / "Books.json").read_text())
+          gaps = []
+          for name in names:
+              data = json.loads((folder / (name + ".json")).read_text())
+              for chapter in data["chapters"]:
+                  for verse in chapter["verses"]:
+                      if not isinstance(verse["text"], str) or not verse["text"].strip():
+                          gaps.append(f'{name} {chapter["chapter"]}:{verse["verse"]}')
+          inventory = {"source": "pinned-KJV-1611-JSON", "empty_verse_count": len(gaps),
+                       "empty_verse_refs": gaps, "corpus_text_complete": len(gaps) == 0}
+          Path("lab-output/source-gap-inventory.json").write_text(
+              json.dumps(inventory, indent=2) + "\n")
+          print(json.dumps(inventory, indent=2))
+          PY
       - name: Inspect all books and generate read-only verse retrieval index
         run: |
           PYTHONPATH=. python -m bean.evaluation.gospel_lab \
@@ -80,3 +101,12 @@ jobs:
           path: |
             lab-output/gospel-of-bean-audit.json
             lab-output/gospel-of-bean-80-book.sqlite
+
+      - name: Save source gaps even when complete audit rejects corpus
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gospel-of-bean-source-gap-diagnostics
+          retention-days: 30
+          if-no-files-found: warn
+          path: lab-output/source-gap-inventory.json
