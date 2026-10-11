@@ -10,6 +10,11 @@ from dataclasses import dataclass
 from math import isfinite
 
 
+def _normalize_identifier(identifier: str) -> str:
+    """Canonical identity for duplicate detection; preserve source spelling."""
+    return identifier.strip().casefold()
+
+
 @dataclass(frozen=True)
 class ImprovementOpportunity:
     """One host-discovered, independently testable candidate."""
@@ -58,7 +63,8 @@ def rank_improvements(
     """
     if type(max_risk) is not int or not 0 <= max_risk <= 5:
         raise ValueError("invalid risk budget")
-    if len({candidate.identifier for candidate in opportunities}) != len(opportunities):
+    normalized_identifiers = [_normalize_identifier(item.identifier) for item in opportunities]
+    if len(set(normalized_identifiers)) != len(opportunities):
         raise ValueError("duplicate candidate identifier")
     candidates = [
         RankedOpportunity(
