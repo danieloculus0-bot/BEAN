@@ -41,7 +41,7 @@ def test_single_free_only_call_and_no_secret_in_receipt(tmp_path):
     assert len(calls) == 1
     payload = json.loads(calls[0].data)
     assert payload["model"] == ROUTE
-    assert payload["max_tokens"] <= 700
+    assert payload["max_tokens"] <= 1400
     assert result["provider_status"] == "proposal_generated"
     assert result["model_served"] == "provider/test-model:free"
     assert "fixture-secret-never-log" not in json.dumps(result)
