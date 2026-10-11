@@ -44,11 +44,12 @@ a claim the problems are unknowable or that BEAN discovered them.
 
 ## Reproduce
 
-Run the workflow named **BEAN Lab023 causal memory transfer, independent
-verdict** on its experiment branch, or rerun the exact source from its commit.
-The workflow has a Windows/Linux preflight that needs no credentials. Its
-model stages require the existing repository OpenRouter secret; without a
-valid configured provider, no model success is asserted.
+Push normal changes to the experiment branch to run the Windows/Linux offline
+preflight. To explicitly authorize another live model study **before this
+workflow is on main**, push a commit whose message includes [lab023-live].
+After the workflow is promoted to main, manual workflow_dispatch also works.
+The model stages require the existing OpenRouter secret; absent credentials
+or available provider quota must NOT be interpreted as learning success.
 
 Local contract tests (mock author is explicitly a fake, NOT an AI result):
 
@@ -87,3 +88,7 @@ with OpenRouter credentials. No source is automatically promoted to main.
 **Production promotion gate:** independently replicated positive effect,
 a no-memory and placebo ablation, unseen task distributions, documented cost
 per improvement, full cross-platform evidence, and scoped review.
+
+## First live attempt: capacity-limited, not an intelligence result
+
+The run on October 10, 2026 (local time), [38111995546](https://github.com/danieloculus0-bot/BEAN/actions/runs/38111995546), passed the Ubuntu and Windows laboratory contract tests. The live training-author step attempted all three tasks but received **HTTP 429** from OpenRouter for all three requests. The independent development report correctly showed **0/174** candidate passes, while the deliberately defective code baseline was 57/174. The learning stage therefore had zero legitimate candidates or lessons, and no transfer holdout ran. **Classification: inconclusive due to provider rate limiting.** Changing to another free-model route does not necessarily bypass platform-wide free-tier limits. No provider credits were purchased. The live workflow now requires explicit activation on its branch to avoid silently exhausting shared quotas.
