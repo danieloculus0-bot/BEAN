@@ -197,3 +197,7 @@ The native BEAN task engine runs only when a trusted local `BEAN_TASK_CONFIG` fi
 ## Offline capability exam and non-fabricated baselines
 
 The optional [BEAN evidence-first entrance exam](docs/bean-entrance-exam-lab012.md) provides seven reproducible fictional cases for unknown handling, verified citations, corrections, read-only probe requests, and limited cross-domain transfer. The bundled `MockLLMAdapter` is expected **not to pass** these capability criteria; fixture test doubles validate the examiner itself, never BEAN intelligence. Real capability improvements must be measured on independent unseen data with source audits. Run `python -m bean.evaluation.entrance_exam` to reproduce the honest baseline without network, private inputs, or hardware.
+
+## Offline research evaluation harnesses (not deployed intelligence)
+
+Core includes opt-in synthetic evaluation modules for [supervised source calibration](docs/bean-composite-growth-lab013.md), [read-only investigation and restart retention](docs/bean-investigation-retention-lab014.md), and [symbolic LLM-style provider emulation](docs/bean-simulated-llm-lab015.md). These run only when invoked, use fictional data and isolate their SQLite state. **Fixture gains do not demonstrate neural-model learning, open-ended self-improvement or production autonomy.** The incomplete hosted Lab016 remains isolated; no real hosted-model capability has been promoted. The purpose of these tools in `main` is reproducible falsification of future changes.
