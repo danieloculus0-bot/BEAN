@@ -31,6 +31,48 @@ def run_suite(root, *args):
     )
 
 
+def safe_transport_unchanged(original, replacement):
+    """Reject changes to provider routing, credentials or executable imports."""
+    old_tree, new_tree = ast.parse(original), ast.parse(replacement)
+    def exported(tree):
+        return [(getattr(node, "name", "anonymous_" + str(i)), node)
+                for i, node in enumerate(tree.body)]
+    old_exports, new_exports = exported(old_tree), exported(new_tree)
+    if [name for name, _ in old_exports] != [name for name, _ in new_exports]:
+        raise ValueError("source changed module structure")
+    functions = []
+    for (name, old_node), (_, new_node) in zip(old_exports, new_exports):
+        if name == "call_model" and isinstance(old_node, ast.FunctionDef) and isinstance(new_node, ast.FunctionDef):
+            functions.append((old_node, new_node))
+        elif ast.dump(old_node, include_attributes=False) != ast.dump(new_node, include_attributes=False):
+            raise ValueError("source changed imports, globals or unrelated code")
+    if len(functions) != 1:
+        raise ValueError("targeted model-author function missing")
+    old_function, new_function = functions[0]
+    if ast.dump(old_function.args, include_attributes=False) != ast.dump(new_function.args, include_attributes=False):
+        raise ValueError("model-author public signature changed")
+    # The model can change how it composes the prompt. The HTTP payload,
+    # endpoint, authorization header, provider response parser and result
+    # handling remain immutable, even when source tests pass.
+    def frozen_tail(function):
+        for i, statement in enumerate(function.body):
+            if isinstance(statement, ast.Assign) and any(
+                    isinstance(target, ast.Name) and target.id == "data"
+                    for target in statement.targets):
+                return ast.dump(ast.Module(body=function.body[i:], type_ignores=[]),
+                                include_attributes=False)
+        raise ValueError("model HTTP request pipeline missing")
+    if frozen_tail(old_function) != frozen_tail(new_function):
+        raise ValueError("provider transport or authentication modified")
+    for node in ast.walk(new_function):
+        if isinstance(node, (ast.Import, ast.ImportFrom, ast.Global, ast.Nonlocal)):
+            raise ValueError("new executable import or global scope forbidden")
+        if isinstance(node, ast.Call) and isinstance(node.func, ast.Name) and node.func.id in (
+                "exec", "eval", "compile", "open", "__import__"):
+            raise ValueError("dynamic execution or file access forbidden")
+    return True
+
+
 def validate(*, root, challenge, candidate_file, receipt_file, validated):
     report = {"schema": "bean.autonomous.self-repair.verdict.v1",
               "result": "not_tested", "source_commit": SOURCE_COMMIT,
@@ -50,8 +92,10 @@ def validate(*, root, challenge, candidate_file, receipt_file, validated):
             raise ValueError("candidate receipt does not match exact accepted contract")
         if candidate["source_commit"] != SOURCE_COMMIT or candidate["target"] != TARGET.as_posix():
             raise ValueError("source commit or write path differs")
-        if candidate["provider_route"] != FREE_ROUTE:
-            raise ValueError("not the required no-cost model route")
+        if candidate["provider_route"] not in (FREE_ROUTE, "ollama_local"):
+            raise ValueError("unrecognized model provider")
+        if candidate["provider_route"] == "ollama_local" and not candidate["model_served"].startswith("qwen2.5-coder:"):
+            raise ValueError("unrecognized local neural model")
         source_path = root / TARGET
         if source_path.is_symlink():
             raise ValueError("source path unexpectedly symlinked")
@@ -70,6 +114,7 @@ def validate(*, root, challenge, candidate_file, receipt_file, validated):
             raise ValueError("candidate outside measured edit budget")
         if len(replacement.encode("utf-8")) > 50000:
             raise ValueError("candidate file too large")
+        safe_transport_unchanged(original, replacement)
         src_oracle = challenge / ORACLE
         local_oracle = root / LOCAL_ORACLE
         if src_oracle.is_symlink() or local_oracle.exists():
