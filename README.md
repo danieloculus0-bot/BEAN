@@ -201,3 +201,7 @@ The optional [BEAN evidence-first entrance exam](docs/bean-entrance-exam-lab012.
 ## Embedded host-neutral reasoning interface
 
 `from bean.integration import BeanReasoningLayer` exposes a small Python lifecycle interface that records host observations, builds bounded reasoning context, and returns **review-required, stored proposals**, not actions. The mock provider works offline and a host must own permissions, execution, project isolation and authenticated input. Use **one BEAN memory store per host process**, avoiding concurrent use of the process-level singleton. See [host-neutral reasoning guide](docs/general-reasoning-layer.md). This is an optional API, not a claimed general intelligence system.
+
+## Offline research evaluation harnesses (not deployed intelligence)
+
+Core includes opt-in synthetic evaluation modules for [supervised source calibration](docs/bean-composite-growth-lab013.md), [read-only investigation and restart retention](docs/bean-investigation-retention-lab014.md), and [symbolic LLM-style provider emulation](docs/bean-simulated-llm-lab015.md). These run only when invoked, use fictional data and isolate their SQLite state. **Fixture gains do not demonstrate neural-model learning, open-ended self-improvement or production autonomy.** The incomplete hosted Lab016 remains isolated; no real hosted-model capability has been promoted. Their purpose in `main` is reproducible falsification of future changes.
