@@ -123,13 +123,8 @@ class PublicAiscendDemoTests(unittest.TestCase):
                 out = subprocess.run([shutil.which("node"), "--check"],
                                      input=script, text=True, capture_output=True)
                 self.assertEqual(out.returncode, 0, out.stderr)
-        self.assertIn("fmt=n=>'
+        self.assertIn('String.fromCharCode(36)', scripts[-1])
 
 
-if __name__ == "__main__":
-    unittest.main()
-+n.toFixed(2)", scripts[-1])
-
-
-if __name__ == "__main__":
+if __name__ == '__main__':
     unittest.main()
