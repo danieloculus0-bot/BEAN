@@ -97,7 +97,7 @@ def execute(output_dir: Path, *, api_key: str | None = None, request_fn=urlopen)
         receipt["attempted_requests"] = 1
         try:
             source, metadata = make_request(key, request_fn=request_fn)
-            (output_dir / "proposal.py").write_text(source, encoding="utf-8")
+            (output_dir / "proposal.py").write_bytes(source.encode("utf-8"))
             receipt.update({"provider_status": "proposal_generated",
                             "generated_source_sha256": hashlib.sha256(source.encode("utf-8")).hexdigest(),
                             "model_served": metadata["model_served"], "usage": metadata["usage"]})
