@@ -157,7 +157,7 @@
       "limits": "Disjoint source dates make that specific single-event reading impossible conditional on mainstream dates; not a verdict on all conceivable readings.",
       "research": [
         {
-          "url": "https://biblia.com/books/lbd/article/QUIRINIUS.1.HISTORICITY%245FOF%245THE%245BIBLICAL%245ACCOUNT",
+          "url": "https://biblia.com/books/lbd/article/QUIRINIUS.1.HISTORICITY%245FOF%245FTHE%245FBIBLICAL%245FACCOUNT",
           "claim": "Lexham summarizes the dated census and birth-narrative chronological tension.",
           "role": "secondary_analysis"
         },
@@ -569,6 +569,11 @@
           "url": "https://hmane.harvard.edu/publications/adversary-heaven-satan-hebrew-bible",
           "claim": "Harvard historical analysis of heavenly adversary",
           "role": "source_lead_not_automatically_verified"
+        },
+        {
+          "url": "https://www.biblegateway.com/resources/encyclopedia-of-the-bible/Satan",
+          "claim": "A biblical textual reference distinguishes different meanings of Hebrew adversary and links Job and Revelation.",
+          "role": "complementary_commentary_not_independent_supernatural_proof"
         }
       ]
     },
