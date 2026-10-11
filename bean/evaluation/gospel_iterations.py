@@ -408,19 +408,32 @@ def investigate(corpus: Corpus, case_packet: dict, model_packet: dict, *,
                   if documented_fact_catalog is not None else {k: [] for k in case_map})
     catalog = (read_reference_only_catalog(gnostic_catalog)
                if gnostic_catalog is not None else None)
+    # Build shared-source links first. One URL can support multiple dispute
+    # questions even if it is requested in different sessions. A shared page
+    # must not silently disappear from the second case's investigation.
+    source_roles: dict[str, list[dict]] = {}
+    for model in models.values():
+        for src in model["research"]:
+            uses = source_roles.setdefault(src["url"], [])
+            link = {"case_id": model["id"], "claim": src["claim"],
+                    "role": src["role"]}
+            if link not in uses:
+                uses.append(link)
     observed: dict[str, dict] = {}
     journal: list[dict] = []
     verdicts = {}
     for i in range(1, rounds + 1):
         new_sources: list[str] = []
         queues = []
+        pending_urls: set[str] = set()
         # Fact finding is rotated rather than repeatedly retrying one source.
         for case in cases:
             refs = models[case["case_id"]]["research"]
             if i <= len(refs):
                 source = refs[i - 1]
-                if source["url"] not in observed:
+                if source["url"] not in observed and source["url"] not in pending_urls:
                     queues.append((case["case_id"], source))
+                    pending_urls.add(source["url"])
         if source_fetcher is not None and queues:
             with ThreadPoolExecutor(max_workers=4) as pool:
                 futures = [pool.submit(source_fetcher, src["url"]) for _, src in queues]
@@ -428,6 +441,8 @@ def investigate(corpus: Corpus, case_packet: dict, model_packet: dict, *,
                     observed[source["url"]] = {
                         "case_id": cid, "url": source["url"], "research_claim": source["claim"],
                         "perspective_role": source["role"],
+                        "linked_case_ids": sorted({link["case_id"] for link in source_roles[source["url"]]}),
+                        "all_research_uses": source_roles[source["url"]],
                         "observation": future.result(),
                         "source_claim_authenticated": False,
                         "independent_historical_fact_proven": False,
@@ -438,6 +453,8 @@ def investigate(corpus: Corpus, case_packet: dict, model_packet: dict, *,
                 observed[source["url"]] = {
                     "case_id": cid, "url": source["url"], "research_claim": source["claim"],
                     "perspective_role": source["role"],
+                    "linked_case_ids": sorted({link["case_id"] for link in source_roles[source["url"]]}),
+                    "all_research_uses": source_roles[source["url"]],
                     "observation": {"transport": "not_requested", "factual_claim_verified": False},
                     "source_claim_authenticated": False,
                     "independent_historical_fact_proven": False,
@@ -455,7 +472,7 @@ def investigate(corpus: Corpus, case_packet: dict, model_packet: dict, *,
             if verdicts.get(mid) != info:
                 changed.append(mid)
             verdicts[mid] = info
-            relevant = [s for s in observed.values() if s["case_id"] == mid]
+            relevant = [s for s in observed.values() if mid in s["linked_case_ids"]]
             outcomes[mid] = {
                 "case_id": mid,
                 "literal_constraints": info["strict_joint_reading"],
