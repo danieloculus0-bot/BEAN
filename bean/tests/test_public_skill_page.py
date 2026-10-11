@@ -89,6 +89,27 @@ class PublicSkillsPageTests(unittest.TestCase):
                      "docs/BEAN_LLM_REPAIR_EXPERIMENT_20261011.md"):
             self.assertTrue((ROOT / path).is_file(), path)
 
+    def test_lab026_research_claims_and_controls_are_clearly_scoped(self):
+        self.assertIn("Four ways to test whether experience helps", self.page)
+        for phrase in (
+            "cold reasoning",
+            "ordinary saved history",
+            "evidence-ranked BEAN lessons",
+            "unrelated placebo notes",
+            "BEAN's learning advantage has not been demonstrated",
+            "not the full BEAN architecture",
+        ):
+            with self.subTest(phrase=phrase):
+                self.assertIn(phrase, self.page)
+        for link in (
+            "https://github.com/danieloculus0-bot/BEAN/pull/96",
+            "https://github.com/danieloculus0-bot/BEAN/actions/runs/38181156634",
+            "https://github.com/danieloculus0-bot/BEAN/blob/experiment/bean-causal-ablation-lab026-20261011/docs/bean-causal-ablation-lab026.md",
+        ):
+            with self.subTest(link=link):
+                self.assertIn(link, self.parser.links)
+        self.assertIn("INCONCLUSIVE", self.page)
+
     def test_neural_model_section_is_grounded_in_sources_and_scope(self):
         self.assertIn("neural", self.parser.anchors)
         self.assertIn("#neural", self.parser.links)
