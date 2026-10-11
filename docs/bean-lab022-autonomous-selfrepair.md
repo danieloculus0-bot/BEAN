@@ -4,7 +4,7 @@
 
 The live Core→Bridge trial [run 38108896676](https://github.com/danieloculus0-bot/BEAN/actions/runs/38108896676) made two real OpenRouter free requests and produced **no accepted code candidate**. The latest response was recorded as `ValueError: empty or oversized edit plan` from `cohere/north-mini-code:free`. This is a genuine failure to recover from an unusable model response, not a successful code repair.
 
-Lab 022 grants BEAN a strictly bounded **self-repair research sandbox**. The model receives its own original `bean/evaluation/bridge_peer_live_author.py` source at immutable Core SHA `e71ead1068ecde6c4c7db4ae43b0e956ec12175c` plus the sanitized failing-run evidence. It is asked to diagnose and improve the failed source-author. **No human-authored patch, implementation recipe, or holdout test source is passed in the model prompt.**
+Lab 022 grants BEAN a strictly bounded **self-repair research sandbox**. The model receives its own original `bean/evaluation/bridge_peer_live_author.py` source at immutable Core SHA `3aaec786ad8b9d5685573c62bb4fc39119c0d65b` plus the sanitized failing-run evidence. It is asked to diagnose and improve the failed source-author. **No human-authored patch, implementation recipe, or holdout test source is passed in the model prompt.**
 
 ## Independent acceptance
 
