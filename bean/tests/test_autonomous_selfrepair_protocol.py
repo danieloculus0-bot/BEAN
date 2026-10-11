@@ -162,7 +162,7 @@ def test_ollama_fallback_on_free_provider_rate_limit(tmp_path):
     assert "def useful()" in called[0]["messages"][0]["content"]
     candidate = json.loads((tmp_path / "out" / "candidate.json").read_text())
     assert candidate["provider_route"] == "ollama_local"
-    assert candidate["replacement"] == "def useful():\\n    return 2\\n"
+    assert candidate["replacement"] == ORIGINAL.replace("return 1", "return 2")
     assert (root / lab.TARGET).read_text() == ORIGINAL
 
 
