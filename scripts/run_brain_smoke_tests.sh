@@ -32,8 +32,8 @@ TESTS=(
 
 for test_file in "${TESTS[@]}"; do
   if [[ ! -f "$test_file" ]]; then
-    echo "SKIP missing test: $test_file"
-    continue
+    echo "FAIL missing required test: $test_file" >&2
+    exit 1
   fi
   echo "==> python3 $test_file"
   python3 "$test_file"

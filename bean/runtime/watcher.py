@@ -246,22 +246,47 @@ class BeanWatcher:
         return output
 
     def restore_events(self, events: list[dict]) -> None:
-        """Rehydrate last verified evidence from local SQLite event 'data' records.
+        """Recover only valid historical evidence; never treat it as a fresh reading.
 
-        Restored records remain unavailable until a fresh source check succeeds.
+        Malformed records are ignored instead of crashing startup or poisoning
+        the recall watermark with a future or older fabricated timestamp.
         """
         for event in events:
-            if event.get("type") != "watcher_transition":
+            if not isinstance(event, dict) or event.get("type") != "watcher_transition":
                 continue
             key = event.get("key")
-            if key not in self._state:
+            if not isinstance(key, str) or key not in self._state:
                 continue
             record = event.get("last_verified")
-            if not isinstance(record, dict) or not all(
-                field in record.get("values", {}) for field in self.specs[key].fields
+            if not isinstance(record, dict):
+                continue
+            values = record.get("values")
+            refs = record.get("evidence_ids")
+            if not isinstance(record.get("report_id"), str) or not record["report_id"].strip():
+                continue
+            if not isinstance(values, dict) or not all(
+                field in values for field in self.specs[key].fields
             ):
                 continue
-            _utc(record["observed_at"])
+            if not isinstance(refs, (tuple, list)) or not refs or not all(
+                isinstance(ref, str) and ref.strip() for ref in refs
+            ):
+                continue
+            if any(
+                type(values[field]) not in {int, float, str}
+                or (type(values[field]) is float and not math.isfinite(values[field]))
+                for field in self.specs[key].fields
+            ):
+                continue
+            try:
+                observed_at = _utc(record.get("observed_at"))
+            except (TypeError, ValueError, AttributeError):
+                continue
+            if observed_at > self.utc_now().astimezone(timezone.utc):
+                continue
+            previous = self._state[key]["last_verified"]
+            if previous is not None and observed_at < _utc(previous["observed_at"]):
+                continue
             self._state[key]["last_verified"] = copy.deepcopy(record)
             self._state[key]["status"] = "n/a"
             self._state[key]["reason"] = "awaiting_recheck"
