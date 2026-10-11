@@ -62,3 +62,5 @@ Use the failure data to guide fixes, not lower the acceptance bar:
 - Only one domain improves → test genuinely unseen task families before saying memory transfers.
 
 All source hashes, negative results, costs that can be measured and experiment limitations must be retained. No change from this benchmark is allowed to promote model-generated code to production or place actual financial orders.
+
+**First live pilot authorization:** A [lab026-live] commit triggers a real local Ollama experiment in GitHub Actions. Read the generated artifacts and independent verdict, not the green build badge, to determine the result.
