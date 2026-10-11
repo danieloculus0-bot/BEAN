@@ -501,6 +501,7 @@
     .skill-card{background:linear-gradient(153deg,rgba(255,255,255,.97),rgba(241,252,237,.95));border:1px solid #cce6c4;border-radius:26px;padding:28px;box-shadow:0 16px 32px rgba(46,97,39,.1);position:relative;overflow:hidden}
     .skill-card:before{content:"";position:absolute;right:-55px;top:-78px;width:185px;height:185px;border-radius:50%;background:radial-gradient(circle,rgba(126,217,87,.20),transparent 72%);pointer-events:none}
     .skill-kicker{font-size:.76rem;color:var(--green-deep);text-transform:uppercase;font-weight:900;letter-spacing:.11em;display:flex;gap:8px;align-items:center;margin-bottom:16px}
+    .skill-kicker .dot{display:inline-block;flex:0 0 8px;width:8px;height:8px;border-radius:50%;background:#69d05c;box-shadow:0 0 0 4px rgba(126,217,87,.16)}
     .skill-icon{font-size:1.45rem;width:44px;height:44px;display:grid;place-items:center;background:#eef9e9;border:1px solid #d8edce;border-radius:14px;margin-bottom:13px}
     .skill-card h3{font-size:1.55rem;letter-spacing:-.035em;margin-bottom:9px}
     .skill-card p{max-width:520px}
@@ -758,7 +759,7 @@
             <div class="skill-kicker"><span class="dot" aria-hidden="true"></span> BEAN AI Bridge · Offline tool</div>
             <div class="skill-icon" aria-hidden="true">📊</div>
             <h3>Daily Exception Brief</h3>
-            <p>Give BEAN an existing, authorized local export ledger. He prepares a private, read-only morning brief instead of making you hunt through separate reports.</p>
+            <p>Give BEAN an existing, authorized local export ledger. He prepares a private, read-only morning brief instead of making you hunt through separate reports. Run this from the Bridge checkout after setting <code>PYTHONPATH=src</code> (see the setup guide).</p>
             <ul class="skill-steps">
               <li>Shipment-line OTD, overdue-work evidence, RMA status and gaps</li>
               <li>Prioritized questions when dates, quantities or source coverage disagree</li>
