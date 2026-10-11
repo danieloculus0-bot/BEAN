@@ -9,7 +9,7 @@ and persists between restarts.
 
 ## Windows one-time use
 
-From `D:\BEAN\core` after checking out the engineering-bridge branch:
+From `D:\BEAN\core` after updating your BEAN `main` checkout:
 
 ```powershell
 & 'D:\BEAN\.venv\Scripts\python.exe' -m bean.integration.github_engineering --repo danieloculus0-bot/BEAN --db 'D:\BEAN\data\bean_memory.db'
