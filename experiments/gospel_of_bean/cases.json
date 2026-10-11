@@ -1,0 +1,119 @@
+{
+  "schema": "bean.gospel_cases.v1",
+  "cases": [
+    {
+      "id": "ahaziah_accession_age",
+      "question": "What age does each parallel narrative explicitly give Ahaziah at accession?",
+      "kind": "same_event_numeric",
+      "references": [
+        "2 Kings 8:26",
+        "2 Chronicles 22:2"
+      ],
+      "external_sources": [
+        {
+          "url": "https://uasvbible.org/2025/08/15/textual-commentary-on-2-chronicles-222/",
+          "perspective": "text-critical perspective on ancient manuscript variants and likely copy error"
+        },
+        {
+          "url": "https://www.icr.org/books/defenders/2310",
+          "perspective": "conservative Christian recognition of likely transcription error"
+        }
+      ],
+      "counterinterpretation": "Ancient witnesses may preserve 20 or 22 rather than 42; a copyist's change in one manuscript tradition could explain the conflict without implying the original authors contradicted each other."
+    },
+    {
+      "id": "judas_death_accounts",
+      "question": "Does the hanging narrative necessarily exclude Acts' description of a falling body?",
+      "kind": "narrative",
+      "references": [
+        "Matthew 27:5",
+        "Acts 1:18"
+      ],
+      "external_sources": [
+        {
+          "url": "https://www.thegospelcoalition.org/article/judas-demise-matthew-1-acts-1/",
+          "perspective": "Christian scholar discussing complementary narrative readings"
+        },
+        {
+          "url": "https://www.catholic.com/qa/how-do-we-explain-the-conflicting-accounts-of-judas-death-in-matthew-and-acts",
+          "perspective": "Catholic harmonization perspective"
+        }
+      ],
+      "counterinterpretation": "Hanging and a subsequent fall could occur. The texts differ, but this pair alone does not prove logical impossibility."
+    },
+    {
+      "id": "genesis_creation_sequencing",
+      "question": "Are the sequences in Genesis 1 and 2 strictly incompatible or differently scoped literary accounts?",
+      "kind": "narrative",
+      "references": [
+        "Genesis 1:27",
+        "Genesis 2:7",
+        "Genesis 2:19"
+      ],
+      "external_sources": [
+        {
+          "url": "https://www.thetorah.com/article/genesis-two-creation-accounts-compiled-and-interpreted-as-one",
+          "perspective": "scholarly historical-critical argument for different creation accounts"
+        }
+      ],
+      "counterinterpretation": "Genesis 2 may retell and narrow the scope of Genesis 1; ordering, tense and literary context matter."
+    },
+    {
+      "id": "mark_long_ending",
+      "question": "What independent manuscript evidence supports Mark 16:9-20 in the earliest recoverable text?",
+      "kind": "manuscript",
+      "references": [
+        "Mark 16:8",
+        "Mark 16:9",
+        "Mark 16:20"
+      ],
+      "external_sources": [
+        {
+          "url": "https://byustudies.byu.edu/online-book/the-gospel-according-to-mark/1969",
+          "perspective": "manuscript-critical arguments against original longer ending"
+        },
+        {
+          "url": "https://www.thegospelcoalition.org/article/was-mark-16-9-20-originally-mark-gospel/",
+          "perspective": "conservative scholarly comparison of the manuscript evidence"
+        }
+      ],
+      "counterinterpretation": "Many later witnesses contain the longer ending, but some early witnesses do not. A textual-transmission question is not by itself a logical contradiction."
+    },
+    {
+      "id": "quirinius_herod_timeline",
+      "question": "Can the Herod and Quirinius chronological markers refer to one historical birth event?",
+      "kind": "chronology",
+      "references": [
+        "Matthew 2:1",
+        "Luke 2:2"
+      ],
+      "external_sources": [
+        {
+          "url": "https://www.biblegateway.com/resources/encyclopedia-of-the-bible/Chronology-New-Testament",
+          "perspective": "conservative contextual analysis of chronological tensions"
+        }
+      ],
+      "counterinterpretation": "Alternative linguistic readings and earlier administration hypotheses exist; compare independently dated Roman/Judean events before a verdict."
+    },
+    {
+      "id": "literal_earth_age_hypothesis",
+      "question": "Does the KJV explicitly state Earth's age is 6,000 years in these verses?",
+      "kind": "scientific",
+      "references": [
+        "Genesis 1:1",
+        "Genesis 1:5"
+      ],
+      "external_sources": [
+        {
+          "url": "https://pubs.usgs.gov/gip/geotime/age.html",
+          "perspective": "USGS independent physical estimate for Earth's age approximately 4.54 billion years"
+        },
+        {
+          "url": "https://humanorigins.si.edu/evidence/human-fossils/species/homo-sapiens",
+          "perspective": "Smithsonian fossil record documents Homo sapiens around 300,000 years ago"
+        }
+      ],
+      "counterinterpretation": "A 6,000-year Earth estimate is a later genealogical interpretation, not an age explicitly stated in Genesis 1:1 or 1:5."
+    }
+  ]
+}
