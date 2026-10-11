@@ -13,6 +13,7 @@ on:
       - "bean/evaluation/gospel_wholebook.py"
       - "bean/tests/test_gospel_wholebook.py"
       - "experiments/gospel_of_bean/historical_models.json"
+      - "experiments/gospel_of_bean/sourced_science_history_context.json"
       - "experiments/gospel_of_bean/cases.json"
       - "experiments/gospel_of_bean/gnostic_reference_catalog.json"
       - "experiments/gospel_of_bean/1611_source_gap_overlays.json"
@@ -118,6 +119,7 @@ jobs:
             --corrections experiments/gospel_of_bean/1611_source_gap_overlays.json \
             --cases experiments/gospel_of_bean/cases.json \
             --models experiments/gospel_of_bean/historical_models.json \
+            --documented-facts experiments/gospel_of_bean/sourced_science_history_context.json \
             --gnostic-reference-catalog experiments/gospel_of_bean/gnostic_reference_catalog.json \
             --iterations 5 \
             --live-sources \
@@ -136,6 +138,12 @@ jobs:
                      for s in data["source_observations"])
           assert data["gnostic_texts_in_historical_verdicts"] == 0
           assert data["historical_certainty_claimed"] is False
+          assert len(data["curated_source_context_records_used"]) == 7
+          assert data["curated_source_context_not_autonomous_verification"] is True
+          assert all(len({v["iteration_research_assignment"]["activity"]
+                         for v in [round_["cases"][id_]
+                                   for round_ in data["iterations"]]}) == 5
+                     for id_ in data["final_assessments"])
           assert data["entire_bible_all_possible_disputes_discovered"] is False
           verdicts = data["final_assessments"]
           assert verdicts["ahaziah_accession_age"]["strict_joint_reading"] == "impossible"
