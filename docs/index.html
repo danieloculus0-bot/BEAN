@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>BEAN | Persistent Reasoning, Memory & Evidence</title>
-  <meta name="description" content="BEAN (Behavior Enabled Avatar Node) is a persistent reasoning architecture for memory, evidence traceability, uncertainty handling, and reviewable AI proposals. Cute name. Serious reasoning.">
+  <meta name="description" content="Meet BEAN: persistent, evidence-first AI architecture with durable memory, local reasoning, real tests, and reviewable change. Desktop, service or robot: the body is optional.">
   <meta name="robots" content="index, follow">
   <meta name="theme-color" content="#101713">
   <link rel="icon" type="image/svg+xml" href="./bean-icon.svg" sizes="any">
@@ -661,6 +661,8 @@
     .experiment-card a{font-weight:700}
     .status-tag{display:inline-block;border:1px solid #49674e;background:#203928;color:#b5ed9d;border-radius:8px;padding:5px 9px;font-size:.71rem;letter-spacing:.07em;text-transform:uppercase;font-weight:850}
     .status-tag.warning{border-color:#806f48;background:#353021;color:#ead49c}
+    .embodiment-note{margin:22px 0 8px;padding:16px 19px;border-left:3px solid var(--green);border-radius:0 13px 13px 0;background:rgba(18,38,23,.72);color:#d0e5d1;font-size:.94rem;line-height:1.65}
+    .embodiment-note strong{color:#cbf6bd}
     .result-number{font-weight:900;letter-spacing:-.04em;font-size:clamp(1.65rem,3.4vw,2.6rem);line-height:1.15;color:#d0f6bd}
     .result-number small{font-size:.5em;font-weight:650;letter-spacing:0;color:var(--muted)}
     .meter-group{margin:22px 0 14px}
@@ -687,6 +689,7 @@
 
       <nav class="navlinks">
         <a href="#latest">Latest</a>
+        <a href="#milestones">Verified tests</a>
         <a href="#difference">Why BEAN</a>
         <a href="#skills">New skills</a>
         <a href="#benchmarks">Benchmarks</a>
@@ -719,6 +722,11 @@
             and <span class="strong">traceable change</span>.
             It remembers what happened, what supports a conclusion, and when it should refuse to fake certainty.
           </p>
+          <div class="embodiment-note">
+            <strong>Behavior Enabled Avatar Node.</strong> Originally imagined as the mind for a robot,
+            BEAN now stands on its own as a software-first reasoning system. An avatar may be a desktop,
+            an integration, a service or a physical body. <strong>The robot is welcome, never required.</strong>
+          </div>
 
           <div class="hero-pills">
             <span class="pill">Persistent event history</span>
@@ -727,6 +735,8 @@
             <span class="pill">Python + SQLite</span>
             <span class="pill">Practical daily reporting</span>
             <span class="pill">Local voice chat</span>
+            <span class="pill">Robot optional</span>
+            <span class="pill">MCP developer preview</span>
           </div>
 
           <div class="hero-actions">
@@ -825,6 +835,55 @@
             <h3>Real conversations exposed a real weakness</h3>
             <p>Two hosted Qwen 2.5 Coder 1.5B trials showed BEAN incorrectly reversing a straightforward out-of-tolerance measurement after the user disagreed. Contract checks passed on Linux and Windows, but factual resistance did not. Full transcripts are retained.</p>
             <a href="https://github.com/danieloculus0-bot/BEAN-AI-Bridge-/pull/31">Review the failures and test evidence</a>
+          </article>
+          <article class="experiment-card">
+            <span class="status-tag">Independently tested draft</span>
+            <h3>BEAN wrote a Python repair; the hidden tests checked it</h3>
+            <p>A local Qwen 2.5 Coder 1.5B candidate repaired a bounded score-clipping function and passed seven independent fixture tests on both Windows and Ubuntu. This specific candidate remains in an unmerged review branch, not a demonstrated general self-improvement ability.</p>
+            <a href="https://github.com/danieloculus0-bot/BEAN/pull/74">Inspect the candidate, code digest and CI</a>
+          </article>
+          <article class="experiment-card">
+            <span class="status-tag warning">Bridge research PR</span>
+            <h3>Robot motion without requiring a robot</h3>
+            <p>Arduino Nano firmware passed in simavr and ESP32 motion logic passed in QEMU with independent UART evidence. Wokwi explicitly reported NOT_RUN_MISSING_TOKEN. These are emulator tests, not physical movement or a field-tested failsafe.</p>
+            <a href="https://github.com/danieloculus0-bot/BEAN-AI-Bridge-/pull/32">Inspect robot-motion emulator evidence</a>
+          </article>
+          <article class="experiment-card">
+            <span class="status-tag">Core main · Developer preview</span>
+            <h3>BEAN Evidence Companion: four MCP tools</h3>
+            <p>A local, read-only MCP server can inspect claim structure, compare user-supplied evidence, screen proposed actions, and demonstrate SQLite continuity. It is not publicly hosted, approved, or installable as a ChatGPT plugin yet.</p>
+            <a href="https://github.com/danieloculus0-bot/BEAN/blob/main/integrations/chatgpt/README.md">See the real API, sample calls and remaining work</a>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="milestones" class="section tight" aria-labelledby="milestones-heading">
+      <div class="wrap">
+        <div class="eyebrow"><span class="dot"></span> Verified snapshot · October 11, 2026 · Not a live scoreboard</div>
+        <h2 id="milestones-heading">The numbers, with their receipts.</h2>
+        <p class="lead">Green workflows measure specific engineering contracts, not general intelligence, trading returns, or autonomous physical deployment. Failed and inconclusive tests belong in the record too.</p>
+        <div class="experiment-grid">
+          <article class="experiment-card">
+            <span class="status-tag">Core main · Regression</span>
+            <h3>Cross-platform foundation</h3>
+            <div class="result-number">559 <small>passing tests</small></div>
+            <p>Ubuntu / Python 3.12 reported 559 passing tests, one skipped, and 47 passing subtests with 84% measured coverage. The same Core workflow's Windows 3.10/3.12 and Ubuntu 3.10 jobs passed too.</p>
+            <a href="https://github.com/danieloculus0-bot/BEAN/actions/runs/38126548233">Inspect four-platform Core CI</a>
+          </article>
+          <article class="experiment-card">
+            <span class="status-tag">Emulated, not deployed</span>
+            <h3>Two microcontroller targets</h3>
+            <div class="result-number">2 <small>confirmed emulators</small></div>
+            <p>AVR on simavr and ESP32 on QEMU emitted their expected motion-contract pass markers. The extra Wokwi CI lane did not run because its token was unavailable, despite the workflow reporting a green status.</p>
+            <a href="https://github.com/danieloculus0-bot/BEAN-AI-Bridge-/actions/runs/38128794018">Open motion-lab results</a>
+          </article>
+          <article class="experiment-card">
+            <span class="status-tag warning">No verified winner</span>
+            <h3>Five specialist match attempts</h3>
+            <div class="result-number">5 <small>inconclusive verdicts</small></div>
+            <p>OpenCode, Goose, OpenHands, Continue and Cline were attempted with real local-model CLI harnesses. Their independent judgments did not establish comparable agent wins. Infrastructure completion is not the same as benchmark success.</p>
+            <a href="https://github.com/danieloculus0-bot/BEAN/actions/runs/38126634979">Read each independent judge</a>
           </article>
         </div>
       </div>
@@ -984,9 +1043,10 @@
         </div>
         <div class="benchmark-note">
           <strong class="strong">What about OpenCode, Goose, OpenHands, Continue and Cline?</strong>
-          BEAN has a five-specialist tournament harness, but an implemented harness is not a recorded victory. Its model-backed matches require valid independent verdicts before their scores belong here.
+          Actual GitHub-hosted Lab025 match attempts were run against all five specialist CLIs. Each independent verdict was <strong>INCONCLUSIVE</strong>, not a BEAN win, a specialist win, or a tie. The green workflow status only means the audit and evidence handling completed. No benchmark victory is claimed.
           <div class="research-links">
-            <a href="https://github.com/danieloculus0-bot/BEAN/blob/main/docs/bean-specialists-lab025.md">Inspect the specialist tournament protocol</a>
+            <a href="https://github.com/danieloculus0-bot/BEAN/actions/runs/38126634979">Inspect the actual five verdicts</a>
+            <a href="https://github.com/danieloculus0-bot/BEAN/blob/main/docs/bean-specialists-lab025.md">Read the specialist tournament protocol</a>
             <a href="https://github.com/danieloculus0-bot/BEAN/blob/main/docs/experimental-research-index-2026-10.md">All research, including negative results</a>
           </div>
         </div>
@@ -1122,7 +1182,7 @@ python -m examples.quickstart_reasoning</code></pre>
           <article class="card">
             <div class="icon-badge">🔗</div>
             <h3>Core + Bridge</h3>
-            <p>BEAN Core handles persistent reasoning primitives. BEAN AI Bridge explores evidence, ERP/KPI replay, and revision workflows.</p>
+            <p>BEAN Core handles persistent reasoning primitives and local MCP tools. BEAN AI Bridge explores evidence, offline ERP/KPI replay, microcontroller emulators, and review-required revision workflows. AIscend integrates BEAN-style research separately from live Coinbase execution.</p>
             <p><a href="https://github.com/danieloculus0-bot/BEAN/blob/main/docs/EVIDENCE_BRIDGE_READINESS.md">See evidence flow →</a></p>
           </article>
 
