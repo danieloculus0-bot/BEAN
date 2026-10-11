@@ -203,3 +203,22 @@ def test_cli_runs_offline_and_emits_baseline_json(capsys):
     report = json.loads(capsys.readouterr().out)
     assert report["adapter"] == "mock"
     assert report["learning_proven"] is False
+
+
+@pytest.mark.parametrize("confidence", [-0.01, 1.01, float("inf"), float("-inf"), True])
+def test_out_of_bounds_or_boolean_confidence_does_not_pass(confidence):
+    case = CASES[1]
+    assert grade(case, response(case, confidence=confidence))["passed"] is False
+
+
+def test_duplicate_citations_do_not_count_as_independent_evidence():
+    case = CASES[1]
+    assert grade(case, response(case, evidence_refs=["receipt-17", "receipt-17"]))["passed"] is False
+
+
+def test_known_outcome_without_required_receipt_fails():
+    case = CASES[1]
+    result = grade(case, response(case, evidence_refs=[]))
+    assert result["correct_verdict"] is True
+    assert result["grounded_citations"] is False
+    assert result["passed"] is False
