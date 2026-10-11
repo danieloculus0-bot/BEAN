@@ -1,0 +1,209 @@
+name: BEAN Lab023 causal memory transfer, independent verdict
+
+on:
+  push:
+    branches: [experiment/bean-causal-retention-lab023-20261010]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  preflight:
+    name: Real journal and evidence regression (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 12
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install pytest
+      - name: Compile and test SQLite reopening and independent holdout invariants
+        run: |
+          python -m compileall -q bean/evaluation/lifelong_transfer_lab023.py bean/tests/test_lifelong_transfer_lab023.py
+          python -m pytest bean/tests/test_lifelong_transfer_lab023.py -q -ra
+
+  training-author:
+    name: Existing model author, three older tasks, no code execution
+    if: github.event_name != 'pull_request'
+    needs: preflight
+    runs-on: ubuntu-latest
+    timeout-minutes: 16
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Ask external free models for three supervised training proposals
+        env:
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+        run: python -m bean.evaluation.transfer_author --out _lab023/training
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: lab023-training-authors
+          path: _lab023/training/
+          if-no-files-found: warn
+
+  training-judge:
+    name: Score original model candidates with no API keys
+    needs: training-author
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/download-artifact@v4
+        with:
+          name: lab023-training-authors
+          path: _lab023/training/
+      - name: Independent development set only
+        run: |
+          python -m bean.evaluation.transfer_oracle \
+            --initial _lab023/training --phase development \
+            --output _lab023/development.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: lab023-development-score
+          path: _lab023/development.json
+          if-no-files-found: warn
+
+  reflect-and-remember:
+    name: Model-authored abstract lessons in restarted BEAN SQLite journal
+    needs: training-judge
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/download-artifact@v4
+        with:
+          name: lab023-training-authors
+          path: _lab023/training/
+      - uses: actions/download-artifact@v4
+        with:
+          name: lab023-development-score
+          path: _lab023/
+      - name: Generate, record, close, and reopen model-written lessons
+        env:
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+        run: |
+          python -m bean.evaluation.lifelong_transfer_lab023 learn \
+            --proposals _lab023/training \
+            --scores _lab023/development.json \
+            --state _lab023/state/history.sqlite \
+            --out _lab023/state/learning-summary.json
+      - name: Require real model lessons; never claim fixture success
+        run: |
+          python -c "import json; x=json.load(open('_lab023/state/learning-summary.json')); assert x['restart_verified'] and x['model_authored_lessons'] >= 2, 'Insufficient genuine model reflections'"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: lab023-persisted-learning
+          path: _lab023/state/
+          if-no-files-found: warn
+
+  new-problems-author:
+    name: Counterbalanced cold and restarted-memory same-model repair
+    needs: reflect-and-remember
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/download-artifact@v4
+        with:
+          name: lab023-persisted-learning
+          path: _lab023/state/
+      - name: Model authors new tasks; no candidate execution
+        env:
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+        run: |
+          python -m bean.evaluation.lifelong_transfer_lab023 transfer \
+            --state _lab023/state/history.sqlite --out _lab023/transfer/
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: lab023-unseen-author-candidates
+          path: _lab023/transfer/
+          if-no-files-found: warn
+
+  secret-free-holdout:
+    name: Independent withheld judge (${{ matrix.os }})
+    needs: new-problems-author
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 12
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/download-artifact@v4
+        with:
+          name: lab023-persisted-learning
+          path: _lab023/state/
+      - uses: actions/download-artifact@v4
+        with:
+          name: lab023-unseen-author-candidates
+          path: _lab023/transfer/
+      - name: Independent final tests, evidence checks, no author credentials
+        run: |
+          python -m bean.evaluation.lifelong_transfer_lab023 judge \
+            --state _lab023/state/history.sqlite \
+            --artifacts _lab023/transfer \
+            --out _lab023/verdict.json
+      - name: Write explicit result and limitations
+        if: always()
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json, os, pathlib
+          path = pathlib.Path('_lab023/verdict.json')
+          with open(os.environ['GITHUB_STEP_SUMMARY'],'a',encoding='utf-8') as f:
+              f.write('## BEAN Lab023 Causal Retention Pilot\n\n')
+              if not path.is_file():
+                  f.write('No verdict: infrastructure or evidence failure. No success claim.\n')
+              else:
+                  row=json.loads(path.read_text())
+                  f.write('**'+row['classification']+'**\n\n')
+                  f.write('Cold ' +str(row['total_cold_passed'])+
+                          '; retained '+str(row['total_retained_passed'])+
+                          ' withheld tests passed.\n\n')
+                  f.write('Two research-selected synthetic tasks only; not AGI proof.\n')
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: lab023-independent-verdict-${{ matrix.os }}
+          path: _lab023/verdict.json
+          if-no-files-found: warn
