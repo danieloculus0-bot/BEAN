@@ -43,3 +43,15 @@ an experiment or an automatically opened PR.
 The objective remains limited to this specific independently witnessed defect.
 Future problems require independent acceptance tests; no arbitrary self-edit
 may bypass them. After the source changes, stale benchmark retries are skipped.
+
+### First actual unattended author attempt
+
+[Run 38171965668](https://github.com/danieloculus0-bot/BEAN/actions/runs/38171965668)
+reproduced the exact historical OpenRouter HTTP 429 error but successfully
+installed and queried a local Qwen2.5-Coder 1.5B neural model. The model
+returned two responses containing content, yet the strict parser rejected
+both as missing usable JSON edit plans. **Zero upgrades were promoted.**
+This result motivated a smaller, exact function-only source excerpt and
+a JSON-Schema-guided local response contract, while preserving the
+independent validation requirements. New rejects also preserve a short
+source-response excerpt in the sanitized run receipt.
