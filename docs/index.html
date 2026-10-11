@@ -493,6 +493,28 @@
       box-shadow:var(--shadow-strong);
     }
 
+
+    /* Verified skill showcase: premium Mint-adjacent cards, existing palette. */
+    .skill-intro{display:flex;align-items:flex-end;justify-content:space-between;gap:22px;flex-wrap:wrap;margin-bottom:25px}
+    .skill-intro p{max-width:660px}
+    .skill-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}
+    .skill-card{background:linear-gradient(153deg,rgba(255,255,255,.97),rgba(241,252,237,.95));border:1px solid #cce6c4;border-radius:26px;padding:28px;box-shadow:0 16px 32px rgba(46,97,39,.1);position:relative;overflow:hidden}
+    .skill-card:before{content:"";position:absolute;right:-55px;top:-78px;width:185px;height:185px;border-radius:50%;background:radial-gradient(circle,rgba(126,217,87,.20),transparent 72%);pointer-events:none}
+    .skill-kicker{font-size:.76rem;color:var(--green-deep);text-transform:uppercase;font-weight:900;letter-spacing:.11em;display:flex;gap:8px;align-items:center;margin-bottom:16px}
+    .skill-icon{font-size:1.45rem;width:44px;height:44px;display:grid;place-items:center;background:#eef9e9;border:1px solid #d8edce;border-radius:14px;margin-bottom:13px}
+    .skill-card h3{font-size:1.55rem;letter-spacing:-.035em;margin-bottom:9px}
+    .skill-card p{max-width:520px}
+    .skill-steps{margin:17px 0 19px;padding:0;list-style:none;display:grid;gap:9px}
+    .skill-steps li{position:relative;padding-left:23px;color:var(--muted);font-size:.95rem}
+    .skill-steps li:before{content:"✓";position:absolute;left:0;color:var(--green-deep);font-weight:900}
+    .skill-command{display:block;padding:14px 16px;border:1px solid #d0e3cf;border-radius:13px;background:#f5faf3;color:#24412a;font:13px/1.7 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;white-space:pre-wrap;overflow-wrap:anywhere;margin:0 0 15px}
+    .skill-foot{display:flex;gap:10px 16px;flex-wrap:wrap;font-weight:750;font-size:.91rem}
+    .skill-disclaimer{margin-top:21px;background:rgba(255,255,255,.72);border:1px solid var(--line);border-radius:18px;padding:16px 20px;color:var(--muted);font-size:.91rem}
+    .skill-support{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:17px;margin-top:19px}
+    .skill-support .card{padding:21px}
+    .skill-support h3{margin-bottom:8px}
+    @media(max-width:980px){.skill-grid,.skill-support{grid-template-columns:1fr}.skill-card{padding:24px}}
+
     .footer{
       padding:26px 0 48px;
       color:#677667;
@@ -574,6 +596,7 @@
 
       <nav class="navlinks">
         <a href="#difference">Why BEAN</a>
+        <a href="#skills">New skills</a>
         <a href="#proof">Proof</a>
         <a href="#quickstart">Quickstart</a>
         <a href="#research">Research</a>
@@ -609,6 +632,7 @@
             <span class="pill">Evidence-aware revision</span>
             <span class="pill">Reviewable proposals</span>
             <span class="pill">Python + SQLite</span>
+            <span class="pill">Practical daily reporting</span>
           </div>
 
           <div class="hero-actions">
@@ -618,6 +642,7 @@
             <a class="btn btn-secondary" href="#quickstart">
               Run the quickstart
             </a>
+            <a class="btn btn-secondary" href="#skills">See his new skills ↓</a>
           </div>
         </div>
 
@@ -717,6 +742,76 @@
       </div>
     </section>
 
+    <section id="skills" class="section" aria-labelledby="skills-heading">
+      <div class="wrap">
+        <div class="eyebrow"><span class="dot"></span> New, tested capabilities</div>
+        <div class="skill-intro" style="margin-top:19px">
+          <div>
+            <h2 id="skills-heading">The little bean has been busy. 🌱</h2>
+            <p class="lead">These aren't ideas on a roadmap. Here are two practical abilities merged into the public repositories, with real commands and tests you can inspect.</p>
+          </div>
+          <a class="btn btn-secondary" href="https://github.com/danieloculus0-bot/BEAN/blob/main/docs/BEAN_USEFULNESS_AUDIT_2026-10-11.md">Read the usefulness audit →</a>
+        </div>
+
+        <div class="skill-grid">
+          <article class="skill-card">
+            <div class="skill-kicker"><span class="dot" aria-hidden="true"></span> BEAN AI Bridge · Offline tool</div>
+            <div class="skill-icon" aria-hidden="true">📊</div>
+            <h3>Daily Exception Brief</h3>
+            <p>Give BEAN an existing, authorized local export ledger. He prepares a private, read-only morning brief instead of making you hunt through separate reports.</p>
+            <ul class="skill-steps">
+              <li>Shipment-line OTD, overdue-work evidence, RMA status and gaps</li>
+              <li>Prioritized questions when dates, quantities or source coverage disagree</li>
+              <li>Earlier-versus-current snapshot differences, without invented causes</li>
+              <li>Local HTML + JSON output; unverified figures display N/A</li>
+            </ul>
+            <code class="skill-command">python -m ezbean.daily_brief --database ./private/site.sqlite --site SITE_A --start 2026-10-01 --as-of 2026-10-10T12:00:00Z --out ./private/morning.html</code>
+            <div class="skill-foot">
+              <a href="https://github.com/danieloculus0-bot/BEAN-AI-Bridge-/blob/main/docs/DAILY_EXCEPTION_BRIEF.md">Run the brief →</a>
+              <a href="https://github.com/danieloculus0-bot/BEAN-AI-Bridge-/blob/main/tests/test_daily_brief.py">Inspect the tests →</a>
+            </div>
+          </article>
+
+          <article class="skill-card">
+            <div class="skill-kicker"><span class="dot" aria-hidden="true"></span> BEAN Core · Offline demonstration</div>
+            <div class="skill-icon" aria-hidden="true">🧠</div>
+            <h3>Memory that survives a restart</h3>
+            <p>BEAN opens a real SQLite database, records an observation and review-required proposal, shuts down, and opens a second session to prove the original records survived.</p>
+            <ul class="skill-steps">
+              <li>Two separate sessions against one temporary database</li>
+              <li>Verifies the original event and pending proposal remain stored</li>
+              <li>Checks session history and that review was not silently bypassed</li>
+              <li>Fails visibly if any required continuity record is missing</li>
+            </ul>
+            <code class="skill-command">python -m examples.restart_continuity</code>
+            <div class="skill-foot">
+              <a href="https://github.com/danieloculus0-bot/BEAN/blob/main/examples/restart_continuity.py">Inspect the demo →</a>
+              <a href="https://github.com/danieloculus0-bot/BEAN/blob/main/bean/tests/test_restart_continuity_demo.py">Read the test →</a>
+            </div>
+          </article>
+        </div>
+
+        <div class="skill-support">
+          <article class="card">
+            <div class="skill-icon" aria-hidden="true">🔎</div>
+            <h3>Evidence-first revisions</h3>
+            <p>In the optional Bridge learning loop, unsupported claims stay unresolved. A separately supplied host verifier must check corroborating sources before BEAN records a versioned revision.</p>
+            <a href="https://github.com/danieloculus0-bot/BEAN-AI-Bridge-/blob/main/experiments/learning_loop/README.md">Explore the evidence loop →</a>
+          </article>
+          <article class="card">
+            <div class="skill-icon" aria-hidden="true">🛡️</div>
+            <h3>Proposals, not unauthorized actions</h3>
+            <p>Reasoning output is recorded for review. The host keeps permission and execution authority, so generating a proposal doesn't authorize a real-world effect.</p>
+            <a href="https://github.com/danieloculus0-bot/BEAN/blob/main/docs/general-reasoning-layer.md">Explore the reasoning API →</a>
+          </article>
+        </div>
+
+        <div class="skill-disclaimer">
+          <strong class="strong">What the demos mean:</strong> The daily brief reads previously exported local data, not a live ERP. The restart demonstration uses a mock provider and verifies clean close/reopen of SQLite, not an operating-system reboot or model learning. Source authenticity and business KPI rules still require a responsible host.
+        </div>
+      </div>
+    </section>
+
     <section id="proof" class="section">
       <div class="wrap">
         <div class="eyebrow">
@@ -801,6 +896,12 @@ python -m examples.quickstart_reasoning</code></pre>
             <li>Review boundaries remain explicit.</li>
             <li>The architecture can run offline and locally.</li>
           </ul>
+
+          <p style="margin-top:17px"><strong class="strong">Want proof of persistence?</strong> Run the follow-up in the same checkout:</p>
+          <div class="code">
+            <pre><code>python -m examples.restart_continuity</code></pre>
+          </div>
+          <p style="margin-top:12px">This second demo uses two BEAN sessions and a temporary SQLite database to verify that the original event and pending-review proposal survive closing and reopening.</p>
 
           <div style="height:18px"></div>
 
