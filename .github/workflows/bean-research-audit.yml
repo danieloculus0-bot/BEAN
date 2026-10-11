@@ -1,0 +1,45 @@
+name: BEAN engineering branch and test audit
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'scripts/audit_research_inventory.py'
+      - 'bean/tests/test_research_inventory.py'
+      - 'docs/ENGINEERING_VALIDATION_2026-10-11.md'
+      - '.github/workflows/bean-research-audit.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  audit-research:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout exact proposed audit revision
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Test audit tool offline before using it
+        run: |
+          python -m pip install pytest
+          python -m compileall -q scripts/audit_research_inventory.py bean/tests/test_research_inventory.py
+          python -m pytest bean/tests/test_research_inventory.py -q -ra
+      - name: Enumerate Core and Bridge branches read-only
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          python scripts/audit_research_inventory.py --output-dir audit-output
+      - name: Retain JSON and Markdown inventory (including errors)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bean-engineering-inventory
+          path: audit-output/
+          if-no-files-found: warn
