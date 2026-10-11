@@ -37,6 +37,9 @@ jobs:
       - name: Run complete Lab013 composite growth simulation
         if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.12'
         run: python -m bean.evaluation.composite_growth --report bean-composite-growth.json
+      - name: Run Lab014 investigation and retention simulation
+        if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.12'
+        run: python -m bean.evaluation.investigation_lab014 --provider fixture --report bean-investigation-lab014.json
       - name: Attach test evidence
         if: always()
         uses: actions/upload-artifact@v4
@@ -46,4 +49,5 @@ jobs:
             bean-core-tests.xml
             bean-core-coverage.xml
             bean-composite-growth.json
+            bean-investigation-lab014.json
           if-no-files-found: ignore
