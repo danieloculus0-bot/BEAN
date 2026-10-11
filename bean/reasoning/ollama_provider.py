@@ -9,6 +9,7 @@ import os
 
 from ..voice.ollama import OllamaClient
 from .llm_adapter import LLMAdapterBase
+from .prompt_builder import OLLAMA_RESPONSE_SCHEMA
 
 
 class OllamaProvider(LLMAdapterBase):
@@ -26,6 +27,7 @@ class OllamaProvider(LLMAdapterBase):
             raw_text = self.client.chat_json(
                 self.model_name,
                 [{"role": "user", "content": prompt}],
+                schema=OLLAMA_RESPONSE_SCHEMA,
             )
             if not raw_text:
                 raise ValueError("Ollama returned an empty structured reply")
