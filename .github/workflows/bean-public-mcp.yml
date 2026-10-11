@@ -1,0 +1,47 @@
+name: BEAN public MCP plugin preview
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'bean/integration/public_plugin.py'
+      - 'bean/tests/test_public_plugin.py'
+      - 'integrations/chatgpt/**'
+      - '.github/workflows/bean-public-mcp.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'bean/integration/public_plugin.py'
+      - 'bean/tests/test_public_plugin.py'
+      - 'integrations/chatgpt/**'
+      - '.github/workflows/bean-public-mcp.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  plugin-preview:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install BEAN and official MCP Python SDK
+        run: python -m pip install pytest psutil "mcp>=2,<3"
+      - name: Check source and package JSON
+        run: python -m compileall -q bean/integration/public_plugin.py integrations/chatgpt
+      - name: Verify public tool evidence and safety behavior
+        run: python -m pytest bean/tests/test_public_plugin.py -q -ra --tb=short
+      - name: Validate MCP tool discovery and accurate annotations
+        run: python -m integrations.chatgpt.smoke
+      - name: Verify portable plugin metadata parses
+        run: python -c "import json; from pathlib import Path; p=Path('integrations/chatgpt/plugin'); m=json.loads((p/'plugin.json').read_text()); assert m['name']=='bean-evidence-companion'; s=json.loads((p/'mcp.example.json').read_text()); assert s['mcpServers']['bean']['url'].startswith('https://REPLACE-')"
