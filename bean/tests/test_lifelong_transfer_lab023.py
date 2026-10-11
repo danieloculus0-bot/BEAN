@@ -20,7 +20,7 @@ def create_training(folder):
     scores = []
     for task in TASKS:
         source = task.original + "\n# Synthetic training candidate for harness\n"
-        (proposals / (task.task_id + ".py")).write_text(source)
+        (proposals / (task.task_id + ".py")).write_bytes(source.encode("utf-8"))
         receipts.append({
             "task_id": task.task_id, "provider_status": "proposal_generated",
             "model_requested": "openrouter/free", "source_sha256": sha(source),
