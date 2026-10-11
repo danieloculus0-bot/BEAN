@@ -86,6 +86,19 @@ jobs:
             exit 1
           fi
           echo BRIDGE_MUTATION_DETECTED
+      - name: Tamper challenge - modify candidate source after signed receipt
+        run: |
+          printf '\n# deliberate isolated CI tampering only\n' >> venvwin-candidate/puppy-native/venvwin-session
+          if PYTHONPATH="$PWD/bridge/src" python scripts/bridge_software_audit_verify.py \
+              --root venvwin-candidate \
+              --reference-root venvwin-original \
+              --manifest venvwin-candidate/audit/venvwin-original-design-conformity.json \
+              --report audit-output/venvwin-audit.json \
+              --output audit-output/tampered-source-verdict.json; then
+            echo 'BRIDGE_FAIL: altered source bytes passed receipt verification' >&2
+            exit 1
+          fi
+          echo BRIDGE_SOURCE_FILE_MUTATION_DETECTED
       - name: Archive independent receipts, never unverified ISO
         if: always()
         uses: actions/upload-artifact@v4
