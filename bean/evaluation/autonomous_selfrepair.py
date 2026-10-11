@@ -151,7 +151,7 @@ def local_model_request(source, previous_issue, *, request_fn=urlopen, model=LOC
     prompt = (
         "You are BEAN independently repairing your own Python function "
         "call_model(). This is a maintenance task for the real code author, "
-        "NOT for example ERP source mentioned inside its prompt strings. "
+        "NOT a repair of the external ERP sample code that may be mentioned inside call_model's prompt strings. "
         "Return ONLY a JSON object with an edits array. Every edit must "
         "have find and replace strings. Copy find exactly, whitespace and "
         "punctuation included, from the existing code below. It must occur "
@@ -168,7 +168,7 @@ def local_model_request(source, previous_issue, *, request_fn=urlopen, model=LOC
         "\nPREVIOUS REJECTED PROPOSAL:\n"
         + (previous_issue or "none")[:350]
         + "\nREAL SOURCE LINES TO ANCHOR AN EDIT:\n" + prompt_section
-        + "\nACTUAL CALL_MODEL PYTHON FUNCTION:\n" + function_source
+        + "\nCURRENT PYTHON FUNCTION (ACTUAL CALL_MODEL PYTHON FUNCTION):\n" + function_source
         + "\nYour find anchor must be copied from these actual lines, "
         "not from an error description or embedded sample code. "
     )
