@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>BEAN | Persistent Reasoning &amp; Evidence Architecture</title>
+  <meta name="description" content="BEAN (Behavior Enabled Avatar Node) is a public-source Python project for persistent reasoning, SQLite memory, evidence traceability, uncertainty handling and reviewable AI proposals. Explore reproducible tests and the offline quickstart.">
+  <meta name="robots" content="index, follow">
+  <meta name="theme-color" content="#0a162e">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="BEAN | Persistent Reasoning & Evidence Architecture">
+  <meta property="og:description" content="A public-source Python reasoning core built around memory, evidence, uncertainty and traceable proposals. Includes real code, an offline demo and reproducible research.">
+  <meta property="og:site_name" content="BEAN">
+  <meta name="twitter:card" content="summary">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareSourceCode",
+    "name": "BEAN (Behavior Enabled Avatar Node)",
+    "description": "Experimental Python architecture for persistent reasoning, SQLite memory, evidence lineage, uncertainty management and structured review-required proposals.",
+    "codeRepository": "https://github.com/danieloculus0-bot/BEAN",
+    "programmingLanguage": "Python",
+    "runtimePlatform": "Python 3.10+",
+    "isAccessibleForFree": true,
+    "url": "https://github.com/danieloculus0-bot/BEAN",
+    "keywords": "persistent reasoning, AI agent memory, evidence provenance, uncertainty, explainable decisions, Python, SQLite",
+    "relatedLink": [
+      "https://github.com/danieloculus0-bot/BEAN-AI-Bridge-",
+      "https://github.com/danieloculus0-bot/BEAN/blob/main/docs/experimental-research-index-2026-10.md"
+    ]
+  }
+  </script>
+  <style>
+    :root { color-scheme: dark; --ink:#f0f5ff; --muted:#adbed4; --deep:#091326; --panel:#122341; --line:#344967; --accent:#76d9e3; --focus:#ffe392; }
+    * { box-sizing:border-box; }
+    body { margin:0; background:linear-gradient(150deg,#071326 0%,#142646 52%,#071326 100%); color:var(--ink); font:16px/1.65 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; }
+    a { color:var(--accent); text-underline-offset:3px; }
+    a:hover { color:white; }
+    a:focus-visible { outline:3px solid var(--focus); outline-offset:4px; border-radius:3px; }
+    .wrap { max-width:1080px; margin:auto; padding:0 24px; }
+    header { border-bottom:1px solid var(--line); }
+    nav { display:flex; align-items:center; justify-content:space-between; gap:18px; padding:17px 0; flex-wrap:wrap; }
+    .logo { font-size:1.32rem; font-weight:800; letter-spacing:.2em; color:#fff; text-decoration:none; }
+    .navlinks { display:flex; gap:20px; flex-wrap:wrap; font-size:.92rem; }
+    .hero { padding:76px 0 60px; }
+    .eyebrow { color:var(--accent); text-transform:uppercase; letter-spacing:.16em; font-size:.77rem; font-weight:700; }
+    h1 { margin:15px 0 20px; max-width:830px; font-size:clamp(2.5rem,6vw,5.2rem); line-height:1.08; letter-spacing:-.04em; }
+    h2 { line-height:1.2; font-size:clamp(1.45rem,3vw,2rem); }
+    h3 { margin:0 0 8px; font-size:1.13rem; }
+    .lead { font-size:1.21rem; color:#d4e0f0; max-width:770px; }
+    .actions { display:flex; flex-wrap:wrap; gap:12px; margin-top:28px; }
+    .action { display:inline-block; border:1px solid var(--accent); border-radius:9px; padding:11px 18px; text-decoration:none; color:var(--deep); background:var(--accent); font-weight:700; }
+    .action.secondary { background:transparent; color:var(--accent); }
+    section { padding:38px 0 48px; border-top:1px solid var(--line); }
+    .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(235px,1fr)); gap:15px; }
+    .tile { background:rgba(18,35,65,.8); border:1px solid var(--line); border-radius:14px; padding:24px; }
+    .tile p, .muted { color:var(--muted); }
+    pre { overflow:auto; background:#050d1a; border:1px solid var(--line); padding:23px; border-radius:12px; color:#e4f7ff; line-height:1.8; }
+    code { font-family:ui-monospace,SFMono-Regular,Consolas,"Liberation Mono",monospace; font-size:.9em; }
+    .notice { border-left:3px solid var(--accent); padding:14px 20px; background:rgba(18,35,65,.65); color:#d3deef; }
+    .links { display:flex; flex-wrap:wrap; gap:12px 25px; }
+    footer { padding:30px 0 55px; color:var(--muted); border-top:1px solid var(--line); font-size:.9rem; }
+  </style>
+</head>
+<body>
+  <header><nav class="wrap" aria-label="Main navigation">
+    <a class="logo" href="#top">BEAN</a>
+    <div class="navlinks">
+      <a href="#capabilities">Capabilities</a>
+      <a href="#quickstart">Quickstart</a>
+      <a href="#evidence">Research</a>
+      <a href="https://github.com/danieloculus0-bot/BEAN">Source code</a>
+    </div>
+  </nav></header>
+  <main id="top">
+    <div class="wrap hero">
+      <p class="eyebrow">Behavior Enabled Avatar Node · Public-source Python project</p>
+      <h1>Reasoning needs a memory. Evidence needs a history.</h1>
+      <p class="lead">BEAN is an experimental persistent reasoning architecture that records events, preserves uncertainty, traces proposals to their context and keeps actions separate from model output. The reasoning provider can change. The evidence record remains inspectable.</p>
+      <div class="actions">
+        <a class="action" href="https://github.com/danieloculus0-bot/BEAN">Explore BEAN on GitHub</a>
+        <a class="action secondary" href="https://github.com/danieloculus0-bot/BEAN/blob/main/docs/GETTING_STARTED.md">Run the offline demo</a>
+      </div>
+    </div>
+    <section id="capabilities"><div class="wrap">
+      <h2>What the project actually implements</h2>
+      <div class="grid">
+        <div class="tile"><h3>Persistent event history</h3><p>SQLite-backed sessions and events, recorded observations and trace IDs that a host application can inspect.</p></div>
+        <div class="tile"><h3>Evidence and uncertainty</h3><p>Epistemic checks, contradiction handling, hypotheses and N/A-aware report adapters with explicit limits on source trust.</p></div>
+        <div class="tile"><h3>Reviewable reasoning</h3><p>Model adapters provide reasoning proposals. Hosts retain policy, execution authority, and the ability to reject a proposal.</p></div>
+        <div class="tile"><h3>Reproducible experiments</h3><p>Cross-platform tests, research branches, synthetic benchmark comparisons, and documented negative results.</p></div>
+      </div>
+    </div></section>
+    <section id="quickstart"><div class="wrap">
+      <p class="eyebrow">Start with real code</p>
+      <h2>A local, offline five-minute demonstration</h2>
+      <p class="muted">Python 3.10+, Git and psutil. No API key, connected machine or data upload. This demonstrates event logging and proposal boundaries using a mock reasoning provider.</p>
+      <pre><code>git clone https://github.com/danieloculus0-bot/BEAN.git
+cd BEAN
+python -m pip install psutil
+python -m examples.quickstart_reasoning</code></pre>
+      <p><a href="https://github.com/danieloculus0-bot/BEAN/blob/main/docs/GETTING_STARTED.md">Read the guide and run the tests</a> · <a href="https://github.com/danieloculus0-bot/BEAN/blob/main/examples/quickstart_reasoning.py">Inspect example source</a></p>
+    </div></section>
+    <section id="evidence"><div class="wrap">
+      <p class="eyebrow">Evidence over hype</p>
+      <h2>Read the experiments, including what failed</h2>
+      <p>The research index links source branches, findings, workflow runs and limitations. Some studies use intentionally fictional cases. Their results are <strong>not</strong> claims of AGI, independent source authentication, production autonomy, or measured superiority on the live web.</p>
+      <div class="links">
+        <a href="https://github.com/danieloculus0-bot/BEAN/blob/main/docs/experimental-research-index-2026-10.md">Research index</a>
+        <a href="https://github.com/danieloculus0-bot/BEAN/blob/main/docs/general-reasoning-layer.md">Python integration</a>
+        <a href="https://github.com/danieloculus0-bot/BEAN/blob/main/docs/EVIDENCE_BRIDGE_READINESS.md">Core and Bridge evidence flow</a>
+        <a href="https://github.com/danieloculus0-bot/BEAN/actions/workflows/brain-smoke.yml">Cross-platform regression runs</a>
+      </div>
+      <p class="notice">Current project scope: experimental development with review-required proposals. Live ERP integration, independently validated open-world learning, and robot autonomy are not claimed. Public source access is not a redistribution license.</p>
+    </div></section>
+    <section><div class="wrap">
+      <h2>Integrate, inspect, contribute</h2>
+      <p>The <a href="https://github.com/danieloculus0-bot/BEAN-AI-Bridge-">BEAN AI Bridge</a> is a separate generic ERP/KPI evidence and replay prototype using synthetic test data. BEAN Core supplies persistent reasoning primitives. Have a concrete use case or a reproducible failure? <a href="https://github.com/danieloculus0-bot/BEAN/issues">Open a GitHub issue</a>.</p>
+    </div></section>
+  </main>
+  <footer><div class="wrap">BEAN · Behavior Enabled Avatar Node · Source, tests and research maintained on <a href="https://github.com/danieloculus0-bot/BEAN">GitHub</a>.</div></footer>
+</body>
+</html>
