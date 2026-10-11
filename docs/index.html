@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>BEAN | Real AI Skills · Public Technical Beta</title>
-  <meta name="description" content="Meet BEAN: a working open-source AI technical beta with persistent memory, evidence reasoning, local voice, manufacturing reports, engineering audits, MCP tools and tested robotics logic. See the code and receipts.">
+  <meta name="description" content="BEAN combines real neural-model inference through local Ollama with persistent SQLite memory, evidence checks, reviewed AI proposals and reproducible engineering experiments. Inspect the working technical beta.">
   <meta name="robots" content="index, follow">
   <meta name="theme-color" content="#101713">
   <link rel="icon" type="image/webp" href="./bean-official.webp">
@@ -13,7 +13,7 @@
 
   <meta property="og:type" content="website">
   <meta property="og:title" content="BEAN | Little Bean. Serious AI Skills.">
-  <meta property="og:description" content="Working public technical beta: persistent AI memory, evidence review, local voice, engineering tools and real test receipts.">
+  <meta property="og:description" content="Neural-model-powered reasoning with BEAN memory, evidence review, local voice, engineering tools and reproducible test receipts.">
   <meta property="og:url" content="https://danieloculus0-bot.github.io/BEAN/">
   <meta property="og:site_name" content="BEAN">
   <meta property="og:image" content="https://danieloculus0-bot.github.io/BEAN/bean-official.webp">
@@ -692,6 +692,34 @@
     @media(max-width:640px){.experiment-grid{grid-template-columns:1fr}.experiment-card{padding:22px}}
 
 
+
+    /* Native site architecture visualization: dark Mint, no external libraries. */
+    .neural-section{background:radial-gradient(ellipse at 70% 15%,rgba(106,179,92,.09),transparent 55%)}
+    .neural-intro{display:grid;grid-template-columns:minmax(0,1.65fr) minmax(250px,.7fr);align-items:center;gap:30px;margin:19px 0 27px}
+    .neural-intro h2{max-width:760px}
+    .neural-status{display:grid;gap:10px;padding:19px 22px;background:#203527;border:1px solid #537957;border-radius:20px;box-shadow:var(--shadow)}
+    .neural-status strong{color:#c7f4b5;font-size:1rem}
+    .neural-status span{font-size:.88rem;color:#b2c8b6;line-height:1.55}
+    .neural-flow-title{margin-bottom:15px}
+    .neural-flow{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:13px;list-style:none;padding:0;margin:0 0 20px}
+    .neural-flow li{min-width:0;padding:19px 17px 14px;border-radius:19px;border:1px solid #3f5945;background:linear-gradient(160deg,#273a2b,#1c2a20)}
+    .neural-step{display:block;color:#a6e98c;font-size:.74rem;text-transform:uppercase;letter-spacing:.055em;font-weight:850;margin-bottom:11px}
+    .neural-flow strong{display:block;color:var(--text);font-size:1.06rem;line-height:1.3;margin-bottom:8px}
+    .neural-flow p{font-size:.91rem;line-height:1.55;margin-bottom:0}
+    .neural-details{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin:23px 0}
+    .neural-details>.card{min-width:0}
+    .neural-details a{font-weight:720}
+    .neural-note{padding:17px 21px;background:rgba(23,43,28,.78);border:1px solid #456447;border-left:4px solid #91e274;border-radius:13px;line-height:1.65;color:var(--muted)}
+    .neural-note strong{color:#d9f5cf}
+    @media(max-width:980px){.neural-flow{grid-template-columns:repeat(2,minmax(0,1fr))}}
+    @media(max-width:760px){
+      .neural-intro,.neural-details,.neural-flow{grid-template-columns:minmax(0,1fr)}
+      .neural-intro{gap:14px;margin:15px 0 21px}
+      .neural-flow{gap:10px}
+      .neural-flow li{padding:16px}
+      .neural-note{padding:16px}
+    }
+
     /* Mobile-first containment while preserving the existing dark Linux Mint desktop. */
     html{width:100%;max-width:100%;scroll-padding-top:86px}
     body{width:100%;max-width:100%;overflow-x:clip}
@@ -812,7 +840,7 @@
       <nav class="navlinks" id="primary-navigation" aria-label="Site sections">
         <a href="#latest">Build log</a>
         <a href="#milestones">Verified tests</a>
-        <a href="#difference">Why BEAN</a>
+        <a href="#neural">Neural AI</a>
         <a href="#skills">Skills</a>
         <a href="#benchmarks">Benchmarks</a>
         <a href="#proof">Proof</a>
@@ -826,7 +854,7 @@
 
   <main id="top">
     <nav class="mobile-jumps" aria-label="Quick section links">
-      <a href="#skills">Skills</a><a href="#milestones">Verified tests</a><a href="#latest">Build log</a><a href="#benchmarks">Benchmarks</a><a href="#proof">Proof</a><a href="#quickstart">Quickstart</a><a href="#research">Research</a><a href="#community">Follow BEAN</a>
+      <a href="#skills">Skills</a><a href="#neural">Neural AI</a><a href="#milestones">Verified tests</a><a href="#latest">Build log</a><a href="#benchmarks">Benchmarks</a><a href="#proof">Proof</a><a href="#quickstart">Quickstart</a><a href="#research">Research</a><a href="#community">Follow BEAN</a>
     </nav>
     <section class="hero">
       <div class="wrap hero-grid">
@@ -842,8 +870,8 @@
           <p class="lead">
             <span class="strong">BEAN is working software, not a waiting list.</span>
             Persistent memory. Evidence-aware reasoning. Useful manufacturing reports.
-            Scheduled investigation. Local AI conversations. Engineering audits.
-            Tested robotics logic. All in public, inspectable code.
+            Scheduled investigation. Neural-network-powered local AI conversations.
+            Engineering audits. Tested robotics logic. All in public, inspectable code.
           </p>
           <p class="hero-beta-line"><strong>Public technical beta.</strong> The skills are real; enterprise hosting is optional.
             Pick a capability, run the command, and inspect the test receipts.</p>
@@ -859,6 +887,7 @@
             <span class="pill">Reviewable proposals</span>
             <span class="pill">Python + SQLite</span>
             <span class="pill">Practical daily reporting</span>
+            <span class="pill">Real neural-model inference</span>
             <span class="pill">Local voice chat</span>
             <span class="pill">Robot optional</span>
             <span class="pill">Local MCP tools</span>
@@ -972,8 +1001,8 @@
           <article class="card">
             <div class="skill-kicker">Core main · Local AI</div>
             <div class="skill-icon" aria-hidden="true">🎙️</div>
-            <h3>Local model + voice</h3>
-            <p>Use a locally installed Ollama model for opt-in dialogue and reasoning. On Windows, BEAN can speak answers and accept prompted voice input.</p>
+            <h3>Neural-model reasoning + voice</h3>
+            <p>BEAN calls a real local neural language model through Ollama for opt-in conversation and structured proposals. On Windows he can speak answers and accept prompted voice input. BEAN does not train those model weights.</p>
             <a href="https://github.com/danieloculus0-bot/BEAN/blob/main/docs/bean-local-voice.md">Try BEAN's voice interface →</a>
           </article>
           <article class="card">
@@ -998,11 +1027,18 @@
             <a href="https://github.com/danieloculus0-bot/BEAN-AI-Bridge-/blob/main/experiments/robot_motion/README.md">Inspect the emulator lab →</a>
           </article>
           <article class="card">
-            <div class="skill-kicker">Tested research · Code improvement</div>
+            <div class="skill-kicker">Core main · Source improvement lab</div>
             <div class="skill-icon" aria-hidden="true">🧬</div>
-            <h3>Model-written code repair</h3>
-            <p>A bounded source-repair candidate passed seven independent tests on Windows and Ubuntu. Reproducible improvement experiments, not just generated code.</p>
-            <a href="https://github.com/danieloculus0-bot/BEAN/pull/74">Inspect the tested candidate →</a>
+            <h3>Tested, resumable code improvement</h3>
+            <p>Lab 019 writes real candidate Python files, runs fixed tests in a disposable project, and saves every failed or successful attempt in a SQLite chain. An AST-based control passed 7/7 fixture tests; optional Ollama/OpenRouter generators are separate neural-model integrations.</p>
+            <a href="https://github.com/danieloculus0-bot/BEAN/blob/main/docs/bean-autonomous-code-growth-lab019.md">Inspect the source-writing engine and test record</a>
+          </article>
+          <article class="card">
+            <div class="skill-kicker">Core main · Event monitoring</div>
+            <div class="skill-icon" aria-hidden="true">📡</div>
+            <h3>Evidence-aware Watcher</h3>
+            <p>Track host-supplied report changes with RAM snapshots, individual recall intervals and a persistent SQLite event trail. Missing or stale values become N/A, never a fabricated zero. External data still needs authorized, trustworthy exporters.</p>
+            <a href="https://github.com/danieloculus0-bot/BEAN/blob/main/docs/bean-watcher-contract.md">Explore the watcher contract and tests</a>
           </article>
         </div>
 
@@ -1012,6 +1048,54 @@
       </div>
     </section>
 
+
+
+    <section id="neural" class="section neural-section" aria-labelledby="neural-heading">
+      <div class="wrap">
+        <div class="eyebrow"><span class="dot"></span> Neural AI · Actual architecture, not marketing</div>
+        <div class="neural-intro">
+          <div>
+            <h2 id="neural-heading">Yes, BEAN uses a neural network.</h2>
+            <p class="lead">A real neural language model handles optional inference through locally installed <strong class="strong">Ollama</strong>. BEAN supplies the persistent context, structured proposal handling, evidence checks, uncertainty and audit trail around that model. Neural inference and durable reasoning work together, but they are not the same subsystem.</p>
+          </div>
+          <div class="neural-status" aria-label="Neural implementation status">
+            <strong>Implemented: neural-model inference</strong>
+            <span>Not claimed: native BEAN-trained weights or backpropagation</span>
+          </div>
+        </div>
+
+        <h3 class="neural-flow-title">What actually happens when BEAN reasons</h3>
+        <ol class="neural-flow">
+          <li><span class="neural-step">01 · Context</span><strong>Remember the observation</strong><p>Build bounded context from BEAN records, including session history, known claims and explicit uncertainty.</p></li>
+          <li><span class="neural-step">02 · Neural inference</span><strong>Ask a real model</strong><p>Opt in to a local Ollama model, such as Qwen. The separate OpenAI provider is also implemented for configured use.</p></li>
+          <li><span class="neural-step">03 · Evidence gate</span><strong>Check the proposal</strong><p>Parse the model's structured reply and apply filters. Invalid responses or unavailable providers are recorded, not passed off as verified results.</p></li>
+          <li><span class="neural-step">04 · Continuity</span><strong>Keep an inspectable record</strong><p>Save proposal and model metadata in SQLite, with review required. Inference alone does not grant permission to execute code or control hardware.</p></li>
+        </ol>
+
+        <div class="neural-details">
+          <article class="card">
+            <div class="skill-kicker">Core main · Neural inference</div>
+            <h3>Actual model, local execution</h3>
+            <p>BEAN has an Ollama adapter for structured model responses and a separate local voice interface. Windows speech works on user request; the voice chat's short history is session-only, rather than persistent autobiographical memory.</p>
+            <a href="https://github.com/danieloculus0-bot/BEAN/blob/main/bean/reasoning/ollama_provider.py">Inspect the Ollama adapter</a> ·
+            <a href="https://github.com/danieloculus0-bot/BEAN/blob/main/bean/tests/test_ollama_reasoning_provider.py">Read the regression tests</a>
+          </article>
+          <article class="card">
+            <div class="skill-kicker">Core main · Durable learning mechanics</div>
+            <h3>What BEAN actually retains</h3>
+            <p>SQLite records observations, proposals and evidence history. The source-improvement laboratory additionally records candidate code, test outcomes and prior failures so an interrupted experiment can be resumed. Those records do not modify neural-network weights.</p>
+            <a href="https://github.com/danieloculus0-bot/BEAN/blob/main/docs/bean-autonomous-code-growth-lab019.md">See the source-growth lineage</a> ·
+            <a href="https://github.com/danieloculus0-bot/BEAN/blob/main/examples/restart_continuity.py">See persistent-memory proof</a>
+          </article>
+        </div>
+
+        <div class="neural-note">
+          <strong>Neural network versus native neural training:</strong>
+          BEAN currently orchestrates external or locally hosted trained neural models; it does not claim a separately trained BEAN foundation model, its own backpropagation engine or general autonomous intelligence. The model-generated code-repair studies are bounded experiments, not evidence of universal self-improvement.
+          <a href="https://github.com/danieloculus0-bot/BEAN/blob/main/docs/PRODUCTION_READINESS_AUDIT_2026-10-11.md">Read the readiness boundaries</a>.
+        </div>
+      </div>
+    </section>
 
     <section id="latest" class="section tight" aria-labelledby="latest-heading">
       <div class="wrap">
