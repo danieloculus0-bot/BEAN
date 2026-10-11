@@ -156,11 +156,29 @@ def run_offline(*, seeds: tuple[int, ...] = (7, 19, 43),
         "holdout_per_arm": holdout,
         "trials": out,
         "aggregate": {
-            key: round(sum(
-                trial_result["arms"][arm]["holdout"][key]
-                for trial_result in out
+            arm + "_" + metric: round(sum(
+                item["arms"][arm]["holdout"][metric]
+                for item in out
             ) / len(out), 4)
-            for arm in arms for key in []
+            for arm in arms
+            for metric in ("accuracy_all", "grounded_rate", "utility_per_case")
+        } | {
+            "all_retention_passed": all(
+                result["retention_ok"]
+                for item in out for result in item["arms"].values()
+            ),
+            "all_holdout_writes_zero": all(
+                result["no_holdout_learning"]
+                for item in out for result in item["arms"].values()
+            ),
+            "all_scheduler_checks_passed": all(
+                result["scheduler_ok"]
+                for item in out for result in item["arms"].values()
+            ),
+            "all_world_promotions_zero": all(
+                result["world_claim_promotions"] == 0
+                for item in out for result in item["arms"].values()
+            ),
         },
         "limitations": [
             "Bayesian source selection policy, not an LLM or text understanding.",
