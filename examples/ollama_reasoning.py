@@ -33,11 +33,12 @@ def main() -> None:
             (receipt["proposal_id"],),
         )
         response = bean.store.fetchone(
-            "SELECT parse_success FROM reasoning_responses WHERE response_id=?",
+            "SELECT parse_success, parsed_json FROM reasoning_responses WHERE response_id=?",
             (receipt["response_id"],),
         )
         risk_flags = json.loads(proposal["risk_flags_json"])
-        passed = bool(response["parse_success"]) and "provider_unavailable" not in risk_flags
+        parsed_details = json.loads(response["parsed_json"])
+        passed = bool(receipt["structured_response_valid"]) and bool(receipt["filter_passed"])
         print(json.dumps({
             "local_ollama_structured_reasoning": "PASS" if passed else "FAILED_OR_UNAVAILABLE",
             "database": str(target),
@@ -46,6 +47,8 @@ def main() -> None:
             "summary": proposal["summary"],
             "confidence": proposal["confidence"],
             "risk_flags": risk_flags,
+            "parse_error": parsed_details.get("parse_error"),
+            "filter_passed": receipt["filter_passed"],
             "supervisor_review_required": receipt["requires_supervisor_review"],
             "command_executed": False,
         }, indent=2))
