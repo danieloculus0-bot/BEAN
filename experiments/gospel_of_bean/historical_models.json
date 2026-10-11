@@ -1,0 +1,203 @@
+{
+  "schema": "bean.gospel_historical_models.v1",
+  "scope": "These scenarios model conditional feasibility only; they are not a determination that any event occurred.",
+  "cases": [
+    {
+      "id": "ahaziah_accession_age",
+      "focus": "same king's accession age",
+      "literal_model": {
+        "type": "numeric_same_event",
+        "source_refs": [
+          "2 Kings 8:26",
+          "2 Chronicles 22:2"
+        ],
+        "require_equal": true
+      },
+      "alternative_model": {
+        "type": "scribal_error",
+        "statement": "One of the accession numbers is a later transcription error; 22 is compatible with the father dying at about forty.",
+        "status": "conditionally_possible_not_attested"
+      },
+      "limits": "The incompatibility is in current wording, not necessarily the reconstructed original Hebrew text.",
+      "research": [
+        {
+          "url": "https://www.icr.org/books/defenders/2310",
+          "claim": "Conservative commentary attributes the 42 vs 22 disagreement to scribal transmission.",
+          "role": "interpretation"
+        },
+        {
+          "url": "https://www.historicalchristian.faith/doctrine/doctrines/ahaziah-age.html",
+          "claim": "Parallel verses and Jehoram chronology are compared, with ancient versions discussed.",
+          "role": "secondary_analysis"
+        }
+      ]
+    },
+    {
+      "id": "judas_death_accounts",
+      "focus": "Whether both death narratives can describe one occurrence",
+      "literal_model": {
+        "type": "sequence_possible",
+        "source_refs": [
+          "Matthew 27:5",
+          "Acts 1:18"
+        ],
+        "assumptions": [
+          "Hanging precedes a later fall; the latter report can describe consequences of death."
+        ]
+      },
+      "alternative_model": {
+        "type": "distinct_or_conflicting_accounts",
+        "statement": "The writers may preserve independent incompatible descriptions; the surviving passages alone cannot select.",
+        "status": "undetermined"
+      },
+      "limits": "An internally possible sequence is not evidence that the event happened.",
+      "research": [
+        {
+          "url": "https://www.thegospelcoalition.org/article/judas-demise-matthew-1-acts-1/",
+          "claim": "One tradition reconciles hanging followed by a fall.",
+          "role": "interpretation"
+        },
+        {
+          "url": "https://www.catholic.com/qa/how-do-we-explain-the-conflicting-accounts-of-judas-death-in-matthew-and-acts",
+          "claim": "Another Christian explanation harmonizes narratives.",
+          "role": "interpretation"
+        }
+      ]
+    },
+    {
+      "id": "genesis_creation_sequencing",
+      "focus": "Order in the Genesis 1 and 2 accounts",
+      "literal_model": {
+        "type": "textual_interpretation_open",
+        "source_refs": [
+          "Genesis 1:27",
+          "Genesis 2:7",
+          "Genesis 2:19"
+        ]
+      },
+      "alternative_model": {
+        "type": "literary_retelling",
+        "statement": "Genesis 2 may narrow and retell Genesis 1, while historical-critical readings posit independent source traditions.",
+        "status": "undetermined"
+      },
+      "limits": "No historically testable observational timestamp for creation events; scientific claims require separately defined hypotheses.",
+      "research": [
+        {
+          "url": "https://www.thetorah.com/article/genesis-two-creation-accounts-compiled-and-interpreted-as-one",
+          "claim": "Literary and source-critical arguments for multiple creation accounts.",
+          "role": "secondary_analysis"
+        }
+      ]
+    },
+    {
+      "id": "mark_long_ending",
+      "focus": "Whether Mark 16:9–20 belonged to earliest recoverable Gospel",
+      "literal_model": {
+        "type": "manuscript_origin_open",
+        "source_refs": [
+          "Mark 16:8",
+          "Mark 16:9",
+          "Mark 16:20"
+        ]
+      },
+      "alternative_model": {
+        "type": "later_ending_attested",
+        "statement": "An early gospel text may have ended at 16:8 while other manuscript traditions preserved a longer ending.",
+        "status": "conditionally_possible_not_attested"
+      },
+      "limits": "Textual originality and factual historicity of narrated events must not be conflated.",
+      "research": [
+        {
+          "url": "https://www.cambridge.org/core/journals/new-testament-studies/article/unfinished-business-the-ending-of-mark-in-two-catena-manuscripts/549D874ACAA4D63CAD6BC4137214F476",
+          "claim": "A peer-reviewed analysis cautions against misclassifying two Greek catena witnesses.",
+          "role": "secondary_analysis"
+        },
+        {
+          "url": "https://textandcanon.org/a-case-for-the-longer-ending-of-mark/",
+          "claim": "A scholar advocates the longer ending and discusses codex layout.",
+          "role": "counterposition"
+        },
+        {
+          "url": "https://manuscriptwitness.com/studies/mark-16-9-20-earliest-manuscript-evidence/",
+          "claim": "Sinaiticus and Vaticanus lack the longer ending in continuous text.",
+          "role": "secondary_analysis"
+        }
+      ]
+    },
+    {
+      "id": "quirinius_herod_timeline",
+      "focus": "Whether Herod's lifetime and Quirinius's AD 6 census refer to the same birth",
+      "literal_model": {
+        "type": "date_overlap",
+        "source_refs": [
+          "Matthew 2:1",
+          "Luke 2:2"
+        ],
+        "premises": [
+          {
+            "name": "Herod died",
+            "start_year": -4,
+            "end_year": -4,
+            "source": "secondary historical chronology"
+          },
+          {
+            "name": "Quirinius census",
+            "start_year": 6,
+            "end_year": 6,
+            "source": "secondary historical chronology"
+          }
+        ],
+        "note": "BCE/CE years use signed integers only as a modeling shorthand; this case tests event ordering, not absolute year arithmetic."
+      },
+      "alternative_model": {
+        "type": "earlier_or_different_census",
+        "statement": "An otherwise undocumented census or alternate translation could change the assumptions; those claims require external evidence.",
+        "status": "undetermined"
+      },
+      "limits": "Disjoint source dates make that specific single-event reading impossible conditional on mainstream dates; not a verdict on all conceivable readings.",
+      "research": [
+        {
+          "url": "https://biblia.com/books/lbd/article/QUIRINIUS.1.HISTORICITY%245FOF%245THE%245BIBLICAL%245ACCOUNT",
+          "claim": "Lexham summarizes the dated census and birth-narrative chronological tension.",
+          "role": "secondary_analysis"
+        },
+        {
+          "url": "https://ibri.org/RRs/RR004/04census.htm",
+          "claim": "A conservative historical analysis presents alternative earlier-governorship hypotheses with evidentiary limits.",
+          "role": "counterposition"
+        }
+      ]
+    },
+    {
+      "id": "literal_earth_age_hypothesis",
+      "focus": "Whether a young-Earth date is directly asserted in Genesis and independently supported",
+      "literal_model": {
+        "type": "unsupported_attribution",
+        "source_refs": [
+          "Genesis 1:1",
+          "Genesis 1:5"
+        ],
+        "proposed_claim": "Earth created approximately 6,000 years ago",
+        "premise_origin": "later chronological inference, not these two verses"
+      },
+      "alternative_model": {
+        "type": "scientific_age",
+        "statement": "Physical dating evidence overwhelmingly indicates Earth is billions of years old; the literal age inference is incompatible with that evidence.",
+        "status": "scientifically_disconfirmed_inference"
+      },
+      "limits": "Conflating one later interpretation with what a text expressly says is an invalid test.",
+      "research": [
+        {
+          "url": "https://pubs.usgs.gov/gip/geotime/age.html",
+          "claim": "USGS discusses radiometric methods and geological age estimates.",
+          "role": "scientific_measurement"
+        },
+        {
+          "url": "https://humanorigins.si.edu/evidence/human-fossils/species/homo-sapiens",
+          "claim": "Smithsonian describes fossil evidence for humans far older than a six-thousand-year timeline.",
+          "role": "scientific_measurement"
+        }
+      ]
+    }
+  ]
+}
