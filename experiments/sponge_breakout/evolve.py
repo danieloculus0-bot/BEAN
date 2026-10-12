@@ -46,6 +46,29 @@ def evaluate(agent, *, start, games):
             "games": games, "seed_start": start}
 
 
+def promotion_gate(evolved_sets, control_sets, *, min_gain=0.25, max_survival_drop=0.05):
+    """Pre-holdout adoption decision; a failed gate keeps conventional DQN.
+
+    Both disjoint validation cohorts must clear the declared thresholds.
+    This protects against taking the best of many noisy descendants.
+    """
+    if len(evolved_sets) != len(control_sets) or len(evolved_sets) < 2:
+        raise ValueError("require paired independent validation cohorts")
+    checks = []
+    for evolved, control in zip(evolved_sets, control_sets):
+        if evolved["games"] != control["games"] or evolved["seed_start"] != control["seed_start"]:
+            raise ValueError("validation sets are not paired")
+        bricks_delta = round(evolved["bricks"] - control["bricks"], 5)
+        survival_delta = round(evolved["survival"] - control["survival"], 5)
+        checks.append({"seed_start": evolved["seed_start"], "bricks_delta": bricks_delta,
+                       "survival_delta": survival_delta,
+                       "accepted": bricks_delta >= min_gain and
+                                   survival_delta >= -max_survival_drop})
+    return {"accepted": all(check["accepted"] for check in checks),
+            "rule": "gain >= 0.25 bricks AND survival drop <= 0.05 in both validation cohorts",
+            "cohorts": checks}
+
+
 def breed(parent_weights, parent_config, *, seed, mutate=True):
     rng = random.Random(seed)
     config = dict(parent_config)
@@ -96,7 +119,11 @@ def compete(out, *, seed=41, population=3, generations=3,
     controls = {"lr": 0.0007, "gamma": 0.99, "epsilon_floor": 0.06}
     cold_agent, _ = breed(None, controls, seed=seed, mutate=False)
     # Validation baseline and final baseline are separate evaluations.
-    cold_validation = evaluate(cold_agent, start=VALID_BASE + seed*1000, games=validation_games)
+    validation_starts = (VALID_BASE + seed*1000,
+                         VALID_BASE + seed*1000 + validation_games)
+    cold_validations = [evaluate(cold_agent, start=start, games=validation_games)
+                        for start in validation_starts]
+    cold_fitness = min(v["bricks"] for v in cold_validations)
     lineage = []
     champions = []
     global_best = None
@@ -121,17 +148,20 @@ def compete(out, *, seed=41, population=3, generations=3,
                 for episode in range(games_per_candidate):
                     training_seed = TRAIN_BASE + seed*100_000 + generation*1000 + episode
                     train_game(agent, training_seed, config["epsilon_floor"])
-                validation = evaluate(agent, start=VALID_BASE + seed*1000,
-                                      games=validation_games)
-                quality = score_memory(baseline=cold_validation["bricks"],
-                                       candidate=validation["bricks"],
-                                       samples=validation_games,
-                                       evaluation_sha256=fingerprint(validation))
+                validations = [evaluate(agent, start=start, games=validation_games)
+                               for start in validation_starts]
+                # Selection is risk-aware: a strong first cohort cannot disguise
+                # a weak second cohort. Only validation data influences selection.
+                fitness = min(v["bricks"] for v in validations)
+                quality = score_memory(baseline=cold_fitness,
+                                       candidate=fitness,
+                                       samples=validation_games * len(validations),
+                                       evaluation_sha256=fingerprint(validations))
                 # File BOTH successes and failures, with immutable quality metadata.
                 memory = file_memory(agent.weights(),
-                                     accuracy=min(1.0, validation["bricks"]/24.0),
+                                     accuracy=min(1.0, fitness/24.0),
                                      relevance=1.0, provenance=0.5,
-                                     sample_count=validation_games)
+                                     sample_count=validation_games * len(validations))
                 if recover_memory(memory) != agent.weights():
                     raise AssertionError("evolutionary offspring weights changed in memory")
                 event = {
@@ -140,14 +170,14 @@ def compete(out, *, seed=41, population=3, generations=3,
                     "parent_sha256": source_hash, "mutation": inherit and index != 0,
                     "config": config, "training_games": games_per_candidate,
                     "frames": agent.frames, "updates": agent.updates,
-                    "validation": validation, "fitness": validation["bricks"],
+                    "validation": validations, "fitness": fitness,
                     "quality": quality, "memory": memory
                 }
                 receipt = journal.append(event)
                 note = {
                     "generation": generation, "candidate": index, "config": config,
                     "parent_sha256": source_hash, "mutated": event["mutation"],
-                    "fitness": validation["bricks"], "validation": validation,
+                    "fitness": fitness, "validation": validations,
                     "frames": agent.frames, "updates": agent.updates,
                     "quality_score": quality["score"],
                     "memory_mnemonic": memory["mnemonic"],
@@ -155,7 +185,7 @@ def compete(out, *, seed=41, population=3, generations=3,
                 }
                 lineage.append(note)
                 saved = {"weights": copy.deepcopy(agent.weights()), "config": dict(config),
-                         "fitness": validation["bricks"], "generation": generation,
+                         "fitness": fitness, "generation": generation,
                          "candidate": index, "hash": memory["sha256"]}
                 generation_candidates.append(saved)
                 if global_best is None or saved["fitness"] > global_best["fitness"]:
@@ -178,12 +208,21 @@ def compete(out, *, seed=41, population=3, generations=3,
                     # albeit a single control policy sees all episodes serially.
                     training_seed = TRAIN_BASE + seed*100_000 + generation*1000 + episode
                     train_game(control, training_seed, controls["epsilon_floor"])
+        # Compare to a fully trained baseline on *validation* before looking
+        # at any final holdout outcomes. If evolution failed the gate, do not
+        # promote the evolved policy, but still report its sealed outcome.
+        evolved_validations = [evaluate(evolved, start=start, games=validation_games)
+                               for start in validation_starts]
+        control_validations = [evaluate(control, start=start, games=validation_games)
+                               for start in validation_starts]
+        gate = promotion_gate(evolved_validations, control_validations)
         final_cold = evaluate(cold_agent, start=HOLDOUT_BASE + seed*1000,
                               games=holdout_games)
         final_control = evaluate(control, start=HOLDOUT_BASE + seed*1000,
                                  games=holdout_games)
         final_evolved = evaluate(evolved, start=HOLDOUT_BASE + seed*1000,
                                  games=holdout_games)
+        adopted = final_evolved if gate["accepted"] else final_control
         tip = journal.export()["tip"]
         journal.close()
         reopened = Journal(folder / "evolution.sqlite")
@@ -200,7 +239,8 @@ def compete(out, *, seed=41, population=3, generations=3,
             "schema": OBJECTIVE, "seed": seed,
             "protocol": {"population": population, "generations": generations,
                          "games_per_candidate": games_per_candidate,
-                         "validation_games": validation_games, "holdout_games": holdout_games,
+                         "validation_games": validation_games,
+                         "validation_cohorts": 2, "holdout_games": holdout_games,
                          "inputs": "engineered state, not game pixels",
                          "holdout_isolated_from_selection": True,
                          "control_game_budget": generations*population*games_per_candidate},
@@ -210,10 +250,14 @@ def compete(out, *, seed=41, population=3, generations=3,
                          "fitness": global_best["fitness"],
                          "sha256": global_best["hash"]},
             "control_training": {"frames": control.frames, "updates": control.updates},
+            "promotion_gate": {"decision": "evolved_dqn" if gate["accepted"] else "dqn_no_evolution",
+                               "criterion": gate, "evolved_validation": evolved_validations,
+                               "control_validation": control_validations},
             "holdout": {"cold": final_cold, "dqn_no_evolution": final_control,
-                        "evolved_dqn": final_evolved},
+                        "evolved_dqn": final_evolved, "adopted_policy": adopted},
             "gain_over_cold": round(final_evolved["bricks"]-final_cold["bricks"],5),
             "gain_over_single_dqn": round(final_evolved["bricks"]-final_control["bricks"],5),
+            "adopted_gain_over_single_dqn": round(adopted["bricks"]-final_control["bricks"],5),
             "journal_tip": tip,
             "limitations": "Single seed and engineered-state game; neural evolution needs independent"
                            " seeds, budget-aware controls and different environments before claims."
@@ -241,4 +285,6 @@ if __name__ == "__main__":
                      generations=a.generations, games_per_candidate=a.games,
                      validation_games=a.validation, holdout_games=a.holdout)
     print(json.dumps({"seed": a.seed, "holdout": answer["holdout"],
-                      "gain_over_single_dqn": answer["gain_over_single_dqn"]}, indent=2))
+                      "gain_over_single_dqn": answer["gain_over_single_dqn"],
+                      "adopted_gain": answer["adopted_gain_over_single_dqn"],
+                      "decision": answer["promotion_gate"]["decision"]}, indent=2))
