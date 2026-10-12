@@ -6,7 +6,7 @@
 
 **BEAN has usable skills today.** Persistent SQLite memory and recovery, evidence-first reasoning and revision, offline quality briefings, scheduled tasks, engineering audit reports, local Ollama/Windows voice and read-only MCP tools all have runnable code. The Bridge also has independently tested Arduino Nano/ESP32 emulator logic. AIscend is a runnable Coinbase crypto-trading beta using BEAN-style research, market memory and buy-confirmation checks. Those are real capabilities even without enterprise hosting. [**Explore the skill showcase**](https://danieloculus0-bot.github.io/BEAN/#capabilities) or [**inspect the evidence ledger**](docs/VERIFIED_UTILITY_AND_EVIDENCE_2026-10-11.md). Specific local setup and source authentication requirements still apply; a technical beta isn't an unattended hardware or trading release.
 
-[**Live site**](https://danieloculus0-bot.github.io/BEAN/) · [**Try BEAN: no-login browser memory proof**](https://danieloculus0-bot.github.io/BEAN/try-bean.html) · [**Learning lab**](https://danieloculus0-bot.github.io/BEAN/#learning) · [**AIscend demo**](https://danieloculus0-bot.github.io/BEAN/aiscend.html) · [**Production-readiness audit**](docs/PRODUCTION_READINESS_AUDIT_2026-10-11.md) · [**Verified utility and evidence**](docs/VERIFIED_UTILITY_AND_EVIDENCE_2026-10-11.md) · [**Five-minute quickstart**](docs/GETTING_STARTED.md) · [**Research index**](docs/experimental-research-index-2026-10.md) · [**Contribute**](CONTRIBUTING.md)
+[**Live site**](https://danieloculus0-bot.github.io/BEAN/) · [**Learning lab**](https://danieloculus0-bot.github.io/BEAN/#learning) · [**AIscend demo**](https://danieloculus0-bot.github.io/BEAN/aiscend.html) · [**Production-readiness audit**](docs/PRODUCTION_READINESS_AUDIT_2026-10-11.md) · [**Verified utility and evidence**](docs/VERIFIED_UTILITY_AND_EVIDENCE_2026-10-11.md) · [**Five-minute quickstart**](docs/GETTING_STARTED.md) · [**Research index**](docs/experimental-research-index-2026-10.md) · [**Contribute**](CONTRIBUTING.md)
 
 [![Core regression: Windows and Ubuntu](https://github.com/danieloculus0-bot/BEAN/actions/workflows/brain-smoke.yml/badge.svg)](https://github.com/danieloculus0-bot/BEAN/actions/workflows/brain-smoke.yml)
 
@@ -41,12 +41,6 @@ There are concrete outcomes beyond a feature list:
 **The memory principle:** Experiments assess utility *before* filing a checkpoint; candidate weights and quality metadata are preserved in compressed, SHA-256-verified memory records with a short mnemonic and a hash-chained journal. Weak attempts are retained as evidence, not silently accepted as better policies. A checksum proves **data integrity**, not source truth, statistical validity or improved intelligence. These scored capsules and learning loops still require independent qualification before any merge to Main.
 
 **Next qualification gate:** multiple unseen training seeds and evaluation environments, equalized compute and game budgets, independent judging, durable score-and-lineage receipts and rollback on regression. A green workflow or a win over an **untrained** opponent is not evidence of superiority over a fully trained reference. This research cannot authorize trades, hardware actions or an autonomous production update.
-
-## Try BEAN from the website (no login)
-
-The [**Try BEAN memory playground**](https://danieloculus0-bot.github.io/BEAN/try-bean.html) provides an executable **browser-local demonstration** of persistence and evidence provenance: write a fictional memory, verify its SHA-256-linked history across webpage reloads, search its unverified claims, inspect conflicting entries, and copy a labeled context to your existing AI chat. Nothing is automatically sent to another provider.
-
-**Scope matters:** this is browser localStorage and a transparent JavaScript evidence demo, **not BEAN Core's SQLite memory, a deployed AI model, a remotely hosted account, or a ChatGPT connector**. Entries remain in the same browser profile until storage is cleared; no cross-device account sync exists. Do not enter private data or API keys. The [actual Core SQLite restart demonstration](examples/restart_continuity.py) and the [source-ready but unhosted read-only MCP developer preview](integrations/chatgpt/README.md) remain the source-backed paths to testing real Core behavior.
 
 ## Start here: see BEAN do something useful
 
@@ -147,7 +141,7 @@ A separate **[GitHub engineering evidence bridge](docs/bean-github-engineering-b
 
 These integrations are now included in `main`. Live Ollama performance and connected GitHub access depend on the local installation and authorization.
 
-## Try BEAN and verify its claims
+## Verify BEAN Core locally
 
 **[Updated usefulness audit — what BEAN actually helps with, where it doesn't, and the next proof](docs/BEAN_USEFULNESS_AUDIT_2026-10-11.md)**
 
