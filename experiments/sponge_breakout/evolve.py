@@ -104,13 +104,16 @@ def train_game(agent, episode_seed, epsilon_floor):
 
 
 def compete(out, *, seed=41, population=3, generations=3,
-            games_per_candidate=70, validation_games=60, holdout_games=120):
+            games_per_candidate=70, validation_games=60, holdout_games=120,
+            continuation_games=0):
     if not 2 <= population <= 8 or not 1 <= generations <= 12:
         raise ValueError("invalid search breadth or generations")
     if not 1 <= games_per_candidate <= 3000:
         raise ValueError("invalid training budget")
     if not 30 <= validation_games <= 500 or not 30 <= holdout_games <= 2000:
         raise ValueError("insufficient or excessive evaluation budget")
+    if not 0 <= continuation_games <= 3000:
+        raise ValueError("invalid continuation budget")
     torch.set_num_threads(1)
     folder = Path(out)
     folder.mkdir(parents=True, exist_ok=True)
@@ -201,6 +204,11 @@ def compete(out, *, seed=41, population=3, generations=3,
         # Final evaluation is accessed exactly once for each selected final policy.
         evolved, _ = breed(global_best["learner_state"], global_best["config"],
                            seed=seed, mutate=False)
+        # Reserve some of the fixed game budget for post-selection training.
+        continuation_seeds = [TRAIN_BASE + seed*100_000 + generations*1000 + episode
+                              for episode in range(continuation_games)]
+        for episode_seed in continuation_seeds:
+            train_game(evolved, episode_seed, global_best["config"]["epsilon_floor"])
         # The no-evolution control uses the SAME total number of training games
         # but in one uninterrupted DQN. Frames and updates are reported separately.
         control, _ = breed(None, controls, seed=seed, mutate=False)
@@ -211,6 +219,8 @@ def compete(out, *, seed=41, population=3, generations=3,
                     # albeit a single control policy sees all episodes serially.
                     training_seed = TRAIN_BASE + seed*100_000 + generation*1000 + episode
                     train_game(control, training_seed, controls["epsilon_floor"])
+        for episode_seed in continuation_seeds:
+            train_game(control, episode_seed, controls["epsilon_floor"])
         # Compare to a fully trained baseline on *validation* before looking
         # at any final holdout outcomes. If evolution failed the gate, do not
         # promote the evolved policy, but still report its sealed outcome.
@@ -244,18 +254,21 @@ def compete(out, *, seed=41, population=3, generations=3,
                          "games_per_candidate": games_per_candidate,
                          "validation_games": validation_games,
                          "validation_cohorts": 2, "holdout_games": holdout_games,
+                         "continuation_games": continuation_games,
+                         "search_game_budget": generations*population*games_per_candidate,
                          "inputs": "engineered state, not game pixels",
                          "holdout_isolated_from_selection": True,
-                         "control_game_budget": generations*population*games_per_candidate},
+                         "control_game_budget": generations*population*games_per_candidate+continuation_games},
             "lineage": lineage, "champions": champions,
             "selected": {"generation": global_best["generation"],
                          "candidate": global_best["candidate"],
                          "fitness": global_best["fitness"],
                          "sha256": global_best["hash"]},
             "control_training": {"frames": control.frames, "updates": control.updates},
+            "final_policy_sha256": fingerprint(evolved.weights()),
             "selected_training": {"frames": evolved.frames, "updates": evolved.updates,
                                   "replay_size": len(evolved.replay)},
-            "research_change": "full lineage learner state inheritance; frame budgets remain unmatched",
+            "research_change": "inherited full learner state plus fixed-budget champion continuation; frames unmatched",
             "promotion_gate": {"decision": "evolved_dqn" if gate["accepted"] else "dqn_no_evolution",
                                "criterion": gate, "evolved_validation": evolved_validations,
                                "control_validation": control_validations},
@@ -268,6 +281,12 @@ def compete(out, *, seed=41, population=3, generations=3,
             "limitations": "Single seed and engineered-state game; neural evolution needs independent"
                            " seeds, budget-aware controls and different environments before claims."
         }
+        if continuation_games:
+            # The final post-training model differs from the pre-continuation
+            # selected lineage checkpoint. Preserve the actually tested weights.
+            (folder / "final-evolved-weights.json").write_text(
+                json.dumps(evolved.weights(), sort_keys=True, separators=(",", ":")),
+                encoding="utf-8")
         (folder / "results.json").write_text(json.dumps(result, indent=2), encoding="utf-8")
         return result
     finally:
@@ -286,10 +305,12 @@ if __name__ == "__main__":
     p.add_argument("--games", type=int, default=70)
     p.add_argument("--validation", type=int, default=60)
     p.add_argument("--holdout", type=int, default=120)
+    p.add_argument("--continue-games", type=int, default=0)
     a = p.parse_args()
     answer = compete(a.out, seed=a.seed, population=a.population,
                      generations=a.generations, games_per_candidate=a.games,
-                     validation_games=a.validation, holdout_games=a.holdout)
+                     validation_games=a.validation, holdout_games=a.holdout,
+                     continuation_games=a.continue_games)
     print(json.dumps({"seed": a.seed, "holdout": answer["holdout"],
                       "gain_over_single_dqn": answer["gain_over_single_dqn"],
                       "adopted_gain": answer["adopted_gain_over_single_dqn"],
