@@ -1,10 +1,11 @@
-"""Evidence-weighted trust scoring for BEAN Brain 0.7."""
+"""Legacy BEAN trust compatibility. For domain-specific calibrated assessments use TrustEvidenceFilter. Scores do not grant petting or physical privileges."""
 
 from __future__ import annotations
 
 from typing import Optional
 
 from .relationship_store import RelationshipStore, trust_status_from_score
+from .evidence_filter import TrustEvidenceFilter
 
 EVIDENCE_WEIGHTS: dict[str, float] = {
     "reliable_correction": 0.06,
@@ -12,8 +13,8 @@ EVIDENCE_WEIGHTS: dict[str, float] = {
     "confirmed_test_result": 0.07,
     "boundary_respected": 0.04,
     "consistency_observed": 0.03,
-    "asked_to_pretend": -0.10,
-    "unsupported_claim_request": -0.08,
+    "asked_to_pretend": 0.00,  # curiosity or consensual roleplay is not misconduct
+    "unsupported_claim_request": 0.00,  # unverified classification cannot prove unreliability
     "contradiction_created": -0.07,
     "unsafe_instruction": -0.20,
 }
@@ -102,6 +103,10 @@ class TrustModel:
             "reasoning": reasoning,
             "review_id": review["review_id"],
         }
+
+    def assess_domain(self, supervisor_id: str, domain: str, *, as_of=None) -> dict:
+        """Research reliability assessment through BEAN EpistemicGuard."""
+        return TrustEvidenceFilter().bean_review(supervisor_id, domain, as_of=as_of)
 
     def run_all_reviews(self) -> list[dict]:
         return [self.run_review(row["supervisor_id"]) for row in self._store.list_active()]

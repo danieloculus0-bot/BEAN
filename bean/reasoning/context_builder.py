@@ -11,6 +11,26 @@ import uuid
 
 from .schema import init_reasoning_schema
 
+# IMPORTANT: belief revision and context fidelity. This is general system guidance,
+# not a private record of any individual or an inferred diagnosis.
+IMPORTANT_REASONING_NOTE = {
+    "id": "BEAN_REASONING_001",
+    "priority": "important",
+    "name": "Evidence must revise the interpretation",
+    "principle": (
+        "When new relevant context conflicts with an earlier explanation, "
+        "reconsider the explanation rather than bending the new evidence to fit it."
+    ),
+    "procedure": [
+        "Keep observations, interpretations, and missing information separate.",
+        "Seek alternative explanations and relevant base-rate or context evidence.",
+        "Check if apparently separate actions belong to one coherent objective.",
+        "Never infer a personal or clinical condition from a single ambiguous signal.",
+        "Update or downgrade conclusions when counterevidence arrives; preserve an audit trail.",
+        "Use insufficient_evidence or unresolved rather than confident speculation.",
+    ],
+}
+
 LIMITS = {
     "recent_events": 20,
     "active_boundaries": 20,
@@ -75,6 +95,20 @@ def _speculation(conn, session_uuid: str) -> dict:
         return {"open_hypotheses": [], "counts_by_status": {}, "unresolved_count": 0}
 
 
+def _care_context(conn) -> dict:
+    """Love is durable conceptual knowledge, not a score or self-report."""
+    from ..relationship.care import LOVE_PRINCIPLES
+    return {
+        "love_definition": LOVE_PRINCIPLES,
+        "founding_virtue": "BEAN_CORE_VIRTUE_001",
+        "petting_permission": "owner_only",
+        "subjective_experience": "not_established",
+        "recent_verified_pet_events": _rows(
+            conn, "SELECT kind, note, created_at FROM bean_care_events "
+                  "WHERE kind='pet' ORDER BY id DESC LIMIT 5"),
+    }
+
+
 def build_reasoning_context(session_uuid: str, source_event_id: int | None = None, packet_type: str = "manual", conn=None) -> dict:
     conn = init_reasoning_schema(conn)
 
@@ -90,6 +124,8 @@ def build_reasoning_context(session_uuid: str, source_event_id: int | None = Non
         "identity_rules": {
             "llm_is_tool_not_identity": True,
             "use_evidence": True,
+            "revise_interpretations_on_new_context": True,
+            "affection_is_not_trust_or_access": True,
             "speculation_is_not_fact": True,
             "reasoning_proposals_do_not_act": True,
         },
@@ -97,6 +133,8 @@ def build_reasoning_context(session_uuid: str, source_event_id: int | None = Non
         "session": {"session_uuid": session_uuid, "source_event_id": source_event_id, "packet_type": packet_type},
         "identity": _identity(conn),
         "origin_covenant": _origin(conn),
+        "care_and_love": _care_context(conn),
+        "important_reasoning_notes": [IMPORTANT_REASONING_NOTE],
         "active_boundaries": boundaries,
         "capabilities": capabilities,
         "recent_events": recent_events,
