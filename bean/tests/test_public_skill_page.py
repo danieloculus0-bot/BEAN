@@ -90,12 +90,8 @@ class PublicSkillsPageTests(unittest.TestCase):
 
     def test_neuroevolution_has_negative_findings_and_sources(self):
         for phrase in ("44", "45", "46", "9.683", "4.833",
-                       "5.33", "does not", "not a replicated evolutionary advantage",
+                       "not a replicated evolutionary advantage",
                        "two validation cohorts", "standard DQN"):
-            if phrase == "5.33":
-                continue  # No fabricated derived metric in visible source.
-            if phrase == "does not":
-                continue
             self.assertIn(phrase.casefold(), self.page.casefold())
         for href in ("https://github.com/danieloculus0-bot/BEAN/pull/107",
                      "https://github.com/danieloculus0-bot/BEAN/actions/runs/38229337741"):
