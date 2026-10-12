@@ -78,6 +78,20 @@ class PublicSkillsPageTests(unittest.TestCase):
                       self.page)
         self.assertIn("Explore the public AIscend demo", self.page)
 
+    def test_removed_browser_memory_playground_stays_unpublished(self):
+        # Public calls to action must not misrepresent localStorage as BEAN Core.
+        retired = ("try-bean.html", "try-bean-memory.js")
+        for name in retired:
+            self.assertFalse((PAGE.parent / name).exists(), name)
+            self.assertNotIn(name, self.page)
+        self.assertNotIn('id="try-bean"', self.page)
+        self.assertNotIn("Try BEAN without login", self.page)
+        self.assertNotIn("browser-local playground", self.page)
+        self.assertIn('href="#start"', self.page)
+        readme = (ROOT / "README.md").read_text(encoding="utf-8")
+        self.assertNotIn("try-bean.html", readme)
+        self.assertIn("## Verify BEAN Core locally", readme)
+
     def test_learning_claims_are_reproducible_and_scoped(self):
         for phrase in ("11.305", "1.355", "98.5%",
                        "200 previously unseen game seeds", "same deterministic experiment",
