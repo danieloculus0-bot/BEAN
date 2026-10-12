@@ -145,7 +145,8 @@ def compete(out, *, seed=41, population=3, generations=3,
                     config["lr"] = round(min(0.003, controls["lr"] *
                                              [1.0, 1.4, 0.7, 1.8, 0.5, 2.0, 0.9, 1.1][index]), 8)
                     agent.optimizer.param_groups[0]["lr"] = config["lr"]
-                source_hash = fingerprint(parent) if inherit else None
+                source_hash = fingerprint({name: tensor.detach().cpu().tolist()
+                                           for name, tensor in parent["online"].items()}) if inherit else None
                 for episode in range(games_per_candidate):
                     training_seed = TRAIN_BASE + seed*100_000 + generation*1000 + episode
                     train_game(agent, training_seed, config["epsilon_floor"])
