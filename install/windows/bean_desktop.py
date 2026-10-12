@@ -7,6 +7,34 @@ from pathlib import Path
 import subprocess
 import sys
 import threading
+import traceback
+
+# PyInstaller --windowed intentionally sets std streams to None. The Core and
+# Python's own subprocess/logging paths expect valid file-like objects.
+if sys.stdout is None:
+    sys.stdout = open(os.devnull, "w", encoding="utf-8")
+if sys.stderr is None:
+    sys.stderr = open(os.devnull, "w", encoding="utf-8")
+
+
+def _report_uncaught(exc_type, exc, tb):
+    """Write a CI-readable crash receipt even before self_test() is reached."""
+    if "--self-test-report" in sys.argv:
+        try:
+            idx = sys.argv.index("--self-test-report")
+            target = Path(sys.argv[idx + 1])
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_text(
+                json.dumps({"status": "BOOT_FAILURE", "error": repr(exc),
+                            "traceback": "".join(traceback.format_exception(exc_type, exc, tb))},
+                           indent=2), encoding="utf-8")
+        except (OSError, IndexError, ValueError):
+            pass
+    traceback.print_exception(exc_type, exc, tb, file=sys.stderr)
+
+
+sys.excepthook = _report_uncaught
+
 import tkinter as tk
 from tkinter import messagebox, scrolledtext, ttk
 
