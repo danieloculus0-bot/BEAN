@@ -92,3 +92,12 @@ only the execution request; it does not change tests, scenarios, models, score
 rules, candidate source, or the baseline and is not a declaration of a win.
 All results must come from independently recorded GitHub Actions verdicts,
 including failures and inconclusive matches.
+
+## Evening rematch activation
+
+The October 11 evening rematch is intentionally run with the original five-agent
+challenge protocol and fixed test sets for comparability. BEAN Sponge and
+Breakout learning changes remain on separate review branches and are **not**
+represented as active in this match. Judges must preserve INCONCLUSIVE
+results if any upstream agent cannot install, run, or produce valid code.
+Results must be evaluated from the job artifacts, never workflow success alone.
