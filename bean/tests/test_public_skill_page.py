@@ -1,232 +1,141 @@
-"""Protect BEAN's public skills page from unsupported claims and broken local links.
+"""Regression checks for the current BEAN public laboratory landing page.
 
-This only verifies static markup/source references, not live GitHub Pages availability.
+Tests verify the current dark-theme design and source-grounded evidence. The
+pre-redesign checks referred to deleted anchors and an older HTML template.
+These are static source checks, not claims of live site deployment.
 """
 from __future__ import annotations
 
 from html.parser import HTMLParser
 from pathlib import Path
+import re
+import shutil
+import subprocess
 import unittest
-
 
 ROOT = Path(__file__).resolve().parents[2]
 PAGE = ROOT / "docs" / "index.html"
 
 
-class SiteLinks(HTMLParser):
+class SiteMarkup(HTMLParser):
     def __init__(self):
         super().__init__()
-        self.links: list[str] = []
-        self.anchors: set[str] = set()
-        self.svgs = 0
-        self.mascot_images: list[dict[str, str]] = []
+        self.ids = set()
+        self.links = []
+        self.images = []
+        self.lab_cards = []
+        self._lab = False
 
-    def handle_starttag(self, tag: str, attrs) -> None:
-        attributes = dict(attrs)
-        if attributes.get("id"):
-            self.anchors.add(attributes["id"])
-        if tag == "a" and "href" in attributes:
-            self.links.append(attributes["href"])
-        if tag == "svg" and "mascot-svg" in attributes.get("class", ""):
-            self.svgs += 1
-        if tag == "img" and "mascot-art" in attributes.get("class", "").split():
-            self.mascot_images.append(attributes)
+    def handle_starttag(self, tag, attrs):
+        props = dict(attrs)
+        if props.get("id"):
+            self.ids.add(props["id"])
+            if props["id"] == "experiments":
+                self._lab = True
+        if tag == "a" and "href" in props:
+            self.links.append(props["href"])
+        if tag == "img":
+            self.images.append(props)
+        if tag == "article" and "card" in props.get("class", "").split():
+            self.lab_cards.append(props)
+
+    def handle_endtag(self, tag):
+        pass
 
 
 class PublicSkillsPageTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.page = PAGE.read_text(encoding="utf-8")
-        cls.parser = SiteLinks()
-        cls.parser.feed(cls.page)
+        cls.markup = SiteMarkup()
+        cls.markup.feed(cls.page)
 
-    def test_mint_mascot_and_existing_anchors_survive(self):
-        for anchor in ("top", "difference", "skills", "proof",
-                       "quickstart", "research", "community"):
-            self.assertIn(anchor, self.parser.anchors)
-        # The existing public site now uses the actual official webp mascot
-        # instead of an older inline SVG. Verify one rendered mascot AND its
-        # local artifact/alt text, rather than asking for an obsolete tag.
-        self.assertEqual(self.parser.svgs + len(self.parser.mascot_images), 1)
-        if self.parser.mascot_images:
-            image = self.parser.mascot_images[0]
-            self.assertEqual(image.get("src"), "./bean-official.webp")
-            self.assertIn("BEAN", image.get("alt", ""))
-            self.assertTrue((PAGE.parent / "bean-official.webp").is_file())
-        self.assertIn("--green:#7ed957;", self.page)
-        self.assertIn("Cute name. <br>Serious reasoning.", self.page)
-        self.assertIn("#skills", self.parser.links)
+    def test_approved_mascot_keeps_portrait_ratio(self):
+        logo = [x for x in self.markup.images
+                if "official smiling sprout mascot" in x.get("alt", "")]
+        hero = [x for x in self.markup.images
+                if "Official glossy lime-green BEAN mascot" in x.get("alt", "")]
+        self.assertEqual(len(logo), 1)
+        self.assertEqual(len(hero), 1)
+        self.assertTrue((PAGE.parent / "bean-official.webp").is_file())
+        self.assertEqual(logo[0]["src"], "./bean-official.webp")
+        self.assertEqual(hero[0]["src"], "./bean-official.webp")
+        self.assertIn("object-fit:contain", self.page)
+        self.assertIn("flex-shrink:0", self.page)
+        # The previous square object-fit:cover rule distorted/cropped the logo.
+        self.assertIn(".brand img{display:block;width:54px;height:62px", self.page)
+        self.assertIn("height:auto;object-fit:contain", self.page)
 
-    def test_differentiation_is_early_visible_and_evidence_citable(self):
-        self.assertIn("difference", self.parser.anchors)
-        self.assertIn("#difference", self.parser.links)
-        self.assertLess(self.page.index('id="difference"'),
-                        self.page.index('id="skills"'))
-        for statement in (
-            "The model thinks. BEAN keeps the receipts.",
-            "A · Base LLM call",
-            "B · Conventional tool agent",
-            "C · BEAN's implementation",
-            "Two real, tested source improvements",
-            "14/14 development",
-            "7/7 fresh holdout",
-            "4 versus 6 held-out checks",
-            "INCONCLUSIVE",
-            "That controlled advantage has not yet been established.",
-        ):
-            with self.subTest(statement=statement):
-                self.assertIn(statement, self.page)
-        for reference in (
-            "https://github.com/danieloculus0-bot/BEAN-AI-Bridge-/pull/15",
-            "https://github.com/danieloculus0-bot/BEAN-AI-Bridge-/pull/17",
-            "https://github.com/danieloculus0-bot/BEAN/pull/51",
-            "https://github.com/danieloculus0-bot/BEAN/blob/main/docs/bean-causal-retention-lab023.md",
-            "https://github.com/danieloculus0-bot/BEAN/actions/runs/38112389946",
-        ):
-            with self.subTest(reference=reference):
-                self.assertIn(reference, self.parser.links)
-        for path in ("docs/bean-causal-retention-lab023.md",
-                     "docs/BEAN_LLM_REPAIR_EXPERIMENT_20261011.md"):
-            self.assertTrue((ROOT / path).is_file(), path)
+    def test_identity_theme_and_home_links(self):
+        for phrase in ("Little bean.", "Serious brain.",
+                       "learn from experience, prove what works, and keep improving.",
+                       "--accent:#a5f47a", "No pretend victories"):
+            self.assertIn(phrase, self.page)
+        for href in ("#lab", "#learning", "#capabilities", "#aiscend", "#start",
+                     "./aiscend.html", "https://github.com/danieloculus0-bot/BEAN"):
+            self.assertIn(href, self.markup.links)
+        self.assertIn('href="./aiscend.html" target="_blank" rel="noopener noreferrer"',
+                      self.page)
+        self.assertIn("Explore the public AIscend demo", self.page)
 
-    def test_lab026_research_claims_and_controls_are_clearly_scoped(self):
-        self.assertIn("Four ways to test whether experience helps", self.page)
-        for phrase in (
-            "cold reasoning",
-            "ordinary saved history",
-            "evidence-ranked BEAN lessons",
-            "unrelated placebo notes",
-            "BEAN's learning advantage has not been demonstrated",
-            "not the full BEAN architecture",
-        ):
-            with self.subTest(phrase=phrase):
-                self.assertIn(phrase, self.page)
-        for link in (
-            "https://github.com/danieloculus0-bot/BEAN/pull/96",
-            "https://github.com/danieloculus0-bot/BEAN/actions/runs/38181156634",
-            "https://github.com/danieloculus0-bot/BEAN/blob/experiment/bean-causal-ablation-lab026-20261011/docs/bean-causal-ablation-lab026.md",
-        ):
-            with self.subTest(link=link):
-                self.assertIn(link, self.parser.links)
-        self.assertIn("INCONCLUSIVE", self.page)
+    def test_learning_claims_are_reproducible_and_scoped(self):
+        for phrase in ("11.305", "1.355", "98.5%",
+                       "200 previously unseen game seeds", "same deterministic experiment",
+                       "not independently randomized training runs",
+                       "Experimental", "SHA-256", "scored"):
+            self.assertIn(phrase.casefold(), self.page.casefold())
+        for href in ("https://github.com/danieloculus0-bot/BEAN/pull/99",
+                     "https://github.com/danieloculus0-bot/BEAN/actions/runs/38187025075"):
+            self.assertIn(href, self.markup.links)
 
-    def test_universal_evidence_rank_is_present_and_accurately_scoped(self):
-        self.assertIn("evidence-rank", self.parser.anchors)
-        self.assertIn("#evidence-rank", self.parser.links)
-        for statement in (
-            "PageRank was for links. BEAN ranks evidence quality.",
-            "scores the evidence", "before filing the hashed memory receipt",
-            "not the probability that a claim is true",
-            "insufficient", "attested", "contested",
-            "doesn't automatically connect it to every application",
-        ):
-            with self.subTest(statement=statement):
-                self.assertIn(statement, self.page)
-        for path in (
-            "bean/evaluation/evidence_rank.py",
-            "bean/tests/test_evidence_rank.py",
-            "docs/UNIVERSAL_EVIDENCE_RANK.md",
-        ):
-            with self.subTest(path=path):
-                self.assertTrue((ROOT / path).is_file(), path)
-                self.assertIn(
-                    "https://github.com/danieloculus0-bot/BEAN/blob/main/" + path,
-                    self.parser.links,
-                )
-        self.assertIn(
-            "https://github.com/danieloculus0-bot/BEAN/actions/runs/38187572884",
-            self.parser.links,
-        )
+    def test_neuroevolution_has_negative_findings_and_sources(self):
+        for phrase in ("44", "45", "46", "9.683", "4.833",
+                       "not a replicated evolutionary advantage",
+                       "two validation cohorts", "standard DQN"):
+            self.assertIn(phrase.casefold(), self.page.casefold())
+        for href in ("https://github.com/danieloculus0-bot/BEAN/pull/107",
+                     "https://github.com/danieloculus0-bot/BEAN/actions/runs/38229337741"):
+            self.assertIn(href, self.markup.links)
+        self.assertIn("not DeepMind pixel Atari", self.page)
+        self.assertIn("This is not a replicated evolutionary advantage", self.page.replace(
+            "<strong>not a replicated evolutionary advantage</strong>",
+            "This is not a replicated evolutionary advantage"))
 
-    def test_neural_model_section_is_grounded_in_sources_and_scope(self):
-        self.assertIn("neural", self.parser.anchors)
-        self.assertIn("#neural", self.parser.links)
-        for phrase in ("Yes, BEAN uses a neural network.",
-                       "Not claimed: native BEAN-trained weights or backpropagation",
-                       "Those records do not modify neural-network weights.",
-                       "session-only"):
-            with self.subTest(phrase=phrase):
-                self.assertIn(phrase, self.page)
-        for path in ("bean/reasoning/ollama_provider.py",
-                     "bean/tests/test_ollama_reasoning_provider.py",
-                     "docs/bean-autonomous-code-growth-lab019.md",
-                     "docs/bean-watcher-contract.md"):
-            with self.subTest(path=path):
-                self.assertTrue((ROOT / path).is_file(), path)
-                self.assertIn("https://github.com/danieloculus0-bot/BEAN/blob/main/" + path,
-                              self.parser.links)
+    def test_specialist_battle_does_not_invent_wins(self):
+        for phrase in ("OpenCode", "Goose", "OpenHands", "Continue", "Cline",
+                       "five competitive verdicts", "INCONCLUSIVE",
+                       "agent battle did", "newer Sponge or DQN evolution policy"):
+            self.assertIn(phrase.casefold(), self.page.casefold())
+        self.assertIn("https://github.com/danieloculus0-bot/BEAN/actions/runs/38187443602",
+                      self.markup.links)
 
-    def test_crypto_application_is_citable_and_scoped(self):
-        self.assertIn("applications", self.parser.anchors)
-        self.assertIn("#applications", self.parser.links)
-        for phrase in ("BEAN is helping power a real crypto trader.",
-                       "Research selection by itself does not activate a live trading strategy.",
-                       "AIscend's trading engines execute orders.",
-                       "An accepted order is not necessarily a verified fill"):
-            with self.subTest(phrase=phrase):
-                self.assertIn(phrase, self.page)
-        for path in ("src/live.py", "src/advanced_live.py", "src/bean.py",
-                     "src/bean_strategy_lab.py", "src/bean_policy.py"):
-            with self.subTest(path=path):
-                self.assertIn("https://github.com/danieloculus0-bot/AIscend/blob/main/" + path,
-                              self.parser.links)
-        self.assertIn("https://github.com/danieloculus0-bot/AIscend/actions/runs/38174689361",
-                      self.parser.links)
-
-    def test_autonomous_engineering_and_fast_market_research_are_scoped(self):
-        self.assertIn("autonomy", self.parser.anchors)
-        self.assertIn("#autonomy", self.parser.links)
-        for claim in (
-            "BEAN writes real code. Independent tests decide what ships.",
-            "Zero verified promotions",
-            "Five-minute strategy research",
-            "Independent forward paper trials",
-            "Ollama-powered code engineer",
-            "Metamorphic defect hunter",
-        ):
-            with self.subTest(claim=claim):
-                self.assertIn(claim, self.page)
-        for url in (
-            "https://github.com/danieloculus0-bot/BEAN/actions/runs/38175931431",
-            "https://github.com/danieloculus0-bot/BEAN/blob/main/bean/evaluation/autonomous_selfrepair_verify.py",
-            "https://github.com/danieloculus0-bot/AIscend/blob/main/src/bean_five_minute.py",
-            "https://github.com/danieloculus0-bot/AIscend/blob/main/src/bean_research_supervisor.py",
-            "https://github.com/danieloculus0-bot/AIscend/blob/main/docs/BEAN_UNATTENDED_LOCAL_ENGINEER.md",
-            "https://github.com/danieloculus0-bot/BEAN-AI-Bridge-/blob/main/docs/BEAN_METAMORPHIC_DISCOVERY_LAB.md",
-        ):
-            with self.subTest(url=url):
-                self.assertIn(url, self.parser.links)
-
-    def test_new_skills_have_reproducible_refs(self):
-        links = self.parser.links
-        required = [
-            "https://github.com/danieloculus0-bot/BEAN/blob/main/examples/restart_continuity.py",
-            "https://github.com/danieloculus0-bot/BEAN/blob/main/bean/tests/test_restart_continuity_demo.py",
-            "https://github.com/danieloculus0-bot/BEAN/blob/main/docs/BEAN_USEFULNESS_AUDIT_2026-10-11.md",
-            "https://github.com/danieloculus0-bot/BEAN-AI-Bridge-/blob/main/docs/DAILY_EXCEPTION_BRIEF.md",
-            "https://github.com/danieloculus0-bot/BEAN-AI-Bridge-/blob/main/tests/test_daily_brief.py",
-        ]
-        for url in required:
-            with self.subTest(url=url):
-                self.assertIn(url, links)
-        for file in ("examples/restart_continuity.py",
-                     "bean/tests/test_restart_continuity_demo.py",
-                     "docs/BEAN_USEFULNESS_AUDIT_2026-10-11.md"):
-            self.assertTrue((ROOT / file).is_file(), file)
-
-    def test_demo_claims_preserve_operational_boundaries(self):
-        for text in ("python -m examples.restart_continuity",
-                     "python -m ezbean.daily_brief",
-                     "PYTHONPATH=src",
-                     "mock provider", "not a live ERP",
-                     "N/A", "pending proposal", "temporary SQLite"):
-            with self.subTest(text=text):
-                self.assertIn(text.casefold(), self.page.casefold())
-
-    def test_internal_navigation_targets_exist(self):
-        for href in self.parser.links:
+    def test_navigation_and_interactive_lab_filter_counts(self):
+        for href in self.markup.links:
             if href.startswith("#"):
-                self.assertIn(href[1:], self.parser.anchors, href)
+                self.assertIn(href[1:], self.markup.ids, href)
+        self.assertEqual(len(self.markup.lab_cards), 8)
+        self.assertIn("8 studies shown", self.page)
+        self.assertIn("data-filter", self.page)
+        self.assertIn("button.addEventListener('click'", self.page)
+        self.assertIn("copy.addEventListener('click'", self.page)
+
+    def test_no_duplicate_html_or_unsafe_browser_link(self):
+        self.assertEqual(self.page.count("</html>"), 1)
+        self.assertEqual(self.page.count("</body>"), 1)
+        self.assertRegex(self.page, r"</body>\s*</html>\s*\Z")
+        self.assertFalse(self.page.split("</html>", 1)[1].strip())
+        self.assertIn("rel=\"noopener noreferrer\"", self.page)
+        self.assertNotIn("0x" + "1" * 40, self.page)
+        self.assertNotRegex(self.page, r"sk-(?:or|proj)-[A-Za-z0-9_-]{12,}")
+
+    @unittest.skipUnless(shutil.which("node"), "Node.js needed for script syntax test")
+    def test_home_inline_javascript_parses(self):
+        scripts = re.findall(r"<script[^>]*>([\s\S]*?)</script>", self.page)
+        self.assertEqual(len(scripts), 1)
+        for script in scripts:
+            out = subprocess.run([shutil.which("node"), "--check"],
+                                 input=script, text=True, capture_output=True)
+            self.assertEqual(out.returncode, 0, out.stderr)
 
 
 if __name__ == "__main__":
