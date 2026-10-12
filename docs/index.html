@@ -919,6 +919,8 @@
     @media(max-width:760px){.rank-stages,.rank-states{grid-template-columns:1fr}.rank-note,.rank-boundary{padding:16px}}
   
 /* Evidence-first dashboard: native CSS visuals, no screenshots or invented metrics. */
+.learn-contrast{display:flex;justify-content:space-around;gap:12px;margin:18px 0;padding:12px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.learn-contrast div{display:grid;text-align:center;gap:3px}.learn-contrast strong{font-size:2.1rem;color:var(--text)}.learn-contrast span{font-size:.77rem;color:var(--muted)}
 .learn-dashboard{padding-top:26px;padding-bottom:37px}
 .learn-layout{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:15px;margin-top:24px}
 .learn-viz{background:var(--panel);border:1px solid var(--line);padding:20px;border-radius:20px;box-shadow:var(--shadow)}
@@ -1003,9 +1005,8 @@
           </article>
           <article class="learn-viz">
             <span class="learn-label">Lab 023 · Memory-transfer pilot</span>
-            <div class="learn-row"><div class="learn-row-top"><strong>Cold-context checks</strong><b>4</b></div><div class="learn-track"><span class="learn-baseline" style="width:40%"></span></div></div>
-            <div class="learn-row"><div class="learn-row-top"><strong>Retained-context checks</strong><b>6</b></div><div class="learn-track"><span style="width:60%"></span></div></div>
-            <p><strong>Inconclusive.</strong> Bars show raw counts on a shared 0–10 visual scale, not comparable accuracy: missing candidates and unmatched model receipts prevent a learning claim. <a href="https://github.com/danieloculus0-bot/BEAN/actions/runs/38112389946">See verdict</a>.</p>
+            <div class="learn-contrast"><div><strong>4</strong><span>Cold checks</span></div><div><strong>6</strong><span>Retained checks</span></div></div>
+            <p><strong>Inconclusive.</strong> Raw counts are not a valid comparison: missing candidates and unmatched model receipts prevent a learning claim. <a href="https://github.com/danieloculus0-bot/BEAN/actions/runs/38112389946">See verdict</a>.</p>
           </article>
         </div>
         <div class="learn-bottom"><strong>What's running next:</strong> Lab 026 compares no memory, chronological history, evidence-ranked lessons and irrelevant placebo with the same local model. Protocol checks passed; causal advantage is not proven. <a href="https://github.com/danieloculus0-bot/BEAN/pull/96">Open experiment</a>.</div>
