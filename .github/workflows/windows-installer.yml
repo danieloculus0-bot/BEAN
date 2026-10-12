@@ -31,7 +31,7 @@ jobs:
       - name: Build self-contained BEAN desktop
         shell: pwsh
         run: |
-          pyinstaller --noconfirm --clean --console --onedir --paths "." --name BEAN --add-data "bean/schemas;bean/schemas" install/windows/bean_desktop.py
+          pyinstaller --noconfirm --clean --windowed --onedir --paths "." --name BEAN --add-data "bean/schemas;bean/schemas" install/windows/bean_desktop.py
       - name: Verify frozen BEAN Core works without Python setup
         shell: pwsh
         run: |
