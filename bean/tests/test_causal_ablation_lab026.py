@@ -200,3 +200,55 @@ def test_synthetic_positive_is_only_preliminary_pilot_not_learning_proof():
     assert report["classification"] == "PRELIMINARY_PILOT_SIGNAL"
     assert report["averages"]["bean_evidence"] == 0.7
     assert "learning" not in report["classification"].lower()
+
+
+def test_alternating_wins_cannot_masquerade_as_consistent_learning():
+    """Pooled gains over all three controls must not hide round regressions."""
+    cases = {
+        name: {
+            str(t): {
+                arm: {
+                    "status": "evaluated", "total_tests": 10,
+                    "passed_tests": (
+                        (8 if t % 2 == 0 else 2)
+                        if arm == "bean_evidence" else 3
+                    ),
+                }
+                for arm in lab.ARMS
+            }
+            for t in range(4)
+        }
+        for name in CASES
+    }
+    report = lab.compare_scores(cases, 4)
+    assert report["averages"]["bean_evidence"] > report["averages"]["cold"]
+    assert report["averages"]["bean_evidence"] > report["averages"]["simple_history"]
+    assert report["averages"]["bean_evidence"] > report["averages"]["placebo"]
+    assert report["strict_taskwise_round_wins"] == [True, False, True, False]
+    assert report["longest_strict_taskwise_streak"] == 1
+    assert report["classification"] == "NO_ADVANTAGE_DEMONSTRATED"
+
+
+def test_three_consecutive_wins_still_only_make_preliminary_pilot():
+    cases = {
+        name: {
+            str(t): {
+                arm: {"status": "evaluated", "total_tests": 10,
+                      "passed_tests": (
+                          (7 if t < 3 else 2) if arm == "bean_evidence" else 3
+                      )}
+                for arm in lab.ARMS
+            } for t in range(4)
+        } for name in CASES
+    }
+    report = lab.compare_scores(cases, 4)
+    assert report["strict_taskwise_round_wins"] == [True, True, True, False]
+    assert report["longest_strict_taskwise_streak"] == 3
+    assert report["classification"] == "PRELIMINARY_PILOT_SIGNAL"
+
+
+def test_no_cases_never_proves_learning():
+    report = lab.compare_scores({}, 4)
+    assert report["classification"] == "INCONCLUSIVE"
+    assert report["complete"] is False
+    assert report["longest_strict_taskwise_streak"] == 0

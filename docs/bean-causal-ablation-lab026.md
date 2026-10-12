@@ -29,7 +29,9 @@ An arm producing no valid candidate receives *no positive credit* and makes the 
 
 - INCONCLUSIVE: fewer than four repetitions, missing candidates, model mismatch, or incomplete evidence.
 - NO_ADVANTAGE_DEMONSTRATED: all candidates compared and no qualifying advantage.
-- PRELIMINARY_PILOT_SIGNAL: BEAN's independent-test average exceeds cold, simple history and placebo, without trailing simple history in either task.
+- PRELIMINARY_PILOT_SIGNAL: BEAN's independent-test average exceeds cold, simple history and placebo, without trailing simple history in either task, **and** BEAN strictly beats every control on every task in **at least three consecutive counterbalanced trial rounds**. A single strong round or a pooled average that hides alternating regressions cannot pass this gate.
+
+The judge now reports `strict_taskwise_round_wins` and `longest_strict_taskwise_streak` for falsifiable inspection, including on negative runs. These are repeated trials against the same task set and saved lessons, **not three independently trained populations**.
 
 Even a preliminary signal cannot establish general learning. The existing public synthetic tasks may be familiar to the model. Strong proof needs novel sealed tasks, more repetitions, matched model/digest and token budgets, cost/time measurements, negative-transfer diagnostics and uncertainty intervals.
 
