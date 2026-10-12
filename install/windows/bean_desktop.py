@@ -1,9 +1,11 @@
 """Windows desktop entry point. Bundled with the existing BEAN core, no Python required."""
 from __future__ import annotations
 
+import argparse
 import json
 import os
 from pathlib import Path
+import re
 import subprocess
 import sys
 import threading
@@ -47,6 +49,8 @@ from examples.capability_proof import run_proof
 from bean.voice.ollama import OllamaClient
 from bean.voice.chat import BeanConversation
 from bean.voice.persona import system_prompt
+from bean.voice.desktop_memory import DesktopMemory
+from bean.memory.audit_mirror import mirror_path
 
 
 def proof_result():
@@ -79,6 +83,51 @@ def self_test(report_path: str | None = None) -> int:
     return 0 if passed else 1
 
 
+
+def memory_fixture_cli(argv: list[str]) -> int:
+    """Real cross-process SQLite write/read from the frozen installed EXE."""
+    parser = argparse.ArgumentParser(description="BEAN disposable CI memory test")
+    group = parser.add_mutually_exclusive_group(required=True)
+    group.add_argument("--memory-fixture-write", type=Path)
+    group.add_argument("--memory-fixture-read", type=Path)
+    parser.add_argument("--memory-fixture-token", required=True)
+    parser.add_argument("--self-test-report", required=True, type=Path)
+    args = parser.parse_args(argv)
+    report = {"status": "FAIL", "real_sqlite": True, "provider": "none"}
+    try:
+        token = args.memory_fixture_token
+        if not re.fullmatch(r"[A-Za-z0-9-]{8,80}", token):
+            raise ValueError("Invalid fixture token")
+        source_db = args.memory_fixture_write or args.memory_fixture_read
+        if not source_db.is_absolute():
+            raise ValueError("Fixture DB path must be absolute")
+        note_text = "CI fixture for installed BEAN continuity: " + token
+        memory = DesktopMemory(source_db)
+        if args.memory_fixture_write is not None:
+            saved = memory.remember(note_text)
+            report.update(status="PASS", operation="write", event_id=saved["id"],
+                          provenance=saved["provenance"])
+        else:
+            matches = [item for item in memory.recall(token)
+                       if item["text"] == note_text]
+            if len(matches) != 1:
+                raise RuntimeError("Expected one persisted human note across process restart")
+            report.update(status="PASS", operation="read", event_id=matches[0]["id"],
+                          provenance=matches[0]["provenance"])
+        if not mirror_path(memory.path).is_file():
+            raise RuntimeError("Canonical audit journal is missing")
+    except Exception as exc:
+        report["status"] = "FAIL"
+        report["error"] = repr(exc)
+    try:
+        args.self_test_report.parent.mkdir(parents=True, exist_ok=True)
+        args.self_test_report.write_text(json.dumps(report, sort_keys=True, indent=2),
+                                         encoding="utf-8")
+    except OSError:
+        return 1
+    return 0 if report["status"] == "PASS" else 1
+
+
 class Desktop(tk.Tk):
     def __init__(self):
         super().__init__()
@@ -88,6 +137,9 @@ class Desktop(tk.Tk):
         self.configure(bg="#131c1b")
         self.client = None
         self.conversation = None
+        self.memory = DesktopMemory()
+        self.include_saved_notes = tk.BooleanVar(value=False)
+        self._worker_lock = threading.RLock()
         self._setup()
 
     def _setup(self):
@@ -102,6 +154,12 @@ class Desktop(tk.Tk):
         bar.pack(fill="x", padx=20)
         ttk.Button(bar, text="Verify BEAN Core", command=self.verify).pack(side="left", padx=(0, 8))
         ttk.Button(bar, text="Connect local Ollama", command=self.connect).pack(side="left")
+        note_bar = tk.Frame(self, bg=bg)
+        note_bar.pack(fill="x", padx=20, pady=(8, 0))
+        ttk.Button(note_bar, text="Remember note", command=self.remember).pack(side="left", padx=(0, 8))
+        ttk.Button(note_bar, text="Recall notes", command=self.recall).pack(side="left", padx=(0, 8))
+        ttk.Checkbutton(note_bar, text="Include matching notes in local chat",
+                        variable=self.include_saved_notes).pack(side="left")
         self.status = tk.StringVar(value="Ready. Offline core verification works without Ollama.")
         tk.Label(self, textvariable=self.status, bg=bg, fg=green,
                  anchor="w", wraplength=735).pack(fill="x", padx=22, pady=8)
@@ -130,7 +188,8 @@ class Desktop(tk.Tk):
     def background(self, task, on_success):
         def worker():
             try:
-                result = task()
+                with self._worker_lock:
+                    result = task()
             except Exception as exc:
                 self.after(0, lambda msg=str(exc): self.fail(msg))
             else:
@@ -153,7 +212,7 @@ class Desktop(tk.Tk):
         def load():
             client = OllamaClient("http://127.0.0.1:11434")
             model = client.select_model(None)
-            prompt, _ = system_prompt(None)
+            prompt, _ = system_prompt(self.memory.path)
             return model, BeanConversation(client, model, prompt)
         def ready(result):
             model, self.conversation = result
@@ -178,6 +237,8 @@ class Desktop(tk.Tk):
 
 
 if __name__ == "__main__":
+    if "--memory-fixture-write" in sys.argv or "--memory-fixture-read" in sys.argv:
+        raise SystemExit(memory_fixture_cli(sys.argv[1:]))
     if "--self-test" in sys.argv:
         report = None
         if "--self-test-report" in sys.argv:
