@@ -8,6 +8,14 @@ on:
       - 'experiments/sponge_breakout/test_evolve.py'
       - '.github/workflows/bean-neuroevolution.yml'
       - 'docs/BEAN_NEUROEVOLUTION_20261012.md'
+  pull_request:
+    branches: [experiment/bean-sponge-core-20261011]
+    paths:
+      - 'bean/optimization/sponge_dqn.py'
+      - 'experiments/sponge_breakout/evolve.py'
+      - 'experiments/sponge_breakout/test_evolve.py'
+      - '.github/workflows/bean-neuroevolution.yml'
+      - 'docs/BEAN_NEUROEVOLUTION_20261012.md'
   workflow_dispatch:
 permissions:
   contents: read
