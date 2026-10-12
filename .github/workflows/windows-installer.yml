@@ -39,9 +39,11 @@ jobs:
           $receipt = Join-Path $env:RUNNER_TEMP 'bean-frozen-self-test.json'
           Push-Location $env:RUNNER_TEMP
           try {
-            & $exe --self-test --self-test-report $receipt
+            # A Windows GUI-subsystem EXE can return control to PowerShell
+            # before the process exits. Explicitly wait for its real exit code.
+            $p = Start-Process -FilePath $exe -ArgumentList ('--self-test --self-test-report "' + $receipt + '"') -Wait -PassThru
             if (Test-Path $receipt) { Get-Content $receipt -Raw | Write-Host }
-            if ($LASTEXITCODE -ne 0) { throw "Frozen Core self-test failed. Receipt: $receipt" }
+            if ($p.ExitCode -ne 0) { throw "Frozen Core self-test failed with exit $($p.ExitCode). Receipt: $receipt" }
           } finally { Pop-Location }
           if (!(Test-Path $receipt)) { throw 'Frozen BEAN gave no self-test receipt' }
           $report = Get-Content $receipt -Raw | ConvertFrom-Json
@@ -80,8 +82,8 @@ jobs:
           $receipt = Join-Path $env:RUNNER_TEMP 'bean-installed-self-test.json'
           Push-Location $env:RUNNER_TEMP
           try {
-            & $exe --self-test --self-test-report $receipt
-            if ($LASTEXITCODE -ne 0) { throw 'Installed Core self-test failed' }
+            $p = Start-Process -FilePath $exe -ArgumentList ('--self-test --self-test-report "' + $receipt + '"') -Wait -PassThru
+            if ($p.ExitCode -ne 0) { throw "Installed Core self-test failed: $($p.ExitCode)" }
           } finally { Pop-Location }
           if (!(Test-Path $receipt)) { throw 'Installed Core returned no receipt' }
           $report = Get-Content $receipt -Raw | ConvertFrom-Json
