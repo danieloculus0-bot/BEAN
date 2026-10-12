@@ -9,6 +9,14 @@ on:
       - 'bean/tests/test_causal_ablation_lab026.py'
       - 'docs/bean-causal-ablation-lab026.md'
       - '.github/workflows/bean-causal-ablation-lab026.yml'
+  pull_request:
+    branches:
+      - experiment/bean-causal-ablation-lab026-20261011
+    paths:
+      - 'bean/evaluation/causal_ablation_lab026.py'
+      - 'bean/tests/test_causal_ablation_lab026.py'
+      - 'docs/bean-causal-ablation-lab026.md'
+      - '.github/workflows/bean-causal-ablation-lab026.yml'
   workflow_dispatch:
 
 permissions:
