@@ -138,9 +138,9 @@ def test_bridge_scores_before_filing_and_survives_core_restart(tmp_path):
     with BeanReasoningLayer(path) as core:
         bridge = EvidenceBridge(core)
         bridge.start("first_round", "first_article", "Did the inspection pass?")
-        first = SourceClaim("a", "first_round", "inspector_a", "report:a",
+        first = SourceClaim("id_a", "first_round", "inspector_a", "report:a",
                             "pass", True, "verification:a", "2026-10-10T12:00:00Z")
-        second = SourceClaim("b", "first_round", "inspector_b", "report:b",
+        second = SourceClaim("id_b", "first_round", "inspector_b", "report:b",
                              "pass", True, "verification:b", "2026-10-10T12:00:00Z")
         bridge.observe(first)
         rows = core.store.fetchall("SELECT intake_score,entry_hash FROM bean_ranked_evidence")
