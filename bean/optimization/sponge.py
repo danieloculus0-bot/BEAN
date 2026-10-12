@@ -29,11 +29,17 @@ class Sponge:
         self.journal = Journal(path)
         self.q: dict[tuple[str, str], float] = {}
         self.count = 0
-        for event in self.journal.events(OBJECTIVE):
-            if tuple(event["actions"]) != self.actions or event["alpha"] != alpha:
-                raise ValueError("policy configuration differs from persisted history")
-            self._apply(event["context"], event["action"], event["reward"])
-            self.count += 1
+        try:
+            for event in self.journal.events(OBJECTIVE):
+                if tuple(event["actions"]) != self.actions or event["alpha"] != alpha:
+                    raise ValueError("policy configuration differs from persisted history")
+                self._apply(event["context"], event["action"], event["reward"])
+                self.count += 1
+        except BaseException:
+            # Initialization failed. Release the SQLite file immediately,
+            # including on Windows, where open handles block temp-file deletion.
+            self.journal.close()
+            raise
 
     @staticmethod
     def context_key(context: object) -> str:
