@@ -32,7 +32,7 @@ Double-click the installer. It is configured as a per-user installation and offe
 - **Include matching notes in local chat (opt-in):** when explicitly selected, matching notes are supplied to the local Ollama model as **untrusted user reference data**, never as a system instruction. The checkbox defaults off. Automatic capture of conversations is still disabled.
 - **Important learning limitation:** model chat history is still short-lived and not automatically saved. Durable note retrieval does **not** update model weights, establish causal superiority to ordinary retrieval, or demonstrate autonomous research.
 
-Uninstall from Windows Apps/Installed Apps or the generated uninstaller. User-configured external Ollama installations are not bundled or deleted.
+Uninstall from Windows Apps/Installed Apps or the generated uninstaller. **Uninstall does not delete user-saved BEAN notes:** the database and audit sidecar remain under `%LOCALAPPDATA%\BEAN\`. That data is not encrypted by this technical beta. To permanently clear the desktop notes, first close BEAN, preserve any backups you need, then remove the desktop memory database and its journal/sidecar files from that user-owned directory. The GUI has no individual-note deletion control. User-configured external Ollama installations are not bundled or deleted.
 
 ## Release decisions not yet cleared
 
