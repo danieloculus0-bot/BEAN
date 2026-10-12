@@ -120,7 +120,7 @@ class PublicAiscendDemoTests(unittest.TestCase):
         self.assertEqual(self.html.count("</html>"), 1)
         self.assertEqual(self.html.count("</body>"), 1)
         self.assertEqual(self.html.count("const rand=()=>"), 1)
-        self.assertRegex(self.html, r"</body>\s*</html>\s*\\Z")
+        self.assertRegex(self.html, r"</body>\s*</html>\s*\Z")
         self.assertFalse(self.html.split("</html>", 1)[1].strip())
 
     @unittest.skipUnless(shutil.which("node"), "Node.js needed for browser script syntax check")
