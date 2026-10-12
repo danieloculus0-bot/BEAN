@@ -533,31 +533,4 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden)stop()});re
 })();
 </script>
 </body>
-</html>+n.toFixed(2);
-let cash,units,price,candles,seed,interval,stepNumber,events;
-const rand=()=>{seed=(Math.imul(1664525,seed)+1013904223)>>>0;return seed/4294967296};
-function note(message){events.unshift('['+String(stepNumber).padStart(3,'0')+'] '+message);events=events.slice(0,7);$('paperJournal').textContent=events.join(' | ')}
-function render(){
- $('paperPrice').textContent=fmt(price);$('paperEquity').textContent=fmt(cash+units*price);$('paperCash').textContent=fmt(cash);
- const pnl=cash+units*price-100;$('paperPnl').textContent=(pnl>=0?'+':'')+fmt(pnl);
- $('paperPnl').style.color=pnl>=0?'#a5ec90':'#f2a09c';
- const c=$('paperChart'),ctx=c.getContext('2d'),w=c.width,h=c.height;ctx.clearRect(0,0,w,h);
- const lo=Math.min(...candles),hi=Math.max(...candles),span=Math.max(.02,hi-lo),pad=24;
- ctx.strokeStyle='#35533a';ctx.lineWidth=1;for(let i=1;i<5;i++){let y=i*h/5;ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(w,y);ctx.stroke()}
- ctx.strokeStyle='#9deb7d';ctx.lineWidth=3;ctx.beginPath();candles.forEach((p,i)=>{let x=pad+(w-2*pad)*i/Math.max(1,candles.length-1),y=h-pad-(p-lo)/span*(h-2*pad);if(!i)ctx.moveTo(x,y);else ctx.lineTo(x,y)});ctx.stroke();
- ctx.fillStyle='#d4f4c8';ctx.font='17px monospace';ctx.fillText('Synthetic asset · '+stepNumber+' candles · '+$('paperScenario').value,20,24);
-}
-function step(){const mode=$('paperScenario').value;const drift={range:0,bull:.003,bear:-.003,wild:0}[mode];const vol=mode==='wild'?.055:.018;price=Math.max(.01,price*(1+drift+(rand()+rand()+rand()-1.5)*vol));stepNumber++;candles.push(price);if(candles.length>100)candles.shift();render()}
-function trade(buy){const amount=Number($('paperAmount').value);if(!Number.isFinite(amount)||amount<=0){note('Enter a positive order amount');return}
- const fee=.002;if(buy){const cost=amount*(1+fee);if(cost>cash+1e-8){note('BUY declined: insufficient simulated cash');return}cash-=cost;units+=amount/price;note('PAPER BUY '+fmt(amount)+' + '+fmt(amount*fee)+' fee')}
- else{const qty=amount/price;if(qty>units+1e-9){note('SELL declined: insufficient synthetic asset');return}units-=qty;cash+=amount*(1-fee);note('PAPER SELL '+fmt(amount)+' - '+fmt(amount*fee)+' fee')}
- render()}
-function stop(){if(interval){clearInterval(interval);interval=null}$('paperAuto').setAttribute('aria-pressed','false');$('paperAuto').textContent='Auto-run'}
-function reset(){stop();cash=100;units=0;price=100;candles=[100];seed=314159265;stepNumber=0;events=[];note('Simulation reset');render()}
-$('paperStep').addEventListener('click',step);$('paperBuy').addEventListener('click',()=>trade(true));$('paperSell').addEventListener('click',()=>trade(false));$('paperReset').addEventListener('click',reset);
-$('paperAuto').addEventListener('click',()=>{if(interval){stop();return}interval=setInterval(step,700);$('paperAuto').textContent='Pause';$('paperAuto').setAttribute('aria-pressed','true')});
-document.addEventListener('visibilitychange',()=>{if(document.hidden)stop()});reset();
-})();
-</script>
-</body>
 </html>

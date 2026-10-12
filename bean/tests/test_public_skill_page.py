@@ -110,6 +110,34 @@ class PublicSkillsPageTests(unittest.TestCase):
                 self.assertIn(link, self.parser.links)
         self.assertIn("INCONCLUSIVE", self.page)
 
+    def test_universal_evidence_rank_is_present_and_accurately_scoped(self):
+        self.assertIn("evidence-rank", self.parser.anchors)
+        self.assertIn("#evidence-rank", self.parser.links)
+        for statement in (
+            "PageRank was for links. BEAN ranks evidence quality.",
+            "scores the evidence", "before filing the hashed memory receipt",
+            "not the probability that a claim is true",
+            "insufficient", "attested", "contested",
+            "doesn't automatically connect it to every application",
+        ):
+            with self.subTest(statement=statement):
+                self.assertIn(statement, self.page)
+        for path in (
+            "bean/evaluation/evidence_rank.py",
+            "bean/tests/test_evidence_rank.py",
+            "docs/UNIVERSAL_EVIDENCE_RANK.md",
+        ):
+            with self.subTest(path=path):
+                self.assertTrue((ROOT / path).is_file(), path)
+                self.assertIn(
+                    "https://github.com/danieloculus0-bot/BEAN/blob/main/" + path,
+                    self.parser.links,
+                )
+        self.assertIn(
+            "https://github.com/danieloculus0-bot/BEAN/actions/runs/38187572884",
+            self.parser.links,
+        )
+
     def test_neural_model_section_is_grounded_in_sources_and_scope(self):
         self.assertIn("neural", self.parser.anchors)
         self.assertIn("#neural", self.parser.links)

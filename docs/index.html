@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>BEAN | Real AI Skills · Public Technical Beta</title>
-  <meta name="description" content="What makes BEAN different? Evidence-aware memory, bounded source improvements, independent tests and causal learning research, alongside working AIscend applications. Inspect the results and limits.">
+  <meta name="description" content="What makes BEAN different? Tested evidence-quality ranking, persistent memory, source-linked engineering improvements and clearly labeled learning research. Inspect the results and limits.">
   <meta name="robots" content="index, follow">
   <meta name="theme-color" content="#101713">
   <link rel="icon" type="image/webp" href="./bean-official.webp">
@@ -895,6 +895,28 @@
       .btn{transition:none}
     }
 
+
+    /* Universal Evidence Rank, styled within the already approved dark-Mint site. */
+    .rank-section{background:radial-gradient(ellipse at 85% 10%,rgba(112,196,99,.12),transparent 52%)}
+    .rank-top{display:grid;grid-template-columns:minmax(0,1.65fr) minmax(245px,.7fr);gap:24px;align-items:start;margin:20px 0 24px}
+    .rank-top>*{min-width:0}
+    .rank-note{display:grid;gap:9px;padding:22px;border:1px solid #547455;border-radius:19px;background:linear-gradient(145deg,#2b422e,#1b2a20)}
+    .rank-note span,.rank-stages span{font-size:.75rem;color:#b5ee9b;font-weight:850;letter-spacing:.07em;text-transform:uppercase}
+    .rank-note strong,.rank-stages strong{display:block;color:#ecf9e5;font-size:1.06rem;line-height:1.38}
+    .rank-note p,.rank-stages p{font-size:.92rem;margin:0}
+    .rank-note code{overflow-wrap:anywhere}
+    .rank-stages{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:13px;margin:26px 0}
+    .rank-stages article,.rank-states article{min-width:0;border:1px solid #415945;background:linear-gradient(150deg,#27392b,#1c2b20);border-radius:17px;padding:18px}
+    .rank-stages strong{margin:9px 0}
+    .rank-states{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin:15px 0 23px}
+    .rank-states code{display:inline-block;padding:5px 9px;border:1px solid #4f7950;border-radius:7px;background:#17311e;color:#c4f3ae;font-weight:750}
+    .rank-states h4{color:#ebf9e8;font-size:1rem;line-height:1.4;margin:13px 0 7px}
+    .rank-states p{font-size:.93rem;margin:0}
+    .rank-boundary{background:#1d3223;border:1px solid #456848;border-left:4px solid #91e274;padding:18px;border-radius:13px}
+    .rank-boundary strong{color:#dff8d3}
+    .rank-links{display:flex;gap:10px;flex-wrap:wrap;margin-top:15px}
+    @media(max-width:980px){.rank-top{grid-template-columns:1fr}.rank-stages{grid-template-columns:repeat(2,minmax(0,1fr))}}
+    @media(max-width:760px){.rank-stages,.rank-states{grid-template-columns:1fr}.rank-note,.rank-boundary{padding:16px}}
   </style>
 
 <style>
@@ -925,6 +947,7 @@
         <a href="#latest">Build log</a>
         <a href="#milestones">Verified tests</a>
         <a href="#difference">Why BEAN</a>
+        <a href="#evidence-rank">Evidence Rank</a>
         <a href="#neural">Neural AI</a>
         <a href="#autonomy">Autonomy</a>
         <a href="#skills">Skills</a>
@@ -942,7 +965,7 @@
 
   <main id="top">
     <nav class="mobile-jumps" aria-label="Quick section links">
-      <a href="#difference">Why BEAN</a><a href="#skills">Skills</a><a href="#applications">Crypto beta</a><a href="./aiscend.html" target="_blank" rel="noopener noreferrer">Demo</a><a href="#neural">Neural AI</a><a href="#autonomy">Autonomy</a><a href="#milestones">Verified tests</a><a href="#latest">Build log</a><a href="#benchmarks">Benchmarks</a><a href="#proof">Proof</a><a href="#quickstart">Quickstart</a><a href="#research">Research</a><a href="#community">Follow BEAN</a>
+      <a href="#difference">Why BEAN</a><a href="#evidence-rank">Evidence Rank</a><a href="#skills">Skills</a><a href="#applications">Crypto beta</a><a href="./aiscend.html" target="_blank" rel="noopener noreferrer">Demo</a><a href="#neural">Neural AI</a><a href="#autonomy">Autonomy</a><a href="#milestones">Verified tests</a><a href="#latest">Build log</a><a href="#benchmarks">Benchmarks</a><a href="#proof">Proof</a><a href="#quickstart">Quickstart</a><a href="#research">Research</a><a href="#community">Follow BEAN</a>
     </nav>
     <section class="hero">
       <div class="wrap hero-grid">
@@ -957,7 +980,7 @@
 
           <p class="lead">
             <span class="strong">BEAN is working software, not a waiting list.</span>
-            Persistent memory. Evidence-aware reasoning. Useful manufacturing reports.
+            Persistent memory. Evidence-quality ranking. Useful manufacturing reports.
             Scheduled investigation. Neural-network-powered local AI conversations.
             Engineering audits. BEAN-assisted crypto trading through AIscend.
             Tested robotics logic. All in public, inspectable code.
@@ -974,6 +997,7 @@
           <div class="hero-pills">
             <span class="pill">Persistent event history</span>
             <span class="pill">Evidence-aware revision</span>
+             <span class="pill">Universal Evidence Rank</span>
             <span class="pill">Reviewable proposals</span>
             <span class="pill">Python + SQLite</span>
             <span class="pill">Practical daily reporting</span>
@@ -986,7 +1010,8 @@
           </div>
 
           <div class="hero-actions">
-            <a class="btn btn-primary" href="#difference">Why BEAN is different</a>
+            <a class="btn btn-primary" href="#evidence-rank">See evidence ranking</a>
+             <a class="btn btn-secondary" href="#difference">Why BEAN is different</a>
             <a class="btn btn-secondary" href="https://github.com/danieloculus0-bot/BEAN">Browse the code</a>
             <a class="btn btn-secondary" href="#quickstart">Run it yourself</a>
             <a class="btn btn-secondary" href="#applications">See crypto application</a>
@@ -1103,6 +1128,46 @@
       </div>
     </section>
 
+
+    <section id="evidence-rank" class="section rank-section" aria-labelledby="rank-heading">
+      <div class="wrap">
+        <div class="eyebrow"><span class="dot"></span> Merged to BEAN Core main · PR #101</div>
+        <div class="rank-top">
+          <div>
+            <h2 id="rank-heading">PageRank was for links. BEAN ranks evidence quality.</h2>
+            <p class="lead">One reusable Core API can evaluate host-supplied observations from manufacturing, software, forecasting or trading research. BEAN scores the evidence <strong class="strong">before filing the hashed memory receipt</strong>, then reassesses the rank as contradictory or corroborating evidence arrives.</p>
+            <p>It's inspired by the usefulness of a general ranking layer, not Google's actual PageRank algorithm. A score from 0–99 measures a transparent <strong class="strong">evidence-quality heuristic</strong>, not the probability that a claim is true.</p>
+          </div>
+          <aside class="rank-note">
+            <span>Working BEAN Core interface</span>
+            <strong>Evidence in. Revisable ranking out.</strong>
+            <p><code>BeanReasoningLayer.evidence_ranker()</code> exposes the shared ledger. Core's existing <code>EvidenceBridge.observe()</code> now scores evidence before filing it in one SQLite transaction.</p>
+            <a href="https://github.com/danieloculus0-bot/BEAN/blob/main/docs/UNIVERSAL_EVIDENCE_RANK.md">Read the implementation and limits →</a>
+          </aside>
+        </div>
+        <div class="rank-stages" aria-label="Universal Evidence Rank processing flow">
+          <article><span>01 · Record</span><strong>Trace the source</strong><p>Domain, subject, observation, claimed origin, citation and date.</p></article>
+          <article><span>02 · Evaluate</span><strong>Score quality</strong><p>Independent claimed origins, contradictions, age and attested measured outcomes.</p></article>
+          <article><span>03 · Preserve</span><strong>Hash the receipt</strong><p>Save the original source and intake score in a verifiable hash chain.</p></article>
+          <article><span>04 · Re-evaluate</span><strong>Revise the rank</strong><p>New evidence can change priority without rewriting original observations.</p></article>
+        </div>
+        <h3>Evidence status is explicit</h3>
+        <div class="rank-states">
+          <article><code>insufficient</code><h4>Not corroborated</h4><p>A single claimed origin, or a collection of unverified copies, doesn't establish agreement.</p></article>
+          <article><code>attested</code><h4>Independent claimed origins agree</h4><p>Two separately identified host-attested sources agree. Host flags do not independently authenticate truth.</p></article>
+          <article><code>contested</code><h4>Sources disagree</h4><p>Contradictions stay visible instead of being averaged into false certainty.</p></article>
+        </div>
+        <div class="rank-boundary">
+          <strong>Tested on Windows and Ubuntu.</strong> This is real Core code, not a screen mockup or learned neural model. Its weights are baseline heuristics awaiting calibration. BEAN doesn't authenticate external issuers; adding this module doesn't automatically connect it to every application or prove trading profitability.
+          <div class="rank-links">
+            <a class="btn btn-primary" href="https://github.com/danieloculus0-bot/BEAN/blob/main/bean/evaluation/evidence_rank.py">Inspect Core source</a>
+            <a class="btn btn-secondary" href="https://github.com/danieloculus0-bot/BEAN/blob/main/bean/tests/test_evidence_rank.py">Inspect regression tests</a>
+            <a class="btn btn-secondary" href="https://github.com/danieloculus0-bot/BEAN/actions/runs/38187572884">Four-platform CI receipts</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <section id="skills" class="section" aria-labelledby="skills-heading">
       <div class="wrap">
         <div class="eyebrow"><span class="dot"></span> Public technical beta · Built, tested, inspectable</div>
@@ -1157,8 +1222,8 @@
           <article class="card">
             <div class="skill-kicker">Core main · Cognition</div>
             <div class="skill-icon" aria-hidden="true">🔎</div>
-            <h3>Evidence-aware decisions</h3>
-            <p>Compare source claims, preserve contradictions, reopen findings when new evidence arrives, and track the reasoning trail between restarts.</p>
+            <h3>Evidence-aware decisions + ranking</h3>
+            <p>Compare claims, preserve contradictions, and retain a scored, hash-chained receipt before filing new host-supplied evidence. Existing records remain revisable, not silently replaced.</p>
             <a href="https://github.com/danieloculus0-bot/BEAN/blob/main/bean/tests/test_evidence_bridge_contract.py">See the verified revision tests →</a>
           </article>
           <article class="card">
@@ -1405,10 +1470,16 @@
 
     <section id="latest" class="section tight" aria-labelledby="latest-heading">
       <div class="wrap">
-        <div class="eyebrow"><span class="dot"></span> October 11, 2026 · Verified development log</div>
+        <div class="eyebrow"><span class="dot"></span> October 11–12, 2026 · Verified development log</div>
         <h2 id="latest-heading" style="margin-top:17px">What's new in BEAN</h2>
         <p class="lead">New abilities, engineering discoveries and fresh test receipts. Skills already on Core or Bridge main are clearly distinguished from research candidates.</p>
         <div class="experiment-grid">
+          <article class="experiment-card">
+            <span class="status-tag">Merged to Core main · PR #101</span>
+            <h3>Universal Evidence Rank now ships in Core</h3>
+            <p>Score source evidence before filing a hash-chain receipt, treat duplicate origins as one source, keep contradictions visible and revise quality rankings over time. A host-neutral ranking API, not a truth oracle or automatic trading integration.</p>
+            <a href="https://github.com/danieloculus0-bot/BEAN/pull/101">See the merged code and tests →</a>
+          </article>
           <article class="experiment-card">
             <span class="status-tag">In Core main</span>
             <h3>Talk to BEAN: local Ollama + Windows speech</h3>
