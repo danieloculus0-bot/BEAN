@@ -10,25 +10,45 @@ import threading
 import tkinter as tk
 from tkinter import messagebox, scrolledtext, ttk
 
-import psutil  # noqa: F401 - bundle the dependency used by Core
+import psutil  # noqa: F401 - Core runtime dependency
 
-if getattr(sys, "frozen", False):
-    sys.path.insert(0, sys._MEIPASS)
+# Real imports are deliberately visible to PyInstaller's static module graph.
+# Bundling raw .py files as data allows Core to import modules PyInstaller
+# never scanned and produces broken frozen builds (e.g. missing stdlib uuid).
+from examples.capability_proof import run_proof
+from bean.voice.ollama import OllamaClient
+from bean.voice.chat import BeanConversation
+from bean.voice.persona import system_prompt
 
 
 def proof_result():
-    from examples.capability_proof import run_proof
     return run_proof()
 
 
-def self_test() -> int:
+def self_test(report_path: str | None = None) -> int:
+    """Exercise actual Core APIs; a windowed EXE must not depend on stdout."""
     try:
         result = proof_result()
-        print(json.dumps(result, indent=2))
-        return 0 if result.get("status") == "PASS" else 1
+        passed = (
+            result.get("status") == "PASS" and
+            result.get("checks_passed") == result.get("checks_total") == 4 and
+            result.get("environment") == "offline_fictional_fixtures" and
+            result.get("live_model_used") is False
+        )
     except Exception as exc:
-        print("BEAN self-test failed: " + repr(exc), file=sys.stderr)
-        return 1
+        result = {"status": "FAIL", "error": repr(exc)}
+        passed = False
+    if report_path:
+        try:
+            target = Path(report_path)
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_text(json.dumps(result, indent=2, sort_keys=True),
+                              encoding="utf-8")
+        except OSError:
+            return 1
+    elif sys.stdout is not None:
+        print(json.dumps(result, indent=2, sort_keys=True))
+    return 0 if passed else 1
 
 
 class Desktop(tk.Tk):
@@ -48,7 +68,7 @@ class Desktop(tk.Tk):
         green = "#91dc91"
         tk.Label(self, text="BEAN", font=("Segoe UI", 28, "bold"),
                  bg=bg, fg=green).pack(pady=(18, 0))
-        tk.Label(self, text="Evidence-first reasoning  |  Local Windows desktop",
+        tk.Label(self, text="Technical beta  |  Offline Core checks + optional local model chat",
                  font=("Segoe UI", 10), bg=bg, fg=fg).pack(pady=(0, 12))
         bar = tk.Frame(self, bg=bg)
         bar.pack(fill="x", padx=20)
@@ -60,8 +80,10 @@ class Desktop(tk.Tk):
         self.transcript = scrolledtext.ScrolledText(self, bg="#1e2b28", fg=fg,
                 insertbackground=fg, font=("Consolas", 10), wrap="word")
         self.transcript.pack(fill="both", expand=True, padx=20, pady=(0, 8))
-        self.transcript.insert("end", "BEAN is installed. Run the offline core verification, "
-                               "or connect to an Ollama server already running on this PC.\n\n"
+        self.transcript.insert("end", "BEAN technical beta installed. The offline Core test "
+                               "uses fictional fixtures, not a trained model.\n"
+                               "Optional Ollama chat uses an already-running model on this PC. "
+                               "Chat turns are NOT saved in BEAN Core memory across restarts.\n\n"
                                "No cloud sign-in or trading/hardware permissions are enabled.\n")
         self.transcript.configure(state="disabled")
         input_row = tk.Frame(self, bg=bg)
@@ -101,9 +123,6 @@ class Desktop(tk.Tk):
     def connect(self):
         self.status.set("Connecting to local Ollama...")
         def load():
-            from bean.voice.ollama import OllamaClient
-            from bean.voice.chat import BeanConversation
-            from bean.voice.persona import system_prompt
             client = OllamaClient("http://127.0.0.1:11434")
             model = client.select_model(None)
             prompt, _ = system_prompt(None)
@@ -132,5 +151,11 @@ class Desktop(tk.Tk):
 
 if __name__ == "__main__":
     if "--self-test" in sys.argv:
-        raise SystemExit(self_test())
+        report = None
+        if "--self-test-report" in sys.argv:
+            index = sys.argv.index("--self-test-report")
+            if index + 1 >= len(sys.argv):
+                raise SystemExit(2)
+            report = sys.argv[index + 1]
+        raise SystemExit(self_test(report))
     Desktop().mainloop()
