@@ -22,3 +22,18 @@ The four local fixtures cover correction, repair, humor continuity and a genuine
 6. No transcript retention or publication without permission. Use fictional or redacted fixtures by default.
 
 **Critical distinction:** this lab encodes a correction behavior directly. It cannot prove BEAN learned that behavior from experience. Such a claim requires the controlled memory experiment above.
+
+## Executable adaptation (experimental)
+
+`adaptive.py` goes beyond the fixed scoring baseline. It selects an action from three choices (exit, correction, clarify) based on a compact context feature, accepts signed human feedback on the chosen action, updates the action value, and executes the revised policy on future turns. SQLite stores the learned values and feedback ledger across process restarts. The feature key excludes the raw conversation text.
+
+Try the deliberate before/feedback/after/restart demonstration:
+
+```bash
+python -m experiments.human_interaction.adaptive --db lab027-demo.sqlite
+python -m unittest bean.tests.test_human_interaction_lab027 -v
+```
+
+The demo uses fictional dialogue and **supplies its own positive and negative feedback** to prove that the policy changes; it is not an independent human or neural learning result. Use a fresh temporary database for the demonstration; repeated calls to the same file preserve and modify prior learned values. The policy is not yet wired into BEAN's chat interface or model-driven response generator, and this experiment does not confer any action authority. A wider deployment requires human feedback provenance, better intent features, multi-context holdouts, and matched-model ablations. Short feature patterns can overgeneralize, so monitor false corrections and reversal behavior.
+
+**Optimization first, play second:** reward useful correction and recovery, preserve genuinely intended exits, then measure humor continuity without sacrificing intent accuracy.
