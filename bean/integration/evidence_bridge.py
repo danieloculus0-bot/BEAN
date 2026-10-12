@@ -245,19 +245,32 @@ class EvidenceBridge:
             (round_id,),
         ).fetchall()
         by_origin: dict[str, set[str]] = {}
+        origin_proofs: dict[str, set[str]] = {}
+        proof_origins: dict[str, set[str]] = {}
         refs = []
         for row in data:
             if row["verified"]:
-                by_origin.setdefault(row["origin"], set()).add(row["value"])
-                refs.append({"origin": row["origin"], "source_ref": row["source_ref"],
-                             "verification_ref": row["verification_ref"],
-                             "value": row["value"]})
+                origin, proof = row["origin"], row["verification_ref"]
+                by_origin.setdefault(origin, set()).add(row["value"])
+                origin_proofs.setdefault(origin, set()).add(proof)
+                proof_origins.setdefault(proof, set()).add(origin)
+                refs.append({"origin": origin, "source_ref": row["source_ref"],
+                             "verification_ref": proof, "value": row["value"]})
+        # Two claimed origins reusing the *same verification receipt* are
+        # correlated evidence, not two independent confirmations. Only origins
+        # with at least one receipt not shared by another origin may vote.
+        # This is a conservative host-attestation rule, NOT cryptographic
+        # authentication of the underlying sources.
+        independent_origins = {
+            origin for origin, proofs in origin_proofs.items()
+            if any(len(proof_origins[proof]) == 1 for proof in proofs)
+        }
         vals = {value for values in by_origin.values() for value in values}
         previous = self.current(round_row["claim_key"])
         latest = previous["value"] if previous else None
         if len(vals) > 1:
             status, value = "contested", None
-        elif len(by_origin) < self.min_origins:
+        elif len(independent_origins) < self.min_origins:
             status, value = "insufficient", None
         else:
             value = next(iter(vals))
@@ -267,7 +280,7 @@ class EvidenceBridge:
             "round_id,claim_key,status,value,independent_origins,evidence_json,previous_value)"
             " VALUES(?,?,?,?,?,?,?)",
             (round_id, round_row["claim_key"], status, value,
-             len(by_origin), json.dumps(refs, sort_keys=True), latest),
+             len(independent_origins), json.dumps(refs, sort_keys=True), latest),
         )
         self.db.execute(
             "UPDATE bridge_evidence_rounds SET state='closed' WHERE round_id=?",
@@ -282,7 +295,7 @@ class EvidenceBridge:
                 content=f"Host-attested sources agree on {round_row['claim_key']}: {value}",
                 source_type="host_attested",
                 source_ref=f"evidence_round:{round_id}",
-                confidence=min(0.99, len(by_origin) / (len(by_origin) + 1)),
+                confidence=min(0.99, len(independent_origins) / (len(independent_origins) + 1)),
                 evidence=[x["verification_ref"] for x in refs],
                 falsification_path="Open a new round with independently verified contrary evidence",
             ))
@@ -296,7 +309,7 @@ class EvidenceBridge:
             "Evidence round evaluated", event_type=EventType.WORLD_MODEL_UPDATE,
             source=Source.SYSTEM, subtype="bridge_evidence",
             data={"round_id": round_id, "claim_key": round_row["claim_key"],
-                  "status": status, "distinct_origins": len(by_origin),
+                  "status": status, "distinct_origins": len(independent_origins),
                   "proposed_value": value, "previous_value": latest},
         )
         return self._finding(self.db.execute(
