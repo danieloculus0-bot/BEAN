@@ -90,6 +90,33 @@ jobs:
           if ($report.status -ne 'PASS' -or $report.checks_passed -ne 4 -or $report.checks_total -ne 4) {
             throw 'Installed Core did not pass all four real offline checks'
           }
+          # Two completely separate launches of the *installed* executable.
+          # The first writes a unique note via BEAN Core. The second must find
+          # the same journal event, with its unverified-user provenance intact.
+          $db = Join-Path $env:RUNNER_TEMP 'BEAN persistent fixture\desktop_memory.sqlite'
+          New-Item -ItemType Directory -Force -Path (Split-Path $db) | Out-Null
+          $token = [guid]::NewGuid().ToString('N')
+          $writeReceipt = Join-Path $env:RUNNER_TEMP 'bean-memory-write.json'
+          $readReceipt = Join-Path $env:RUNNER_TEMP 'bean-memory-read.json'
+          $writeArgs = '--memory-fixture-write "' + $db + '" --memory-fixture-token ' + $token + ' --self-test-report "' + $writeReceipt + '"'
+          $p = Start-Process -FilePath $exe -ArgumentList $writeArgs -Wait -PassThru
+          if ($p.ExitCode -ne 0 -or !(Test-Path $writeReceipt)) { throw 'Installed BEAN could not write genuine Core memory' }
+          $before = Get-Content $writeReceipt -Raw | ConvertFrom-Json
+          if ($before.status -ne 'PASS' -or $before.provenance -ne 'user_submitted_unverified') {
+            Get-Content $writeReceipt -Raw | Write-Host
+            throw 'Installed Core memory write receipt invalid'
+          }
+          $readArgs = '--memory-fixture-read "' + $db + '" --memory-fixture-token ' + $token + ' --self-test-report "' + $readReceipt + '"'
+          $p = Start-Process -FilePath $exe -ArgumentList $readArgs -Wait -PassThru
+          if ($p.ExitCode -ne 0 -or !(Test-Path $readReceipt)) { throw 'New installed BEAN process could not recall Core memory' }
+          $after = Get-Content $readReceipt -Raw | ConvertFrom-Json
+          if ($after.status -ne 'PASS' -or $after.event_id -ne $before.event_id -or
+              $after.provenance -ne 'user_submitted_unverified' -or
+              !(Test-Path ($db + '.events.jsonl'))) {
+            Get-Content $readReceipt -Raw | Write-Host
+            throw 'Cross-process Core memory continuity or audit journal invalid'
+          }
+          Write-Host "PASS: installed BEAN independently retrieved its own event $($after.event_id) after a new process launch."
           $uninstaller = Join-Path $target 'unins000.exe'
           if (!(Test-Path $uninstaller)) { throw 'Uninstaller absent' }
           $p = Start-Process -FilePath $uninstaller -ArgumentList @('/VERYSILENT','/SUPPRESSMSGBOXES','/NORESTART') -Wait -PassThru
