@@ -179,7 +179,34 @@ def compare_scores(results, trials):
         for arm in ARMS
     }
     expected = len(results) * trials
-    complete = total == len(ARMS) * expected
+    complete = bool(results) and total == len(ARMS) * expected
+
+    # A pooled average can hide alternating wins and regressions. For a pilot
+    # signal, BEAN must strictly beat EVERY control on EVERY task in at least
+    # three consecutive counterbalanced rounds. This is still NOT independent
+    # training-seed replication or a sealed holdout.
+    strict_round_wins = []
+    for trial in range(trials):
+        taskwise_win = bool(results)
+        for case_trials in results.values():
+            rows = case_trials.get(str(trial), {})
+            if any(rows.get(arm, {}).get("status") != "evaluated" for arm in ARMS):
+                taskwise_win = False
+                break
+            bean = rows["bean_evidence"]
+            if not all(
+                bean["passed_tests"] / bean["total_tests"] >
+                rows[arm]["passed_tests"] / rows[arm]["total_tests"]
+                for arm in ("cold", "simple_history", "placebo")
+            ):
+                taskwise_win = False
+                break
+        strict_round_wins.append(taskwise_win)
+    longest_streak, current_streak = 0, 0
+    for win in strict_round_wins:
+        current_streak = current_streak + 1 if win else 0
+        longest_streak = max(longest_streak, current_streak)
+
     if not complete or trials < MIN_PILOT_TRIALS:
         classification = "INCONCLUSIVE"
     elif (averages["bean_evidence"] > max(averages["cold"],
@@ -188,7 +215,8 @@ def compare_scores(results, trials):
           all(sum(results[name][str(t)]["bean_evidence"]["passed_tests"]
                   for t in range(trials)) >=
               sum(results[name][str(t)]["simple_history"]["passed_tests"]
-                  for t in range(trials)) for name in results)):
+                  for t in range(trials)) for name in results) and
+          longest_streak >= 3):
         classification = "PRELIMINARY_PILOT_SIGNAL"
     else:
         classification = "NO_ADVANTAGE_DEMONSTRATED"
@@ -202,12 +230,16 @@ def compare_scores(results, trials):
                               "; inspect relevance scoring and prompt confounds.")
     if trials < MIN_PILOT_TRIALS:
         issues.append("At least four counterbalanced repetitions required even for a pilot signal.")
+    if longest_streak < 3:
+        issues.append("No three consecutive rounds where BEAN strictly beat cold, simple history and placebo on every task.")
     return {
         "classification": classification,
         "averages": averages,
         "evaluated_per_arm": {a: len(scores[a]) for a in ARMS},
         "expected_per_arm": expected,
         "complete": complete,
+        "strict_taskwise_round_wins": strict_round_wins,
+        "longest_strict_taskwise_streak": longest_streak,
         "improvement_targets": issues,
     }
 
