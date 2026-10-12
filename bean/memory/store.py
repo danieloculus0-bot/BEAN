@@ -103,7 +103,8 @@ def init_store(db_path: str) -> MemoryStore:
         # Integrity failures must still release SQLite handles. Windows will
         # otherwise lock the failed database even after a rejected boot.
         _store.close()
-        _store = None
+        # Preserve the store reference for established diagnostic readback;
+        # the connection stays closed until explicitly reopened by a caller.
         raise
     return _store
 
