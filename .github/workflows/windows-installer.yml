@@ -1,0 +1,81 @@
+name: Windows double-click installer
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'install/windows/**'
+      - '.github/workflows/windows-installer.yml'
+      - 'bean/**'
+      - 'examples/capability_proof.py'
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-windows-installer:
+    runs-on: windows-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install build dependencies
+        run: python -m pip install pyinstaller psutil
+      - name: Compile entry point
+        run: python -m py_compile install/windows/bean_desktop.py
+      - name: Build self-contained BEAN desktop
+        shell: pwsh
+        run: |
+          pyinstaller --noconfirm --clean --windowed --onedir --name BEAN --add-data "bean;bean" --add-data "examples;examples" install/windows/bean_desktop.py
+      - name: Verify frozen BEAN Core works without Python setup
+        shell: pwsh
+        run: |
+          & .\dist\BEAN\BEAN.exe --self-test
+          if ($LASTEXITCODE -ne 0) { throw "Frozen BEAN Core self-test failed" }
+      - name: Install Inno Setup
+        shell: pwsh
+        run: choco install innosetup --yes --no-progress
+      - name: Compile Windows installer
+        shell: pwsh
+        run: |
+          $compiler = "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe"
+          if (!(Test-Path $compiler)) { throw "Inno Setup 6 compiler missing" }
+          & $compiler 'install\windows\bean.iss'
+          if ($LASTEXITCODE -ne 0) { throw "Installer compilation failed" }
+      - name: Test silent installation and installed executable
+        shell: pwsh
+        run: |
+          $setup = Resolve-Path 'out\BEAN-Setup.exe'
+          $target = Join-Path $env:RUNNER_TEMP 'BEAN installed'
+          $p = Start-Process -FilePath $setup -ArgumentList @('/VERYSILENT','/SUPPRESSMSGBOXES','/NORESTART',("/DIR="+$target)) -Wait -PassThru
+          if ($p.ExitCode -ne 0) { throw "Installer exited $($p.ExitCode)" }
+          $exe = Join-Path $target 'BEAN.exe'
+          if (!(Test-Path $exe)) { throw 'Installed executable absent' }
+          & $exe --self-test
+          if ($LASTEXITCODE -ne 0) { throw 'Installed Core self-test failed' }
+          $uninstaller = Join-Path $target 'unins000.exe'
+          if (!(Test-Path $uninstaller)) { throw 'Uninstaller absent' }
+      - name: SHA256 checksum
+        shell: pwsh
+        run: |
+          $hash = (Get-FileHash 'out\BEAN-Setup.exe' -Algorithm SHA256).Hash.ToLower()
+          "$hash  BEAN-Setup.exe" | Set-Content -Encoding ascii 'out\BEAN-Setup.exe.sha256'
+      - uses: actions/upload-artifact@v4
+        with:
+          name: BEAN-Windows-Installer
+          path: |
+            out/BEAN-Setup.exe
+            out/BEAN-Setup.exe.sha256
+          if-no-files-found: error
+      - name: Publish tagged GitHub Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: pwsh
+        run: |
+          gh release create "${{ github.ref_name }}" out/BEAN-Setup.exe out/BEAN-Setup.exe.sha256 --generate-notes --verify-tag
