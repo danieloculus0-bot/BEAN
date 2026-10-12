@@ -132,7 +132,7 @@ h1{font-size:clamp(3.25rem,7.5vw,6.4rem);line-height:1;letter-spacing:-.055em;ma
 <div><span class="eyebrow"><span class="dot" aria-hidden="true"></span> BEAN / AIscend · Public Interactive Demo</span>
 <h1>AIscend.<br><span style="color:var(--green)">Research meets the market.</span></h1>
 <p>AIscend brings BEAN-style memory, strategy experiments, market research and decision journaling together in one polished capital research console.</p>
-<p>Explore an <strong>interactive read-only replica</strong> of the real AIscend dashboard. The public page never connects to an exchange or private wallet.</p>
+<p>Explore a <strong>read-only sample account</strong> using fields and research capabilities present in the actual AIscend dashboard. The numbers are illustrative; this page cannot connect a private wallet or run the trading engine.</p>
 <div class="buttons"><a class="btn primary" href="#demo">Open the interactive console ↓</a><a class="btn" href="https://github.com/danieloculus0-bot/AIscend">Inspect the code ↗</a></div>
 </div>
 <figure class="mascot"><img src="./bean-official.webp" alt="Official smiling lime-green BEAN mascot with two sprout leaves and arms" width="290"><figcaption>BEAN · BEHAVIOR ENABLED AVATAR NODE</figcaption></figure>
@@ -141,12 +141,13 @@ h1{font-size:clamp(3.25rem,7.5vw,6.4rem);line-height:1;letter-spacing:-.055em;ma
 <div class="heading"><div><h2 id="demoTitle">Inside AIscend</h2><p>Try the interface states. Every interaction below is simulated.</p></div><div class="notice">● PUBLIC DEMO · SAMPLE DATA · NO WALLET CONNECTED</div></div>
 <div class="console" aria-label="Read-only AIscend demonstration">
 <div class="console-nav"><span class="console-brand"><img src="./bean-official.webp" alt="" width="26" height="26"> BEAN / AIscend</span><span id="stageTag" class="console-state">DEMO · MARKET OBSERVATION</span></div>
-<div class="metrics" aria-label="Illustrative example portfolio metrics">
+<div class="metrics" aria-label="Sample account using the same four balance fields as the actual AIscend dashboard">
 <div class="metric"><div class="label">Net liquidation · sample</div><div class="value">$25.60</div></div>
 <div class="metric"><div class="label">Cash / USDC · sample</div><div class="value">$6.20</div></div>
 <div class="metric"><div class="label">P/L · sample</div><div class="value green">+$0.60</div></div>
 <div class="metric"><div class="label">Wealth multiple · sample</div><div class="value">1.0240×</div></div>
 </div>
+<p class="note" style="margin:0 0 14px">SAMPLE ACCOUNT · These four fields exist in AIscend. The $25.60 example is illustrative, not a wallet balance or verified trading return. <a href="https://github.com/danieloculus0-bot/AIscend/blob/main/templates/index.html" target="_blank" rel="noopener noreferrer">Compare the actual dashboard markup ↗</a></p>
 <section class="market-strip" id="markets" aria-labelledby="marketsTitle">
   <div class="markets-header">
     <div><h3 id="marketsTitle">LIVE COINBASE MARKET PRICES</h3><div class="market-description">Public last-trade quotes, USD pairs. Independent of the demo portfolio.</div></div>
@@ -173,7 +174,11 @@ h1{font-size:clamp(3.25rem,7.5vw,6.4rem);line-height:1;letter-spacing:-.055em;ma
 <div class="dashboard">
 <div class="column">
 <section class="panel"><h3 id="traderThingTitle">BEAN</h3><div class="petbox"><canvas id="pet" width="192" height="192" role="img" aria-label="Original AIscend dot-matrix BEAN character"></canvas><div class="petname">BEAN</div><div id="petMood">just sitting there</div></div></section>
-<section class="panel"><h3>EXPLORE THE DEMO</h3><button type="button" class="demo-button" data-scene="watch" aria-pressed="true">Market observation <span>›</span></button><button type="button" class="demo-button" data-scene="experiment" aria-pressed="false">Strategy experiment <span>›</span></button><button type="button" class="demo-button" data-scene="paper" aria-pressed="false">Forward paper trial <span>›</span></button><button type="button" class="demo-button" data-scene="gate" aria-pressed="false">BUY confirmation gate <span>›</span></button><p class="note">These buttons change the public display only. They cannot submit orders, activate trading or alter BEAN's real experiments.</p></section>
+<section class="panel"><h3>GAME SCORE · SAMPLE</h3>
+<div class="pair"><div><div class="label">Completed bankroll doublings</div><strong>0 points</strong></div><div><div class="label">Next point</div><strong>2X / POINT 1</strong></div></div>
+<p class="note">Level 1: $100,000 OR BUST. Exactly one point is earned for every completed doubling of the starting bankroll, as implemented in AIscend. This example shows 1.0240×, so no point has been earned.</p>
+<a class="note" href="https://github.com/danieloculus0-bot/AIscend/blob/main/src/game.py" target="_blank" rel="noopener noreferrer">Inspect actual scoring code ↗</a></section>
+<section class="panel"><h3>VIEW SAMPLE RESEARCH STATES</h3><button type="button" class="demo-button" data-scene="watch" aria-pressed="true">Market observation <span>›</span></button><button type="button" class="demo-button" data-scene="experiment" aria-pressed="false">Strategy experiment <span>›</span></button><button type="button" class="demo-button" data-scene="paper" aria-pressed="false">Forward paper trial <span>›</span></button><button type="button" class="demo-button" data-scene="gate" aria-pressed="false">BUY confirmation gate <span>›</span></button><p class="note">These are presentation-only view selectors, <strong>not additional AIscend trading controls</strong>. They display example output states from research capabilities in the actual source. They cannot submit orders, activate trading or alter real experiments.</p></section>
 <section class="soft"><strong>Identity protected.</strong> No names, wallet addresses, account IDs, API keys, credentials or proprietary strategy settings. Sample balances are illustrative.</section>
 </div>
 <div class="column">
