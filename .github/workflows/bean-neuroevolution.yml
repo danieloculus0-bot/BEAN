@@ -9,7 +9,7 @@ on:
       - '.github/workflows/bean-neuroevolution.yml'
       - 'docs/BEAN_NEUROEVOLUTION_20261012.md'
   pull_request:
-    branches: [experiment/bean-sponge-core-20261011]
+    branches: [experiment/bean-sponge-core-20261011, experiment/bean-learner-state-47-49-20261012]
     paths:
       - 'bean/optimization/sponge_dqn.py'
       - 'experiments/sponge_breakout/evolve.py'
@@ -60,7 +60,7 @@ jobs:
       fail-fast: false
       max-parallel: 3
       matrix:
-        seed: [47, 48, 49]
+        seed: [50, 51, 52]
     steps:
       - uses: actions/checkout@v4
         with:
@@ -73,7 +73,7 @@ jobs:
           python -m pip install numpy
           python -m pip install torch --index-url https://download.pytorch.org/whl/cpu
       - name: Evolve then test against equal-game-budget uninterrupted DQN
-        run: python -m experiments.sponge_breakout.evolve --out neuroevolution-${{ matrix.seed }} --seed ${{ matrix.seed }} --population 3 --generations 3 --games 70 --validation 60 --holdout 120
+        run: python -m experiments.sponge_breakout.evolve --out neuroevolution-${{ matrix.seed }} --seed ${{ matrix.seed }} --population 3 --generations 3 --games 30 --continue-games 360 --validation 60 --holdout 120
       - name: Publish reproducible evidence, including losses
         if: always()
         uses: actions/upload-artifact@v4
