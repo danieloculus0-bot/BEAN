@@ -116,7 +116,7 @@ class PublicSkillsPageTests(unittest.TestCase):
         for statement in (
             "PageRank was for links. BEAN ranks evidence quality.",
             "scores the evidence", "before filing the hashed memory receipt",
-            "not a probability that a claim is true",
+            "not the probability that a claim is true",
             "insufficient", "attested", "contested",
             "doesn't automatically connect it to every application",
         ):
