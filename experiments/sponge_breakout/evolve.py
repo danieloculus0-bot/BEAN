@@ -81,7 +81,7 @@ def breed(parent_weights, parent_config, *, seed, mutate=True):
                                          config["epsilon_floor"] + rng.choice([-0.04, 0.0, 0.04]))), 5)
     agent = SpongeDQN(seed=seed, lr=config["lr"], gamma=config["gamma"])
     if parent_weights is not None:
-        agent.load_weights(copy.deepcopy(parent_weights))
+        agent.load_learner_state(parent_weights) if "online" in parent_weights else agent.load_weights(copy.deepcopy(parent_weights))
         if mutate:
             generator = torch.Generator(device="cpu")
             generator.manual_seed(seed)
@@ -89,6 +89,7 @@ def breed(parent_weights, parent_config, *, seed, mutate=True):
                 for param in agent.online.parameters():
                     param.add_(torch.randn(param.shape, generator=generator) * 0.012)
             agent.target.load_state_dict(agent.online.state_dict())
+    agent.optimizer.param_groups[0]["lr"] = config["lr"]
     return agent, config
 
 
@@ -186,17 +187,18 @@ def compete(out, *, seed=41, population=3, generations=3,
                 lineage.append(note)
                 saved = {"weights": copy.deepcopy(agent.weights()), "config": dict(config),
                          "fitness": fitness, "generation": generation,
-                         "candidate": index, "hash": memory["sha256"]}
+                         "candidate": index, "hash": memory["sha256"],
+                         "learner_state": agent.learner_state()}
                 generation_candidates.append(saved)
                 if global_best is None or saved["fitness"] > global_best["fitness"]:
                     global_best = saved
             champion = max(generation_candidates, key=lambda c: c["fitness"])
             champions.append({"generation": generation, "candidate": champion["candidate"],
                               "fitness": champion["fitness"], "sha256": champion["hash"]})
-            parent = copy.deepcopy(champion["weights"])
+            parent = copy.deepcopy(champion["learner_state"])
             parent_config = dict(champion["config"])
         # Final evaluation is accessed exactly once for each selected final policy.
-        evolved, _ = breed(global_best["weights"], global_best["config"],
+        evolved, _ = breed(global_best["learner_state"], global_best["config"],
                            seed=seed, mutate=False)
         # The no-evolution control uses the SAME total number of training games
         # but in one uninterrupted DQN. Frames and updates are reported separately.
@@ -250,6 +252,9 @@ def compete(out, *, seed=41, population=3, generations=3,
                          "fitness": global_best["fitness"],
                          "sha256": global_best["hash"]},
             "control_training": {"frames": control.frames, "updates": control.updates},
+            "selected_training": {"frames": evolved.frames, "updates": evolved.updates,
+                                  "replay_size": len(evolved.replay)},
+            "research_change": "full lineage learner state inheritance; frame budgets remain unmatched",
             "promotion_gate": {"decision": "evolved_dqn" if gate["accepted"] else "dqn_no_evolution",
                                "criterion": gate, "evolved_validation": evolved_validations,
                                "control_validation": control_validations},
