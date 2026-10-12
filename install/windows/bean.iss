@@ -9,7 +9,6 @@ AppName={#AppName}
 AppVersion={#AppVersion}
 AppPublisher=BEAN Open Source
 AppPublisherURL=https://github.com/danieloculus0-bot/BEAN
-DefaultDirName={autopf}\\BEAN
 DefaultGroupName=BEAN
 OutputDir=..\\..\\out
 OutputBaseFilename=BEAN-Setup
