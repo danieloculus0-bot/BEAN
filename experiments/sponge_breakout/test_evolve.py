@@ -4,13 +4,14 @@ import math
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 import torch
 
 from bean.optimization.sponge_dqn import SpongeDQN
 from bean.optimization.autodev import Journal
 from bean.memory.compression import recover_memory
-from .evolve import breed, compete, OBJECTIVE, fingerprint, promotion_gate, continuation_shaping_scale
+from .evolve import breed, compete, OBJECTIVE, fingerprint, promotion_gate, continuation_shaping_scale, train_game
 
 
 class NeuralEvolutionTests(unittest.TestCase):
@@ -66,9 +67,15 @@ class NeuralEvolutionTests(unittest.TestCase):
     def test_continuation_preserves_budget_and_final_checkpoint(self):
         with tempfile.TemporaryDirectory() as tmp:
             folder = Path(tmp) / "trial"
-            result = compete(folder, seed=4, population=2, generations=2,
-                             games_per_candidate=2, continuation_games=5,
-                             validation_games=30, holdout_games=30)
+            with patch("experiments.sponge_breakout.evolve.train_game", wraps=train_game) as trainer:
+                result = compete(folder, seed=4, population=2, generations=2,
+                                 games_per_candidate=2, continuation_games=5,
+                                 validation_games=30, holdout_games=30)
+            continuation_calls = [call.kwargs for call in trainer.call_args_list
+                                  if "shaping_scale" in call.kwargs]
+            self.assertEqual(len(continuation_calls), 5)
+            self.assertTrue(all(call["shaped"] is True and call["shaping_scale"] == 0.0
+                                for call in continuation_calls))
             self.assertEqual(result["protocol"]["search_game_budget"], 8)
             self.assertEqual(result["protocol"]["continuation_games"], 5)
             self.assertEqual(result["protocol"]["control_game_budget"], 13)
