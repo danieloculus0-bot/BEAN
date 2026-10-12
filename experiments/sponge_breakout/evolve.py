@@ -242,7 +242,7 @@ def compete(out, *, seed=41, population=3, generations=3,
         for episode, episode_seed in enumerate(continuation_seeds):
             train_game(evolved, episode_seed, global_best["config"]["epsilon_floor"],
                        shaped=True,
-                       shaping_scale=continuation_shaping_scale(episode, continuation_games))
+                       shaping_scale=0.0)
         # The no-evolution control uses the SAME total number of training games
         # but in one uninterrupted DQN. Frames and updates are reported separately.
         control, _ = breed(None, controls, seed=seed, mutate=False)
@@ -302,11 +302,11 @@ def compete(out, *, seed=41, population=3, generations=3,
             "final_policy_sha256": fingerprint(evolved.weights()),
             "selected_training": {"frames": evolved.frames, "updates": evolved.updates,
                                   "replay_size": len(evolved.replay)},
-            "research_change": "candidate search keeps frozen potential shaping; only selected-champion continuation anneals its per-episode potential multiplier from 1 to 0; same game budgets, frames unmatched",
+            "research_change": "candidate search keeps frozen potential shaping; only selected-champion continuation sets shaping multiplier to 0 throughout; same game budgets, frames unmatched",
             "shaping": {"enabled_for": "evolution_candidates_and_champion_only",
                         "enabled_for_uninterrupted_control": False,
                         "coefficient": 0.75,
-                        "continuation_schedule": "per-episode multiplier 1 - episode/(continuation_games-1); zero for single continuation game",
+                        "continuation_schedule": "per-episode multiplier 0.0 for all champion continuation games",
                         "formula": "reward + gamma*Phi(next_state) - Phi(state); terminal Phi=0"},
             "promotion_gate": {"decision": "evolved_dqn" if gate["accepted"] else "dqn_no_evolution",
                                "criterion": gate, "evolved_validation": evolved_validations,
