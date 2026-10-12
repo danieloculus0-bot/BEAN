@@ -1,0 +1,76 @@
+name: BEAN preregistered raw continuation research 65-67
+on:
+  push:
+    branches:
+      - experiment/bean-raw-continuation-65-67-20261012
+    paths:
+      - 'experiments/sponge_breakout/evolve.py'
+      - 'experiments/sponge_breakout/test_evolve.py'
+      - 'docs/neuroevolution-raw-continuation-prereg-65-67-20261012.md'
+      - '.github/workflows/bean-neuroevolution-raw-65-67.yml'
+permissions:
+  contents: read
+jobs:
+  cross-platform-contract:
+    name: Raw continuation contract and smoke (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 35
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install CPU neural research dependencies
+        run: |
+          python -m pip install numpy
+          python -m pip install torch --index-url https://download.pytorch.org/whl/cpu
+      - name: Run focused neural tests before any new holdout
+        run: python -m unittest experiments.sponge_breakout.test_evolve -v
+      - name: Run bounded smoke on already observed seed 41
+        run: python -m experiments.sponge_breakout.evolve --out neuroevolution-smoke --seed 41 --population 2 --generations 2 --games 12 --validation 40 --holdout 60 --continue-games 5
+      - name: Preserve smoke evidence even if failed
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: raw-continuation-smoke-${{ matrix.os }}
+          path: neuroevolution-smoke/
+          if-no-files-found: warn
+  fresh-seed-paired-arms:
+    name: Fresh seed ${{ matrix.seed }} (${{ matrix.arm }})
+    needs: cross-platform-contract
+    if: github.event_name == 'push' && contains(github.event.head_commit.message, '[launch-65-67]')
+    runs-on: ubuntu-latest
+    timeout-minutes: 75
+    strategy:
+      fail-fast: false
+      max-parallel: 3
+      matrix:
+        seed: [65, 66, 67]
+        arm: [raw, annealed]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ matrix.arm == 'annealed' && '03cae7a4cd22cc4d1baa318d5b41a02b3fcb0316' || github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install CPU neural research dependencies
+        run: |
+          python -m pip install numpy
+          python -m pip install torch --index-url https://download.pytorch.org/whl/cpu
+      - name: Execute frozen preregistered arm on dedicated fresh seed
+        run: python -m experiments.sponge_breakout.evolve --out neuroevolution-${{ matrix.arm }}-${{ matrix.seed }} --seed ${{ matrix.seed }} --population 3 --generations 3 --games 30 --continue-games 360 --validation 60 --holdout 120
+      - name: Preserve positive and negative evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: evolution-${{ matrix.arm }}-seed-${{ matrix.seed }}
+          path: neuroevolution-${{ matrix.arm }}-${{ matrix.seed }}/
+          if-no-files-found: warn
