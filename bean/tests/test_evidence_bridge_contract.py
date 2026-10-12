@@ -124,3 +124,35 @@ def test_host_reasoning_and_evidence_do_not_enable_actions(tmp_path):
         assert bridge.current("source_quality") is None
         assert bridge.finalize("round_safe")["execution_permission"] == "none"
         assert layer.reason(adapter_name="mock")["motion_command_generated"] is False
+
+
+def test_reused_verifier_receipt_cannot_fake_independent_origins(tmp_path):
+    """Different origin labels sharing one proof cannot certify a claim."""
+    db = str(tmp_path / "correlated.db")
+    with BeanReasoningLayer(db) as layer:
+        bridge = EvidenceBridge(layer)
+        bridge.start("round_correlated", "production_claim", "Is this verified?")
+        original = item("one", "round_correlated", "source_alpha", "pass")
+        echo = SourceClaim(
+            record_id="two", round_id="round_correlated",
+            origin="source_beta", source_ref="fixture:round_correlated:two",
+            value="pass", verified=True,
+            verification_ref=original.verification_ref,
+            observed_at=TIME,
+        )
+        assert bridge.observe(original)
+        assert bridge.observe(echo)
+        result = bridge.finalize("round_correlated")
+        assert result["status"] == "insufficient"
+        assert result["value"] is None
+        assert result["distinct_origins"] == 0
+        assert len(result["evidence"]) == 2  # Preserve, do not erase echoes.
+        assert bridge.current("production_claim") is None
+    with BeanReasoningLayer(db) as layer:
+        bridge = EvidenceBridge(layer)
+        # Reopening the database cannot turn duplicate receipts into truth.
+        assert bridge.finalize("round_correlated")["status"] == "insufficient"
+        bridge.start("round_independent", "production_claim", "Independent follow-up?")
+        bridge.observe(item("three", "round_independent", "source_alpha", "pass"))
+        bridge.observe(item("four", "round_independent", "source_beta", "pass"))
+        assert bridge.finalize("round_independent")["status"] == "confirmed"
