@@ -1,7 +1,7 @@
 name: BEAN Neural Evolution evidence lab
 on:
   push:
-    branches: [experiment/bean-deep-q-learning-20261012]
+    branches: [experiment/bean-deep-q-learning-20261012, experiment/bean-learner-state-47-49-20261012]
     paths:
       - 'bean/optimization/sponge_dqn.py'
       - 'experiments/sponge_breakout/evolve.py'
@@ -52,7 +52,7 @@ jobs:
           if-no-files-found: warn
   independent-training-seeds:
     name: Guarded evolution trial seed ${{ matrix.seed }}
-    if: github.event_name == 'pull_request' || contains(github.event.head_commit.message, '[evo-replicate]')
+    if: github.event_name == 'pull_request' || github.ref_name == 'experiment/bean-learner-state-47-49-20261012' || contains(github.event.head_commit.message, '[evo-replicate]')
     needs: evolution-contract
     runs-on: ubuntu-latest
     timeout-minutes: 60
@@ -60,7 +60,7 @@ jobs:
       fail-fast: false
       max-parallel: 3
       matrix:
-        seed: [44, 45, 46]
+        seed: [47, 48, 49]
     steps:
       - uses: actions/checkout@v4
         with:
