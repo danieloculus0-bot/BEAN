@@ -1,9 +1,11 @@
 """Windows desktop entry point. Bundled with the existing BEAN core, no Python required."""
 from __future__ import annotations
 
+import argparse
 import json
 import os
 from pathlib import Path
+import re
 import subprocess
 import sys
 import threading
@@ -47,6 +49,8 @@ from examples.capability_proof import run_proof
 from bean.voice.ollama import OllamaClient
 from bean.voice.chat import BeanConversation
 from bean.voice.persona import system_prompt
+from bean.voice.desktop_memory import DesktopMemory
+from bean.memory.audit_mirror import mirror_path
 
 
 def proof_result():
@@ -79,6 +83,51 @@ def self_test(report_path: str | None = None) -> int:
     return 0 if passed else 1
 
 
+
+def memory_fixture_cli(argv: list[str]) -> int:
+    """Real cross-process SQLite write/read from the frozen installed EXE."""
+    parser = argparse.ArgumentParser(description="BEAN disposable CI memory test")
+    group = parser.add_mutually_exclusive_group(required=True)
+    group.add_argument("--memory-fixture-write", type=Path)
+    group.add_argument("--memory-fixture-read", type=Path)
+    parser.add_argument("--memory-fixture-token", required=True)
+    parser.add_argument("--self-test-report", required=True, type=Path)
+    args = parser.parse_args(argv)
+    report = {"status": "FAIL", "real_sqlite": True, "provider": "none"}
+    try:
+        token = args.memory_fixture_token
+        if not re.fullmatch(r"[A-Za-z0-9-]{8,80}", token):
+            raise ValueError("Invalid fixture token")
+        source_db = args.memory_fixture_write or args.memory_fixture_read
+        if not source_db.is_absolute():
+            raise ValueError("Fixture DB path must be absolute")
+        note_text = "CI fixture for installed BEAN continuity: " + token
+        memory = DesktopMemory(source_db)
+        if args.memory_fixture_write is not None:
+            saved = memory.remember(note_text)
+            report.update(status="PASS", operation="write", event_id=saved["id"],
+                          provenance=saved["provenance"])
+        else:
+            matches = [item for item in memory.recall(token)
+                       if item["text"] == note_text]
+            if len(matches) != 1:
+                raise RuntimeError("Expected one persisted human note across process restart")
+            report.update(status="PASS", operation="read", event_id=matches[0]["id"],
+                          provenance=matches[0]["provenance"])
+        if not mirror_path(memory.path).is_file():
+            raise RuntimeError("Canonical audit journal is missing")
+    except Exception as exc:
+        report["status"] = "FAIL"
+        report["error"] = repr(exc)
+    try:
+        args.self_test_report.parent.mkdir(parents=True, exist_ok=True)
+        args.self_test_report.write_text(json.dumps(report, sort_keys=True, indent=2),
+                                         encoding="utf-8")
+    except OSError:
+        return 1
+    return 0 if report["status"] == "PASS" else 1
+
+
 class Desktop(tk.Tk):
     def __init__(self):
         super().__init__()
@@ -88,6 +137,9 @@ class Desktop(tk.Tk):
         self.configure(bg="#131c1b")
         self.client = None
         self.conversation = None
+        self.memory = DesktopMemory()
+        self.include_saved_notes = tk.BooleanVar(value=False)
+        self._worker_lock = threading.RLock()
         self._setup()
 
     def _setup(self):
@@ -102,6 +154,12 @@ class Desktop(tk.Tk):
         bar.pack(fill="x", padx=20)
         ttk.Button(bar, text="Verify BEAN Core", command=self.verify).pack(side="left", padx=(0, 8))
         ttk.Button(bar, text="Connect local Ollama", command=self.connect).pack(side="left")
+        note_bar = tk.Frame(self, bg=bg)
+        note_bar.pack(fill="x", padx=20, pady=(8, 0))
+        ttk.Button(note_bar, text="Remember note", command=self.remember).pack(side="left", padx=(0, 8))
+        ttk.Button(note_bar, text="Recall notes", command=self.recall).pack(side="left", padx=(0, 8))
+        ttk.Checkbutton(note_bar, text="Include matching notes in local chat",
+                        variable=self.include_saved_notes).pack(side="left")
         self.status = tk.StringVar(value="Ready. Offline core verification works without Ollama.")
         tk.Label(self, textvariable=self.status, bg=bg, fg=green,
                  anchor="w", wraplength=735).pack(fill="x", padx=22, pady=8)
@@ -111,7 +169,10 @@ class Desktop(tk.Tk):
         self.transcript.insert("end", "BEAN technical beta installed. The offline Core test "
                                "uses fictional fixtures, not a trained model.\n"
                                "Optional Ollama chat uses an already-running model on this PC. "
-                               "Chat turns are NOT saved in BEAN Core memory across restarts.\n\n"
+                               "Chat turns are NOT saved automatically. Type a note and press "
+                               "Remember note; Recall notes survives restarts.\n"
+                               "Matching notes reach local Ollama ONLY when opted in. "
+                               "Saved notes are unverified submissions, not trained model weights.\n\n"
                                "No cloud sign-in or trading/hardware permissions are enabled.\n")
         self.transcript.configure(state="disabled")
         input_row = tk.Frame(self, bg=bg)
@@ -130,7 +191,8 @@ class Desktop(tk.Tk):
     def background(self, task, on_success):
         def worker():
             try:
-                result = task()
+                with self._worker_lock:
+                    result = task()
             except Exception as exc:
                 self.after(0, lambda msg=str(exc): self.fail(msg))
             else:
@@ -148,12 +210,40 @@ class Desktop(tk.Tk):
             self.append("Offline Core check:\n" + json.dumps(result, indent=2) + "\n")
         self.background(proof_result, finished)
 
+    def remember(self):
+        note = self.entry.get().strip()
+        if not note:
+            self.fail("Type a note, then press Remember note.")
+            return
+        self.status.set("Saving explicit note to BEAN Core...")
+        def done(saved):
+            self.status.set(f"Saved Core journal event {saved['id']} (user assertion, unverified)")
+            self.append(f"Saved event {saved['id']}: {saved['text']}\n")
+            if self.entry.get().strip() == note:
+                self.entry.delete(0, "end")
+        self.background(lambda: self.memory.remember(note), done)
+
+    def recall(self):
+        query = self.entry.get().strip()
+        if not query:
+            self.fail("Enter words to search saved notes.")
+            return
+        self.status.set("Searching the local Core journal...")
+        def done(items):
+            if not items:
+                self.append("No matching notes; BEAN will not invent memories.\n")
+            else:
+                for item in items:
+                    self.append(f"Saved event {item['id']} [USER SUBMISSION, UNVERIFIED]: {item['text']}")
+            self.status.set(f"Recall complete: {len(items)} matching notes")
+        self.background(lambda: self.memory.recall(query), done)
+
     def connect(self):
         self.status.set("Connecting to local Ollama...")
         def load():
             client = OllamaClient("http://127.0.0.1:11434")
             model = client.select_model(None)
-            prompt, _ = system_prompt(None)
+            prompt, _ = system_prompt(self.memory.path)
             return model, BeanConversation(client, model, prompt)
         def ready(result):
             model, self.conversation = result
@@ -170,14 +260,24 @@ class Desktop(tk.Tk):
             return
         self.entry.delete(0, "end")
         self.append("You: " + text)
+        include = bool(self.include_saved_notes.get())
         self.status.set("BEAN is thinking...")
-        def ready(reply):
+        def run():
+            reference = self.memory.context_for(text) if include else ""
+            response = self.conversation.reply(text, reference_context=reference)
+            return response, bool(reference)
+        def ready(result):
+            reply, used = result
+            if used:
+                self.append("User-saved UNVERIFIED notes included as model reference context.")
             self.append("BEAN: " + reply + "\n")
             self.status.set("Ready")
-        self.background(lambda: self.conversation.reply(text), ready)
+        self.background(run, ready)
 
 
 if __name__ == "__main__":
+    if "--memory-fixture-write" in sys.argv or "--memory-fixture-read" in sys.argv:
+        raise SystemExit(memory_fixture_cli(sys.argv[1:]))
     if "--self-test" in sys.argv:
         report = None
         if "--self-test-report" in sys.argv:
