@@ -31,12 +31,22 @@ jobs:
       - name: Build self-contained BEAN desktop
         shell: pwsh
         run: |
-          pyinstaller --noconfirm --clean --windowed --onedir --name BEAN --add-data "bean;bean" --add-data "examples;examples" install/windows/bean_desktop.py
+          pyinstaller --noconfirm --clean --windowed --onedir --paths "." --name BEAN --add-data "bean/schemas;bean/schemas" install/windows/bean_desktop.py
       - name: Verify frozen BEAN Core works without Python setup
         shell: pwsh
         run: |
-          & .\dist\BEAN\BEAN.exe --self-test
-          if ($LASTEXITCODE -ne 0) { throw "Frozen BEAN Core self-test failed" }
+          $exe = (Resolve-Path 'dist\BEAN\BEAN.exe').Path
+          $receipt = Join-Path $env:RUNNER_TEMP 'bean-frozen-self-test.json'
+          Push-Location $env:RUNNER_TEMP
+          try {
+            & $exe --self-test --self-test-report $receipt
+            if ($LASTEXITCODE -ne 0) { throw "Frozen Core self-test failed. Receipt: $receipt" }
+          } finally { Pop-Location }
+          if (!(Test-Path $receipt)) { throw 'Frozen BEAN gave no self-test receipt' }
+          $report = Get-Content $receipt -Raw | ConvertFrom-Json
+          if ($report.status -ne 'PASS' -or $report.checks_passed -ne 4 -or $report.checks_total -ne 4 -or $report.live_model_used -ne $false) {
+            throw "Frozen Core reported a failed or non-fixture test"
+          }
       - name: Install Inno Setup
         shell: pwsh
         run: choco install innosetup --yes --no-progress
@@ -56,10 +66,22 @@ jobs:
           if ($p.ExitCode -ne 0) { throw "Installer exited $($p.ExitCode)" }
           $exe = Join-Path $target 'BEAN.exe'
           if (!(Test-Path $exe)) { throw 'Installed executable absent' }
-          & $exe --self-test
-          if ($LASTEXITCODE -ne 0) { throw 'Installed Core self-test failed' }
+          $receipt = Join-Path $env:RUNNER_TEMP 'bean-installed-self-test.json'
+          Push-Location $env:RUNNER_TEMP
+          try {
+            & $exe --self-test --self-test-report $receipt
+            if ($LASTEXITCODE -ne 0) { throw 'Installed Core self-test failed' }
+          } finally { Pop-Location }
+          if (!(Test-Path $receipt)) { throw 'Installed Core returned no receipt' }
+          $report = Get-Content $receipt -Raw | ConvertFrom-Json
+          if ($report.status -ne 'PASS' -or $report.checks_passed -ne 4 -or $report.checks_total -ne 4) {
+            throw 'Installed Core did not pass all four real offline checks'
+          }
           $uninstaller = Join-Path $target 'unins000.exe'
           if (!(Test-Path $uninstaller)) { throw 'Uninstaller absent' }
+          $p = Start-Process -FilePath $uninstaller -ArgumentList @('/VERYSILENT','/SUPPRESSMSGBOXES','/NORESTART') -Wait -PassThru
+          if ($p.ExitCode -ne 0) { throw "Uninstall exited $($p.ExitCode)" }
+          if (Test-Path $exe) { throw 'Uninstall left the BEAN executable installed' }
       - name: SHA256 checksum
         shell: pwsh
         run: |
