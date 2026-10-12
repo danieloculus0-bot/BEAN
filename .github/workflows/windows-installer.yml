@@ -63,10 +63,20 @@ jobs:
         run: |
           $setup = Resolve-Path 'out\BEAN-Setup.exe'
           $target = Join-Path $env:RUNNER_TEMP 'BEAN installed'
-          $p = Start-Process -FilePath $setup -ArgumentList @('/VERYSILENT','/SUPPRESSMSGBOXES','/NORESTART',("/DIR="+$target)) -Wait -PassThru
-          if ($p.ExitCode -ne 0) { throw "Installer exited $($p.ExitCode)" }
+          $installLog = Join-Path $env:RUNNER_TEMP 'bean-install.log'
+          # PowerShell joins -ArgumentList arrays into one command line.
+          # Explicitly quote the *value* of Inno's /DIR= to retain spaces.
+          $arguments = '/VERYSILENT /SUPPRESSMSGBOXES /NORESTART /DIR="' + $target + '" /LOG="' + $installLog + '"'
+          $p = Start-Process -FilePath $setup -ArgumentList $arguments -Wait -PassThru
+          if ($p.ExitCode -ne 0) {
+            if (Test-Path $installLog) { Get-Content $installLog -Tail 70 | Write-Host }
+            throw "Installer exited $($p.ExitCode)"
+          }
           $exe = Join-Path $target 'BEAN.exe'
-          if (!(Test-Path $exe)) { throw 'Installed executable absent' }
+          if (!(Test-Path $exe)) {
+            if (Test-Path $installLog) { Get-Content $installLog -Tail 70 | Write-Host }
+            throw "Install returned zero but executable was not at $exe"
+          }
           $receipt = Join-Path $env:RUNNER_TEMP 'bean-installed-self-test.json'
           Push-Location $env:RUNNER_TEMP
           try {
