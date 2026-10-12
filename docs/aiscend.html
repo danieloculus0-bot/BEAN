@@ -106,19 +106,52 @@ footer{border-top:1px solid #3b5540;padding:23px 0;color:var(--muted);font-size:
 #paperJournal{font:12px/1.65 ui-monospace,monospace;color:#cce5c6;min-height:25px;max-height:110px;overflow:auto;margin-top:10px}
 @media(max-width:650px){.paper-stats{grid-template-columns:repeat(2,1fr)}}
 </style>
+<style>
+
+/* BEAN main-site design system, shared visually with the laboratory homepage.
+   Presentation-only changes: demo state, paper orders and live quotes untouched. */
+:root{--bg:#0b1410;--surface:#14231a;--surface2:#1b3023;--line:#34503c;--text:#edf8ed;--muted:#b2c6b5;--green:#a5f47a;--shadow:0 16px 40px #0005}
+body{background:radial-gradient(ellipse 80% 440px at 76% 0%,#25422b 0%,transparent 82%),#0b1410;color:var(--text);font:16px/1.6 system-ui,-apple-system,"Segoe UI",sans-serif}
+.wrap{max-width:1160px}
+header{background:#0b1410ef;border-bottom:1px solid var(--line);backdrop-filter:blur(12px)}
+.nav{min-height:70px;justify-content:initial;gap:24px}
+.brand{font-size:1.15rem;letter-spacing:.07em;text-decoration:none}
+.brand>span:first-child{width:42px;height:42px;overflow:hidden;background:transparent;border:0}
+.brand img{width:42px;height:42px;object-fit:cover;border-radius:13px}
+.slash{color:#86b98b}.appname{color:var(--green)}
+.links{margin-left:auto;gap:24px;font-size:.9rem;font-weight:500}
+.links a{color:#d3e4d3}.links a:hover{color:var(--green)}
+.hero{padding:75px 0 63px;grid-template-columns:1.25fr .75fr;gap:52px}
+.eyebrow{border:0;background:transparent;padding:0;color:var(--green);letter-spacing:.13em}
+h1{font-size:clamp(3.25rem,7.5vw,6.4rem);line-height:1;letter-spacing:-.055em;margin:18px 0 25px}
+.hero p{font-size:1.15rem;color:var(--muted);max-width:720px}
+.btn{border:1px solid var(--line);background:var(--surface2);padding:12px 18px;font-size:inherit}
+.btn.primary{background:var(--green);color:#102212;border-color:var(--green)}
+.btn.primary:hover{background:#d3ffc0;color:#102212}
+.mascot{border:0;background:radial-gradient(circle,#335b3b,transparent 65%);box-shadow:none;min-height:0;padding:20px}
+.mascot img{width:100%;max-width:380px;border-radius:34px;box-shadow:0 30px 75px #050e08}
+.mascot figcaption{margin-top:12px;color:var(--muted)}
+.heading h2{font-size:clamp(2rem,4vw,3.1rem);letter-spacing:-.035em}
+.console,.panel,.metric,.feature,.paper-lab{border-color:var(--line);background:linear-gradient(145deg,#1a3022,#122117)}
+.console{border-radius:20px}
+.notice{border-color:var(--line);background:var(--surface);color:var(--green)}
+@media(max-width:900px){.hero{grid-template-columns:1fr;padding:45px 0}.mascot{max-width:300px;margin:auto}.mascot img{max-height:none;width:100%}}
+@media(max-width:610px){.nav{flex-wrap:wrap;padding:12px 0;gap:10px}.links{width:100%;margin-left:0;overflow-x:auto;flex-wrap:nowrap;gap:17px;padding-bottom:5px}.links a{white-space:nowrap}.hero{padding:35px 0 25px}.hero h1{font-size:3.3rem}}
+
+</style>
 </head>
 <body>
 <header><div class="wrap nav">
 <a class="brand" href="./index.html" aria-label="BEAN home"><span><img src="./bean-official.webp" alt="" width="32" height="32"></span>BEAN <span class="slash">/</span> <span class="appname">AIscend</span></a>
-<nav class="links" aria-label="Page navigation"><a href="#demo">Demo</a><a href="#markets">Live markets</a><a href="#how-it-works">How it works</a><a href="https://github.com/danieloculus0-bot/AIscend">Source</a><a href="./index.html">BEAN home ↗</a></nav>
+<nav class="links" aria-label="Page navigation"><a href="#demo">Demo</a><a href="#markets">Live markets</a><a href="#how-it-works">How it works</a><a href="https://github.com/danieloculus0-bot/AIscend">Source</a><a href="./index.html#lab">BEAN Laboratory ↗</a></nav>
 </div></header>
 <main>
 <section class="wrap hero">
-<div><span class="eyebrow"><span class="dot" aria-hidden="true"></span> BEAN Infrastructure · Public Technical Beta</span>
-<h1>Autonomous capital research. Evidence first.</h1>
+<div><span class="eyebrow"><span class="dot" aria-hidden="true"></span> BEAN / AIscend · Public Interactive Demo</span>
+<h1>AIscend.<br><span style="color:var(--green)">Research meets the market.</span></h1>
 <p>AIscend brings BEAN-style memory, strategy experiments, market research and decision journaling together in one polished capital research console.</p>
 <p>Explore an <strong>interactive read-only replica</strong> of the real AIscend dashboard. The public page never connects to an exchange or private wallet.</p>
-<div class="buttons"><a class="btn primary" href="#demo">Explore the demo ↓</a><a class="btn" href="https://github.com/danieloculus0-bot/AIscend">Inspect the code ↗</a></div>
+<div class="buttons"><a class="btn primary" href="#demo">Open the interactive console ↓</a><a class="btn" href="https://github.com/danieloculus0-bot/AIscend">Inspect the code ↗</a></div>
 </div>
 <figure class="mascot"><img src="./bean-official.webp" alt="Official smiling lime-green BEAN mascot with two sprout leaves and arms" width="290" height="290"><figcaption>BEAN · BEHAVIOR ENABLED AVATAR NODE</figcaption></figure>
 </section>
