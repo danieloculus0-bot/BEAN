@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>BEAN | Real AI Skills · Public Technical Beta</title>
-  <meta name="description" content="What makes BEAN different? Tested evidence-quality ranking, persistent memory, source-linked engineering improvements and clearly labeled learning research. Inspect the results and limits.">
+  <meta name="description" content="Explore real BEAN experiment data: source-ranking accuracy, independently tested neural code repair and inconclusive memory-transfer results. Every graph links to its evidence.">
   <meta name="robots" content="index, follow">
   <meta name="theme-color" content="#101713">
   <link rel="icon" type="image/webp" href="./bean-official.webp">
@@ -917,7 +917,23 @@
     .rank-links{display:flex;gap:10px;flex-wrap:wrap;margin-top:15px}
     @media(max-width:980px){.rank-top{grid-template-columns:1fr}.rank-stages{grid-template-columns:repeat(2,minmax(0,1fr))}}
     @media(max-width:760px){.rank-stages,.rank-states{grid-template-columns:1fr}.rank-note,.rank-boundary{padding:16px}}
-  </style>
+  
+/* Evidence-first dashboard: native CSS visuals, no screenshots or invented metrics. */
+.learn-dashboard{padding-top:26px;padding-bottom:37px}
+.learn-layout{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:15px;margin-top:24px}
+.learn-viz{background:var(--panel);border:1px solid var(--line);padding:20px;border-radius:20px;box-shadow:var(--shadow)}
+.learn-label{font-size:.77rem;letter-spacing:.07em;text-transform:uppercase;font-weight:800;color:var(--green-deep)}
+.learn-row{margin:18px 0}.learn-row-top{display:flex;justify-content:space-between;gap:8px;font-size:.84rem;align-items:baseline}
+.learn-row-top b{white-space:nowrap;font-size:1.2rem;color:var(--text)}
+.learn-track{height:13px;background:#e4eee2;border-radius:20px;overflow:hidden;margin-top:7px}
+.learn-track span{height:100%;display:block;background:linear-gradient(90deg,#47a64d,#98e86c);border-radius:20px}
+.learn-track span.learn-baseline{background:#8b9d91}
+.learn-viz p{font-size:.85rem;line-height:1.5;margin-top:14px}
+.learn-viz a,.learn-bottom a{font-weight:750;text-decoration:underline;text-underline-offset:3px}
+.learn-bottom{border-left:4px solid #71d455;background:var(--panel);border-radius:12px;padding:16px 19px;margin-top:17px;color:var(--muted)}
+@media(max-width:880px){.learn-layout{grid-template-columns:1fr}}
+
+</style>
 
 <style>
 .aiscend-preview{margin:8px 0 23px;border:1px solid #547c58;border-radius:19px;overflow:hidden;background:linear-gradient(155deg,#203327,#111e16);box-shadow:0 15px 40px #0004}
@@ -944,7 +960,7 @@
 
       <button class="mobile-nav-toggle" type="button" aria-controls="primary-navigation" aria-expanded="false" aria-label="Show site sections"><span aria-hidden="true">☰</span> Sections</button>
       <nav class="navlinks" id="primary-navigation" aria-label="Site sections">
-        <a href="#latest">Build log</a>
+        <a href="#learning">Results</a><a href="#latest">Build log</a>
         <a href="#milestones">Verified tests</a>
         <a href="#difference">Why BEAN</a>
         <a href="#evidence-rank">Evidence Rank</a>
@@ -954,9 +970,9 @@
         <a href="#applications">AIscend</a>
         <a href="./aiscend.html" target="_blank" rel="noopener noreferrer">Demo</a>
         <a href="#benchmarks">Benchmarks</a>
-        <a href="#proof">Proof</a>
+        
         <a href="#quickstart">Quickstart</a>
-        <a href="#research">Research</a>
+        
         <a href="#community">Follow BEAN</a>
         <a href="https://github.com/danieloculus0-bot/BEAN">GitHub</a>
       </nav>
@@ -965,8 +981,37 @@
 
   <main id="top">
     <nav class="mobile-jumps" aria-label="Quick section links">
-      <a href="#difference">Why BEAN</a><a href="#evidence-rank">Evidence Rank</a><a href="#skills">Skills</a><a href="#applications">Crypto beta</a><a href="./aiscend.html" target="_blank" rel="noopener noreferrer">Demo</a><a href="#neural">Neural AI</a><a href="#autonomy">Autonomy</a><a href="#milestones">Verified tests</a><a href="#latest">Build log</a><a href="#benchmarks">Benchmarks</a><a href="#proof">Proof</a><a href="#quickstart">Quickstart</a><a href="#research">Research</a><a href="#community">Follow BEAN</a>
+      <a href="#learning">Results</a><a href="#difference">Why BEAN</a><a href="#evidence-rank">Evidence Rank</a><a href="#skills">Skills</a><a href="#applications">Crypto beta</a><a href="./aiscend.html" target="_blank" rel="noopener noreferrer">Demo</a><a href="#neural">Neural AI</a><a href="#autonomy">Autonomy</a><a href="#milestones">Verified tests</a><a href="#latest">Build log</a><a href="#benchmarks">Benchmarks</a><a href="#quickstart">Quickstart</a><a href="#community">Follow BEAN</a>
     </nav>
+    <section id="learning" class="section tight learn-dashboard" aria-labelledby="learning-title">
+      <div class="wrap">
+        <div class="eyebrow"><span class="dot"></span> BEAN laboratory · measured results</div>
+        <h2 id="learning-title">Show the work. Including the failures.</h2>
+        <p class="lead">Real experiment results, directly linked to the code and GitHub Actions. Synthetic benchmarks are labeled; none demonstrates general intelligence or autonomous learning superiority.</p>
+        <div class="learn-layout">
+          <article class="learn-viz">
+            <span class="learn-label">Lab 005 · Synthetic source-ranking accuracy</span>
+            <div class="learn-row"><div class="learn-row-top"><strong>Evidence-aware policy</strong><b>91.25%</b></div><div class="learn-track"><span style="width:91.25%"></span></div></div>
+            <div class="learn-row"><div class="learn-row-top"><strong>Popularity baseline</strong><b>18.75%</b></div><div class="learn-track"><span class="learn-baseline" style="width:18.75%"></span></div></div>
+            <p>Deliberately syndicated synthetic misinformation, not live web ranking. <a href="https://github.com/danieloculus0-bot/BEAN/actions/runs/38029876766">Source and test receipt</a>.</p>
+          </article>
+          <article class="learn-viz">
+            <span class="learn-label">Lab 020 · Python selector repair</span>
+            <div class="learn-row"><div class="learn-row-top"><strong>Original module</strong><b>11/14</b></div><div class="learn-track"><span class="learn-baseline" style="width:78.5714%"></span></div></div>
+            <div class="learn-row"><div class="learn-row-top"><strong>Model repair proposal</strong><b>14/14</b></div><div class="learn-track"><span style="width:100%"></span></div></div>
+            <p>Proposal also passed 7/7 independent fresh holdout checks. Candidate is not merged into Core. <a href="https://github.com/danieloculus0-bot/BEAN/pull/51">Review source and evidence</a>.</p>
+          </article>
+          <article class="learn-viz">
+            <span class="learn-label">Lab 023 · Memory-transfer pilot</span>
+            <div class="learn-row"><div class="learn-row-top"><strong>Cold-context checks</strong><b>4</b></div><div class="learn-track"><span class="learn-baseline" style="width:40%"></span></div></div>
+            <div class="learn-row"><div class="learn-row-top"><strong>Retained-context checks</strong><b>6</b></div><div class="learn-track"><span style="width:60%"></span></div></div>
+            <p><strong>Inconclusive.</strong> Bars show raw counts on a shared 0–10 visual scale, not comparable accuracy: missing candidates and unmatched model receipts prevent a learning claim. <a href="https://github.com/danieloculus0-bot/BEAN/actions/runs/38112389946">See verdict</a>.</p>
+          </article>
+        </div>
+        <div class="learn-bottom"><strong>What's running next:</strong> Lab 026 compares no memory, chronological history, evidence-ranked lessons and irrelevant placebo with the same local model. Protocol checks passed; causal advantage is not proven. <a href="https://github.com/danieloculus0-bot/BEAN/pull/96">Open experiment</a>.</div>
+      </div>
+    </section>
+
     <section class="hero">
       <div class="wrap hero-grid">
 
@@ -1044,90 +1089,19 @@
 
 
 
-    <section id="difference" class="section difference-section" aria-labelledby="difference-heading">
+    <section id="difference" class="section tight" aria-labelledby="difference-heading">
       <div class="wrap">
-        <div class="eyebrow"><span class="dot"></span> Beyond the model · BEAN's actual contribution</div>
-        <div class="difference-intro">
-          <div>
-            <h2 id="difference-heading">The model thinks. BEAN keeps the receipts.</h2>
-            <p class="lead">BEAN is <strong class="strong">not a new foundation model</strong>. It is an evidence-aware agent layer designed to turn model suggestions into persistent observations, checkable decisions, bounded experiments, and outcomes that remain available after a restart.</p>
-            <p>Memory, retrieval and tool use are not unique inventions. What BEAN is building is an inspectable engineering workflow that can be tested against an ordinary model and simpler agents, not just described with AI buzzwords.</p>
-          </div>
-          <div class="difference-thesis">
-            <span>What matters</span>
-            <strong>Does past evidence actually improve the next decision?</strong>
-            <p>That's the test of BEAN's intelligence advantage. Source code and bounded improvements are real; superiority over simpler agents is not yet proven.</p>
-          </div>
+        <div class="eyebrow"><span class="dot"></span> The engineering idea</div>
+        <h2 id="difference-heading">An AI that remembers the test, not just the answer.</h2>
+        <p class="lead">BEAN links source evidence, scored memory, reviewable proposals, independent tests and future revisions. Other agents can do this too. Our advantage is a <strong>testable research question</strong>, not an unearned claim.</p>
+        <div class="grid-3" style="margin-top:20px">
+          <article class="card"><h3>Observe</h3><p>Record provenance, uncertainty, contradictions and what actually happened.</p></article>
+          <article class="card"><h3>Experiment</h3><p>Compare candidate changes with controls and withheld tests.</p></article>
+          <article class="card"><h3>Retain or reject</h3><p>Keep independently supported lessons, record regressions and reopen stale conclusions.</p></article>
         </div>
-
-        <div class="difference-comparison" aria-label="Comparison of base language models, tool agents, and BEAN">
-          <article class="difference-lane">
-            <div class="difference-lane-label">A · Base LLM call</div>
-            <h3>Prompt → model → answer</h3>
-            <p>The trained model supplies language and reasoning. Persistent history, evidence validation and real-world outcomes are not inherent in a single stateless call.</p>
-          </article>
-          <article class="difference-lane">
-            <div class="difference-lane-label">B · Conventional tool agent</div>
-            <h3>Model + tools + optional memory</h3>
-            <p>Tool execution, retrieval and saved context are established agent techniques. Other agent systems can implement strong verification and durable learning too.</p>
-          </article>
-          <article class="difference-lane difference-lane-bean">
-            <div class="difference-lane-label">C · BEAN's implementation</div>
-            <h3>Evidence → proposal → test → retained outcome</h3>
-            <p>BEAN Core tracks source references, uncertainty, contradictions and review status. Its Bridge and code laboratories use bounded candidate selection, repeatable tests and recorded failures.</p>
-            <a href="https://github.com/danieloculus0-bot/BEAN/blob/main/bean/integration/evidence_bridge.py">Inspect the evidence loop →</a>
-          </article>
-        </div>
-
-        <h3 class="difference-proof-heading">Where this has changed real code, and where it hasn't</h3>
-        <div class="difference-proofs">
-          <article class="difference-proof">
-            <div class="difference-proof-label">Merged to Bridge main · Bounded agentic edits</div>
-            <h3>Two real, tested source improvements</h3>
-            <p>BEAN selected changes from a defined, evidence-backed transformation catalog. A trusted executor applied them: rejecting invalid ERP observations at ingestion and caching repeated timestamp parsing. Both fixes were merged with regression tests. <strong>This is narrower than an LLM freely rewriting its own software.</strong></p>
-            <div class="difference-proof-links">
-              <a href="https://github.com/danieloculus0-bot/BEAN-AI-Bridge-/pull/15">Merged validation fix #15</a>
-              <a href="https://github.com/danieloculus0-bot/BEAN-AI-Bridge-/pull/17">Merged performance fix #17</a>
-              <a href="https://github.com/danieloculus0-bot/BEAN-AI-Bridge-/blob/main/docs/BEAN_AUTONOMOUS_BRIDGE_IMPROVEMENT.md">Read the bounded-autonomy contract</a>
-            </div>
-          </article>
-          <article class="difference-proof">
-            <div class="difference-proof-label">Core research · Model-authored candidate</div>
-            <h3>Neural code repair passed a scoped holdout</h3>
-            <p>In Lab 020 an external neural model proposed a repair to a real BEAN Core selector: <strong>14/14 development</strong> and <strong>7/7 fresh holdout</strong> checks passed. Its review PR is still open, so this is a validated research candidate, not a merged Core self-upgrade.</p>
-            <div class="difference-proof-links">
-              <a href="https://github.com/danieloculus0-bot/BEAN/blob/main/docs/BEAN_LLM_REPAIR_EXPERIMENT_20261011.md">Read the measured result</a>
-              <a href="https://github.com/danieloculus0-bot/BEAN/pull/51">Inspect open Core PR #51</a>
-            </div>
-          </article>
-          <article class="difference-proof">
-            <div class="difference-proof-label">Causal memory research · Inconclusive</div>
-            <h3>Can BEAN carry lessons into new problems?</h3>
-            <p>Lab 023 restarted a learning journal and compared cold-context with retained-context attempts on different repair tasks. One pilot reported <strong>4 versus 6 held-out checks</strong>, but missing candidates and incomplete matched-model receipts prevented a valid learning claim. The recorded verdict is <strong>INCONCLUSIVE</strong>.</p>
-            <div class="difference-proof-links">
-              <a href="https://github.com/danieloculus0-bot/BEAN/blob/main/docs/bean-causal-retention-lab023.md">Read the causal-retention experiment</a>
-              <a href="https://github.com/danieloculus0-bot/BEAN/actions/runs/38112389946">Inspect the pilot receipt</a>
-            </div>
-          </article>
-          <article class="difference-proof">
-            <div class="difference-proof-label">Lab 026 · Real-model controlled research</div>
-            <h3>Four ways to test whether experience helps</h3>
-            <p>BEAN's newest experiment reuses the same local Ollama model across <strong>cold reasoning</strong>, <strong>ordinary saved history</strong>, <strong>evidence-ranked BEAN lessons</strong>, and <strong>unrelated placebo notes</strong>. Each condition receives the same coding challenges in counterbalanced order. Independent Windows/Linux checks verify the experimental controls; only separate grading of actual model-written answers can establish an improvement.</p>
-            <p><strong>Current evidence:</strong> the experimental protocol has passed on Windows and Ubuntu. A live Ollama pilot has begun, but <strong>BEAN's learning advantage has not been demonstrated</strong>. That controlled advantage has not yet been established. This evaluates one evidence-memory component, not the full BEAN architecture.</p>
-            <div class="difference-proof-links">
-              <a href="https://github.com/danieloculus0-bot/BEAN/pull/96">Review the draft Lab 026 research</a>
-              <a href="https://github.com/danieloculus0-bot/BEAN/actions/runs/38181156634">Inspect the real-model pilot</a>
-              <a href="https://github.com/danieloculus0-bot/BEAN/blob/experiment/bean-causal-ablation-lab026-20261011/docs/bean-causal-ablation-lab026.md">Read the four-arm protocol</a>
-              <a href="https://github.com/danieloculus0-bot/BEAN/blob/main/docs/PRODUCTION_READINESS_AUDIT_2026-10-11.md">Inspect readiness limitations</a>
-            </div>
-          </article>
-        </div>
-        <div class="difference-conclusion">
-          <strong>BEAN today:</strong> functioning memory, evidence guards, neural integrations and bounded engineering improvements. <strong>BEAN's open challenge:</strong> repeated, independently verified improvements on unseen work caused by retained experience—not merely additional model calls.
-        </div>
+        <p style="margin-top:16px"><a href="https://github.com/danieloculus0-bot/BEAN/pull/104">Read the proposed learning standards</a> · <a href="https://github.com/danieloculus0-bot/BEAN/blob/main/docs/VERIFIED_UTILITY_AND_EVIDENCE_2026-10-11.md">Inspect tested capabilities</a></p>
       </div>
     </section>
-
 
     <section id="evidence-rank" class="section rank-section" aria-labelledby="rank-heading">
       <div class="wrap">
@@ -1609,53 +1583,6 @@
       </div>
     </section>
 
-    <section id="proof" class="section">
-      <div class="wrap">
-        <div class="eyebrow">
-          <span class="dot"></span>
-          Inspectable behavior
-        </div>
-
-        <h2>Two things BEAN refuses to fake</h2>
-
-        <div class="grid-2" style="margin-top:22px">
-          <article class="card soft">
-            <h3>Missing information is not zero.</h3>
-            <p>
-              If a source report is absent, stale, or lacks confirmed coverage, BEAN can preserve the uncertainty
-              instead of inventing a neat-looking answer.
-            </p>
-            <div class="proof-box">
-              <strong class="strong">Watcher behavior</strong><br>
-              <span class="proof-line">current_value = N/A</span>
-            </div>
-            <p style="margin-top:12px">
-              <a href="https://github.com/danieloculus0-bot/BEAN/blob/main/docs/bean-watcher-contract.md">
-                Read the Watcher contract →
-              </a>
-            </p>
-          </article>
-
-          <article class="card soft">
-            <h3>A model’s assertion is not evidence.</h3>
-            <p>
-              An unsupported answer does not get to certify itself. A host-supplied verifier must corroborate
-              the claim before a new definition is recorded as revised knowledge.
-            </p>
-            <div class="proof-box">
-              <strong class="strong">Learning-loop behavior</strong><br>
-              <span class="proof-line">unverified_claim = held</span>
-            </div>
-            <p style="margin-top:12px">
-              <a href="https://github.com/danieloculus0-bot/BEAN-AI-Bridge-/blob/main/experiments/learning_loop/README.md">
-                Inspect evidence revision tests →
-              </a>
-            </p>
-          </article>
-        </div>
-      </div>
-    </section>
-
     <section id="quickstart" class="section">
       <div class="wrap split">
         <div class="card">
@@ -1714,72 +1641,6 @@ python -m examples.quickstart_reasoning</code></pre>
       </div>
     </section>
 
-    <section id="research" class="section tight">
-      <div class="wrap">
-        <div class="eyebrow">
-          <span class="dot"></span>
-          Research and boundaries
-        </div>
-
-        <h2>A serious beta doesn't hide its experiments.</h2>
-        <p class="lead">
-          Stable skills ship with code and repeatable tests. New research lives alongside them,
-          including ambitious wins, useful failures and the next capabilities we want to earn.
-        </p>
-
-        <div class="grid-3" style="margin-top:24px">
-          <article class="card">
-            <div class="icon-badge">🧪</div>
-            <h3>Reproducible experiments</h3>
-            <p>Research branches, synthetic studies, cross-platform tests, and tracked findings are part of the public record.</p>
-            <p><a href="https://github.com/danieloculus0-bot/BEAN/blob/main/docs/experimental-research-index-2026-10.md">View research index →</a></p>
-          </article>
-
-          <article class="card">
-            <div class="icon-badge">🔗</div>
-            <h3>Core + Bridge</h3>
-            <p>BEAN Core handles persistent reasoning primitives and local MCP tools. BEAN AI Bridge explores evidence, offline ERP/KPI replay, microcontroller emulators, and review-required revision workflows. AIscend integrates BEAN-style research separately from live Coinbase execution.</p>
-            <p><a href="https://github.com/danieloculus0-bot/BEAN/blob/main/docs/EVIDENCE_BRIDGE_READINESS.md">See evidence flow →</a></p>
-          </article>
-
-          <article class="card">
-            <div class="icon-badge">🛡️</div>
-            <h3>Built for inspection</h3>
-            <p>BEAN's beta skills are available for testing now. More demanding hosted, financial and hardware deployment gates are documented separately.</p>
-            <p><a href="https://github.com/danieloculus0-bot/BEAN/actions/workflows/brain-smoke.yml">Check fresh regression runs →</a></p>
-          </article>
-        </div>
-      </div>
-    </section>
-
-    <section class="section">
-      <div class="wrap">
-        <div class="cta">
-          <div class="eyebrow">
-            <span class="dot"></span>
-            Integrate, inspect, contribute
-          </div>
-
-          <h2>BEAN is meant to be tested.</h2>
-          <p class="lead">
-            If you want a project that treats memory, evidence, uncertainty, and revision as first-class concerns,
-            BEAN is worth exploring.
-          </p>
-
-          <div class="hero-actions">
-            <a class="btn btn-primary" href="https://github.com/danieloculus0-bot/BEAN">
-              Open the repository
-            </a>
-            <a class="btn btn-secondary" href="https://github.com/danieloculus0-bot/BEAN/issues">
-              Open an issue
-            </a>
-            <a class="btn btn-secondary" href="https://github.com/danieloculus0-bot/BEAN-AI-Bridge-">
-              Visit BEAN AI Bridge
-            </a>
-          </div>
-        </div>
-      </div>
-    </section>
     <section id="community" class="section tight">
       <div class="wrap">
         <div class="eyebrow"><span class="dot"></span> Help this little bean grow</div>
