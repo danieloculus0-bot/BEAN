@@ -9,7 +9,7 @@ import torch
 from bean.optimization.sponge_dqn import SpongeDQN
 from bean.optimization.autodev import Journal
 from bean.memory.compression import recover_memory
-from .evolve import breed, compete, OBJECTIVE, fingerprint
+from .evolve import breed, compete, OBJECTIVE, fingerprint, promotion_gate
 
 
 class NeuralEvolutionTests(unittest.TestCase):
@@ -44,6 +44,21 @@ class NeuralEvolutionTests(unittest.TestCase):
         self.assertNotEqual(fingerprint(a.weights()), fingerprint(parent_weights))
         self.assertEqual(a.choose((6,1,0),epsilon=0), b.choose((6,1,0),epsilon=0))
 
+    def test_adoption_gate_requires_both_validation_cohorts(self):
+        def metrics(bricks, survival, first):
+            return {"bricks": bricks, "survival": survival, "games": 60, "seed_start": first}
+        control = [metrics(8, .8, 100), metrics(9, .9, 200)]
+        clear = [metrics(8.7, .8, 100), metrics(9.3, .91, 200)]
+        self.assertTrue(promotion_gate(clear, control)["accepted"])
+        overfit = [metrics(12, .95, 100), metrics(8, .4, 200)]
+        rejection = promotion_gate(overfit, control)
+        self.assertFalse(rejection["accepted"])
+        self.assertFalse(rejection["cohorts"][1]["accepted"])
+        self.assertFalse(promotion_gate(
+            [metrics(9, .2, 100), metrics(10, .92, 200)], control)["accepted"])
+        with self.assertRaises(ValueError):
+            promotion_gate(clear, control[:1])
+
     def test_small_generation_evidence_roundtrip(self):
         with tempfile.TemporaryDirectory() as tmp:
             report = compete(Path(tmp)/"trial", seed=1, population=2, generations=2,
@@ -51,6 +66,10 @@ class NeuralEvolutionTests(unittest.TestCase):
             self.assertEqual(len(report["lineage"]),4)
             self.assertEqual(len(report["champions"]),2)
             self.assertIn("gain_over_single_dqn",report)
+            self.assertEqual(report["protocol"]["validation_cohorts"], 2)
+            self.assertIn(report["promotion_gate"]["decision"], ("dqn_no_evolution", "evolved_dqn"))
+            self.assertEqual(report["holdout"]["adopted_policy"],
+                             report["holdout"][report["promotion_gate"]["decision"]])
             self.assertEqual(report["protocol"]["control_game_budget"],8)
             self.assertEqual(report["holdout"]["evolved_dqn"]["games"],30)
             journal = Journal(Path(tmp)/"trial"/"evolution.sqlite")
