@@ -81,7 +81,15 @@ def _snapshot_receipt(db: Path) -> tuple[dict, bytes]:
         except (sqlite3.Error, ValueError, TypeError) as exc:
             raise BackupError("BEAN events cannot be faithfully serialized") from exc
         mirror = b"".join(entries)
-        return {"events": len(entries), "last_event_id": payload["id"] if entries else None,
+        # Include every table and schema definition in the restore comparison,
+        # not just event history. Hash the SQLite logical export rather than
+        # physical DB bytes, which may change during a valid backup restore.
+        logical = hashlib.sha256()
+        for statement in conn.iterdump():
+            logical.update(statement.encode("utf-8"))
+            logical.update(b"\n")
+        return {"database_logical_sha256": logical.hexdigest(),
+                "events": len(entries), "last_event_id": payload["id"] if entries else None,
                 "event_stream_sha256": hashlib.sha256(mirror).hexdigest()}, mirror
 
 
