@@ -5,7 +5,7 @@
 const assert=require("node:assert/strict");
 const path=require("node:path");
 const {webcrypto}=require("node:crypto");
-globalThis.crypto=webcrypto;
+if(!globalThis.crypto?.subtle) Object.defineProperty(globalThis,"crypto",{value:webcrypto,configurable:true});
 const script=path.resolve(__dirname,"../../../docs/try-bean-memory.js");
 const saved=new Map();
 const storage={
