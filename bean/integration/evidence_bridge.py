@@ -20,6 +20,7 @@ from typing import TYPE_CHECKING
 
 from bean.cognition.epistemic_guard import CandidateClaim, EpistemicGuard
 from bean.cognition.uncertainty_garden import UncertaintyGarden, UncertaintyRecord
+from bean.evaluation.evidence_rank import Evidence
 from bean.memory.event_logger import EventType, Source
 
 if TYPE_CHECKING:
@@ -123,6 +124,7 @@ class EvidenceBridge:
         self.db = layer.store._conn()
         self.db.executescript(SCHEMA)
         self.db.commit()
+        self.rank_ledger = layer.evidence_ranker()
         self.garden = UncertaintyGarden()
         self.guard = EpistemicGuard()
         self.min_origins = min_origins
@@ -189,6 +191,19 @@ class EvidenceBridge:
         if r["state"] != "open":
             raise ValueError("cannot append evidence to a finalized round")
         try:
+            # Score and hash the source before it is filed. Both the rank
+            # receipt and the legacy bridge record commit in one transaction.
+            self.rank_ledger.observe(Evidence(
+                evidence_id=f"bridge:{item.round_id}:{item.record_id}",
+                domain="external",
+                topic=r["claim_key"],
+                value=item.value,
+                origin=item.origin,
+                source_ref=item.source_ref,
+                observed_at=item.observed_at,
+                verified=item.verified,
+                verification_ref=item.verification_ref,
+            ), commit=False)
             self.db.execute(
                 "INSERT INTO bridge_evidence_inputs("
                 "record_id,round_id,origin,source_ref,value,verified,verification_ref,observed_at)"
@@ -206,6 +221,7 @@ class EvidenceBridge:
             source=Source.SYSTEM, subtype="bridge_evidence",
             data={"round_id": item.round_id, "record_id": item.record_id,
                   "origin": item.origin, "source_ref": item.source_ref,
+                  "evidence_rank": "available_from_core_ranker",
                   "host_verified": item.verified,
                   "verification_ref": item.verification_ref},
         )
