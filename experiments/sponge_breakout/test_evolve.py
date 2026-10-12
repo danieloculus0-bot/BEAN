@@ -1,4 +1,5 @@
 """Neuroevolution must inherit, mutate, learn by gradient and preserve evidence."""
+import json
 import math
 import tempfile
 import unittest
@@ -61,6 +62,23 @@ class NeuralEvolutionTests(unittest.TestCase):
         mutated, _ = breed(state, config, seed=19, mutate=True)
         self.assertEqual(mutated.frames, parent.frames)
         self.assertNotEqual(mutated.weights(), parent.weights())
+
+    def test_continuation_preserves_budget_and_final_checkpoint(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            folder = Path(tmp) / "trial"
+            result = compete(folder, seed=4, population=2, generations=2,
+                             games_per_candidate=2, continuation_games=5,
+                             validation_games=30, holdout_games=30)
+            self.assertEqual(result["protocol"]["search_game_budget"], 8)
+            self.assertEqual(result["protocol"]["continuation_games"], 5)
+            self.assertEqual(result["protocol"]["control_game_budget"], 13)
+            final_weights = json.loads(
+                (folder / "final-evolved-weights.json").read_text(encoding="utf-8"))
+            self.assertEqual(fingerprint(final_weights), result["final_policy_sha256"])
+            self.assertGreater(result["selected_training"]["frames"], 0)
+            self.assertGreater(result["control_training"]["frames"], 0)
+            self.assertEqual(result["holdout"]["adopted_policy"],
+                             result["holdout"][result["promotion_gate"]["decision"]])
 
     def test_adoption_gate_requires_both_validation_cohorts(self):
         def metrics(bricks, survival, first):
