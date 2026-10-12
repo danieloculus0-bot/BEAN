@@ -379,7 +379,7 @@ def main(argv=None):
                 root / "state" / "learning-summary.json",
                 api_key="local-ollama-no-secret", reflector=model.reflect,
             )
-            eligibility = (result["model_authored_lessons"] >= 2)
+            eligibility = (result["model_authored_lessons"] >= 3)
             summary = {
                 "schema": SCHEMA, "stage": "learn", "model": model.route,
                 "eligible_for_ablation": eligibility,
