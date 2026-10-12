@@ -171,9 +171,13 @@ def compete(out, *, seed=41, population=3, generations=3,
         # The no-evolution control uses the SAME total number of training games
         # but in one uninterrupted DQN. Frames and updates are reported separately.
         control, _ = breed(None, controls, seed=seed, mutate=False)
-        for game_index in range(generations * population * games_per_candidate):
-            training_seed = TRAIN_BASE + seed*100_000 + game_index
-            train_game(control, training_seed, controls["epsilon_floor"])
+        for generation in range(generations):
+            for _candidate in range(population):
+                for episode in range(games_per_candidate):
+                    # Identical environment seed multiset and total game count,
+                    # albeit a single control policy sees all episodes serially.
+                    training_seed = TRAIN_BASE + seed*100_000 + generation*1000 + episode
+                    train_game(control, training_seed, controls["epsilon_floor"])
         final_cold = evaluate(cold_agent, start=HOLDOUT_BASE + seed*1000,
                               games=holdout_games)
         final_control = evaluate(control, start=HOLDOUT_BASE + seed*1000,
@@ -187,9 +191,10 @@ def compete(out, *, seed=41, population=3, generations=3,
         if len(events) != generations*population or reopened.export()["tip"] != tip:
             raise AssertionError("BEAN journal not continuous after restart")
         for event in events:
-            if not event.get("quality") or fingerprint(recover_memory(event["memory"])) != fingerprint(
-                    recover_memory(event["memory"])):
-                raise AssertionError("unscored or invalid weight memory")
+            if not event.get("quality"):
+                raise AssertionError("unscored weight memory")
+            if fingerprint(recover_memory(event["memory"])) != event["memory"]["sha256"]:
+                raise AssertionError("restored weights differ from scored SHA-256 memory")
         reopened.close()
         result = {
             "schema": OBJECTIVE, "seed": seed,
