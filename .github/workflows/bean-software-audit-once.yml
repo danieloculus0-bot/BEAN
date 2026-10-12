@@ -1,0 +1,111 @@
+name: BEAN software audit + independent Bridge integrity replay
+# Pinned, read-only external source checkout. No release, no source mutation.
+on:
+  push:
+    branches: [feat/software-audit-skill-20261011]
+    paths:
+      - ".github/workflows/bean-software-audit-once.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  venvwin-design:
+    runs-on: ubuntu-latest
+    timeout-minutes: 16
+    steps:
+      - uses: actions/checkout@v4
+      - name: Original venvWin requirements at pinned main commit
+        uses: actions/checkout@v4
+        with:
+          repository: danieloculus0-bot/venvWin
+          ref: 51b8adc11108263c8d61f5781681f1663a7f921c
+          path: venvwin-original
+          persist-credentials: false
+      - name: Current venvWin isolated draft, BEAN not auto-installed
+        uses: actions/checkout@v4
+        with:
+          repository: danieloculus0-bot/venvWin
+          ref: 16ebe38397993daa0efec0ee4e0c9979ab9e8fb6
+          path: venvwin-candidate
+          persist-credentials: false
+      - name: Independent BEAN Bridge at pinned verified source
+        uses: actions/checkout@v4
+        with:
+          repository: danieloculus0-bot/BEAN-AI-Bridge-
+          ref: f4bf43cb4583dd9179617865e996f035c0c7b306
+          path: bridge
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Software audit adversarial regression tests
+        run: |
+          python -m pip install pytest
+          PYTHONPATH="$PWD" python -m pytest -q bean/tests/test_software_audit.py
+      - name: Generate evidence-bound source conformity audit
+        run: |
+          mkdir -p audit-output
+          set +e
+          PYTHONPATH="$PWD" python -m bean.integration.software_audit \
+            --root venvwin-candidate \
+            --reference-root venvwin-original \
+            --manifest venvwin-candidate/audit/venvwin-original-design-conformity.json \
+            --output audit-output/venvwin-audit.json
+          result=$?
+          set -e
+          echo "BEAN_SOURCE_AUDIT_EXIT=$result"
+          # Expected: all source rules PASS; native guest gates are UNVERIFIED.
+          test "$result" -eq 3
+          python -c 'import json; r=json.load(open("audit-output/venvwin-audit.json")); assert r["verdict"]=="INCOMPLETE"; assert r["counts"]["fail"]==0; assert r["counts"]["unverified"]>=4; print("LIVE_GATES_REMAIN_UNVERIFIED")'
+      - name: Replay check-by-check results in actual BEAN Bridge ledger
+        run: |
+          PYTHONPATH="$PWD/bridge/src" python scripts/bridge_software_audit_verify.py \
+            --root venvwin-candidate \
+            --reference-root venvwin-original \
+            --manifest venvwin-candidate/audit/venvwin-original-design-conformity.json \
+            --report audit-output/venvwin-audit.json \
+            --output audit-output/bridge-integrity.json
+          python -c 'import json; r=json.load(open("audit-output/bridge-integrity.json")); assert r["verification"]=="INTEGRITY_REPLAY_VERIFIED"; assert r["observed_status"]=="INCOMPLETE"; assert not r["product_release_authorized"]'
+      - name: Tamper challenge - modified audit receipt must be rejected
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          p=Path("audit-output/venvwin-audit.json")
+          d=json.loads(p.read_text())
+          d["findings"][0]["status"]="fail"
+          Path("audit-output/tampered.json").write_text(json.dumps(d))
+          PY
+          if PYTHONPATH="$PWD/bridge/src" python scripts/bridge_software_audit_verify.py \
+              --root venvwin-candidate \
+              --reference-root venvwin-original \
+              --manifest venvwin-candidate/audit/venvwin-original-design-conformity.json \
+              --report audit-output/tampered.json \
+              --output audit-output/tampered-verdict.json; then
+            echo 'BRIDGE_FAIL: mutated receipt was accepted' >&2
+            exit 1
+          fi
+          echo BRIDGE_MUTATION_DETECTED
+      - name: Tamper challenge - modify candidate source after signed receipt
+        run: |
+          printf '\n# deliberate isolated CI tampering only\n' >> venvwin-candidate/puppy-native/venvwin-session
+          if PYTHONPATH="$PWD/bridge/src" python scripts/bridge_software_audit_verify.py \
+              --root venvwin-candidate \
+              --reference-root venvwin-original \
+              --manifest venvwin-candidate/audit/venvwin-original-design-conformity.json \
+              --report audit-output/venvwin-audit.json \
+              --output audit-output/tampered-source-verdict.json; then
+            echo 'BRIDGE_FAIL: altered source bytes passed receipt verification' >&2
+            exit 1
+          fi
+          echo BRIDGE_SOURCE_FILE_MUTATION_DETECTED
+      - name: Archive independent receipts, never unverified ISO
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bean-software-audit-venvwin-and-bridge-replay
+          retention-days: 21
+          if-no-files-found: warn
+          path: |
+            audit-output/venvwin-audit.json
+            audit-output/bridge-integrity.json
