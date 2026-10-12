@@ -6,7 +6,7 @@ This page covers the **Windows installer**, not a general autonomous AI release.
 
 The GitHub Windows installer CI compiles a self-contained Python/Tk desktop bundle with PyInstaller, executes the frozen EXE **outside the source checkout**, compiles an Inno Setup EXE, silently installs to a path containing spaces, executes the installed EXE, checks all four Core contract proofs, uninstalls the app, and generates a SHA-256 digest of the setup file.
 
-The four contract checks are: SQLite restart continuity; conflicting host-supplied reports remain unresolved; unsupported claims and motion proposals do not acquire execution permission; missing data stays N/A instead of being silently treated as zero. They use a **mock** reasoning provider and fictional input. A pass is not a neural learning benchmark or proof of sustained real-world operation.
+The four contract checks are: SQLite restart continuity; conflicting host-supplied reports remain unresolved; unsupported claims and motion proposals do not acquire execution permission; missing data stays N/A instead of being silently treated as zero. They use a **mock** reasoning provider and fictional input. A separate installer gate runs two distinct **installed EXE processes** against a temporary SQLite database. One records an explicit fictional note in BEAN's canonical event journal; the second recalls the same event with the original ID and its user-asserted/unverified provenance, and verifies the JSONL audit sidecar exists. A pass is **durable memory plumbing**, not a neural learning benchmark or proof of sustained real-world operation.
 
 ## Get the candidate installer
 
@@ -27,12 +27,15 @@ Double-click the installer. It is configured as a per-user installation and offe
 
 - **Verify BEAN Core:** runs the offline proof against disposable data. It does not use the user's business records, model API credentials, wallets, or existing BEAN deployment.
 - **Connect local Ollama:** connects only to an Ollama instance already running at `127.0.0.1:11434` and uses a locally installed model. This interface makes no attempt to configure or download Ollama and provides no trading or hardware controls.
-- **Important chat limitation:** chat history is short-lived, in-process context and is **not automatically written to BEAN Core's SQLite memory**. Installing the desktop beta does not provide AI learning transfer, persistent conversation memory, or autonomous research.
+- **Remember note:** explicitly write text from the input field to BEAN Core's per-user SQLite event journal, at `%LOCALAPPDATA%\BEAN\desktop_memory.db`. BEAN marks each saved note as a **user submission, not verified evidence**. Notes are kept locally; no Ollama or cloud connection is needed for this control.
+- **Recall notes:** enter search words and retrieve matching notes from the same persistent BEAN Core journal after future launches. A miss remains a miss; BEAN does not invent a note.
+- **Include matching notes in local chat (opt-in):** when explicitly selected, matching notes are supplied to the local Ollama model as **untrusted user reference data**, never as a system instruction. The checkbox defaults off. Automatic capture of conversations is still disabled.
+- **Important learning limitation:** model chat history is still short-lived and not automatically saved. Durable note retrieval does **not** update model weights, establish causal superiority to ordinary retrieval, or demonstrate autonomous research.
 
 Uninstall from Windows Apps/Installed Apps or the generated uninstaller. User-configured external Ollama installations are not bundled or deleted.
 
 ## Release decisions not yet cleared
 
-Before calling the Windows software a supported production release, independently verify it on a fresh, ordinary non-CI Windows PC; capture first-launch and restart behavior with user-owned data boundaries; test an unsigned/untrusted-binary distribution and subsequent update/rollback flow; audit dependency and artifact provenance; assign explicit licensing terms; and qualify a real persistent-memory connection rather than substituting a chat façade. A successful CI install/uninstall is one gate, not completion.
+Before calling the Windows software a supported production release, independently verify it on a fresh, ordinary non-CI Windows PC; capture first-launch and restart behavior with user-owned data boundaries; test an unsigned/untrusted-binary distribution and subsequent update/rollback flow; audit dependency and artifact provenance; assign explicit licensing terms; and qualify a matched-control test of whether this persistent-memory connection improves genuine unseen work over ordinary retrieval, rather than substituting a chat façade. A successful CI install/uninstall is one gate, not completion.
 
 Related: [Core quickstart](GETTING_STARTED.md), [production-readiness audit](PRODUCTION_READINESS_AUDIT_2026-10-11.md), and [verified backup/restore gate](BEAN_BACKUP_RELEASE_GATE_2026-10-12.md).
