@@ -114,6 +114,15 @@ class PublicAiscendDemoTests(unittest.TestCase):
         self.assertIn("No names, wallet addresses, account IDs", self.html)
         self.assertIn("not a private transaction log", self.html)
 
+    def test_only_one_complete_html_document_with_no_rendered_script_tail(self):
+        # A duplicate <script> block once appeared after </html> and was
+        # rendered verbatim at the bottom on both mobile and desktop.
+        self.assertEqual(self.html.count("</html>"), 1)
+        self.assertEqual(self.html.count("</body>"), 1)
+        self.assertEqual(self.html.count("const rand=()=>"), 1)
+        self.assertRegex(self.html, r"</body>\s*</html>\s*\\Z")
+        self.assertFalse(self.html.split("</html>", 1)[1].strip())
+
     @unittest.skipUnless(shutil.which("node"), "Node.js needed for browser script syntax check")
     def test_inline_browser_javascript_parses(self):
         scripts = re.findall(r"<script[^>]*>([\s\S]*?)</script>", self.html)
