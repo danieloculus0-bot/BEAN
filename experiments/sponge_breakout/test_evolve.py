@@ -80,6 +80,47 @@ class NeuralEvolutionTests(unittest.TestCase):
             self.assertEqual(result["holdout"]["adopted_policy"],
                              result["holdout"][result["promotion_gate"]["decision"]])
 
+    def test_terminal_safe_potential_preserves_discounted_episode_objective(self):
+        from .evolve import paddle_potential, shape_training_reward
+        gamma = .99
+        first, middle = (14, 1, 1), (10, 1, 1)
+        self.assertEqual(paddle_potential((14, 1, 0)), 0.0)
+        self.assertEqual(paddle_potential(None), 0.0)
+        raw = 0.8 + gamma * -2.0
+        shaped = (shape_training_reward(.8, first, middle, gamma)
+                  + gamma * shape_training_reward(-2.0, middle, None, gamma))
+        self.assertAlmostEqual(shaped, raw - paddle_potential(first), places=10)
+        self.assertAlmostEqual(shape_training_reward(.8, (7, 0, 0), None, gamma),
+                               .8)
+
+    def test_unshaped_control_observes_raw_environment_reward(self):
+        from .evolve import train_game
+        from .game import Breakout
+
+        class Spy:
+            gamma = .99
+            frames = 0
+            def __init__(self):
+                self.rewards = []
+            def choose(self, _state, epsilon=0.0):
+                return 1
+            def observe(self, _before, _action, reward, _after, _done):
+                self.rewards.append(reward)
+                self.frames += 1
+
+        control = Spy()
+        evolved = Spy()
+        train_game(control, 900053, .06)
+        train_game(evolved, 900053, .06, shaped=True)
+        raw_game = Breakout(900053)
+        raw = []
+        while not raw_game.done:
+            raw.append(raw_game.step(1))
+        self.assertEqual(control.rewards, raw)
+        self.assertEqual(len(evolved.rewards), len(raw))
+        self.assertNotEqual(evolved.rewards, raw)
+        self.assertEqual(control.frames, evolved.frames)
+
     def test_adoption_gate_requires_both_validation_cohorts(self):
         def metrics(bricks, survival, first):
             return {"bricks": bricks, "survival": survival, "games": 60, "seed_start": first}
