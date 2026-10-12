@@ -77,11 +77,13 @@ class LocalMCPMemoryTests(unittest.TestCase):
         # Direct modification to SQLite without updating the authoritative
         # mirror must be detected on the next Core startup.
         import sqlite3
-        with sqlite3.connect(self.db) as conn:
-            conn.execute(
-                "UPDATE events SET summary='forged' WHERE subtype=?",
-                ("local_mcp_memory_v1",),
-            )
+        from contextlib import closing
+        with closing(sqlite3.connect(self.db)) as conn:
+            with conn:
+                conn.execute(
+                    "UPDATE events SET summary='forged' WHERE subtype=?",
+                    ("local_mcp_memory_v1",),
+                )
         with self.assertRaises(Exception):
             status(database=self.db)
 
