@@ -93,14 +93,33 @@ def breed(parent_weights, parent_config, *, seed, mutate=True):
     return agent, config
 
 
-def train_game(agent, episode_seed, epsilon_floor):
+def paddle_potential(state):
+    """State-only potential for descending-ball paddle alignment.
+
+    Terminal potential is zero. This is a training reward, never an
+    evaluation score or an observation of the game's hidden future.
+    """
+    if state is None or int(state[2]) != 1:
+        return 0.0
+    return -0.75 * abs(float(state[0]) - 7.0) / 7.0
+
+
+def shape_training_reward(reward, old_state, next_state, gamma):
+    """Discount-consistent potential difference with Phi(terminal)=0."""
+    return reward + gamma * paddle_potential(next_state) - paddle_potential(old_state)
+
+
+def train_game(agent, episode_seed, epsilon_floor, *, shaped=False):
     env = Breakout(episode_seed)
     while not env.done:
         state = env.state()
         epsilon = max(epsilon_floor, 0.85 - 0.8 * agent.frames / 18_000)
         action = agent.choose(state, epsilon=epsilon)
         reward = env.step(action)
-        agent.observe(state, action, reward, None if env.done else env.state(), env.done)
+        after = None if env.done else env.state()
+        if shaped:
+            reward = shape_training_reward(reward, state, after, agent.gamma)
+        agent.observe(state, action, reward, after, env.done)
 
 
 def compete(out, *, seed=41, population=3, generations=3,
@@ -152,7 +171,7 @@ def compete(out, *, seed=41, population=3, generations=3,
                                            for name, tensor in parent["online"].items()}) if inherit else None
                 for episode in range(games_per_candidate):
                     training_seed = TRAIN_BASE + seed*100_000 + generation*1000 + episode
-                    train_game(agent, training_seed, config["epsilon_floor"])
+                    train_game(agent, training_seed, config["epsilon_floor"], shaped=True)
                 validations = [evaluate(agent, start=start, games=validation_games)
                                for start in validation_starts]
                 # Selection is risk-aware: a strong first cohort cannot disguise
@@ -208,7 +227,7 @@ def compete(out, *, seed=41, population=3, generations=3,
         continuation_seeds = [TRAIN_BASE + seed*100_000 + generations*1000 + episode
                               for episode in range(continuation_games)]
         for episode_seed in continuation_seeds:
-            train_game(evolved, episode_seed, global_best["config"]["epsilon_floor"])
+            train_game(evolved, episode_seed, global_best["config"]["epsilon_floor"], shaped=True)
         # The no-evolution control uses the SAME total number of training games
         # but in one uninterrupted DQN. Frames and updates are reported separately.
         control, _ = breed(None, controls, seed=seed, mutate=False)
@@ -268,7 +287,11 @@ def compete(out, *, seed=41, population=3, generations=3,
             "final_policy_sha256": fingerprint(evolved.weights()),
             "selected_training": {"frames": evolved.frames, "updates": evolved.updates,
                                   "replay_size": len(evolved.replay)},
-            "research_change": "inherited full learner state plus fixed-budget champion continuation; frames unmatched",
+            "research_change": "only evolved training receives descending-paddle potential shaping (Phi=-0.75*abs(bin-7)/7); same fixed-budget champion continuation; frames unmatched",
+            "shaping": {"enabled_for": "evolution_candidates_and_champion_only",
+                        "enabled_for_uninterrupted_control": False,
+                        "coefficient": 0.75,
+                        "formula": "reward + gamma*Phi(next_state) - Phi(state); terminal Phi=0"},
             "promotion_gate": {"decision": "evolved_dqn" if gate["accepted"] else "dqn_no_evolution",
                                "criterion": gate, "evolved_validation": evolved_validations,
                                "control_validation": control_validations},
