@@ -169,7 +169,10 @@ class Desktop(tk.Tk):
         self.transcript.insert("end", "BEAN technical beta installed. The offline Core test "
                                "uses fictional fixtures, not a trained model.\n"
                                "Optional Ollama chat uses an already-running model on this PC. "
-                               "Chat turns are NOT saved in BEAN Core memory across restarts.\n\n"
+                               "Chat turns are NOT saved automatically. Type a note and press "
+                               "Remember note; Recall notes survives restarts.\n"
+                               "Matching notes reach local Ollama ONLY when opted in. "
+                               "Saved notes are unverified submissions, not trained model weights.\n\n"
                                "No cloud sign-in or trading/hardware permissions are enabled.\n")
         self.transcript.configure(state="disabled")
         input_row = tk.Frame(self, bg=bg)
@@ -207,6 +210,34 @@ class Desktop(tk.Tk):
             self.append("Offline Core check:\n" + json.dumps(result, indent=2) + "\n")
         self.background(proof_result, finished)
 
+    def remember(self):
+        note = self.entry.get().strip()
+        if not note:
+            self.fail("Type a note, then press Remember note.")
+            return
+        self.status.set("Saving explicit note to BEAN Core...")
+        def done(saved):
+            self.status.set(f"Saved Core journal event {saved['id']} (user assertion, unverified)")
+            self.append(f"Saved event {saved['id']}: {saved['text']}\n")
+            if self.entry.get().strip() == note:
+                self.entry.delete(0, "end")
+        self.background(lambda: self.memory.remember(note), done)
+
+    def recall(self):
+        query = self.entry.get().strip()
+        if not query:
+            self.fail("Enter words to search saved notes.")
+            return
+        self.status.set("Searching the local Core journal...")
+        def done(items):
+            if not items:
+                self.append("No matching notes; BEAN will not invent memories.\n")
+            else:
+                for item in items:
+                    self.append(f"Saved event {item['id']} [USER SUBMISSION, UNVERIFIED]: {item['text']}")
+            self.status.set(f"Recall complete: {len(items)} matching notes")
+        self.background(lambda: self.memory.recall(query), done)
+
     def connect(self):
         self.status.set("Connecting to local Ollama...")
         def load():
@@ -229,11 +260,19 @@ class Desktop(tk.Tk):
             return
         self.entry.delete(0, "end")
         self.append("You: " + text)
+        include = bool(self.include_saved_notes.get())
         self.status.set("BEAN is thinking...")
-        def ready(reply):
+        def run():
+            reference = self.memory.context_for(text) if include else ""
+            response = self.conversation.reply(text, reference_context=reference)
+            return response, bool(reference)
+        def ready(result):
+            reply, used = result
+            if used:
+                self.append("User-saved UNVERIFIED notes included as model reference context.")
             self.append("BEAN: " + reply + "\n")
             self.status.set("Ready")
-        self.background(lambda: self.conversation.reply(text), ready)
+        self.background(run, ready)
 
 
 if __name__ == "__main__":
