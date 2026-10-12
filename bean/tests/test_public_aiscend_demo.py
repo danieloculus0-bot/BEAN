@@ -114,6 +114,18 @@ class PublicAiscendDemoTests(unittest.TestCase):
         self.assertIn("No names, wallet addresses, account IDs", self.html)
         self.assertIn("not a private transaction log", self.html)
 
+    def test_sample_account_uses_actual_aiscend_fields_and_game_score(self):
+        # Public samples may change numbers but not invent UI fields or actions.
+        for phrase in ("Net liquidation", "Cash / USDC", "Wealth multiple",
+                       "GAME SCORE", "2X / POINT 1", "$100,000 OR BUST",
+                       "one point is earned for every completed doubling",
+                       "SAMPLE ACCOUNT", "not additional AIscend trading controls"):
+            self.assertIn(phrase.casefold(), self.html.casefold())
+        self.assertIn("https://github.com/danieloculus0-bot/AIscend/blob/main/templates/index.html",
+                      self.markup.links)
+        self.assertIn("https://github.com/danieloculus0-bot/AIscend/blob/main/src/game.py",
+                      self.markup.links)
+
     def test_invented_paper_order_terminal_is_absent(self):
         # An unapproved website-only $100 paper terminal was added to the
         # original demo. Keep this module out rather than rebrand it as real.
