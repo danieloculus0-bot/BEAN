@@ -31,7 +31,7 @@ jobs:
       - name: Build self-contained BEAN desktop
         shell: pwsh
         run: |
-          pyinstaller --noconfirm --clean --windowed --onedir --paths "." --name BEAN --add-data "bean/schemas;bean/schemas" install/windows/bean_desktop.py
+          pyinstaller --noconfirm --clean --console --onedir --paths "." --name BEAN --add-data "bean/schemas;bean/schemas" install/windows/bean_desktop.py
       - name: Verify frozen BEAN Core works without Python setup
         shell: pwsh
         run: |
@@ -40,6 +40,7 @@ jobs:
           Push-Location $env:RUNNER_TEMP
           try {
             & $exe --self-test --self-test-report $receipt
+            if (Test-Path $receipt) { Get-Content $receipt -Raw | Write-Host }
             if ($LASTEXITCODE -ne 0) { throw "Frozen Core self-test failed. Receipt: $receipt" }
           } finally { Pop-Location }
           if (!(Test-Path $receipt)) { throw 'Frozen BEAN gave no self-test receipt' }
