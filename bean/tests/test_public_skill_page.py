@@ -104,7 +104,7 @@ class PublicSkillsPageTests(unittest.TestCase):
     def test_specialist_battle_does_not_invent_wins(self):
         for phrase in ("OpenCode", "Goose", "OpenHands", "Continue", "Cline",
                        "five competitive verdicts", "INCONCLUSIVE",
-                       "did not use the newer Sponge"):
+                       "agent battle did", "newer Sponge or DQN evolution policy"):
             self.assertIn(phrase.casefold(), self.page.casefold())
         self.assertIn("https://github.com/danieloculus0-bot/BEAN/actions/runs/38187443602",
                       self.markup.links)
