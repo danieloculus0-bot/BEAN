@@ -20,3 +20,4 @@ from .dignity import DignityLayer, DignityRule, DignityEvent, DignityAction
 from .inner_weather import InnerWeatherEngine, InnerWeatherReport
 from .autobiography import AutobiographyEngine, AutobiographyEntry, AutobiographyEntryType
 from .brain_maintenance import BrainMaintenanceEngine
+from .dual_state import DualStateReasoner
