@@ -1,0 +1,11 @@
+# Preregistered frozen learner replication 59-61 (2026-10-12)
+
+Status: UNRUN at preregistration. No learner, hyperparameter, game, selection or gate changes. Source: PR #113 frozen learner `cf6ecb3775b0401130a1aa0af898b96871654c78`, same blobs `evolve.py` `6b442cca54e6d5c080af959e5bbd87fd274b8d97`, `sponge_dqn.py` `769da37ac2e13566ddc0d83c770d7323cbfc0da7`, `test_evolve.py` `2841b1840ea8ce6df67fc3c9441c3dd6f14b77fe`.
+
+All training seeds 41–58 are seen and ineligible as pristine holdouts. Earlier six-seed frozen algorithm: 4/6 positive, mean +2.31111 bricks/game, t 95% CI [-3.40822, +8.03044], inconclusive. Full negative and positive evidence: `docs/neuroevolution-potential-replication-56-58-results-20261012.md`.
+
+NEW independent training seeds **59, 60, 61**. No replacements, selective stopping, or tuning. Each uses 270 candidate-search games (3 generations x 3 candidates x 30) plus 360 continued champion games; control uses same 630 training-game seed multiset uninterrupted. Only evolved training gets potential shaping Phi=-0.75*abs(state[0]-7)/7 when descending, zero otherwise; r'=r+gamma*Phi(next)-Phi(current), terminal Phi=0. Standard DQN training and all game scoring unchanged.
+
+Candidate selection uses worst of two disjoint 60-game validation cohorts. Promotion gate reuses these cohorts (not selection-independent) and requires on BOTH cohorts evolved-DQN >= +0.25 bricks/game and survival delta >= -0.05. After gate, evaluate 120 new sealed holdout games per evolved, continuous DQN, cold and adopted policy. Report raw evolved losses even if gate rejects.
+
+Windows/Linux Python 3.12 focused unit and bounded smoke must pass before 59-61 matrix. Preserve full actual logs, results.json, final-evolved-weights.json, journal chains, SHA-256, budgets, frames, updates, survival and all outcomes. Primary analysis: independent training-seed n=3 paired raw evolved-DQN mean, sample SD, t 95% CI; secondary cumulative n=9 descriptive interval. Do not treat holdout games as independent learner replicates. Frames and gradient updates remain unmatched despite equal aggregate game budget. Engineered-state Breakout is not pixel Atari. No definitive claim if interval spans zero or negative transfer persists. Seek engineering review before any claims or Main merge. Research only, no live trading or hardware control.
