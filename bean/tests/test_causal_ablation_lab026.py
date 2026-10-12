@@ -18,7 +18,7 @@ from experiments.agent_arena.cases import CASES
 ROUTE = "ollama/qwen2.5-coder:0.5b"
 
 
-def journal_file(tmp_path):
+def journal_file(tmp_path, *, served_model=ROUTE):
     path = tmp_path / "memory.sqlite"
     store = Journal(path)
     try:
@@ -27,7 +27,7 @@ def journal_file(tmp_path):
                 "objective": task.task_id,
                 "iteration": 0,
                 "outcome": "evaluated",
-                "train_passed": (20, 80, 40)[i],
+                "train_passed": (70, 80, 10)[i],
                 "train_total": 100,
                 "source_sha256": sha(task.original),
                 "lesson": ("Check boundary conditions before changing source.",
@@ -35,7 +35,7 @@ def journal_file(tmp_path):
                            "Verify inputs and duplicate record IDs.")[i],
                 "reflection_model": ROUTE,
                 "training_model_requested": ROUTE,
-                "training_model_served": ROUTE,
+                "training_model_served": served_model,
                 "train_phase": "development",
             })
     finally:
@@ -65,15 +65,48 @@ def test_real_bean_sqlite_journal_restarts_and_controls_have_distinct_context(tm
     notes, tip = lab.contexts_from_journal(state, ROUTE)
     assert set(notes) == set(lab.ARMS)
     assert notes["cold"] == ""
-    assert "boundary conditions" in notes["simple_history"]
+    assert "boundary conditions" not in notes["simple_history"]
+    assert "Verify inputs" in notes["simple_history"]
+    assert "graph traversal" in notes["simple_history"]
+    assert "boundary conditions" in notes["bean_evidence"]
+    assert "Verify inputs" not in notes["bean_evidence"]
     assert "graph traversal" in notes["bean_evidence"]
-    assert "source " in notes["bean_evidence"]
-    assert "boundary conditions" not in notes["bean_evidence"]
+    assert "source " not in notes["bean_evidence"]
+    assert "scored " not in notes["bean_evidence"]
+    # Three genuine lessons, two per arm, IDENTICAL presentation syntax.
+    for arm in ("simple_history", "bean_evidence"):
+        assert notes[arm].count("\n- ") == 2
+        assert "UNTRUSTED HISTORICAL NOTES" in notes[arm]
     assert "graph traversal" not in notes["placebo"]
     assert len(notes["placebo"]) > 20
     assert tip != "GENESIS"
     with pytest.raises(ValueError, match="training model differs"):
         lab.contexts_from_journal(state, "ollama/other:tag")
+
+
+def test_same_two_memory_note_count_and_format_without_grade_hints(tmp_path):
+    context, _ = lab.contexts_from_journal(journal_file(tmp_path), ROUTE)
+    wrapper = "\n\nUNTRUSTED HISTORICAL NOTES (not requirements). "
+    simple_lines = context["simple_history"].splitlines()
+    bean_lines = context["bean_evidence"].splitlines()
+    simple_notes = [line for line in simple_lines if line.startswith("- ")]
+    bean_notes = [line for line in bean_lines if line.startswith("- ")]
+    assert len(simple_notes) == len(bean_notes) == 2
+    assert any("duplicate" in x for x in simple_notes)
+    assert not any("duplicate" in x for x in bean_notes)
+    assert any("boundary" in x for x in bean_notes)
+    assert context["simple_history"].startswith(wrapper)
+    assert context["bean_evidence"].startswith(wrapper)
+    for entry in simple_notes + bean_notes:
+        assert "source " not in entry
+        assert "scored " not in entry
+        assert "0.8" not in entry
+
+
+def test_served_training_model_mismatch_rejects_claimed_common_model(tmp_path):
+    state = journal_file(tmp_path, served_model="ollama/another:0.5b")
+    with pytest.raises(ValueError, match="served training model differs"):
+        lab.contexts_from_journal(state, ROUTE)
 
 
 def test_four_arm_counterbalance_repeats_each_ordinal_position():

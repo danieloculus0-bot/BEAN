@@ -17,13 +17,15 @@ The experiment reuses existing Lab 023 real-model learning, BEAN's SHA256-chaine
 | Condition | What the same model receives |
 | --- | --- |
 | Cold | Current task and broken starting source, no saved lessons |
-| Simple history | Chronological, unfiltered, model-authored training lessons |
-| BEAN evidence | Independently scored BEAN journal lessons, ranked by development score and retaining source-hash references |
-| Placebo | Unrelated display/report text, padded to a comparable character budget |
+| Simple history | Two most recent model-authored training lessons, regardless of development score |
+| BEAN evidence | Two model-authored lessons selected by BEAN's independently measured development score; source hashes and scores remain in the judge-verifiable journal, NOT injected into model-facing prompts |
+| Placebo | Unrelated display/report text, padded to the longer of the two memory-arm character budgets |
+
+The two memory arms receive the **same two-note count, same wrapper and identical formatting**, with selection policy as their only intentional difference. Chronological selection chooses the latest two, while BEAN selects the highest independently scored two, breaking ties by objective. Unlike the earlier pilot, the BEAN arm no longer receives conspicuous grade and source-hash hints. This fixes a major comparison confound; it does not ensure identical tokenizer output lengths. At least three distinct training objectives are required so the selectors can disagree.
 
 Four rounds rotate all four conditions through different request positions for each task. Both repair tasks are different from the three training exercises. Candidate modules and every prompt are SHA256-receipted before any separate judge executes candidates.
 
-An arm producing no valid candidate receives *no positive credit* and makes the experiment inconclusive rather than proving that BEAN won. The judge rejects mixed providers, mismatched hashes, missing responses, changed journal records and changed public tasks.
+An arm producing no valid candidate receives *no positive credit* and makes the experiment inconclusive rather than proving that BEAN won. The judge rejects mixed providers, mismatched hashes, missing responses, changed journal records and changed public tasks. The protocol also rejects a claimed training model when the **actual served training model** differs.
 
 ## Decision rule and limits
 
@@ -33,7 +35,7 @@ An arm producing no valid candidate receives *no positive credit* and makes the 
 
 The judge now reports `strict_taskwise_round_wins` and `longest_strict_taskwise_streak` for falsifiable inspection, including on negative runs. These are repeated trials against the same task set and saved lessons, **not three independently trained populations**.
 
-Even a preliminary signal cannot establish general learning. The existing public synthetic tasks may be familiar to the model. Strong proof needs novel sealed tasks, more repetitions, matched model/digest and token budgets, cost/time measurements, negative-transfer diagnostics and uncertainty intervals.
+Even a preliminary signal cannot establish general learning. The memory-control adjustment specifically tests **evidence-guided lesson selection over recency selection**, not whether any memory is useful or whether BEAN can learn new neural representations. The existing public synthetic tasks may be familiar to the model. Strong proof needs novel sealed tasks, more repetitions, matched model/digest and token budgets, cost/time measurements, negative-transfer diagnostics and uncertainty intervals.
 
 ## Reproduce with real local Ollama
 
