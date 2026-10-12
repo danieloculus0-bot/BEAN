@@ -44,6 +44,24 @@ class NeuralEvolutionTests(unittest.TestCase):
         self.assertNotEqual(fingerprint(a.weights()), fingerprint(parent_weights))
         self.assertEqual(a.choose((6,1,0),epsilon=0), b.choose((6,1,0),epsilon=0))
 
+    def test_lineage_preserves_replay_optimizer_and_learning_clock(self):
+        config = {"lr": .0007, "gamma": .99, "epsilon_floor": .06}
+        parent, _ = breed(None, config, seed=17, mutate=False)
+        for i in range(300):
+            parent.observe((5, 0, 1), i % 3, 1.0, (6, 1, 0), False)
+        state = parent.learner_state()
+        child, _ = breed(state, config, seed=18, mutate=False)
+        self.assertEqual(child.frames, parent.frames)
+        self.assertEqual(child.updates, parent.updates)
+        self.assertEqual(len(child.replay), len(parent.replay))
+        self.assertEqual(child.weights(), parent.weights())
+        self.assertEqual(child.optimizer.state_dict()["state"].keys(),
+                         parent.optimizer.state_dict()["state"].keys())
+        self.assertEqual(child.rng.getstate(), parent.rng.getstate())
+        mutated, _ = breed(state, config, seed=19, mutate=True)
+        self.assertEqual(mutated.frames, parent.frames)
+        self.assertNotEqual(mutated.weights(), parent.weights())
+
     def test_adoption_gate_requires_both_validation_cohorts(self):
         def metrics(bricks, survival, first):
             return {"bricks": bricks, "survival": survival, "games": 60, "seed_start": first}
