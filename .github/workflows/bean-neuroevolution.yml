@@ -9,7 +9,7 @@ on:
       - '.github/workflows/bean-neuroevolution.yml'
       - 'docs/BEAN_NEUROEVOLUTION_20261012.md'
   pull_request:
-    branches: [experiment/bean-sponge-core-20261011, experiment/bean-learner-state-47-49-20261012]
+    branches: [experiment/bean-sponge-core-20261011, experiment/bean-learner-state-47-49-20261012, experiment/bean-budget-allocation-50-52-20261012]
     paths:
       - 'bean/optimization/sponge_dqn.py'
       - 'experiments/sponge_breakout/evolve.py'
@@ -60,7 +60,7 @@ jobs:
       fail-fast: false
       max-parallel: 3
       matrix:
-        seed: [50, 51, 52]
+        seed: [53, 54, 55]
     steps:
       - uses: actions/checkout@v4
         with:
