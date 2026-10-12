@@ -106,6 +106,16 @@ class BeanReasoningLayer:
         )
         return {"event_id": event_id, **result}
 
+    def evidence_ranker(self):
+        """Return the shared domain-neutral evidence ranker on this Core database.
+
+        Applications supply verified source/outcome references; scores rank
+        evidence for further review, never authorize a host-side action.
+        """
+        self._ensure_open()
+        from bean.evaluation.evidence_rank import EvidenceRankLedger
+        return EvidenceRankLedger(self.store._conn())
+
     def close(self, reason: str = "clean", notes: str | None = None) -> None:
         if self.closed:
             return
