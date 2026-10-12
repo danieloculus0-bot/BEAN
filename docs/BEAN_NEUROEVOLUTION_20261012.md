@@ -43,3 +43,14 @@ The previous actual BEAN SpongeTD (tabular Q-learning) scored **11.305** bricks 
 ## Publication gate
 
 Publish raw experiment receipts even if inconclusive. Claim "BEAN evolved a better learner" **only** after independent-seed testing shows a reproducible out-of-sample benefit over the matched standard DQN control, without material negative transfer. Never call a passing code unit test an agent intelligence breakthrough.
+
+## Research launch and first smoke result
+
+The Linux contract suite passed three focused tests covering gradient updates,
+deterministic mutated neural inheritance, and the BEAN scored journal round-trip.
+The short Linux smoke with seed 41, 2 generations x 2 candidates x 12 games,
+40 validation games and 60 holdout games reported evolved=1.60000 vs
+budget-matched uninterrupted DQN=1.16667 and cold=1.18333 bricks/game.
+All three showed **zero survival**. This small test does not establish a
+reliable evolutionary advantage. A three-seed trial is now requested to test
+whether the benefit persists; failures must remain visible.
