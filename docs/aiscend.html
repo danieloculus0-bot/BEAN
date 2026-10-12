@@ -87,37 +87,19 @@ footer{border-top:1px solid #3b5540;padding:23px 0;color:var(--muted);font-size:
 </style>
 
 <style>
-.paper-lab{margin:0 0 17px;padding:18px;border:1px solid #54885b;border-radius:17px;background:linear-gradient(135deg,#203526,#14231a)}
-.paper-lab-head{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap;align-items:center}
-.paper-lab h3{font-size:16px;margin:0;color:#ddf8d2}
-.paper-lab p{font-size:12px;color:#b6cbb5;margin:5px 0 12px}
-.paper-controls{display:flex;gap:9px;align-items:end;flex-wrap:wrap;margin:12px 0}
-.paper-controls label{font-size:11px;color:#c8e6c1;display:grid;gap:5px}
-.paper-controls select,.paper-controls input{border:1px solid #628567;border-radius:8px;background:#101d14;color:#f0f9eb;padding:9px;min-height:39px}
-.paper-controls input{width:90px}
-.paper-controls button{border:1px solid #709b73;border-radius:9px;padding:9px 14px;min-height:39px;background:#304b33;color:#f2faee;font-weight:750}
-.paper-controls button:hover{background:#426c46}
-.paper-controls button.trade-buy{background:#9be57c;color:#152615}
-.paper-controls button.trade-sell{background:#5b4234;color:#ffe7cd}
-.paper-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:10px 0}
-.paper-stats div{border:1px solid #426448;background:#14261a;border-radius:10px;padding:10px}
-.paper-stats strong{display:block;font-size:19px;font-variant-numeric:tabular-nums}
-#paperChart{width:100%;height:188px;background:#101d14;border:1px solid #39593e;border-radius:10px}
-#paperJournal{font:12px/1.65 ui-monospace,monospace;color:#cce5c6;min-height:25px;max-height:110px;overflow:auto;margin-top:10px}
-@media(max-width:650px){.paper-stats{grid-template-columns:repeat(2,1fr)}}
-</style>
-<style>
 
 /* BEAN main-site design system, shared visually with the laboratory homepage.
-   Presentation-only changes: demo state, paper orders and live quotes untouched. */
+   Public demo remains disconnected from live private wallets and accounts. */
 :root{--bg:#0b1410;--surface:#14231a;--surface2:#1b3023;--line:#34503c;--text:#edf8ed;--muted:#b2c6b5;--green:#a5f47a;--shadow:0 16px 40px #0005}
 body{background:radial-gradient(ellipse 80% 440px at 76% 0%,#25422b 0%,transparent 82%),#0b1410;color:var(--text);font:16px/1.6 system-ui,-apple-system,"Segoe UI",sans-serif}
 .wrap{max-width:1160px}
 header{background:#0b1410ef;border-bottom:1px solid var(--line);backdrop-filter:blur(12px)}
 .nav{min-height:70px;justify-content:initial;gap:24px}
 .brand{font-size:1.15rem;letter-spacing:.07em;text-decoration:none}
-.brand>span:first-child{width:42px;height:42px;overflow:hidden;background:transparent;border:0}
-.brand img{width:42px;height:42px;object-fit:cover;border-radius:13px}
+.brand>span:first-child{width:51px;height:60px;overflow:visible;background:transparent;border:0;flex-shrink:0}
+.brand img{width:51px;height:60px;object-fit:contain;object-position:center;border-radius:0;display:block}
+.console-brand img{width:29px;height:35px;object-fit:contain}
+
 .slash{color:#86b98b}.appname{color:var(--green)}
 .links{margin-left:auto;gap:24px;font-size:.9rem;font-weight:500}
 .links a{color:#d3e4d3}.links a:hover{color:var(--green)}
@@ -142,8 +124,8 @@ h1{font-size:clamp(3.25rem,7.5vw,6.4rem);line-height:1;letter-spacing:-.055em;ma
 </head>
 <body>
 <header><div class="wrap nav">
-<a class="brand" href="./index.html" aria-label="BEAN home"><span><img src="./bean-official.webp" alt="" width="32" height="32"></span>BEAN <span class="slash">/</span> <span class="appname">AIscend</span></a>
-<nav class="links" aria-label="Page navigation"><a href="#demo">Demo</a><a href="#markets">Live markets</a><a href="#how-it-works">How it works</a><a href="https://github.com/danieloculus0-bot/AIscend">Source</a><a href="./index.html#lab">BEAN Laboratory ↗</a></nav>
+<a class="brand" href="./index.html" aria-label="BEAN home"><span><img src="./bean-official.webp" alt="" width="51" height="60"></span>BEAN <span class="slash">/</span> <span class="appname">AIscend</span></a>
+<nav class="links" aria-label="Page navigation"><a href="#demo">Demo</a><a href="#markets">Live markets</a><a href="#research-updates">Real research</a><a href="#how-it-works">How it works</a><a href="https://github.com/danieloculus0-bot/AIscend">Source</a><a href="./index.html#lab">BEAN Laboratory ↗</a></nav>
 </div></header>
 <main>
 <section class="wrap hero">
@@ -153,7 +135,7 @@ h1{font-size:clamp(3.25rem,7.5vw,6.4rem);line-height:1;letter-spacing:-.055em;ma
 <p>Explore an <strong>interactive read-only replica</strong> of the real AIscend dashboard. The public page never connects to an exchange or private wallet.</p>
 <div class="buttons"><a class="btn primary" href="#demo">Open the interactive console ↓</a><a class="btn" href="https://github.com/danieloculus0-bot/AIscend">Inspect the code ↗</a></div>
 </div>
-<figure class="mascot"><img src="./bean-official.webp" alt="Official smiling lime-green BEAN mascot with two sprout leaves and arms" width="290" height="290"><figcaption>BEAN · BEHAVIOR ENABLED AVATAR NODE</figcaption></figure>
+<figure class="mascot"><img src="./bean-official.webp" alt="Official smiling lime-green BEAN mascot with two sprout leaves and arms" width="290"><figcaption>BEAN · BEHAVIOR ENABLED AVATAR NODE</figcaption></figure>
 </section>
 <section class="wrap" id="demo" aria-labelledby="demoTitle">
 <div class="heading"><div><h2 id="demoTitle">Inside AIscend</h2><p>Try the interface states. Every interaction below is simulated.</p></div><div class="notice">● PUBLIC DEMO · SAMPLE DATA · NO WALLET CONNECTED</div></div>
@@ -187,18 +169,7 @@ h1{font-size:clamp(3.25rem,7.5vw,6.4rem);line-height:1;letter-spacing:-.055em;ma
   <p class="market-freshness" id="marketFreshness" role="status" aria-live="polite">Connecting to public Coinbase Exchange quotes… No credentials required.</p>
 </section>
 
-<section class="paper-lab" id="paper-lab" aria-labelledby="paperLabHeading">
-<div class="paper-lab-head"><div><h3 id="paperLabHeading">PAPER TRADING LAB</h3><p>A functional, entirely local simulation. Generated prices, simulated fills and no exchange connection.</p></div><span class="console-state">SIMULATED · NO REAL ORDERS</span></div>
-<div class="paper-controls">
-<label>Market scenario<select id="paperScenario"><option value="range">Sideways</option><option value="bull">Trending up</option><option value="bear">Trending down</option><option value="wild">High volatility</option></select></label>
-<label>Order USD<input id="paperAmount" type="number" min="1" max="100" step="1" value="5"></label>
-<button id="paperStep" type="button">Next candle</button><button id="paperAuto" type="button" aria-pressed="false">Auto-run</button>
-<button id="paperBuy" class="trade-buy" type="button">Paper buy</button><button id="paperSell" class="trade-sell" type="button">Paper sell</button><button id="paperReset" type="button">Reset</button>
-</div>
-<div class="paper-stats" aria-live="polite"><div><span class="label">Market price</span><strong id="paperPrice">$100.00</strong></div><div><span class="label">Equity</span><strong id="paperEquity">$100.00</strong></div><div><span class="label">Cash</span><strong id="paperCash">$100.00</strong></div><div><span class="label">Unrealized + realized P/L</span><strong id="paperPnl">$0.00</strong></div></div>
-<canvas id="paperChart" width="1000" height="230" aria-label="Simulated market price chart" role="img"></canvas><div id="paperJournal" role="status">Ready. Start with Next candle, or place a paper order.</div>
-<p>Starting paper capital: $100. One synthetic asset; market orders filled at displayed synthetic price with a simulated 0.2% fee. Scenario changes affect future candles only. This sandbox is not BEAN's production engine or a profitability claim.</p>
-</section>
+
 <div class="dashboard">
 <div class="column">
 <section class="panel"><h3 id="traderThingTitle">BEAN</h3><div class="petbox"><canvas id="pet" width="192" height="192" role="img" aria-label="Original AIscend dot-matrix BEAN character"></canvas><div class="petname">BEAN</div><div id="petMood">just sitting there</div></div></section>
@@ -223,6 +194,17 @@ h1{font-size:clamp(3.25rem,7.5vw,6.4rem);line-height:1;letter-spacing:-.055em;ma
 <article class="feature"><h3>Persistent market memory</h3><p>Hypotheses, outcomes and contradictory evidence are recorded rather than replaced with manufactured certainty.</p><a href="https://github.com/danieloculus0-bot/AIscend/blob/main/src/bean.py">Inspect memory ↗</a></article>
 <article class="feature"><h3>Five-minute strategy research</h3><p>Experimental rules are backtested on Coinbase candle histories; forward-paper trials use separate later observations.</p><a href="https://github.com/danieloculus0-bot/AIscend/blob/main/src/bean_five_minute.py">Inspect research ↗</a></article>
 <article class="feature"><h3>Buy-confirmation boundaries</h3><p>The live policy gate is distinct from research. Historical wins do not automatically create wallet trades.</p><a href="https://github.com/danieloculus0-bot/AIscend/blob/main/src/bean_policy.py">Inspect policy ↗</a></article>
+</div>
+<div id="research-updates" aria-labelledby="researchUpdatesHeading" style="scroll-margin-top:95px;margin:34px 0 22px">
+  <div class="eyebrow"><span class="dot" aria-hidden="true"></span> Current AIscend source · Research, not trading claims</div>
+  <h2 id="researchUpdatesHeading" style="margin:15px 0 8px">What's actually inside AIscend</h2>
+  <p class="muted">These are documented features in the real AIscend repository, not extra simulated controls invented for this website.</p>
+  <div class="features">
+    <article class="feature"><h3>Strategy School and seven rule families</h3><p>Research candidate rules on historical Coinbase candles, with chronological validation and stored lessons. A selected historical result is not verified profit or automatic live deployment.</p><a href="https://github.com/danieloculus0-bot/AIscend/blob/main/src/bean_strategy_lab.py" target="_blank" rel="noopener noreferrer">Inspect actual Strategy School code ↗</a></article>
+    <article class="feature"><h3>Unattended research supervisor</h3><p>The locally running research supervisor checks newly completed hourly bars, schedules research, and preserves progress across restarts. It does not execute wallet orders or continue when the desktop server stops.</p><a href="https://github.com/danieloculus0-bot/AIscend/blob/main/src/bean_research_supervisor.py" target="_blank" rel="noopener noreferrer">Inspect actual research supervisor ↗</a></article>
+    <article class="feature"><h3>Independent forward testing and BUY gate</h3><p>A separate research module evaluates forward-only five-minute candles without placing orders. The BEAN policy gate can only confirm or veto BUY decisions already proposed by the trading engine.</p><a href="https://github.com/danieloculus0-bot/AIscend/blob/main/src/bean_five_minute.py" target="_blank" rel="noopener noreferrer">Inspect forward research ↗</a><p style="margin:8px 0 0"><a href="https://github.com/danieloculus0-bot/AIscend/blob/main/src/bean_policy.py" target="_blank" rel="noopener noreferrer">Inspect real BUY gate ↗</a></p></article>
+  </div>
+  <p class="note">The public AIscend demo shows illustrative interface states. It does not provide a playable $100 account, synthetic buy/sell terminal, access to the private application, or evidence of executed trades.</p>
 </div>
 <div class="disclaimer"><strong>What is demonstrated:</strong> The branding, control layout, and original AIscend pixel-art BEAN drawing code. Numeric tiles are illustrative. Research counts resemble a public example snapshot. The buttons simulate display states only. No personal identity, actual wallet balances, account data, or secret trading logic is transmitted. Historical returns and hypothetical fills are not independently verified live profits.</div>
 <div class="buttons"><a class="btn primary" href="https://github.com/danieloculus0-bot/AIscend">AIscend repository ↗</a><a class="btn" href="./index.html#applications">More BEAN applications ↗</a></div>
@@ -537,33 +519,5 @@ setInterval(()=>{petBlink=true;drawPet();setTimeout(()=>{petBlink=false;drawPet(
 setInterval(()=>{petQuipIndex++;drawPet()},8600);
 </script>
 
-<script>
-(()=>{'use strict';
-const $=id=>document.getElementById(id),fmt=n=>String.fromCharCode(36)+n.toFixed(2);
-let cash,units,price,candles,seed,interval,stepNumber,events;
-const rand=()=>{seed=(Math.imul(1664525,seed)+1013904223)>>>0;return seed/4294967296};
-function note(message){events.unshift('['+String(stepNumber).padStart(3,'0')+'] '+message);events=events.slice(0,7);$('paperJournal').textContent=events.join(' | ')}
-function render(){
- $('paperPrice').textContent=fmt(price);$('paperEquity').textContent=fmt(cash+units*price);$('paperCash').textContent=fmt(cash);
- const pnl=cash+units*price-100;$('paperPnl').textContent=(pnl>=0?'+':'')+fmt(pnl);
- $('paperPnl').style.color=pnl>=0?'#a5ec90':'#f2a09c';
- const c=$('paperChart'),ctx=c.getContext('2d'),w=c.width,h=c.height;ctx.clearRect(0,0,w,h);
- const lo=Math.min(...candles),hi=Math.max(...candles),span=Math.max(.02,hi-lo),pad=24;
- ctx.strokeStyle='#35533a';ctx.lineWidth=1;for(let i=1;i<5;i++){let y=i*h/5;ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(w,y);ctx.stroke()}
- ctx.strokeStyle='#9deb7d';ctx.lineWidth=3;ctx.beginPath();candles.forEach((p,i)=>{let x=pad+(w-2*pad)*i/Math.max(1,candles.length-1),y=h-pad-(p-lo)/span*(h-2*pad);if(!i)ctx.moveTo(x,y);else ctx.lineTo(x,y)});ctx.stroke();
- ctx.fillStyle='#d4f4c8';ctx.font='17px monospace';ctx.fillText('Synthetic asset · '+stepNumber+' candles · '+$('paperScenario').value,20,24);
-}
-function step(){const mode=$('paperScenario').value;const drift={range:0,bull:.003,bear:-.003,wild:0}[mode];const vol=mode==='wild'?.055:.018;price=Math.max(.01,price*(1+drift+(rand()+rand()+rand()-1.5)*vol));stepNumber++;candles.push(price);if(candles.length>100)candles.shift();render()}
-function trade(buy){const amount=Number($('paperAmount').value);if(!Number.isFinite(amount)||amount<=0){note('Enter a positive order amount');return}
- const fee=.002;if(buy){const cost=amount*(1+fee);if(cost>cash+1e-8){note('BUY declined: insufficient simulated cash');return}cash-=cost;units+=amount/price;note('PAPER BUY '+fmt(amount)+' + '+fmt(amount*fee)+' fee')}
- else{const qty=amount/price;if(qty>units+1e-9){note('SELL declined: insufficient synthetic asset');return}units-=qty;cash+=amount*(1-fee);note('PAPER SELL '+fmt(amount)+' - '+fmt(amount*fee)+' fee')}
- render()}
-function stop(){if(interval){clearInterval(interval);interval=null}$('paperAuto').setAttribute('aria-pressed','false');$('paperAuto').textContent='Auto-run'}
-function reset(){stop();cash=100;units=0;price=100;candles=[100];seed=314159265;stepNumber=0;events=[];note('Simulation reset');render()}
-$('paperStep').addEventListener('click',step);$('paperBuy').addEventListener('click',()=>trade(true));$('paperSell').addEventListener('click',()=>trade(false));$('paperReset').addEventListener('click',reset);
-$('paperAuto').addEventListener('click',()=>{if(interval){stop();return}interval=setInterval(step,700);$('paperAuto').textContent='Pause';$('paperAuto').setAttribute('aria-pressed','true')});
-document.addEventListener('visibilitychange',()=>{if(document.hidden)stop()});reset();
-})();
-</script>
 </body>
 </html>
