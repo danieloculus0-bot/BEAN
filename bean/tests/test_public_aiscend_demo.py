@@ -114,25 +114,67 @@ class PublicAiscendDemoTests(unittest.TestCase):
         self.assertIn("No names, wallet addresses, account IDs", self.html)
         self.assertIn("not a private transaction log", self.html)
 
+    def test_sample_account_uses_actual_aiscend_fields_and_game_score(self):
+        # Public samples may change numbers but not invent UI fields or actions.
+        for phrase in ("Net liquidation", "Cash / USDC", "Wealth multiple",
+                       "GAME SCORE", "2X / POINT 1", "$100,000 OR BUST",
+                       "one point is earned for every completed doubling",
+                       "SAMPLE ACCOUNT", "not additional AIscend trading controls"):
+            self.assertIn(phrase.casefold(), self.html.casefold())
+        self.assertIn("https://github.com/danieloculus0-bot/AIscend/blob/main/templates/index.html",
+                      self.markup.links)
+        self.assertIn("https://github.com/danieloculus0-bot/AIscend/blob/main/src/game.py",
+                      self.markup.links)
+
+    def test_invented_paper_order_terminal_is_absent(self):
+        # An unapproved website-only $100 paper terminal was added to the
+        # original demo. Keep this module out rather than rebrand it as real.
+        for text in ("PAPER TRADING LAB", 'id="paperBuy"',
+                     'id="paperSell"', 'id="paperAuto"',
+                     'id="paperChart"', 'id="paperScenario"',
+                     'id="paper-lab"', "Synthetic asset",
+                     "Starting paper capital: $100",
+                     "function trade(buy)"):
+            with self.subTest(text=text):
+                self.assertNotIn(text, self.html)
+        self.assertNotIn(".paper-lab", self.html)
+
+    def test_actual_aiscend_research_is_source_grounded(self):
+        self.assertIn('id="research-updates"', self.html)
+        for text in ("seven rule families", "Unattended research supervisor",
+                     "forward-only five-minute candles",
+                     "not extra simulated controls"):
+            self.assertIn(text.casefold(), self.html.casefold())
+        for path in ("src/bean_strategy_lab.py", "src/bean_research_supervisor.py",
+                     "src/bean_five_minute.py", "src/bean_policy.py"):
+            self.assertIn("https://github.com/danieloculus0-bot/AIscend/blob/main/" + path,
+                          self.markup.links)
+        self.assertIn("#research-updates", self.markup.links)
+
+    def test_nav_mascot_no_longer_cropped(self):
+        self.assertIn(".brand img{width:51px;height:60px;object-fit:contain", self.html)
+        self.assertIn("flex-shrink:0", self.html)
+        self.assertIn('src="./bean-official.webp"', self.html)
+
     def test_only_one_complete_html_document_with_no_rendered_script_tail(self):
         # A duplicate <script> block once appeared after </html> and was
         # rendered verbatim at the bottom on both mobile and desktop.
         self.assertEqual(self.html.count("</html>"), 1)
         self.assertEqual(self.html.count("</body>"), 1)
-        self.assertEqual(self.html.count("const rand=()=>"), 1)
+        self.assertNotIn("const rand=()=>", self.html)
         self.assertRegex(self.html, r"</body>\s*</html>\s*\Z")
         self.assertFalse(self.html.split("</html>", 1)[1].strip())
 
     @unittest.skipUnless(shutil.which("node"), "Node.js needed for browser script syntax check")
     def test_inline_browser_javascript_parses(self):
         scripts = re.findall(r"<script[^>]*>([\s\S]*?)</script>", self.html)
-        self.assertGreaterEqual(len(scripts), 2)
+        self.assertEqual(len(scripts), 1)
         for index, script in enumerate(scripts):
             with self.subTest(script=index):
                 out = subprocess.run([shutil.which("node"), "--check"],
                                      input=script, text=True, capture_output=True)
                 self.assertEqual(out.returncode, 0, out.stderr)
-        self.assertIn('String.fromCharCode(36)', scripts[-1])
+        self.assertIn('function drawPet(){', scripts[0])
 
 
 if __name__ == '__main__':
