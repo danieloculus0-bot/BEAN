@@ -10,7 +10,7 @@ import torch
 from bean.optimization.sponge_dqn import SpongeDQN
 from bean.optimization.autodev import Journal
 from bean.memory.compression import recover_memory
-from .evolve import breed, compete, OBJECTIVE, fingerprint, promotion_gate
+from .evolve import breed, compete, OBJECTIVE, fingerprint, promotion_gate, continuation_shaping_scale
 
 
 class NeuralEvolutionTests(unittest.TestCase):
@@ -93,6 +93,16 @@ class NeuralEvolutionTests(unittest.TestCase):
         self.assertAlmostEqual(shape_training_reward(.8, (7, 0, 0), None, gamma),
                                .8)
 
+    def test_annealed_continuation_schedule_is_deterministic_and_bounded(self):
+        self.assertEqual(continuation_shaping_scale(0, 360), 1.0)
+        self.assertEqual(continuation_shaping_scale(359, 360), 0.0)
+        self.assertAlmostEqual(continuation_shaping_scale(180, 360), 1.0 - 180 / 359)
+        self.assertEqual(continuation_shaping_scale(0, 1), 0.0)
+        with self.assertRaises(ValueError):
+            continuation_shaping_scale(360, 360)
+        with self.assertRaises(ValueError):
+            continuation_shaping_scale(0, 0)
+
     def test_unshaped_control_observes_raw_environment_reward(self):
         from .evolve import train_game
         from .game import Breakout
@@ -110,13 +120,16 @@ class NeuralEvolutionTests(unittest.TestCase):
 
         control = Spy()
         evolved = Spy()
+        zero_scale = Spy()
         train_game(control, 900053, .06)
         train_game(evolved, 900053, .06, shaped=True)
+        train_game(zero_scale, 900053, .06, shaped=True, shaping_scale=0.0)
         raw_game = Breakout(900053)
         raw = []
         while not raw_game.done:
             raw.append(raw_game.step(1))
         self.assertEqual(control.rewards, raw)
+        self.assertEqual(zero_scale.rewards, raw)
         self.assertEqual(len(evolved.rewards), len(raw))
         self.assertNotEqual(evolved.rewards, raw)
         self.assertEqual(control.frames, evolved.frames)

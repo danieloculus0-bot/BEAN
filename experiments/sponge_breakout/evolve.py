@@ -109,7 +109,14 @@ def shape_training_reward(reward, old_state, next_state, gamma):
     return reward + gamma * paddle_potential(next_state) - paddle_potential(old_state)
 
 
-def train_game(agent, episode_seed, epsilon_floor, *, shaped=False):
+def continuation_shaping_scale(episode, total):
+    """One fixed potential multiplier per continuation episode; no holdout feedback."""
+    if total < 1 or not 0 <= episode < total:
+        raise ValueError("invalid continuation episode index")
+    return 0.0 if total == 1 else 1.0 - episode / (total - 1)
+
+
+def train_game(agent, episode_seed, epsilon_floor, *, shaped=False, shaping_scale=1.0):
     env = Breakout(episode_seed)
     while not env.done:
         state = env.state()
@@ -118,7 +125,13 @@ def train_game(agent, episode_seed, epsilon_floor, *, shaped=False):
         reward = env.step(action)
         after = None if env.done else env.state()
         if shaped:
-            reward = shape_training_reward(reward, state, after, agent.gamma)
+            if not 0.0 <= shaping_scale <= 1.0:
+                raise ValueError("invalid shaping scale")
+            if shaping_scale == 1.0:
+                reward = shape_training_reward(reward, state, after, agent.gamma)
+            elif shaping_scale > 0.0:
+                shaped_reward = shape_training_reward(reward, state, after, agent.gamma)
+                reward += shaping_scale * (shaped_reward - reward)
         agent.observe(state, action, reward, after, env.done)
 
 
@@ -226,8 +239,10 @@ def compete(out, *, seed=41, population=3, generations=3,
         # Reserve some of the fixed game budget for post-selection training.
         continuation_seeds = [TRAIN_BASE + seed*100_000 + generations*1000 + episode
                               for episode in range(continuation_games)]
-        for episode_seed in continuation_seeds:
-            train_game(evolved, episode_seed, global_best["config"]["epsilon_floor"], shaped=True)
+        for episode, episode_seed in enumerate(continuation_seeds):
+            train_game(evolved, episode_seed, global_best["config"]["epsilon_floor"],
+                       shaped=True,
+                       shaping_scale=continuation_shaping_scale(episode, continuation_games))
         # The no-evolution control uses the SAME total number of training games
         # but in one uninterrupted DQN. Frames and updates are reported separately.
         control, _ = breed(None, controls, seed=seed, mutate=False)
@@ -287,10 +302,11 @@ def compete(out, *, seed=41, population=3, generations=3,
             "final_policy_sha256": fingerprint(evolved.weights()),
             "selected_training": {"frames": evolved.frames, "updates": evolved.updates,
                                   "replay_size": len(evolved.replay)},
-            "research_change": "only evolved training receives descending-paddle potential shaping (Phi=-0.75*abs(bin-7)/7); same fixed-budget champion continuation; frames unmatched",
+            "research_change": "candidate search keeps frozen potential shaping; only selected-champion continuation anneals its per-episode potential multiplier from 1 to 0; same game budgets, frames unmatched",
             "shaping": {"enabled_for": "evolution_candidates_and_champion_only",
                         "enabled_for_uninterrupted_control": False,
                         "coefficient": 0.75,
+                        "continuation_schedule": "per-episode multiplier 1 - episode/(continuation_games-1); zero for single continuation game",
                         "formula": "reward + gamma*Phi(next_state) - Phi(state); terminal Phi=0"},
             "promotion_gate": {"decision": "evolved_dqn" if gate["accepted"] else "dqn_no_evolution",
                                "criterion": gate, "evolved_validation": evolved_validations,
