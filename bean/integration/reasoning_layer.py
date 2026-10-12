@@ -116,6 +116,16 @@ class BeanReasoningLayer:
         from bean.evaluation.evidence_rank import EvidenceRankLedger
         return EvidenceRankLedger(self.store._conn())
 
+    def dual_state(self):
+        """Use the persistent evidence-gated dual-state reasoning ledger.
+
+        This only manages competing hypotheses and returns provisional
+        evidence conclusions. The host still owns all action permissions.
+        """
+        self._ensure_open()
+        from bean.cognition.dual_state import DualStateReasoner
+        return DualStateReasoner(self.store._conn())
+
     def close(self, reason: str = "clean", notes: str | None = None) -> None:
         if self.closed:
             return
