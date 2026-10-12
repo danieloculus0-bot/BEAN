@@ -147,6 +147,15 @@ def create_backup(db_path: str | Path, backup_dir: str | Path) -> Path:
         backup_db = stage / "memory.db"
         with closing(_connect_readonly(db_path)) as source, closing(sqlite3.connect(backup_db)) as dest:
             source.backup(dest, pages=256, sleep=0.05)
+        # Online backup copies the source's WAL journal mode as well. Normalize
+        # the COPY into a standalone, fully checkpointed SQLite file before
+        # hashing or publishing. Otherwise read-only checks can create .db-wal
+        # and .db-shm sidecars inside what was supposed to be a portable bundle.
+        with closing(sqlite3.connect(backup_db)) as standalone:
+            mode = standalone.execute("PRAGMA journal_mode=DELETE").fetchone()[0]
+            if mode.lower() != "delete":
+                raise BackupError("could not finalize standalone backup journal")
+            standalone.commit()
         if os.name != "nt":
             backup_db.chmod(0o600)
         receipt, mirror = _snapshot_receipt(backup_db)
