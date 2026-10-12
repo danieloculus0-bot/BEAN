@@ -101,6 +101,38 @@ class PublicSkillsPageTests(unittest.TestCase):
             "<strong>not a replicated evolutionary advantage</strong>",
             "This is not a replicated evolutionary advantage"))
 
+    def test_readme_milestones_are_scoped_and_linked(self):
+        for name in ("BEAN Watcher", "Local Windows voice",
+                     "Read-only MCP preview", "GitHub evidence bridge"):
+            self.assertIn(name, self.page)
+        for suffix in (
+            "/README.md",
+            "/docs/bean-watcher-contract.md",
+            "/docs/bean-local-voice.md",
+            "/integrations/chatgpt/README.md",
+            "/docs/bean-github-engineering-bridge.md",
+        ):
+            self.assertTrue(any(link.endswith(suffix) for link in self.markup.links),
+                            suffix)
+        self.assertIn("research-only", self.page)
+        self.assertIn("not installed in Core Main", self.page)
+        self.assertIn("four-platform Core regression passed", self.page)
+        self.assertIn("38257867402", self.page)
+
+    def test_aiscend_preview_only_uses_real_fields(self):
+        for value in ("Net liquidation", "Cash / USDC", "Wealth multiple",
+                      "P/L", "GAME SCORE", "0 points", "2X",
+                      "$25.60", "$6.20", "+$0.60", "1.0240"):
+            self.assertIn(value, self.page)
+        self.assertIn("sample account", self.page)
+        self.assertIn("fabricated $100 buy/sell terminal was removed", self.page)
+        self.assertNotIn("mock-bars", self.page)
+        self.assertNotIn("Synthetic asset", self.page)
+        self.assertNotIn("PAPER TRADING LAB", self.page)
+        self.assertNotIn('id="paperBuy"', self.page)
+        self.assertIn("https://github.com/danieloculus0-bot/AIscend/blob/main/templates/index.html",
+                      self.markup.links)
+
     def test_specialist_battle_does_not_invent_wins(self):
         for phrase in ("OpenCode", "Goose", "OpenHands", "Continue", "Cline",
                        "five competitive verdicts", "INCONCLUSIVE",
