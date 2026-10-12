@@ -27,6 +27,12 @@ There are concrete outcomes beyond a feature list:
 
 [**See this comparison on the homepage**](https://danieloculus0-bot.github.io/BEAN/#lab).
 
+## Dual-state reasoning: evidence before a binary conclusion
+
+BEAN Core now has a callable [dual-state evidence ledger](docs/BEAN_DUAL_STATE_REASONING.md) for unresolved competing hypotheses. Missing evidence does **not** select the opposite claim. Source-attributed contradictions remain recorded, support in one context does not overwrite support in another, and SQLite restart preserves both options. The `BeanReasoningLayer.dual_state()` API exposes this feature to host applications with an explicit `action_authorized: false` result.
+
+This is implemented classical uncertainty handling, **not** literal quantum computing, automatic context recognition, trained-policy selection, or demonstrated cumulative neural growth. [Focused regression tests](bean/tests/test_dual_state_reasoning.py) cover missing, conflicting and correlated evidence, contextual separation, immutability and restart continuity.
+
 ## Learning lab: experience, scoring and repeatable tests
 
 **October 12, 2026 research status:** BEAN's existing Core on `main` already implements persistent evidence, review boundaries and audit trails. The newer **Sponge temporal-difference learner, scored compressed neural memories, and neuroevolution are in separate draft research PRs**, not silently deployed to Core `main`. The [public Learning Lab](https://danieloculus0-bot.github.io/BEAN/#learning) presents their measured experiments without inventing a production capability.
