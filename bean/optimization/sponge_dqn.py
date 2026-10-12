@@ -8,6 +8,7 @@ Never treat the host-attested quality assessment as independent verification.
 from __future__ import annotations
 
 from collections import deque
+import copy
 import math
 import random
 
@@ -129,6 +130,29 @@ class SpongeDQN:
             restored[name] = value
         self.online.load_state_dict(restored)
         self.target.load_state_dict(self.online.state_dict())
+
+    def learner_state(self):
+        """In-memory lineage snapshot; not a published or durable checkpoint."""
+        return {
+            "online": copy.deepcopy(self.online.state_dict()),
+            "target": copy.deepcopy(self.target.state_dict()),
+            "optimizer": copy.deepcopy(self.optimizer.state_dict()),
+            "replay": list(self.replay),
+            "frames": self.frames, "updates": self.updates,
+            "rng": self.rng.getstate(),
+        }
+
+    def load_learner_state(self, state):
+        """Restore replay, optimizer, target and exploration clock together."""
+        self.online.load_state_dict(copy.deepcopy(state["online"]))
+        self.target.load_state_dict(copy.deepcopy(state["target"]))
+        self.optimizer.load_state_dict(copy.deepcopy(state["optimizer"]))
+        self.replay.clear()
+        self.replay.extend(copy.deepcopy(state["replay"]))
+        self.frames = int(state["frames"])
+        self.updates = int(state["updates"])
+        self.rng.setstate(state["rng"])
+        self.last_loss = None
 
     def checkpoint(self, journal: Journal, *, baseline, candidate,
                    samples, evaluation_sha256, episode):
