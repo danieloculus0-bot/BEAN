@@ -26,6 +26,8 @@ jobs:
         with:
           python-version: '3.12'
       - run: python -m pip install numpy
+      - name: Run scored-memory and delayed-reward contract tests
+        run: python -m unittest experiments.sponge_breakout.test_bridge_sponge -v
       - name: Execute real SpongeTD learning with independent holdout
         run: python -m experiments.sponge_breakout.train --episodes 3000 --out sponge-breakout
       - name: Archive all evidence including failures
