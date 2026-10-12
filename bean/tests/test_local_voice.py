@@ -157,6 +157,27 @@ class BeanIdentityAndChatTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             c.reply(" ")
 
+    def test_opted_in_reference_notes_are_not_model_system_or_saved_history(self):
+        class Local:
+            def __init__(self):
+                self.requests = []
+            def chat(self, _model, messages):
+                self.requests.append(messages)
+                return "I can use unverified notes cautiously."
+        fake = Local()
+        chat_session = chat.BeanConversation(fake, "fake", "System identity")
+        chat_session.reply("What is the torque?", reference_context="42 Nm - unverified")
+        sent = fake.requests[-1]
+        self.assertEqual(sent[0], {"role": "system", "content": "System identity"})
+        self.assertEqual(sent[1]["role"], "user")
+        self.assertIn("42 Nm", sent[1]["content"])
+        self.assertEqual(sent[-1]["content"], "What is the torque?")
+        self.assertFalse(any("42 Nm" in turn["content"] for turn in chat_session.turns))
+        chat_session.reply("Hello")
+        self.assertFalse(any("42 Nm" in item["content"] for item in fake.requests[-1]))
+        with self.assertRaisesRegex(ValueError, "2800"):
+            chat_session.reply("Hi", reference_context="X" * 2801)
+
     def test_console_typed_messages_and_quit(self):
         fake=SimpleNamespace(reply=lambda text:"hi back")
         source=iter(("Hey BEAN","/quit"))
