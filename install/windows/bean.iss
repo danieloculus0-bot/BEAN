@@ -7,7 +7,7 @@
 AppId={{78A7B85B-A19A-439A-B63A-E037148EFDA7}
 AppName={#AppName}
 AppVersion={#AppVersion}
-AppPublisher=BEAN Open Source
+AppPublisher=BEAN Research Project
 AppPublisherURL=https://github.com/danieloculus0-bot/BEAN
 DefaultGroupName=BEAN
 OutputDir=..\\..\\out
