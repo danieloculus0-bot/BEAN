@@ -107,14 +107,17 @@ def shortest_path(room: Rect, obstacles: tuple[Rect, ...] | list[Rect],
         heappush(heap, (d + hypot(point(n)[0] - goal[0], point(n)[1] - goal[1]), next(serial), n))
     explored = 0
     finished = None
+    best_length = float("inf")
     while heap and explored < max_nodes:
         estimate, _, n = heappop(heap)
         if estimate > cost[n] + hypot(point(n)[0] - goal[0], point(n)[1] - goal[1]) + 1e-8:
             continue
-        explored += 1
-        if n in goal_links:
-            finished = n
+        if estimate >= best_length - 1e-8:
             break
+        explored += 1
+        if n in goal_links and cost[n] + goal_links[n] < best_length:
+            best_length = cost[n] + goal_links[n]
+            finished = n
         for d in ((1, 0), (0, 1), (-1, 0), (0, -1)):
             m = (n[0] + d[0], n[1] + d[1])
             if not (0 <= m[0] <= nx and 0 <= m[1] <= ny):
