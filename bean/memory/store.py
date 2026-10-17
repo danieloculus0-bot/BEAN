@@ -97,7 +97,15 @@ def init_store(db_path: str) -> MemoryStore:
     # SQLite commit but before JSONL fsync. Fail startup on mirror tampering or
     # unavailable mirror storage; never pretend the log is complete.
     from .audit_mirror import reconcile_event_mirror
-    reconcile_event_mirror(_store)
+    try:
+        reconcile_event_mirror(_store)
+    except Exception:
+        # Integrity failures must still release SQLite handles. Windows will
+        # otherwise lock the failed database even after a rejected boot.
+        _store.close()
+        # Preserve the store reference for established diagnostic readback;
+        # the connection stays closed until explicitly reopened by a caller.
+        raise
     return _store
 
 
