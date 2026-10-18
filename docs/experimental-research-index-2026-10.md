@@ -89,3 +89,11 @@ The [Lab 004 CI workflow](https://github.com/danieloculus0-bot/BEAN-AI-Bridge-/b
 ---
 
 **Research policy:** preserve the exact branch, reports and negative results; distinguish a synthetic result from a real-world finding; promote code to BEAN Core `main` only through scoped review and passing CI. For questions, open an issue in [BEAN Core](https://github.com/danieloculus0-bot/BEAN/issues) and link the exact experiment and run.
+
+## Independent-agent comparison and auditable learning (October 18, 2026)
+
+- [Peer-agent research and BEAN logic-gap audit](INDEPENDENT_AGENT_COMPARISON_AND_LEARNING_AUDIT_2026-10-18.md) identifies reproducibility, causal transfer, memory provenance and science-evaluation gaps; comparisons are **feature/methodology only**, not numerical head-to-head performance measurements.
+- [Machine-readable lessons learned](../research/learning_ledger.jsonl) records **what** the engineering/research team observed and **how** each lesson was derived, including falsification plans and explicit mechanism status. The current entries **do not** claim causal model learning.
+- [Ledger validator](../scripts/validate_learning_ledger.py) and [contract tests](../bean/tests/test_learning_ledger_contract.py) reject undocumented causal-learning claims on structural grounds. Validator success does **not** authenticate URLs or prove external evidence is true.
+- [HEAE future hypothesis and physics roadmap](HYPOTHESIS_EVALUATION_ANALYSIS_ENGINE_ROADMAP.md) includes two-agent PEMDAS experiments with uncued and mnemonic-cued recall. No unverified PEMDAS performance claim is promoted.
+- [Tracking issue #126](https://github.com/danieloculus0-bot/BEAN/issues/126) collects causal learning and peer benchmark acceptance tests.
