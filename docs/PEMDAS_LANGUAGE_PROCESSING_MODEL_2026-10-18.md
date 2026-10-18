@@ -71,6 +71,29 @@ These labels are *the originator's mnemonic*, not standard grammatical abbreviat
 - Track which paragraphs were actually deep-read, which were previewed only, and what remains unchecked.
 - Allow future follow-up questions to revisit all original regions, including deferred ones.
 
+## Addendum: automatic anchor recognition and scene-building (2026-10-18)
+
+The originator clarified that in the first scan, **nouns and verbs seem to 'pop' into awareness** without a deliberate part-of-speech parsing step. Other descriptive details are filled in after that initial recognition.
+
+**Illustrative reading of fiction:**
+
+1. **Entity anchor:** Recognize *Robert Langdon* is present.
+2. **Action anchor:** Recognize he *is running*.
+3. **Genre / purpose inference:** Recognize that surrounding descriptive narrative is establishing atmosphere, imagery and the scene, rather than merely delivering plot facts.
+4. **Adaptive reading pace:** Slow down intentionally to imagine that imagery and experience the scene.
+5. **Second pass:** With the entity/action scaffold and scene orientation already established, read more deeply and immerse in the narrative.
+
+This is important: **the objective is not always maximum reading speed or minimum retained text**. The preview supports two distinct valid modes:
+
+- **Technical/informational reading:** Rapidly find the task-relevant regions, inspect details, verify exact requirements and retain evidence.
+- **Narrative/experiential reading:** Rapidly acquire characters and actions, then deliberately slow down for sensory description, nuance, meaning, and immersion.
+
+For the BEAN research hypothesis, treat genre and reading intention as *inputs* to attention allocation. Do **not** discard scenic adjectives/adverbs as unimportant or assume a faster technical-document strategy is appropriate for fiction.
+
+**Testable implication:** Compare a relevance-only reader with a purpose-aware reader on both technical question answering and narrative comprehension (including atmosphere, causal sequence, and character intent). The preview must not cause loss of narrative qualities when the goal is immersion.
+
+The apparent spontaneity of word recognition and the two-pass speed advantage are self-reports, not independently measured perceptual mechanisms.
+
 ## Candidate implementation contract (not yet code)
 
 Input:
