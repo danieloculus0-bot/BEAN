@@ -40,6 +40,7 @@ class ActionType(str, Enum):
     PRACTICE_SKILL = "practice_skill"
     REDUCE_LOAD = "reduce_load"
     NO_ACTION = "no_action"
+    RUN_EXPERIMENT = "run_experiment"
 
 
 class ApprovalRequired(str, Enum):
@@ -88,11 +89,57 @@ class GoalStateEngine:
             if proposal:
                 proposals.append(proposal)
         for q in open_questions or []:
-            proposals.append(GoalProposal("answer_open_question", ActionType.ASK_SUPERVISOR, f"Open question may need supervisor evidence: {q.get('question')}", 4, ApprovalRequired.SUPERVISOR, {"question_id": q.get("id")}, "curiosity"))
+            # A structured, testable question can be investigated by Bridge
+            # without being turned into a supervisor-only request.
+            context = q.get("context")
+            try:
+                experiment = json.loads(context) if isinstance(context, str) else context
+            except (TypeError, ValueError):
+                experiment = None
+            is_trial = (
+                isinstance(experiment, dict)
+                and experiment.get("schema") == "bean.cognition.experiment.v1"
+                and isinstance(experiment.get("capability"), str)
+                and isinstance(experiment.get("inputs"), dict)
+                and isinstance(experiment.get("expected_output"), dict)
+            )
+            if is_trial:
+                detail = {
+                    "question_id": q.get("id"),
+                    "capability": experiment["capability"],
+                    "inputs": experiment["inputs"],
+                    "expected_output": experiment["expected_output"],
+                }
+                if self._has_pending_experiment(session_uuid, q.get("id")):
+                    continue
+                proposals.append(GoalProposal(
+                    "investigate_open_question", ActionType.RUN_EXPERIMENT,
+                    f"Test a local method for: {q.get('question')}",
+                    3, ApprovalRequired.NONE, detail, "curiosity",
+                ))
+            else:
+                proposals.append(GoalProposal("answer_open_question", ActionType.ASK_SUPERVISOR, f"Open question may need supervisor evidence: {q.get('question')}", 4, ApprovalRequired.SUPERVISOR, {"question_id": q.get("id")}, "curiosity"))
         for proposal in proposals:
             self._persist(proposal, session_uuid)
         self._log_proposals(proposals, session_uuid)
         return proposals
+
+    def _has_pending_experiment(self, session_uuid: str, question_id: int) -> bool:
+        """Avoid issuing duplicate work orders while an experiment is pending."""
+        from ..memory.store import get_store
+        rows = get_store().fetchall(
+            "SELECT action_detail FROM cognition_goal_proposals "
+            "WHERE session_uuid=? AND action_type=? AND status='pending'",
+            (session_uuid, ActionType.RUN_EXPERIMENT.value),
+        )
+        return any(
+            json.loads(row["action_detail"] or "{}").get("question_id") == question_id
+            for row in rows
+        )
+
+    def complete(self, proposal_id: str, note: str = "") -> bool:
+        """Record an observed experiment completion, including negative results."""
+        return self._resolve(proposal_id, "completed", note)
 
     def approve(self, proposal_id: str, supervisor_note: str = "") -> bool:
         return self._resolve(proposal_id, "approved", supervisor_note)
