@@ -71,6 +71,23 @@ def run_reflection(
     summary = _build_summary(events)
     uncertainties = _identify_uncertainties(events)
     questions = _generate_questions(events, session_uuid)
+    # Reflection replays existing evidence every pass. An already-open
+    # question is one cognitive problem, not a new discovery each tick.
+    # Preserve the previous question and its ID for later evidence linking.
+    unseen = []
+    seen_this_pass = set()
+    for question in questions:
+        title = question["question"]
+        if title in seen_this_pass:
+            continue
+        seen_this_pass.add(title)
+        existing = store.fetchone(
+            "SELECT id FROM curiosity WHERE status='open' AND question=? "
+            "LIMIT 1", (title,)
+        )
+        if existing is None:
+            unseen.append(question)
+    questions = unseen
     anomalies = _detect_anomalies(events)
 
     reflection_uuid = str(uuid.uuid4())

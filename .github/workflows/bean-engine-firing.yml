@@ -1,0 +1,53 @@
+name: BEAN engine firing sweep full Core regression
+
+on:
+  push:
+    branches: [fix/engine-firing-sweep-20261019]
+  pull_request:
+    branches: [fix/audit-learning-reliability-20261019]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  core-regression:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        python-version: ['3.10', '3.12']
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install test dependencies
+        run: python -m pip install pytest pytest-cov psutil
+      - name: Compile check
+        run: python -m compileall -q bean bean_run.py
+      - name: Boot readiness on disposable database
+        run: python -m bean.runtime.boot_readiness --temp
+      - name: Run offline public quickstart
+        run: python -m examples.quickstart_reasoning
+      - name: Exercise crash recovery, tamper detection and concurrent mirror writers
+        run: python -m pytest bean/tests/test_audit_mirror_recovery.py -q -ra
+      - name: Verify live SQLite snapshot, restore-copy and tamper handling
+        run: python -m pytest bean/tests/test_verified_backup.py -q -ra
+      - name: Reproduce four consolidated offline utility proofs
+        run: python -m examples.capability_proof
+      - name: Run complete suite with branch coverage
+        run: python -m pytest bean/tests -q -ra --tb=short --junitxml=bean-core-tests.xml --cov=bean --cov-branch --cov-report=term-missing --cov-report=xml:bean-core-coverage.xml
+      - name: Attach test evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bean-engine-sweep-core-${{ matrix.os }}-py${{ matrix.python-version }}
+          path: |
+            bean-core-tests.xml
+            bean-core-coverage.xml
+          if-no-files-found: ignore

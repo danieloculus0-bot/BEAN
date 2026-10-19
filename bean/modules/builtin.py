@@ -1,6 +1,7 @@
 """Initial native BEAN cognition blocks, using the same callable contract."""
 from __future__ import annotations
 
+import json
 from statistics import mean
 
 
@@ -25,6 +26,19 @@ def memory_recall(data: dict, context: dict) -> dict:
     from bean.memory.event_logger import get_recent_events
     session = data["session_uuid"]
     events = get_recent_events(session, limit=int(data.get("limit", 8)))
+    # Core's SQLite event API returns data as its stored JSON string. The
+    # Bridge output port should expose the actual structured observation,
+    # otherwise downstream blocks cannot address data.temperature_c, etc.
+    for event in events:
+        raw = event.get("data")
+        if isinstance(raw, str):
+            try:
+                event["data"] = json.loads(raw)
+            except ValueError:
+                event["data_parse_error"] = True
+                # Preserve the original observation, even if malformed.
+        elif raw is None:
+            event["data"] = None
     return {"events": events, "count": len(events)}
 
 
