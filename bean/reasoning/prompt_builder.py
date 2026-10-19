@@ -48,12 +48,24 @@ def build_ollama_prompt(context: dict, request_type: str = "reflection") -> str:
     events = context.get("recent_events") or []
     claims = context.get("active_world_claims") or []
     boundaries = context.get("active_boundaries") or []
+    # Retain the latest events AND earlier measured experiment outcomes.
+    # Otherwise a new observation can evict BEAN's previous trials before
+    # its local reasoning module gets a chance to compare approaches.
+    head = events[:3]
+    measured = [
+        e for e in events
+        if e.get("subtype") in (
+            "cognitive_module_experiment", "cognitive_module_failure",
+            "experiment_result",
+        ) and e not in head
+    ][:3]
+    selected = sorted(head + measured, key=lambda e: e.get("id", 0), reverse=True)
     compact = {
         "request_type": request_type,
         "source_event_id": (context.get("session") or {}).get("source_event_id"),
         "recent_events": [
             {"id": e.get("id"), "summary": str(e.get("summary", ""))[:220],
-             "data": e.get("data"), "source": e.get("source")} for e in events[:3]
+             "data": e.get("data"), "source": e.get("source")} for e in selected
         ],
         "world_claims": [
             {"claim_id": x.get("claim_id"), "content": str(x.get("content", ""))[:160],

@@ -80,9 +80,17 @@ def build_default_handlers(
     consolidation_interval: int = 300,
     watcher=None,
     task_engine=None,
+    cognitive_dispatcher=None,
+    cognition_interval: int = 10,
 ) -> TickHandlerRegistry:
     registry = TickHandlerRegistry()
 
+    if cognitive_dispatcher is not None:
+        registry.register(
+            "cognitive_experiments",
+            lambda tick, session_uuid, ctx: cognitive_dispatcher.poll(session_uuid),
+            interval=cognition_interval,
+        )
     if task_engine is not None:
         registry.register("bean_tasks", lambda tick, session_uuid, ctx: task_engine.poll_due(), interval=1)
     if watcher is not None:
