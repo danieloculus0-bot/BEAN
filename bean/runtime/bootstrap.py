@@ -94,7 +94,9 @@ def _signal_handler(signum, frame):
 def _print_boot_summary(ctx):
     c = ctx["continuity"]
     identity = ctx["identity"]
-    sep = "─" * 60
+    # Simple ASCII startup output also works on Windows cp1252 consoles.
+    # A display decoration must not prevent BEAN from booting.
+    sep = "-" * 60
     print(sep)
     print(f"  BEAN  |  {identity['developmental_stage']}  |  v{identity['version']}")
     print(sep)
