@@ -100,19 +100,40 @@ class ConsolidationEngine:
         return [dict(r) for r in get_store().fetchall("SELECT * FROM curiosity WHERE status='open' ORDER BY id DESC LIMIT 10")]
 
     def _close_resolved_questions(self, session_uuid: str) -> int:
+        """Close only questions explicitly linked to a recorded answer.
+
+        Keyword overlap is not evidence that a question was answered. A
+        fact_learned event may resolve a question by carrying a positive
+        integer question_id and nonempty answer in its structured data.
+        """
         from ..memory.store import get_store
-        facts = get_store().fetchall("SELECT summary FROM events WHERE session_uuid=? AND event_type='fact_learned' ORDER BY id DESC LIMIT 25", (session_uuid,))
-        if not facts:
-            return 0
-        questions = get_store().fetchall("SELECT id, question FROM curiosity WHERE status='open'")
+        store = get_store()
+        facts = store.fetchall(
+            "SELECT id, data FROM events WHERE session_uuid=? AND event_type='fact_learned' "
+            "ORDER BY id DESC LIMIT 25",
+            (session_uuid,),
+        )
         closed = 0
-        fact_text = "\n".join(r["summary"].lower() for r in facts)
-        for q in questions:
-            qt = q["question"].lower()
-            if any(word in fact_text for word in qt.replace("?", "").split() if len(word) > 5):
-                get_store().execute("UPDATE curiosity SET status='answered', answer=?, answered_at=? WHERE id=?", ("Resolved by logged fact during consolidation.", _now(), q["id"]))
-                closed += 1
-        get_store().commit()
+        for fact in facts:
+            try:
+                payload = json.loads(fact["data"]) if fact["data"] else {}
+            except (TypeError, ValueError):
+                continue
+            if not isinstance(payload, dict):
+                continue
+            question_id = payload.get("question_id")
+            answer = payload.get("answer")
+            if type(question_id) is not int or question_id <= 0:
+                continue
+            if not isinstance(answer, str) or not answer.strip():
+                continue
+            cursor = store.execute(
+                "UPDATE curiosity SET status='answered', answer=?, answered_at=? "
+                "WHERE id=? AND status='open'",
+                (answer.strip(), _now(), question_id),
+            )
+            closed += cursor.rowcount
+        store.commit()
         return closed
 
     def _write_continuity_summary(self, session_uuid: str, events, significant, surprises, prefs, threatened, proposals, closed) -> str:
