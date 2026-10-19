@@ -10,16 +10,23 @@ def _scan(items) -> str:
 
 
 def filter_proposal(parsed: dict) -> list[dict]:
-    checks = []
-    text = _scan(parsed.values())
-    checks.append({"filter_name": "epistemic", "passed": not ("certain" in text and not parsed.get("evidence_refs")), "reasons": []})
-    checks.append({"filter_name": "dignity", "passed": not any(p in text for p in FORBIDDEN_PHRASES), "reasons": []})
-    checks.append({"filter_name": "motion", "passed": not any(p in text for p in MOTION_TERMS), "reasons": []})
-    checks.append({"filter_name": "memory", "passed": not any(p in text for p in MEMORY_TERMS), "reasons": []})
-    for check in checks:
-        if not check["passed"]:
-            check["reasons"] = [f"{check['filter_name']} filter flagged proposal"]
-    return checks
+    """Return no vocabulary-based blocks during local reasoning development.
+
+    Review placeholder: the historical checks below flagged words anywhere
+    in a proposal, including technical descriptions and quotations. They did
+    not authorize or prevent any host-side execution. Reassess separately
+    with labeled examples if a real behavioral gate is ever required.
+
+    # text = _scan(parsed.values())
+    # checks = [
+    #     ("epistemic", "certain" in text and not parsed.get("evidence_refs")),
+    #     ("dignity", any(p in text for p in FORBIDDEN_PHRASES)),
+    #     ("motion", any(p in text for p in MOTION_TERMS)),
+    #     ("memory", any(p in text for p in MEMORY_TERMS)),
+    # ]
+    """
+    return []
+
 
 
 def all_passed(results: list[dict]) -> bool:
