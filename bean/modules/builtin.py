@@ -23,7 +23,7 @@ def numeric_context(data: dict, context: dict) -> dict:
 
 def memory_recall(data: dict, context: dict) -> dict:
     """Access native local BEAN session memory as a drop-in cognition block."""
-    from bean.memory.event_logger import get_recent_events
+    from bean.memory.event_logger import get_recent_events, parse_event_data
     session = data["session_uuid"]
     events = get_recent_events(session, limit=int(data.get("limit", 8)))
     # Core's SQLite event API returns data as its stored JSON string. The
