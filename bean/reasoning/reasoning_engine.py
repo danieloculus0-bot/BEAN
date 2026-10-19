@@ -62,7 +62,10 @@ class ReasoningEngine:
         valid = bool(completion.get("ok")) and bool(parsed.get("parse_success"))
         response_id = create_response(request_id, raw, parsed, self.conn)
         proposal_id = create_proposal(session_uuid, request_id, response_id, parsed, self.conn)
-        # Local development: disable vocabulary-only proposal filtering here.\n        # This never authorized execution; public proposal screening stays intact.\n        # filters = filter_proposal(parsed)  # revisit after functional baselines\n        filters = []
+        # Local development: disable vocabulary-only proposal filtering here.
+        # This never authorized execution; public proposal screening stays intact.
+        # filters = filter_proposal(parsed)  # revisit after functional baselines
+        filters = []
         if not valid:
             filters.append({"filter_name": "structured_response",
                             "passed": False, "reasons": [
