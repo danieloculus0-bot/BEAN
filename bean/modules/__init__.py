@@ -1,4 +1,4 @@
-"""Composable cognitive blocks: load only the selected capability."""
-from .runtime import Block, BlockRuntime
+"""Core cognition is exposed as reusable blocks; Bridge composes them."""
+from .builtin import BLOCKS, register_builtin
 
-__all__ = ["Block", "BlockRuntime"]
+__all__ = ["BLOCKS", "register_builtin"]
