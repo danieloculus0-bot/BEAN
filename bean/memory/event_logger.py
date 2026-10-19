@@ -11,6 +11,7 @@ add it here and document it. Don't invent strings in calling code.
 """
 
 import json
+import math
 import uuid
 from datetime import datetime, timezone
 from enum import Enum
@@ -80,6 +81,50 @@ class Source(str, Enum):
     TIMER    = "timer"
 
 
+
+# Preserve unknown numeric measurements without silently turning them into
+# null, ordinary numbers, or non-standard JSON tokens. This is a representation
+# contract, not a rule about what BEAN may think or investigate.
+_NONFINITE_LABELS = {
+    "NaN": "nan", "Infinity": "+inf", "-Infinity": "-inf",
+}
+
+
+def _json_compatible_observation(value):
+    """Make a JSON-portable copy of sensor/event data, preserving nonfinite tags.
+
+    Existing ordinary JSON values are left unchanged. No imputation or
+    inference is performed: the consumer decides how to treat an uncertain
+    numerical measurement.
+    """
+    if isinstance(value, float):
+        if math.isnan(value):
+            return {"$bean_nonfinite_float": "nan"}
+        if math.isinf(value):
+            return {"$bean_nonfinite_float": "+inf" if value > 0 else "-inf"}
+        return value
+    if isinstance(value, dict):
+        return {key: _json_compatible_observation(item)
+                for key, item in value.items()}
+    if isinstance(value, (tuple, list)):
+        return [_json_compatible_observation(item) for item in value]
+    return value
+
+
+def parse_event_data(text: str):
+    """Read both compliant event JSON and legacy Python NaN/Infinity tokens.
+
+    Legacy values are translated into explicit structured observations without
+    modifying historical SQLite rows or their verified JSONL mirror bytes.
+    """
+    return json.loads(
+        text,
+        parse_constant=lambda token: {
+            "$bean_nonfinite_float": _NONFINITE_LABELS[token]
+        },
+    )
+
+
 def log_event(
     session_uuid: str,
     event_type: EventType,
@@ -98,7 +143,8 @@ def log_event(
     """
     store = get_store()
     event_uuid = str(uuid.uuid4())
-    data_json = json.dumps(data) if data is not None else None
+    data_json = (json.dumps(_json_compatible_observation(data), allow_nan=False)
+                 if data is not None else None)
 
     cursor = store.execute(
         """
