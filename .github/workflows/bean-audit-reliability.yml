@@ -1,10 +1,10 @@
-name: BEAN audit repair cross-platform regression
+name: BEAN connected cognition full regression
 
 on:
   push:
-    branches: [fix/audit-learning-reliability-20261019]
+    branches: [fix/audit-learning-reliability-20261019, feature/connected-cognition-20261019]
   pull_request:
-    branches: [feature/cognitive-blocks-20261019]
+    branches: [feature/cognitive-blocks-20261019, fix/audit-learning-reliability-20261019]
   workflow_dispatch:
 
 permissions:
