@@ -28,7 +28,35 @@ def memory_recall(data: dict, context: dict) -> dict:
     return {"events": events, "count": len(events)}
 
 
+def predict_last_sign(data: dict, context: dict) -> dict:
+    """A simple fast predictor for a stream of observed changes."""
+    history = [float(v) for v in data["history"]]
+    if not history:
+        raise ValueError("history needs observations")
+    return {"prediction": int(history[-1] > 0), "method": "last_observation"}
+
+
+def predict_mean_sign(data: dict, context: dict) -> dict:
+    """An alternative predictor for the same task, using the mean trend."""
+    history = [float(v) for v in data["history"]]
+    if not history:
+        raise ValueError("history needs observations")
+    return {"prediction": int(mean(history) > 0), "method": "mean_observation"}
+
+
 BLOCKS = [
+    {
+        "name": "bean.last_sign",
+        "entrypoint": "bean.modules.builtin:predict_last_sign",
+        "capabilities": ["binary_forecast"],
+        "description": "Predict sign from most recent observation",
+    },
+    {
+        "name": "bean.mean_sign",
+        "entrypoint": "bean.modules.builtin:predict_mean_sign",
+        "capabilities": ["binary_forecast"],
+        "description": "Predict sign from mean of observations",
+    },
     {
         "name": "bean.numeric_context",
         "entrypoint": "bean.modules.builtin:numeric_context",
