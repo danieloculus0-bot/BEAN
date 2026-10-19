@@ -89,10 +89,31 @@ class GoalStateEngine:
                 proposals.append(proposal)
         for q in open_questions or []:
             proposals.append(GoalProposal("answer_open_question", ActionType.ASK_SUPERVISOR, f"Open question may need supervisor evidence: {q.get('question')}", 4, ApprovalRequired.SUPERVISOR, {"question_id": q.get("id")}, "curiosity"))
+        # A consolidation tick can see the same open uncertainty repeatedly.
+        # Reuse unresolved goals instead of producing a fresh task every pass.
+        from ..memory.store import get_store
+        pending = get_store().fetchall(
+            "SELECT goal_state, action_type, action_detail, drive_source "
+            "FROM cognition_goal_proposals WHERE session_uuid=? AND status='pending'",
+            (session_uuid,),
+        )
+        existing = {
+            (row["goal_state"], row["action_type"], row["action_detail"],
+             row["drive_source"]) for row in pending
+        }
+        new_proposals = []
         for proposal in proposals:
+            key = (
+                proposal.goal_state, proposal.action_type.value,
+                json.dumps(proposal.action_detail), proposal.drive_source,
+            )
+            if key in existing:
+                continue
             self._persist(proposal, session_uuid)
-        self._log_proposals(proposals, session_uuid)
-        return proposals
+            existing.add(key)
+            new_proposals.append(proposal)
+        self._log_proposals(new_proposals, session_uuid)
+        return new_proposals
 
     def approve(self, proposal_id: str, supervisor_note: str = "") -> bool:
         return self._resolve(proposal_id, "approved", supervisor_note)
