@@ -53,7 +53,7 @@ def build_ollama_prompt(context: dict, request_type: str = "reflection") -> str:
         "source_event_id": (context.get("session") or {}).get("source_event_id"),
         "recent_events": [
             {"id": e.get("id"), "summary": str(e.get("summary", ""))[:220],
-             "source": e.get("source")} for e in events[:3]
+             "data": e.get("data"), "source": e.get("source")} for e in events[:3]
         ],
         "world_claims": [
             {"claim_id": x.get("claim_id"), "content": str(x.get("content", ""))[:160],
