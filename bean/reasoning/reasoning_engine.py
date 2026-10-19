@@ -70,7 +70,7 @@ class ReasoningEngine:
                             ]})
         for result in filters:
             create_filter_result(proposal_id, result, self.conn)
-        return {"success": True, "structured_response_valid": valid,
+        return {"success": valid, "structured_response_valid": valid,
                 "proposal_id": proposal_id, "request_id": request_id,
                 "response_id": response_id, "filter_passed": all_passed(filters),
                 "requires_supervisor_review": True,
