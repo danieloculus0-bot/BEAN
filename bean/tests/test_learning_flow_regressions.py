@@ -108,10 +108,28 @@ def test_valid_mock_reasoning_still_succeeds(tmp_path):
     assert report["structured_response_valid"] is True
 
 
-def test_development_proposal_filters_do_not_block_descriptive_language():
-    from bean.reasoning.proposal_filter import filter_proposal
-    proposal = {
-        "summary": "The servo actuator test is uncertain; do not execute motion.",
-        "evidence_refs": [],
-    }
-    assert filter_proposal(proposal) == []
+def test_local_reasoning_keeps_technical_vocabulary(tmp_path):
+    import json
+
+    session = _start(tmp_path)
+
+    class TechnicalMock:
+        adapter_name = "offline_fixture"
+        model_name = "technical_test"
+
+        def complete(self, prompt, context):
+            return {"ok": True, "raw_text": json.dumps({
+                "summary": "The servo actuator is uncertain; do not move it.",
+                "observations": [],
+                "interpretations": [],
+                "assumptions": [],
+                "uncertainties": [],
+                "evidence_refs": [],
+                "candidate_steps": [],
+                "risk_flags": [],
+                "confidence": 0.5,
+            })}
+
+    report = ReasoningEngine(adapter=TechnicalMock()).run(session)
+    assert report["success"] is True
+    assert report["filter_passed"] is True
