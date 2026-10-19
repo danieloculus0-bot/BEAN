@@ -106,3 +106,12 @@ def test_valid_mock_reasoning_still_succeeds(tmp_path):
     report = ReasoningEngine().run(session, adapter_name="mock")
     assert report["success"] is True
     assert report["structured_response_valid"] is True
+
+
+def test_development_proposal_filters_do_not_block_descriptive_language():
+    from bean.reasoning.proposal_filter import filter_proposal
+    proposal = {
+        "summary": "The servo actuator test is uncertain; do not execute motion.",
+        "evidence_refs": [],
+    }
+    assert filter_proposal(proposal) == []
