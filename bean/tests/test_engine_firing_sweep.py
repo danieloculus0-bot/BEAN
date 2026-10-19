@@ -121,3 +121,22 @@ def test_identical_pending_goals_collapse_but_new_questions_get_new_goals(tmp_pa
     assert engine.propose(session, [], first) == []
     assert len(engine.propose(session, [], second)) == 1
     assert len(engine.get_pending(session)) == 2
+
+
+def test_boot_banner_never_requires_unicode_terminal(tmp_path, monkeypatch):
+    """The main runner must still boot when Windows pipes stdout as cp1252."""
+    import io
+    from bean.runtime.bootstrap import _print_boot_summary
+
+    stream = io.BytesIO()
+    cp1252_console = io.TextIOWrapper(stream, encoding="cp1252", errors="strict")
+    monkeypatch.setattr("sys.stdout", cp1252_console)
+    _print_boot_summary({
+        "identity": {"developmental_stage": "experimental", "version": "0.1"},
+        "continuity": {"total_boots": 1, "total_events": 3,
+                       "recent_sessions": []},
+        "boundaries": [],
+        "session_uuid": "fixture-session-001",
+    })
+    cp1252_console.flush()
+    assert b"BEAN" in stream.getvalue()
