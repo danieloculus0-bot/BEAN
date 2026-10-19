@@ -89,6 +89,8 @@ class GoalStateEngine:
             if proposal:
                 proposals.append(proposal)
         for q in open_questions or []:
+            if self._has_pending_question(session_uuid, q.get("id")):
+                continue
             # A structured, testable question can be investigated by Bridge
             # without being turned into a supervisor-only request.
             context = q.get("context")
@@ -110,8 +112,6 @@ class GoalStateEngine:
                     "inputs": experiment["inputs"],
                     "expected_output": experiment["expected_output"],
                 }
-                if self._has_pending_experiment(session_uuid, q.get("id")):
-                    continue
                 proposals.append(GoalProposal(
                     "investigate_open_question", ActionType.RUN_EXPERIMENT,
                     f"Test a local method for: {q.get('question')}",
@@ -124,13 +124,13 @@ class GoalStateEngine:
         self._log_proposals(proposals, session_uuid)
         return proposals
 
-    def _has_pending_experiment(self, session_uuid: str, question_id: int) -> bool:
+    def _has_pending_question(self, session_uuid: str, question_id: int) -> bool:
         """Avoid issuing duplicate work orders while an experiment is pending."""
         from ..memory.store import get_store
         rows = get_store().fetchall(
             "SELECT action_detail FROM cognition_goal_proposals "
-            "WHERE session_uuid=? AND action_type=? AND status='pending'",
-            (session_uuid, ActionType.RUN_EXPERIMENT.value),
+            "WHERE session_uuid=? AND drive_source='curiosity' AND status='pending'",
+            (session_uuid,),
         )
         return any(
             json.loads(row["action_detail"] or "{}").get("question_id") == question_id
