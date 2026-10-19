@@ -80,8 +80,16 @@ def build_reasoning_context(session_uuid: str, source_event_id: int | None = Non
 
     recent_events = _rows(conn, "SELECT id, event_type, subtype, summary, data, source, severity, created_at FROM events WHERE session_uuid=? ORDER BY id DESC LIMIT ?", (session_uuid, LIMITS["recent_events"]))
     # Preserve structured observations for reasoning, not only the summary text.
+    from ..memory.event_logger import parse_event_data
     for event in recent_events:
-        event["data"] = _load_json(event.get("data"), None)
+        raw = event.get("data")
+        if raw:
+            try:
+                event["data"] = parse_event_data(raw)
+            except (ValueError, TypeError):
+                event["data"] = {"$bean_invalid_event_json": raw}
+        else:
+            event["data"] = None
     boundaries = _rows(conn, "SELECT id, name, category, rule, enforcement, reason FROM boundaries WHERE active=1 ORDER BY category, name LIMIT ?", (LIMITS["active_boundaries"],))
     capabilities = _rows(conn, "SELECT id, name, description, status, layer, notes FROM capabilities ORDER BY layer, name LIMIT ?", (LIMITS["capabilities"],))
     active_claims = _rows(conn, "SELECT id, claim_id, key, content, category, source_type, confidence, evidence, notes FROM world_claims WHERE active=1 ORDER BY confidence DESC, id DESC LIMIT ?", (LIMITS["active_world_claims"],))
