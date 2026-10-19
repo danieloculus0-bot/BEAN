@@ -1,4 +1,4 @@
-name: BEAN engine firing sweep: full Core regression
+name: BEAN engine firing sweep full Core regression
 
 on:
   push:
