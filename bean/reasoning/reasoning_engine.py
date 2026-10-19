@@ -18,7 +18,9 @@ def adapter_from_name(name: str | None):
         return OpenAIProvider()
     if name == "ollama":
         return OllamaProvider()
-    return MockLLMAdapter()
+    if name in (None, "mock"):
+        return MockLLMAdapter()
+    raise ValueError(f"Unknown BEAN reasoning provider: {name!r}")
 
 
 class ReasoningEngine:
