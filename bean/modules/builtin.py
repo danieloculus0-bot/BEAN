@@ -33,7 +33,7 @@ def memory_recall(data: dict, context: dict) -> dict:
         raw = event.get("data")
         if isinstance(raw, str):
             try:
-                event["data"] = json.loads(raw)
+                event["data"] = parse_event_data(raw)
             except ValueError:
                 event["data_parse_error"] = True
                 # Preserve the original observation, even if malformed.
