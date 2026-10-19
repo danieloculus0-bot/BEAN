@@ -133,3 +133,25 @@ def test_local_reasoning_keeps_technical_vocabulary(tmp_path):
     report = ReasoningEngine(adapter=TechnicalMock()).run(session)
     assert report["success"] is True
     assert report["filter_passed"] is True
+
+
+def test_local_reasoning_retains_prior_trial_even_after_many_new_events(tmp_path):
+    session = _start(tmp_path)
+    recorded = log_event(
+        session, EventType.OBSERVATION,
+        "Earlier cognitive trial gave feedback.",
+        Source.SYSTEM, subtype="cognitive_module_experiment",
+        data={"run_id": "older_experiment_receipt_123", "reward": -1},
+    )
+    for index in range(6):
+        log_event(
+            session, EventType.OBSERVATION,
+            f"Later unrelated event {index}.", Source.SYSTEM,
+            data={"index": index},
+        )
+    context = build_reasoning_context(session)["context"]
+    assert recorded in [e["id"] for e in context["recent_events"]]
+    prompt = build_ollama_prompt(context)
+    assert "older_experiment_receipt_123" in prompt
+    assert "Later unrelated event 5" in prompt
+    assert prompt.count("older_experiment_receipt_123") == 1
