@@ -95,17 +95,21 @@ def run_local_trial(*,development_path,holdout_path,output,domain,
         # trial; absence is explicitly reported, not treated as valid placebo.
         has_placebo=bool([x for x in bank.lessons(strategy="reflection")
                           if x.domain!=domain])
-        receipt=run_paired_trial(bank=bank,cases=cases,model=model,
+        trial=run_paired_trial(bank=bank,cases=cases,model=model,
              judge=lambda expected,answer:expected.strip()==answer.strip(),
              replicates=replicates)
-        receipt["placebo_context_present"]=has_placebo
-        receipt["lesson_ids"]=created
-        receipt["holdout_task_ids"]=hold_ids
-        receipt["limitation"]="Exact-match host evaluator and public task set; no blind external judge or weight update."
-        receipt["learning_proven"]=False
+        report={
+            "schema":"bean.lab026.real_trial_envelope.v1",
+            "trial_receipt":trial,
+            "placebo_context_present":has_placebo,
+            "lesson_ids":created,
+            "holdout_task_ids":hold_ids,
+            "limitation":"Exact-match host evaluator and public task set; no blind external judge or weight update.",
+            "learning_proven":False,
+        }
         (output/"local_ollama_experiment.json").write_text(
-            json.dumps(receipt,indent=2)+"\n",encoding="utf-8")
-        return receipt
+            json.dumps(report,indent=2)+"\n",encoding="utf-8")
+        return report
     finally:
         bank.close()
 
@@ -121,8 +125,10 @@ def main():
     a=p.parse_args()
     result=run_local_trial(development_path=a.development,holdout_path=a.holdout,
              output=a.out,domain=a.domain,model_name=a.model,replicates=a.replicates)
-    print(json.dumps({k:v for k,v in result.items() if k not in ("records",)},
-                     indent=2))
+    print(json.dumps({"scores":result["trial_receipt"]["scores"],
+                      "model_id":result["trial_receipt"]["model_id"],
+                      "placebo_context_present":result["placebo_context_present"],
+                      "learning_proven":result["learning_proven"]},indent=2))
 
 
 if __name__=="__main__":
