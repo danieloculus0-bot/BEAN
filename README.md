@@ -394,3 +394,9 @@ The optional [BEAN evidence-first entrance exam](docs/bean-entrance-exam-lab012.
 ## Offline research evaluation harnesses (not deployed intelligence)
 
 Core includes opt-in synthetic evaluation modules for [supervised source calibration](docs/bean-composite-growth-lab013.md), [read-only investigation and restart retention](docs/bean-investigation-retention-lab014.md), and [symbolic LLM-style provider emulation](docs/bean-simulated-llm-lab015.md). These run only when invoked, use fictional data and isolate their SQLite state. **Fixture gains do not demonstrate neural-model learning, open-ended self-improvement or production autonomy.** The incomplete hosted Lab016 remains isolated; no real hosted-model capability has been promoted. Their purpose in `main` is reproducible falsification of future changes.
+
+## Cross-repository audit status (2026-10-20)
+
+**Core and experimental autonomy must be measured separately.** BEAN Core's full regression and Pages deployment succeeded on Oct 18. The [Oct 20 model-authored self-repair workflow](https://github.com/danieloculus0-bot/BEAN/actions/runs/39484502481) **failed its independent Linux/Windows source-validation jobs**; the proposed code did not clear the held-out/full-suite tests, so the automatic upgrade job was skipped. This is evidence that a trial was rejected, **not** evidence of successful autonomous self-repair. Research workflows, proof receipts and code proposals are not interchangeable with deployed ability.
+
+BEAN Core is a potential common reasoning/evidence layer; project-specific applications still own their own data, execution permissions and authoritative calculations. See the [15-repository portfolio audit](https://github.com/danieloculus0-bot/Axiom_Beta/blob/main/docs/PORTFOLIO_AUDIT_2026-10-20.md) for separation from the BEAN AI Bridge, AIscend and Axiom.
