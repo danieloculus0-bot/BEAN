@@ -78,7 +78,9 @@ def compare_node_receipts(linux_path,windows_path,output):
                 outcome["distinct_origins"]!=2 or
                 outcome["investigation_status"]!="committed_verified_revision"):
             raise ValueError("Real Bridge failed two-source node reproducibility check")
-        audited.append({"node":node,"outcome":"cross_platform_mechanism_reproduced",
+        audited.append({"node":node,
+                        "outcome":("research_status_only_no_runtime" if value=="research_only"
+                                   else "source_contract_reproduced_across_platforms"),
                         "viability":value,"bridge_outcome":outcome["investigation_status"],
                         "learning_improvement_verified":False,
                         "provenance":"Windows/Linux synthetic mechanism receipts, not independent factual truth"})
