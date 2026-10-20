@@ -20,8 +20,12 @@ class CrossPlatformMatrixTests(unittest.TestCase):
                 root/"audit")
             self.assertEqual(len(result["nodes"]),7)
             self.assertFalse(result["learning_demonstrated"])
-            self.assertTrue(all(n["outcome"]=="cross_platform_mechanism_reproduced"
-                                for n in result["nodes"]))
+            self.assertEqual(
+                next(n for n in result["nodes"] if n["node"]=="weights")["outcome"],
+                "research_status_only_no_runtime")
+            self.assertTrue(all(
+                n["outcome"]=="source_contract_reproduced_across_platforms"
+                for n in result["nodes"] if n["node"]!="weights"))
             self.assertTrue((root/"audit"/"BRIDGE_NODE_MATRIX.md").exists())
 
     def test_tampered_or_incomplete_evidence_rejected(self):
