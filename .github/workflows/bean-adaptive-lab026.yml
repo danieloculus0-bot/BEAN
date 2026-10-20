@@ -94,3 +94,32 @@ jobs:
           name: bean-lab026-cross-platform-bridge-verdict
           path: lab026-bridge-matrix/
           retention-days: 30
+
+  full-core-regression:
+    name: BEAN full Core baseline on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, windows-2025]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install the existing Core test dependencies
+        run: python -m pip install pytest pytest-cov psutil
+      - name: Compile all BEAN modules
+        run: python -m compileall -q bean bean_run.py
+      - name: Execute existing complete Core regression and new Lab026 tests
+        run: python -m pytest bean/tests -q -ra --tb=short --junitxml=lab026-full-core-tests.xml
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: bean-lab026-full-core-${{ matrix.os }}
+          path: lab026-full-core-tests.xml
+          if-no-files-found: warn
+          retention-days: 30
