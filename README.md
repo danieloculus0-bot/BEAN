@@ -12,6 +12,12 @@ Persistent experimental reasoning and evidence system. BEAN Core maintains SQLit
 
 [See live Actions](https://github.com/danieloculus0-bot/BEAN/actions) for newer results; this is a dated evidence snapshot, not a continuously updated indicator.
 
+## Experimental Lab026 — Adaptive Learning Assimilation
+
+A separate [Lab026 experimental branch](https://github.com/danieloculus0-bot/BEAN/tree/experiment/adaptive-learning-20261020) implements a seven-node learning-viability registry, a retained SHA-chained experience store, Reflexion/Voyager/GEPA-inspired context experiments, an opt-in real local Ollama route, and actual BEAN AI Bridge evidence reviews on Windows and Linux. **These are experimental adapters and reproducible tests, not yet demonstrated causal learning or model-weight training.**
+
+[Lab026 methods, reproduction and limitations](docs/BEAN_ADAPTIVE_LAB026.md) · [Run evidence](https://github.com/danieloculus0-bot/BEAN/actions/workflows/bean-adaptive-lab026.yml)
+
 ## Implemented today
 
 - Persistent memory, source/contradiction tracking and offline replay backed by runnable Core code.
