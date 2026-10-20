@@ -69,7 +69,7 @@ class PublicSkillsPageTests(unittest.TestCase):
     def test_identity_theme_and_home_links(self):
         for phrase in ("Little bean.", "Serious brain.",
                        "learn from experience, prove what works, and keep improving.",
-                       "--accent:#a5f47a", "No pretend victories"):
+                       "--accent:#79DE4B", "No pretend victories"):
             self.assertIn(phrase, self.page)
         for href in ("#lab", "#learning", "#capabilities", "#aiscend", "#start",
                      "./aiscend.html", "https://github.com/danieloculus0-bot/BEAN"):
