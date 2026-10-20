@@ -66,7 +66,13 @@ class Journal:
             payload TEXT NOT NULL, entry_digest TEXT NOT NULL,
             UNIQUE(objective, iteration))""")
         self.db.commit()
-        self.verify()
+        try:
+            self.verify()
+        except Exception:
+            # A failed integrity check must release SQLite handles, especially
+            # on Windows where open DB files cannot be cleaned up by tests.
+            self.db.close()
+            raise
 
     def verify(self):
         prior = "GENESIS"
