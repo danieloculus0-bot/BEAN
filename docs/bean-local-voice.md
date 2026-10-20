@@ -21,6 +21,46 @@ The interface selects an already-installed Ollama chat model without downloading
 
 If Ollama has no models, download a chat model with the Ollama application first. BEAN's local API endpoint is http://127.0.0.1:11434. Ollama respects the OLLAMA_MODELS environment variable, including a preconfigured D:\Ollama\models folder.
 
+## Natural conversation model upgrade
+
+The prior default, `qwen2.5-coder:1.5b`, is a small coding specialist. It remains
+available for BEAN's structured reasoning, but is not the preferred model for
+normal conversation. BEAN's chat now prefers a general-purpose conversational
+model when one is already installed. The default upgrade is
+[Gemma 3 4B](https://ollama.com/library/gemma3), about a 3.4 GB download.
+As with any model, conversational quality and speed depend on your PC.
+
+From the BEAN repository root in Windows PowerShell:
+
+~~~powershell
+.\scripts\bean_upgrade_chat.ps1
+~~~
+
+The script uses the Ollama command or the existing
+`D:\Ollama\app\ollama.exe`, pulls `gemma3:4b`, and sets the per-user
+`BEAN_CHAT_MODEL` for later launches. It does not delete any models or touch
+BEAN's persisted memory. Restart BEAN after the model download finishes.
+If using a packaged desktop EXE, rebuild or install an updated version from
+this source branch first; the old binary cannot pick up code changes.
+
+For a different already-installed conversational model, set the variable
+manually or run `python -m bean.voice --model MODEL`. The explicit CLI model
+wins over the environment variable. Without either, BEAN chooses a preferred
+installed general-chat model before falling back to the first available
+non-embedding model. The structured reasoning provider independently reads
+`BEAN_OLLAMA_MODEL` and is unchanged.
+
+BEAN's conversation prompt now defaults to direct, natural, short replies
+without automatic follow-up questions, while responding in more depth when
+asked. Chat still only has bounded in-session history; the model upgrade alone
+does not create long-term conversation memory.
+
+To run offline regression tests:
+
+~~~powershell
+python -m unittest bean.tests.test_local_voice -v
+~~~
+
 ## Talking with BEAN
 
 Press **Enter** to listen once through the Windows microphone, or type a message after the You > prompt. BEAN prints its response and speaks it through the Windows default voice. Type /quit to exit. Type /help for commands.

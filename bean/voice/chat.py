@@ -10,6 +10,7 @@ No motors, autonomous tools, cloud speech, or silent microphone monitoring.
 from __future__ import annotations
 
 import argparse
+import os
 from collections.abc import Callable
 from pathlib import Path
 
@@ -130,7 +131,7 @@ def main(argv: list[str] | None = None) -> int:
     opts = parser.parse_args(argv)
     try:
         client = OllamaClient(opts.ollama_url)
-        model = client.select_model(opts.model)
+        model = client.select_model(opts.model or os.environ.get("BEAN_CHAT_MODEL"))
     except (OllamaError, ValueError) as exc:
         print("BEAN startup: " + str(exc))
         return 1
