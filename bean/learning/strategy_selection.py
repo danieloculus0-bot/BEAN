@@ -28,6 +28,16 @@ def choose_strategy(bank, trial, domain, minimum_gain=1):
         raise ValueError("Expected a genuine Lab026 experiment receipt")
     if trial.get("provider_kind") not in ("synthetic_fixture", "real_model"):
         raise ValueError("Model provider classification missing")
+    # Never choose from a fabricated or edited caller-supplied scorecard:
+    # reconcile all values with the append-only BEAN journal entry.
+    saved = [
+        row["data"] for row in bank.journal.events()
+        if row.get("kind") == "trial"
+        and row["data"].get("receipt_hash") == trial["receipt_hash"]
+    ]
+    presented = {k: v for k, v in trial.items() if k != "journal_tip"}
+    if len(saved) != 1 or saved[0] != presented:
+        raise ValueError("Selection receipt must match BEAN's recorded trial")
 
     required = (*CONTROL_ARMS, *CANDIDATES)
     if set(trial.get("arms", ())) != set(required):
