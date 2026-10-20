@@ -18,7 +18,7 @@ Persistent experimental reasoning and evidence system. BEAN Core maintains SQLit
 - Experimental local model/Ollama and voice integrations, with host-neutral reasoning interfaces.
 - Public [BEAN laboratory](https://danieloculus0-bot.github.io/BEAN/) and the shared charcoal/electric-lime interface.
 
-## Run and verify
+## Verify BEAN Core locally
 
 Start with [Getting Started](docs/GETTING_STARTED.md), the [offline verification guide](docs/VERIFIED_UTILITY_AND_EVIDENCE_2026-10-11.md), and the executable test examples in `bean/tests/`. Review each lab's own acceptance criteria rather than assuming every experiment is deployed.
 

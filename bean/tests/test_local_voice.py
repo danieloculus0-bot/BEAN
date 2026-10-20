@@ -206,6 +206,36 @@ class BeanIdentityAndChatTests(unittest.TestCase):
         self.assertTrue(any("Answer to" in t for t in voice.spoken))
 
 
+class NaturalChatSelectionTests(unittest.TestCase):
+    def _client(self, models):
+        return ollama.OllamaClient(
+            opener=lambda *_args, **_kw: FakeHttpResponse(
+                {"models": [{"name": name} for name in models]}))
+
+    def test_general_chat_model_wins_over_coder_installed_first(self):
+        client = self._client([
+            "qwen2.5-coder:1.5b", "nomic-embed-text:latest", "gemma3:4b"
+        ])
+        self.assertEqual(client.select_model(), "gemma3:4b")
+
+    def test_explicit_choice_is_not_overridden(self):
+        client = self._client(["qwen2.5-coder:1.5b", "gemma3:4b"])
+        self.assertEqual(client.select_model("qwen2.5-coder:1.5b"),
+                         "qwen2.5-coder:1.5b")
+
+    def test_existing_installation_still_works_without_new_model(self):
+        client = self._client(["qwen2.5-coder:1.5b"])
+        self.assertEqual(client.select_model(), "qwen2.5-coder:1.5b")
+
+    def test_persona_prioritizes_natural_brief_responses(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            prompt, _ = persona.system_prompt(Path(tmp) / "missing.db")
+        self.assertIn("one to three sentences", prompt)
+        self.assertIn("automatic closing questions", prompt)
+        self.assertIn("Give longer explanations when asked", prompt)
+        self.assertNotIn("occasionally cheeky", prompt)
+
+
 class WindowsSpeechSafetyTests(unittest.TestCase):
     def test_platform_guard_and_rate_range(self):
         with self.assertRaises(windows_speech.SpeechError):

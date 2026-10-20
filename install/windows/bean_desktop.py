@@ -242,7 +242,7 @@ class Desktop(tk.Tk):
         self.status.set("Connecting to local Ollama...")
         def load():
             client = OllamaClient("http://127.0.0.1:11434")
-            model = client.select_model(None)
+            model = client.select_model(os.environ.get("BEAN_CHAT_MODEL") or None)
             prompt, _ = system_prompt(self.memory.path)
             return model, BeanConversation(client, model, prompt)
         def ready(result):
