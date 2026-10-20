@@ -53,7 +53,7 @@ def smoke(output):
         result={
             "schema":"bean.adaptive_lab026.smoke.v1",
             "generated_at_utc":datetime.now(timezone.utc).isoformat(),
-            "nodes":assess_nodes(bridge_available=bridge["bridge_available"]),
+            "nodes":assess_nodes(bridge_present=bridge["bridge_available"]),
             "bridge_contract":bridge,
             "trial":experiment,
             "interpretation":"Synthetic mechanism and persistence demonstration, not measured new model learning",
