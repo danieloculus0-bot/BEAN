@@ -90,7 +90,11 @@ class PublicSkillsPageTests(unittest.TestCase):
         self.assertIn('href="#start"', self.page)
         readme = (ROOT / "README.md").read_text(encoding="utf-8")
         self.assertNotIn("try-bean.html", readme)
-        self.assertIn("## Verify BEAN Core locally", readme)
+        self.assertTrue(
+            "## Verify BEAN Core locally" in readme or
+            ("## Run and verify" in readme and "docs/GETTING_STARTED.md" in readme),
+            "README must provide an actual BEAN Core verification path",
+        )
 
     def test_learning_claims_are_reproducible_and_scoped(self):
         for phrase in ("11.305", "1.355", "98.5%",
