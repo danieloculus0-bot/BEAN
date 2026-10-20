@@ -89,7 +89,7 @@ class ExperienceBank:
     def lessons(self, strategy=None, domain=None):
         found = []
         for record in self.journal.events():
-            if record.get("schema") != SCHEMA or record.get("kind") not in ("lesson", "trial"):
+            if record.get("schema") != SCHEMA or record.get("kind") not in ("lesson", "trial", "selection"):
                 raise ValueError("Invalid adaptive journal event type")
             if record["kind"] == "lesson":
                 raw = dict(record["data"])
@@ -112,12 +112,35 @@ class ExperienceBank:
             raise ValueError("Incorrect experiment schema")
         return self._append("trial", receipt)
 
+    def record_selection(self, selection):
+        """Persist the measured choice, linked to an earlier evaluation receipt."""
+        if (selection.get("schema") != "bean.lab026.strategy_choice.v1"
+                or selection.get("arm") not in ("cold", "reflection", "skill", "prompt")
+                or not isinstance(selection.get("domain"), str)
+                or not selection["domain"].strip()):
+            raise ValueError("Invalid strategy selection")
+        receipts = {
+            row["data"].get("receipt_hash") for row in self.journal.events()
+            if row.get("kind") == "trial"
+        }
+        if selection.get("source_trial_hash") not in receipts:
+            raise ValueError("Strategy cannot be selected without a recorded trial")
+        return self._append("selection", selection)
+
+    def selected_arm(self, domain):
+        for row in reversed(self.journal.events()):
+            if row.get("kind") == "selection" and row["data"]["domain"] == domain:
+                return row["data"]["arm"]
+        raise ValueError("No measured strategy selection for domain " + str(domain))
+
     def close(self):
         self.journal.close()
 
 
 def material_for(bank, arm, domain):
     """Context-only adaptation; unrelated-domain lessons form placebo."""
+    if arm == "adaptive":
+        return material_for(bank, bank.selected_arm(domain), domain)
     if arm == "cold":
         return ""
     strategy = "reflection" if arm == "placebo" else {
@@ -139,7 +162,7 @@ def run_paired_trial(*, bank, cases, model, judge, arms=ARMS,
     """
     if (not cases or not 40 <= context_chars <= 12000 or
             not 1 <= replicates <= 20 or len(set(arms)) != len(arms) or
-            any(arm not in ARMS for arm in arms)):
+            any(arm not in (*ARMS, "adaptive") for arm in arms)):
         raise ValueError("Invalid trial")
     if model.provider_kind not in ("synthetic_fixture", "real_model") or not model.model_id:
         raise ValueError("Model fingerprint and true provider type required")
