@@ -49,6 +49,7 @@ jobs:
           python -m compileall -q bean/learning
           python -m unittest bean.tests.test_adaptive_learning_lab026 -v
           python -m unittest bean.tests.test_adaptive_ollama_lab026 -v
+          python -m unittest bean.tests.test_adaptive_strategy_selection_lab026 -v
           python -m unittest bean.tests.test_adaptive_bridge_lab026 -v
           python -m unittest bean.tests.test_adaptive_bridge_matrix_lab026 -v
       - name: Execute all learning node wiring and persistent journal replay
