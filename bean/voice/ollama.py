@@ -104,6 +104,20 @@ class OllamaClient:
             raise OllamaError(
                 "No Ollama chat model is installed yet. Check 'ollama list' and pull a chat model."
             )
+        # Prefer a dialogue-trained model rather than an arbitrary first entry.
+        # In particular, a small coding specialist is a poor default for chat.
+        # Never download models automatically or override an explicit selection.
+        preferred = (
+            "gemma3:12b", "gemma3:4b", "gemma3:latest",
+            "llama3.2:3b", "llama3.2:latest",
+            "qwen3:8b", "qwen3:4b",
+        )
+        by_name = {name.lower(): name for name in chat_candidates}
+        for name in preferred:
+            if name in by_name:
+                return by_name[name]
+        # Keep working with existing installations; setup instructions explain
+        # how to replace a code-focused conversational model.
         return chat_candidates[0]
 
     def chat(self, model: str, messages: list[dict]) -> str:
