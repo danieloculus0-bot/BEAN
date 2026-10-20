@@ -4,11 +4,11 @@ Persistent experimental reasoning and evidence system. BEAN Core maintains SQLit
 
 ## Current build state
 
-**Reviewed:** 2026-10-20 · **Inspected main:** `aff140e9794a` · **Type:** working experimental/beta code; not automatically production-certified.
+**Reviewed:** 2026-10-20 · **Inspected main:** `4e4b5f84683f` · **Type:** working experimental/beta code; not automatically production-certified.
 
-- [BEAN AIscend public demo checks](https://github.com/danieloculus0-bot/BEAN/actions/runs/39503225654) — **Passed** at inspected `main`.
-- [BEAN full core regression](https://github.com/danieloculus0-bot/BEAN/actions/runs/39503225668) — **Running / pending** at inspected `main`.
-- [pages build and deployment](https://github.com/danieloculus0-bot/BEAN/actions/runs/39503225108) — **Passed** at inspected `main`.
+- [BEAN AIscend public demo checks](https://github.com/danieloculus0-bot/BEAN/actions/runs/39503225654) — **Passed** on an earlier `main` revision; the static demo has a separate check.
+- [BEAN full core regression](https://github.com/danieloculus0-bot/BEAN/actions/runs/39512878059) — **Passed** at inspected `main` on Windows/Linux.
+- [Pages build and deployment](https://github.com/danieloculus0-bot/BEAN/actions/runs/39512878048) — **Passed** at inspected `main`.
 
 [See live Actions](https://github.com/danieloculus0-bot/BEAN/actions) for newer results; this is a dated evidence snapshot, not a continuously updated indicator.
 
@@ -21,6 +21,12 @@ Persistent experimental reasoning and evidence system. BEAN Core maintains SQLit
 ## Verify BEAN Core locally
 
 Start with [Getting Started](docs/GETTING_STARTED.md), the [offline verification guide](docs/VERIFIED_UTILITY_AND_EVIDENCE_2026-10-11.md), and the executable test examples in `bean/tests/`. Review each lab's own acceptance criteria rather than assuming every experiment is deployed.
+
+## Branch-specific research results
+
+Adaptive Bridge/Lab026 PR experiments are separate from the stable Core mainline. A recent experimental PR run failed during test collection because its new test imported `ezbean` without the BEAN AI Bridge dependency available in that CI job ([experimental failure](https://github.com/danieloculus0-bot/BEAN/actions/runs/39515571850)). This does **not** negate the successful Core `main` matrix. When the experiment is proposed for merge, its Bridge checkout/import and dedicated holdout tests must be included explicitly.
+
+The public AIscend browser demo is a read-only simulation, not a live wallet/trading or private account connector. BEAN's public website and real local Ollama Core are different runtime surfaces.
 
 ## Known boundaries
 
