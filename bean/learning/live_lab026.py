@@ -13,6 +13,7 @@ from pathlib import Path
 
 from .experimental import ExperienceBank,Lesson,TrialCase,run_paired_trial
 from .model_adapters import LocalOllamaTrialModel
+from .strategy_selection import choose_strategy
 
 
 def _load(file,expected_schema):
@@ -72,39 +73,94 @@ def create_strategy_lessons(bank,model,development,domain):
     return created
 
 
+def _fingerprints(cases):
+    """Protect against differently named duplicates crossing data partitions."""
+    ids = set()
+    questions = set()
+    for item in cases:
+        ident, domain, question = item.get("id"), item.get("domain"), item.get("question")
+        if not all(isinstance(x, str) and x.strip() for x in (ident, domain, question)):
+            raise ValueError("Each task requires id, domain and question")
+        if ident in ids:
+            raise ValueError("Task identifiers must be distinct")
+        ids.add(ident)
+        questions.add((domain.strip().casefold(), " ".join(question.split()).casefold()))
+    return ids, questions
+
+
 def run_local_trial(*,development_path,holdout_path,output,domain,
-                    model_name="qwen2.5-coder:1.5b",replicates=2):
+                    model_name="qwen2.5-coder:1.5b",replicates=2,
+                    selection_path=None):
     development=_load(development_path,"bean.lab026.development.v1")
     holdout=_load(holdout_path,"bean.lab026.holdout.v1")
-    dev_ids={item["id"] for item in development["cases"]}
-    hold_ids=[item.get("id") for item in holdout["cases"]]
-    if not all(isinstance(x,str) for x in hold_ids) or \
-       len(set(hold_ids))!=len(hold_ids) or dev_ids.intersection(hold_ids):
-        raise ValueError("Holdout and development task identities must not overlap")
+    selection=(_load(selection_path,"bean.lab026.selection.v1")
+               if selection_path is not None else None)
+    dev_ids,dev_questions=_fingerprints(development["cases"])
+    hold_ids,hold_questions=_fingerprints(holdout["cases"])
+    if dev_ids & hold_ids or dev_questions & hold_questions:
+        raise ValueError("Holdout and development tasks must not overlap")
+    if selection is not None:
+        select_ids,select_questions=_fingerprints(selection["cases"])
+        if (select_ids & (dev_ids | hold_ids) or
+                select_questions & (dev_questions | hold_questions)):
+            raise ValueError("Selection tasks must be distinct from development and holdout")
     cases=[TrialCase(item["id"],item["domain"],item["question"],item["expected"])
            for item in holdout["cases"]]
     if not all(c.domain==domain for c in cases):
         raise ValueError("Single-domain matched comparison requires same-domain holdouts")
+    if selection is not None and not all(x["domain"]==domain for x in selection["cases"]):
+        raise ValueError("Selection cases must have the target domain")
+
     output=Path(output)
     output.mkdir(parents=True,exist_ok=True)
     model=LocalOllamaTrialModel(model_name)
-    bank=ExperienceBank(output/"persistent_adaptive_ledger.sqlite")
+    db=output/"persistent_adaptive_ledger.sqlite"
+    bank=ExperienceBank(db)
     try:
         created=create_strategy_lessons(bank,model,development,domain)
-        # Caller may supply irrelevant-domain placebo lessons from a separate
-        # trial; absence is explicitly reported, not treated as valid placebo.
+        # Generate truly unrelated domain lessons only when evidence for
+        # that domain was supplied in the development file.
+        other_domains=sorted({x["domain"] for x in development["cases"]}-{domain})
+        for other_domain in other_domains:
+            created.extend(create_strategy_lessons(bank,model,development,other_domain))
         has_placebo=bool([x for x in bank.lessons(strategy="reflection")
                           if x.domain!=domain])
+        selection_trial=None
+        chosen=None
+        restart_policy_verified=False
+        if selection is not None:
+            if not has_placebo:
+                raise ValueError("Selection comparison requires unrelated-domain placebo data")
+            selection_cases=[
+                TrialCase(item["id"],item["domain"],item["question"],item["expected"])
+                for item in selection["cases"]
+            ]
+            selection_trial=run_paired_trial(
+                bank=bank,cases=selection_cases,model=model,
+                judge=lambda expected,answer: expected.strip()==answer.strip(),
+                arms=("cold","reflection","skill","prompt","placebo"),
+                replicates=replicates)
+            chosen=choose_strategy(bank,selection_trial,domain)
+            bank.close()
+            bank=ExperienceBank(db)
+            restart_policy_verified=(bank.selected_arm(domain)==chosen["arm"])
+            if not restart_policy_verified:
+                raise ValueError("Learned selection failed restart replay")
+        final_arms=("cold","reflection","skill","prompt","placebo","adaptive") \
+            if selection is not None else ("cold","reflection","skill","prompt","placebo")
         trial=run_paired_trial(bank=bank,cases=cases,model=model,
              judge=lambda expected,answer:expected.strip()==answer.strip(),
-             replicates=replicates)
+             arms=final_arms,replicates=replicates)
         report={
             "schema":"bean.lab026.real_trial_envelope.v1",
+            "selection_trial_receipt":selection_trial,
+            "selected_strategy":chosen,
+            "selection_survived_restart":restart_policy_verified,
             "trial_receipt":trial,
             "placebo_context_present":has_placebo,
             "lesson_ids":created,
-            "holdout_task_ids":hold_ids,
-            "limitation":"Exact-match host evaluator and public task set; no blind external judge or weight update.",
+            "holdout_task_ids":[x["id"] for x in holdout["cases"]],
+            "limitation":"Exact-match host judge. Model and prompt strategy are tested, not trained weights; no independent blind evaluator.",
             "learning_proven":False,
         }
         (output/"local_ollama_experiment.json").write_text(
@@ -118,17 +174,22 @@ def main():
     p=argparse.ArgumentParser()
     p.add_argument("--development",required=True)
     p.add_argument("--holdout",required=True)
+    p.add_argument("--selection",default=None,
+                   help="Separate validation set for measured adaptive strategy choice")
     p.add_argument("--domain",required=True)
     p.add_argument("--out",required=True)
     p.add_argument("--model",default="qwen2.5-coder:1.5b")
     p.add_argument("--replicates",type=int,default=2)
     a=p.parse_args()
     result=run_local_trial(development_path=a.development,holdout_path=a.holdout,
-             output=a.out,domain=a.domain,model_name=a.model,replicates=a.replicates)
+             output=a.out,domain=a.domain,model_name=a.model,replicates=a.replicates,
+             selection_path=a.selection)
     print(json.dumps({"scores":result["trial_receipt"]["scores"],
                       "model_id":result["trial_receipt"]["model_id"],
                       "placebo_context_present":result["placebo_context_present"],
-                      "learning_proven":result["learning_proven"]},indent=2))
+                      "learning_proven":result["learning_proven"],
+                      "selected_arm":(result["selected_strategy"] or {}).get("arm"),
+                      "selection_survived_restart":result["selection_survived_restart"]},indent=2))
 
 
 if __name__=="__main__":
