@@ -97,6 +97,58 @@ The **separate holdout** is sealed from lesson generation:
 
 These examples are illustrative and do not prove real improvement. A meaningful study needs varied unseen examples, counterbalanced order, repeated tests, irrelevant-memory placebo, measured cost, and later independent reproduction. The runner explicitly reports whether a placebo exists; **a missing placebo makes causal attribution inconclusive**.
 
+## Outcome-driven routing: source-inspired strategy arbitration
+
+The new `bean.learning.strategy_selection` experiment uses the existing
+Reflexion-style (reflective correction), Voyager-style (reusable procedure) and
+DSPy/GEPA-style (optimized prompt instruction) lesson contexts. It compares
+their performance with both a context-free baseline and a **genuinely unrelated
+domain** placebo, using task labels kept outside the model's inputs.
+
+This is more than checking imports: it records matched judgments for each
+method in BEAN's hash-chained Journal, selects a strategy using *only* the
+selection dataset, retains that choice across a simulated process restart,
+and runs a **different holdout dataset** with an `adaptive` arm.
+It does not modify BEAN's general-purpose goal dispatcher or neural weights.
+A synthetic-fixture improvement measures wiring, not intelligence growth.
+
+Three separate JSON files are needed for a real experiment:
+`bean.lab026.development.v1` for candidate creation, an optional
+`bean.lab026.selection.v1` for strategy selection, and
+`bean.lab026.holdout.v1` for the final sealed evaluation. Task identifiers
+and normalized question strings must not overlap across the splits.
+The development file must contain at least one additional domain with
+its own labeled examples if adaptive selection is requested, so placebo
+context cannot silently be empty. The selection set and holdout each need
+at least two cases.
+
+~~~bash
+python -m bean.learning.live_lab026 \
+  --development ./lab026-development.json \
+  --selection ./lab026-selection.json \
+  --holdout ./lab026-holdout.json \
+  --domain sorting \
+  --model gemma3:4b \
+  --out ./lab026-local-comparison \
+  --replicates 3
+~~~
+
+The output contains individual development-selection judgments, selected
+strategy, persistent selection receipt, and final held-out cold/placebo/
+reflection/skill/prompt/adaptive comparisons. The selected method must
+exceed both cold and placebo results on the selection examples; otherwise
+BEAN chooses the cold baseline. Equal winners use deterministic selection
+order. A real Ollama test must run on the machine with the named model
+installed. GitHub Actions tests the mechanisms with explicitly labeled
+synthetic model fixtures on Windows and Linux; passing those checks cannot
+establish that a real LLM improved.
+
+The current `BEAN Core -> BEAN AI Bridge` work continues to evaluate evidence
+receipts separately. This experiment makes strategy-selection outcomes
+available as typed, auditable data but does **not** claim the bridge
+automatically dispatches Core goals to modules. That remains a distinct
+integration task.
+
 ## Full source experimentation
 
 The existing [BEAN Autodev runner](../bean/optimization/autodev.py) remains an available route for generating actual Python source candidates from Ollama/OpenRouter or bounded AST search, trying them in disposable test copies, recording hashes and preserving failures. That lab still requires a witnessed failing baseline to demonstrate a repair, and it does **not** automatically modify production main. Generated source can be examined and committed to this experiment branch after evidence review. Nothing in Lab026 silently adds new policy gates to Core or modifies the authorized effectors.
