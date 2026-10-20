@@ -7,6 +7,9 @@ on:
     paths:
       - "bean/learning/**"
       - "bean/tests/test_adaptive_*"
+      - "bean/optimization/autodev.py"
+      - "bean/tests/test_public_skill_page.py"
+      - "README.md"
       - ".github/workflows/bean-adaptive-lab026.yml"
       - "docs/BEAN_ADAPTIVE_LAB026.md"
   workflow_dispatch:
