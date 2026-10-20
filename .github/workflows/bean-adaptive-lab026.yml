@@ -47,6 +47,7 @@ jobs:
           python -m unittest bean.tests.test_adaptive_learning_lab026 -v
           python -m unittest bean.tests.test_adaptive_ollama_lab026 -v
           python -m unittest bean.tests.test_adaptive_bridge_lab026 -v
+          python -m unittest bean.tests.test_adaptive_bridge_matrix_lab026 -v
       - name: Execute all learning node wiring and persistent journal replay
         run: |
           python -m bean.learning.lab026_report --output lab026-evidence
@@ -56,4 +57,40 @@ jobs:
           name: bean-lab026-node-receipts-${{ matrix.os }}
           path: lab026-evidence/
           if-no-files-found: warn
+          retention-days: 30
+
+  independent-bridge-node-review:
+    name: Compare real Windows/Linux node receipts through Bridge
+    needs: verified-node-contracts
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    env:
+      PYTHONPATH: ${{ github.workspace }}/bridge-src/src
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/checkout@v4
+        with:
+          repository: danieloculus0-bot/BEAN-AI-Bridge-
+          ref: 876251345ec95b282465ce1b311af4b2b6d1e032
+          path: bridge-src
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Retrieve both OS receipts without regenerating any outcomes
+        uses: actions/download-artifact@v4
+        with:
+          pattern: bean-lab026-node-receipts-*
+          path: lab026-peers
+          merge-multiple: false
+      - name: Independently attest cross-platform node evidence using actual Bridge
+        run: |
+          python -m bean.learning.bridge_matrix --linux lab026-peers/bean-lab026-node-receipts-ubuntu-24.04/mechanism_receipt.json --windows lab026-peers/bean-lab026-node-receipts-windows-2025/mechanism_receipt.json --output lab026-bridge-matrix
+          cat lab026-bridge-matrix/BRIDGE_NODE_MATRIX.md >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: bean-lab026-cross-platform-bridge-verdict
+          path: lab026-bridge-matrix/
           retention-days: 30
