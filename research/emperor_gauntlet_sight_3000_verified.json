@@ -1,0 +1,74 @@
+{
+  "schema": "bean.emperor_gauntlet.sight_learning_result.v2",
+  "experiment": "BEAN hazard-aware 3000 original-physics games",
+  "recordedAtUtc": "2026-10-21",
+  "sourceBranch": "experiment/bean-hazard-aware-3000-20261021",
+  "trainingRun": 39548597132,
+  "verifiedReconciliationRun": 39549202298,
+  "parentVerifiedRun": 39546036769,
+  "sourceCommitTraining": "1d84806bca8b8e2b010909462fc1c3ab1f0a3604",
+  "training": {
+    "count": 3000,
+    "shards": 6,
+    "perShard": 500,
+    "distinctSeeds": 3000,
+    "cumulativeTrainingMatches": 9350,
+    "newBest": 86,
+    "priorBest": 39,
+    "newTotalPenguinKills": 36990,
+    "meanKills": 12.33,
+    "totalQ2Updates": 192712,
+    "mergedQ2States": 65818,
+    "seededFromV1StateInstances": 55821,
+    "totalFriendShotsSuppressed": 31661,
+    "totalPathRedirects": 31564,
+    "babySealWarningIncidents": 561,
+    "gameOverCauses": {
+      "river": 1591,
+      "weakIce": 242,
+      "penguinSwarm": 526,
+      "angryYeti": 396,
+      "leopardSeal": 105,
+      "otherIce": 33,
+      "pressureCracks": 67,
+      "cold": 40
+    },
+    "timeouts": 0
+  },
+  "heldOut": {
+    "pairedSeeds": 48,
+    "maxDecisions": 600,
+    "ticksPerDecision": 18,
+    "meanKills": {
+      "previousBlindV1": 6.958333333333333,
+      "previousV1WithSightNavigation": 13.541666666666666,
+      "trainedV2WithSightNavigation": 12.916666666666666
+    },
+    "bestKills": {
+      "previousBlindV1": 14,
+      "previousV1WithSightNavigation": 37,
+      "trainedV2WithSightNavigation": 49
+    },
+    "sealWarnings": {
+      "previousBlindV1": 21,
+      "previousV1WithSightNavigation": 13,
+      "trainedV2WithSightNavigation": 7
+    },
+    "Q2MinusAssistedMeanKills": -0.625,
+    "approximate95PctConfidenceInterval": [
+      -4.201847660216628,
+      2.951847660216628
+    ],
+    "statisticallySupportedQImprovement": false
+  },
+  "rootCauses": "No model of velocity/braking near rivers; friendly-fire suppression detects trajectories but does not prevent all indirect impacts, so player still provokes Yeti and baby seal. New v2 Q has more context but fewer repeat visits per state (sparsity) and no measured advantage beyond navigation assistance.",
+  "outcome": "Save Q2 as challenger only, retain V1 policy; no automatic promotion",
+  "provenance": {
+    "verifiedEvidenceArtifactId": 12322918359,
+    "evidenceUrl": "https://github.com/danieloculus0-bot/FUN/actions/runs/39549202298/artifacts/12322918359",
+    "archiveSha256": "14e34a0b8b36e64364111fe8ca38381c830651b1eb922d55a820b8db9ac6db63",
+    "artifactRetentionDays": 90,
+    "codeReviewUrl": "https://github.com/danieloculus0-bot/FUN/pull/3"
+  },
+  "limitations": "Uses original game physics with programmatic simulation state (not visual pixels), six independent learners rather than a single 3000-episode chain, 48 unseen paired seeds, Q2 benefits not yet demonstrated."
+}
