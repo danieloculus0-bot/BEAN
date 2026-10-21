@@ -41,13 +41,24 @@ The current [Jetson installer](../install/jetson_brain_install.sh) and
 [service template](../install/bean.service) expect an existing `bean` user,
 repository checkout at `/home/bean/BEAN`, systemd, Python 3.10+, a functioning
 `python3 -m venv`, and pip. The installer **does not create the service user**
-and its static service file **does not follow overridden BEAN_HOME/BEAN_USER
-values**. Those discrepancies are real gaps and must not be mistaken for a
-successful service deployment.
+and its static service file **does not support overridden BEAN_HOME/BEAN_USER
+values**. The experimental installer now rejects those overrides up front
+instead of silently leaving a mismatched service, and provisions venv and data
+as the service account. A pre-existing account and checkout are still required.
 
-Install packages appropriate to the confirmed JetPack release first, and
-place the repo where the service template actually expects it. Run the
-read-only gate **before** the installer:
+Install packages appropriate to the confirmed JetPack release first. On a
+fresh developer kit, provision the expected dedicated user/checkout (do not
+run the BEAN runtime as root):
+
+```bash
+sudo useradd --create-home --user-group --shell /bin/bash bean
+sudo -u bean -H git clone https://github.com/danieloculus0-bot/BEAN.git /home/bean/BEAN
+```
+
+Use these commands only if the account/checkout do not already exist, and
+confirm group ownership and repository contents. The operator executing the
+installer must have sudo rights; the `bean` runtime user does not need sudo.
+Run the read-only gate **before** the installer:
 
 ```bash
 cd /home/bean/BEAN
