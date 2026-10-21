@@ -1,7 +1,7 @@
 # BEAN Lab026 — Adaptive Learning Assimilation Experiment
 
 **Branch:** experiment/adaptive-learning-20261020  
-**Target:** BEAN Core + real BEAN AI Bridge + optional local Ollama  
+**Target:** BEAN Core decision-making + real BEAN AI Bridge + optional external language connector  
 **Status:** functional research integration, **not** demonstrated model learning, new neural weight training or production autonomy.
 
 This is a **separate experimental branch**. Main is unchanged. It is explicitly meant for rapid implementation, swapping strategies, repeated experiments and contradictory findings. Existing BEAN origin/identity files, dignity code and execution rules have **not been rewritten** and no additional supervisor policy was inserted. Source changes can be freely developed on this experimental branch; the experiments have their own evidence and test code.
@@ -54,6 +54,49 @@ python -m unittest bean.tests.test_adaptive_bridge_matrix_lab026 -v
 ~~~
 
 The [branch's Actions workflow](../.github/workflows/bean-adaptive-lab026.yml) performs this on real Linux and Windows hosts, with an additional full Core regression, then runs the Bridge node review after both platform jobs.
+
+## Active direction: BEAN is the brain, connector is the language interface
+
+**Ollama is paused as a primary project dependency.** Do not download or
+run a local LLM to exercise the BEAN learning or decision path. Keep its
+existing optional modules intact for later experiments; no models are
+removed, no origin values or learning history are changed.
+
+The `bean.learning.brain_port` path is operational without an LLM:
+
+1. Existing BEAN `ExperienceBank` (SQLite journal) stores evidence-linked
+   lessons and independent benchmark outcome receipts.
+2. A host or engineering module supplies *measured* outcomes for matched
+   cold, reflection, skill, prompt and irrelevant-placebo conditions,
+   including task ID, replicate number, Boolean result, and source reference.
+3. BEAN's existing `choose_strategy` compares the outcomes and persists
+   the winning policy or chooses the cold baseline if none improves.
+4. `brain_decision` retrieves the actual stored strategy and linked lessons
+   after a restart. It returns a structured, non-executing decision packet
+   without invoking an LLM.
+5. An optional host connector may pass that packet to an external language
+   provider for presentation through `connector_presentation_packet`.
+   This is a **contract**; it does not make a network request, deploy a
+   conversational API, or allow generated prose to rewrite the decision.
+
+`record_observed_outcomes` returns a receipt with
+`provider_kind="observed_outcomes"` and
+`model_id="no_language_model"`. Caller-provided outcome labels and references
+are not automatically independently authenticated. Dedicated Python tests
+use fictional evaluations, so they prove computation, replay and boundaries,
+**not** increased general intelligence.
+
+Reproduce the model-free path:
+
+~~~bash
+python -m unittest bean.tests.test_adaptive_brain_port_lab026 -v
+~~~
+
+The existing local Ollama benchmark runner documented below is historical /
+optional and not the active workstream. BEAN's runtime still needs the broader
+Core goal-to-Bridge dispatch wiring; this experiment demonstrates native
+strategy decisions and a narrow presentation interface, not a complete
+deployed autonomous brain or a connected public LLM.
 
 ## Real local-model path: opt-in experiments
 
@@ -161,4 +204,4 @@ The existing [BEAN Autodev runner](../bean/optimization/autodev.py) remains an a
 4. Repeated and cross-domain benefit after randomized order; note whether improvement is in prompts, selection policy, executable skill or changed model weights.
 5. BEAN can retrieve the specific improvement that caused the gain and reverse it without rewriting historical evidence.
 
-**Current verdict:** node implementations and Bridge wiring are real; causal lifelong learning remains to be demonstrated. Next serious experiment: genuine Ollama paired holdouts with matched irrelevant-memory placebo and repeated runs; then choose which strategy consistently improves. No live weights were changed and no new identity or execution safeguards were added.
+**Current verdict:** native strategy decisions, journal persistence, restart retrieval, and Bridge evidence mechanics can run without Ollama. Next serious experiment: externally measured, versioned held-out outcomes from real Axiom tasks, with BEAN choosing and reusing the better strategy. Source labels remain unverified until authenticated by their host. No neural weights were changed and no new identity or execution safeguards were added.
