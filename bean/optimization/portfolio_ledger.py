@@ -59,6 +59,11 @@ class PortfolioLedger:
           value REAL NOT NULL, updates INTEGER NOT NULL,
           PRIMARY KEY (app,state,action)
         );
+        CREATE TABLE IF NOT EXISTS portfolio_scores (
+          app TEXT PRIMARY KEY, rewarded INTEGER NOT NULL,
+          positive INTEGER NOT NULL, negative INTEGER NOT NULL,
+          zero INTEGER NOT NULL, reward_sum REAL NOT NULL
+        );
         """)
         self.db.commit()
 
@@ -90,7 +95,7 @@ class PortfolioLedger:
         if reward is not None:
             if kind == "unverified":
                 raise ValueError("unverified observations cannot earn Q reward")
-            if not (type(reward) in (int, float) and math.isfinite(reward)):
+            if not (type(reward) in (int, float) and math.isfinite(reward) and abs(reward)<=1e6):
                 raise ValueError("invalid reward")
             if not isinstance(action, str) or not action or len(action) > 80:
                 raise ValueError("reward needs an action")
@@ -140,6 +145,18 @@ class PortfolioLedger:
                     ON CONFLICT(app,state,action) DO UPDATE SET
                     value=excluded.value,updates=portfolio_q.updates+1
                     """, (app,state,action,updated))
+                self.db.execute("""
+                    INSERT INTO portfolio_scores
+                    (app,rewarded,positive,negative,zero,reward_sum)
+                    VALUES (?,?,?,?,?,?)
+                    ON CONFLICT(app) DO UPDATE SET
+                    rewarded=portfolio_scores.rewarded+1,
+                    positive=portfolio_scores.positive+excluded.positive,
+                    negative=portfolio_scores.negative+excluded.negative,
+                    zero=portfolio_scores.zero+excluded.zero,
+                    reward_sum=portfolio_scores.reward_sum+excluded.reward_sum
+                    """,(app,1,int(reward>0),int(reward<0),int(reward==0),
+                         float(reward)))
         return {"new": True, "receipt": tip}
 
     def event(self, app, event_id):
@@ -156,6 +173,7 @@ class PortfolioLedger:
         """Verify entire archive and independently reconstruct the Q-table."""
         previous = "GENESIS"
         rebuilt = {}
+        score_replay = {}
         rows = self.db.execute("SELECT * FROM portfolio_events ORDER BY seq")
         count = 0
         for row in rows:
@@ -170,6 +188,12 @@ class PortfolioLedger:
                     or doc["event_id"] != row["event_id"]):
                 raise ValueError("event fields corrupted")
             if doc["reward"] is not None:
+                tally=score_replay.setdefault(doc["app"],[0,0,0,0,0.0])
+                tally[0]+=1
+                tally[1]+=int(doc["reward"]>0)
+                tally[2]+=int(doc["reward"]<0)
+                tally[3]+=int(doc["reward"]==0)
+                tally[4]+=float(doc["reward"])
                 key = (doc["app"],doc["state"],doc["action"])
                 old, updates = rebuilt.get(key, (0.0,0))
                 possible = [value for (app,state,_), (value,_) in rebuilt.items()
@@ -185,7 +209,15 @@ class PortfolioLedger:
             n != saved[k][1] or not math.isclose(v,saved[k][0],abs_tol=1e-10)
             for k,(v,n) in rebuilt.items()):
             raise ValueError("derived Q state diverges from ledger")
-        return {"events": count, "tip": previous, "q_entries": len(saved)}
+        scored = {r["app"]:(r["rewarded"],r["positive"],r["negative"],
+                 r["zero"],r["reward_sum"])
+                  for r in self.db.execute("SELECT * FROM portfolio_scores")}
+        if scored.keys()!=score_replay.keys() or any(
+            tuple(v[:4])!=scored[k][:4] or not math.isclose(v[4],scored[k][4],abs_tol=1e-7)
+            for k,v in score_replay.items()):
+            raise ValueError("derived reward scoreboard diverges from ledger")
+        return {"events": count, "tip": previous, "q_entries": len(saved),
+                "rewarded_events":sum(v[0] for v in score_replay.values())}
 
     def state_context(self, *, app, query="", max_bytes=2048, limit=12):
         """Return a bounded, task-relevant context instead of the entire log.
@@ -224,8 +256,12 @@ class PortfolioLedger:
         meta = self.db.execute(
             "SELECT COUNT(*) AS n,MAX(seq) AS newest FROM portfolio_events WHERE app=?",
             (app,)).fetchone()
+        scored = self.db.execute(
+            "SELECT rewarded,positive,negative,zero,reward_sum "
+            "FROM portfolio_scores WHERE app=?",(app,)).fetchone()
         output = {"schema":SCHEMA,"app":app,"query":query,
                   "total_events":meta["n"],"newest_seq":meta["newest"],
+                  "rewards":dict(scored) if scored else None,
                   "policy":[],"receipts":[],"truncated":False}
         def fits():
             return len(canonical(output)) <= max_bytes
@@ -270,8 +306,12 @@ class PortfolioLedger:
             latest = self.db.execute("""
                 SELECT event_id,chain_hash FROM portfolio_events
                 WHERE app=? ORDER BY seq DESC LIMIT 1""",(row["app"],)).fetchone()
+            scores = self.db.execute(
+                "SELECT rewarded,positive,negative,zero,reward_sum "
+                "FROM portfolio_scores WHERE app=?",(row["app"],)).fetchone()
             summary = {"app":row["app"],"events":row["events"],
                        "q_entries":q["states"],"q_updates":q["updates"],
+                       "rewards":dict(scores) if scores else None,
                        "latest_event":latest["event_id"],
                        "tip":latest["chain_hash"][:16]}
             output["apps"].append(summary)
