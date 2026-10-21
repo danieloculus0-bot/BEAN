@@ -31,11 +31,11 @@ and `bean.optimization.portfolio_cli` as the language-neutral JSON boundary.
 | Repository | Role / legitimate trial metric | Status at this branch |
 | --- | --- | --- |
 | BEAN | Shared Q ledger, source memory and bounded context | **Research PR #143; CI** |
-| BEAN-AI-Bridge- | Evidence ingestion, matched outcomes and replay | Existing Bridge; **portfolio CLI adapter not yet wired** |
+| BEAN-AI-Bridge- | Evidence ingestion, matched outcomes and replay | **Optional Bridge research adapter PR #47; green real-source CI** |
 | FUN | Emperor Gauntlet penguin decisions vs observed health/survival | **Experimental Q policy in FUN PR #1; green smoke CI** |
 | venvWin | Portable offline Emperor Gauntlet package | **Experimental bundle in venvWin PR #25; packaging CI** |
 | Axiom_Beta | Shared module event bus and evidence outcomes | **Optional research client in Axiom PR #22; no default subscriber** |
-| AIscend | Existing BEAN research review; later realized trading results | Existing BEAN Core adapter; **portfolio TD not wired to live execution** |
+| AIscend | Existing BEAN research review; later realized trading results | **Optional AIscend research adapter PR #51; green CI; not used by live trading** |
 | ForgeVault | Verified document revision/retrieval correctness | **Not wired** |
 | EZ-FAIR | Human-checked dimension/tolerance extraction outcomes | **Not wired** |
 | ForgeQC | Later verified recurrence reductions and corrective-action effectiveness | **Not wired** |
@@ -59,6 +59,7 @@ verify whether performance improved versus the unchanged baseline.
 # With this research branch of BEAN checked out, and your own test event:
 python -m bean.optimization.portfolio_cli record --db ./state/portfolio.sqlite < event.json
 python -m bean.optimization.portfolio_cli context --db ./state/portfolio.sqlite --app FUN/EmperorGauntlet --query night --max-bytes 2048
+python -m bean.optimization.portfolio_cli portfolio --db ./state/portfolio.sqlite --max-bytes 4096
 python -m bean.optimization.portfolio_cli verify --db ./state/portfolio.sqlite
 ```
 
