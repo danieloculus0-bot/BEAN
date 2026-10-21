@@ -1,5 +1,6 @@
 """Synthetic two-receipt contract; CI supplies independently run OS evidence."""
 import json
+from importlib.util import find_spec
 from pathlib import Path
 import tempfile
 import unittest
@@ -8,6 +9,10 @@ from bean.learning.lab026_report import smoke
 from bean.learning.bridge_matrix import compare_node_receipts
 
 
+@unittest.skipUnless(
+    find_spec("ezbean") is not None,
+    "Actual Bridge checkout required; tested in dedicated Lab026 CI",
+)
 class CrossPlatformMatrixTests(unittest.TestCase):
     def test_real_bridge_accepts_hashed_reproducible_fixture_results(self):
         with tempfile.TemporaryDirectory() as folder:
