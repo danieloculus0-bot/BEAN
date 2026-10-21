@@ -29,6 +29,10 @@ def evaluate(policy, start, n):
 def digest_metrics(metrics):
     return hashlib.sha256(json.dumps(metrics, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
 
+def digest_source(path):
+    """Hash normalized source text, not Windows/Linux checkout line endings."""
+    return hashlib.sha256(Path(path).read_text(encoding="utf-8").encode("utf-8")).hexdigest()
+
 def run(out, episodes=3000, *, train_offset=TRAIN_OFFSET,
         validation_offset=VALID_OFFSET, holdout_offset=HOLDOUT_OFFSET,
         learner_seed=20261011, run_key="original", ledger_path=None):
@@ -87,9 +91,9 @@ def run(out, episodes=3000, *, train_offset=TRAIN_OFFSET,
                      "holdout_offset": holdout_offset, "learner_seed": learner_seed,
                      "selection": "best of seven checkpoints on 200 validation games"},
         "source_digests": {
-            "game_py": hashlib.sha256((Path(__file__).parent / "game.py").read_bytes()).hexdigest(),
-            "sponge_td_py": hashlib.sha256((Path(__file__).resolve().parents[2] /
-                                          "bean/optimization/sponge_td.py").read_bytes()).hexdigest(),
+            "game_py": digest_source(Path(__file__).parent / "game.py"),
+            "sponge_td_py": digest_source(Path(__file__).resolve().parents[2] /
+                                          "bean/optimization/sponge_td.py"),
         },
         "training_games":episodes,"validation_games":200,"holdout_games":200,
         "checkpoint_selection":"best validation score only, holdout never seen during selection",
