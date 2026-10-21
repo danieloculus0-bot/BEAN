@@ -8,7 +8,7 @@
 <meta name="description" content="Explore the BEAN and Axiom Workshop, working demos, and newly published Lab026 and Lab027 reasoning experiments with verified CI evidence.">
 <meta property="og:type" content="website">
 <meta property="og:title" content="The Workshop | BEAN × AXIOM">
-<meta property="og:description" content="Real software, honest demos and BEAN learning research with receipts. Lab027: 3,000 training puzzles and verified new-map performance.">
+<meta property="og:description" content="Engineering applications, interactive demonstrations and documented BEAN research. Lab027 includes 3,000 training puzzles and cross-platform test results.">
 <meta property="og:image" content="https://danieloculus0-bot.github.io/BEAN/bean-official.webp">
 <link rel="icon" href="../bean-official.webp" type="image/webp">
 <link rel="canonical" href="https://danieloculus0-bot.github.io/BEAN/portfolio/">
@@ -133,6 +133,7 @@ section{padding-block:75px}
 .lab-boundary{color:#e3d0a2!important;font-size:.81rem!important;border-top:1px solid #59684d;margin-top:20px;padding-top:14px}
 @media(max-width:850px){.lab-grid{grid-template-columns:1fr}.lab-proof,.lab-method{padding:20px}}
 
+.research-preview{width:min(100%,360px);display:flex;flex-direction:column;gap:15px;padding:35px 29px;border-radius:20px;border:1px solid #5c8c5b;background:linear-gradient(145deg,#1c3223,#121c16);box-shadow:0 25px 90px #0007}.research-preview strong{font-size:clamp(3.3rem,6vw,5rem);line-height:1;color:var(--lime);letter-spacing:-.08em;font-variant-numeric:tabular-nums}.research-preview>span:not(.kicker){font-size:1rem;line-height:1.45;color:#d4e5d2}.research-preview a{font-weight:850;color:var(--lime);text-decoration:underline;text-underline-offset:4px}.research-preview small{font-size:.74rem;color:#b1c6af}
 </style>
 </head>
 <body>
@@ -146,34 +147,34 @@ section{padding-block:75px}
 <div>
 <span class="kicker">The public workshop · Updated October 21, 2026</span>
 <h1>We're building <span>serious tech.</span></h1>
-<p>AI experiments. Engineering software. Manufacturing systems. Wild browser games. The whole damn workshop, connected in one place. Explore what runs, see what is still experimental, and follow the code.</p>
-<div class="actions"><a class="btn primary" href="#latest">See what BEAN learned</a><a class="btn" href="#demos">Try the browser demos</a><a class="btn" href="#projects">Project directory</a></div>
-<div class="hero-meta"><div><strong>17</strong><span>Catalogued projects</span></div><div><strong>7</strong><span>Featured web experiences</span></div><div><strong>1</strong><span>Connected vision</span></div></div>
+<p>Explore engineering applications, manufacturing systems, AI research and browser-based demonstrations. Each project links to its source code, current development status and available test evidence.</p>
+<div class="actions"><a class="btn primary" href="#latest">Review learning results</a><a class="btn" href="#demos">Try the browser demos</a><a class="btn" href="#projects">Project directory</a></div>
+<div class="hero-meta"><div><strong>17</strong><span>Catalogued projects</span></div><div><strong>7</strong><span>Featured web experiences</span></div><div><strong>1</strong><span>Shared architecture</span></div></div>
 </div>
-<div class="hero-art" aria-label="Official smiling BEAN mascot"><div class="ring" aria-hidden="true"></div><img class="bean" src="../bean-official.webp" alt="Official BEAN mascot, a cheerful green sprout" loading="eager" width="360" height="360"><span class="art-label">ENGINEERING IN PUBLIC</span><span class="art-label top">LAB ACTIVE / BETA</span></div>
+<div class="hero-art"><div class="research-preview"><span class="kicker">BEAN / LAB027</span><strong>237 / 240</strong><span>Previously unseen test maps solved by the trained policy with loop avoidance.</span><a href="bean-learning/">Review methods and results →</a><small>Experimental research. Not deployed in BEAN Core main.</small></div></div>
 </div>
-<div class="strip"><div class="wrap strip-inner"><b>Built in public</b><span>Manufacturing + mechanical engineering + AI + robotics + tools + games</span><span>Evidence matters more than hype.</span></div></div>
+<div class="strip"><div class="wrap strip-inner"><b>Built in public</b><span>Manufacturing + mechanical engineering + AI + robotics + tools + games</span><span>Test evidence and project status are publicly documented.</span></div></div>
 <section id="latest" class="latest-lab"><div class="wrap">
-<span class="kicker">Fresh from BEAN's brain · October 21, 2026</span>
-<h2 class="section-title">Hims learning. We have receipts.</h2>
-<p class="section-intro">The newest work isn't a mock-up. BEAN's original SpongeTD Q-learning trained against real synthetic puzzle transitions, preserved a compressed policy, and was checked against unfamiliar maps in GitHub CI. The public research source and evidence are linked below.</p>
+<span class="kicker">BEAN research update · October 21, 2026</span>
+<h2 class="section-title">BEAN learning: methods and results</h2>
+<p class="section-intro">Lab027 uses the existing SpongeTD reinforcement-learning implementation. Its trained policy was evaluated on new procedural puzzles and tested on Windows and Linux. Source code, evaluation methods and test logs are available below.</p>
 <div class="lab-grid">
 <div class="lab-proof">
 <span class="lab-label">Lab027 · Unseen-map learning experiment</span>
-<h3>Experience makes BEAN faster.</h3>
-<p>After 3,000 training puzzles, BEAN solved 237 of 240 previously unseen map layouts using a Q-policy plus recent-visit intuition. We compared him with an untrained agent using the <em>same</em> loop-breaking mechanism.</p>
+<h3>Training improved navigation efficiency.</h3>
+<p>After 3,000 training puzzles, the trained policy solved 237 of 240 new map layouts using Q-learning with short-term loop avoidance. The untrained comparison used <em>identical</em> loop-avoidance settings.</p>
 <div class="lab-numbers">
-<div><strong>98.75%</strong><span>Unseen-map completion with trained Q + loop breaking</span></div>
-<div><strong>68.5%</strong><span>Fewer mean moves than untrained Q + same loop breaker</span></div>
+<div><strong>98.75%</strong><span>New maps solved with trained Q-learning and loop avoidance</span></div>
+<div><strong>68.5%</strong><span>Fewer average moves than the untrained control</span></div>
 <div><strong>7,380</strong><span>Individual scored episode records in a lossless event ledger</span></div>
 </div>
-<p>Both Windows and Ubuntu passed the GitHub CI run at commit <code>4d969b0e</code>. These figures describe this one puzzle family, not general intelligence.</p>
-<div class="actions"><a class="btn primary inline" href="bean-learning/">Explore the results</a><a class="btn inline" href="https://github.com/danieloculus0-bot/BEAN/actions/runs/39550106061" target="_blank" rel="noopener noreferrer">View actual test receipts</a><a class="btn inline" href="https://github.com/danieloculus0-bot/BEAN/pull/149" target="_blank" rel="noopener noreferrer">Code · draft PR #149</a></div>
+<p>Both Windows and Ubuntu passed the GitHub CI run at commit <code>4d969b0e</code>. Results apply to this procedural puzzle family and do not establish general-purpose reasoning.</p>
+<div class="actions"><a class="btn primary inline" href="bean-learning/">Explore the results</a><a class="btn inline" href="https://github.com/danieloculus0-bot/BEAN/actions/runs/39550106061" target="_blank" rel="noopener noreferrer">View test logs and artifacts</a><a class="btn inline" href="https://github.com/danieloculus0-bot/BEAN/pull/149" target="_blank" rel="noopener noreferrer">Code · draft PR #149</a></div>
 </div>
 <div class="lab-method">
 <span class="lab-label">Lab026 · Native BEAN reasoning skills</span>
-<h3>Memory meets intuition.</h3>
-<p>Built on BEAN's existing journal and evaluation system, rather than importing another agent's personality:</p>
+<h3>Memory and strategy selection.</h3>
+<p>Lab026 extends BEAN's existing evidence journal and evaluation system with capabilities to:</p>
 <ol><li>Retrieve the right experience</li><li>Reflect on the last failure</li><li>Reuse a successful procedure</li><li>Compare strategies and retain the measured winner</li></ol>
 <div class="actions"><a class="btn inline" href="bean-learning/#skills">Explore the research</a><a class="btn inline" href="https://github.com/danieloculus0-bot/BEAN/pull/144" target="_blank" rel="noopener noreferrer">Source · draft PR #144</a></div>
 <p class="lab-boundary">Lab026 and Lab027 are experimental branches. This page reports measured results; it does not run BEAN live in your browser or imply either branch has been merged into Core main.</p>
@@ -181,19 +182,19 @@ section{padding-block:75px}
 </div>
 </div></section>
 <section id="demos" class="wrap">
-<span class="kicker">Touch it. Test it.</span><h2 class="section-title">Start with the demos.</h2><p class="section-intro">These are public browser experiences documented by their repositories, including an interactive walkthrough of the real EZ-FAIR desktop workflow. Some run interactive demonstrations; others show architecture or a read-only simulation. None should be mistaken for access to private live operations.</p>
+<span class="kicker">Interactive applications and demonstrations</span><h2 class="section-title">Explore the demonstrations.</h2><p class="section-intro">These are public browser experiences documented by their repositories, including an interactive walkthrough of the real EZ-FAIR desktop workflow. Some run interactive demonstrations; others show architecture or a read-only simulation. None should be mistaken for access to private live operations.</p>
 <div class="spotlight">
 <article class="demo"><span class="mini">01 / Working desktop inspection app</span><h3>EZ-FAIR</h3><p>Take a sample engineering print through balloon selection, dimensional limits, example measurements and CSV export. Then explore the actual Python desktop tool used for drawing extraction and FAI package generation.</p><div class="demo-actions"><a class="btn primary inline" href="ez-fair/">Try sample</a><a class="btn inline" href="https://github.com/danieloculus0-bot/EZ-FAIR" target="_blank" rel="noopener noreferrer">Desktop app source</a></div><span class="micro">Interactive browser walkthrough; real extraction runs in the desktop application.</span></article>
 <article class="demo"><span class="mini">02 / Interactive estimating</span><h3>EZstimate</h3><p>Load a sample RFQ, review drawing and BOM fields, build a draft quote and explore evidence-aware estimating.</p><div class="demo-actions"><a class="btn primary inline" href="https://danieloculus0-bot.github.io/EZstimate/" target="_blank" rel="noopener noreferrer">Open demo</a><a class="btn inline" href="https://github.com/danieloculus0-bot/EZstimate" target="_blank" rel="noopener noreferrer">Source</a></div><span class="micro">Browser demonstration; no live ERP purchase dispatch.</span></article>
 <article class="demo"><span class="mini">03 / Structural analysis preview</span><h3>EZ-FEA</h3><p>Explore the educational analysis preview, then try the spreadsheet-style joint matrix for assembly connections.</p><div class="demo-actions"><a class="btn primary inline" href="https://danieloculus0-bot.github.io/EZ-FEA/" target="_blank" rel="noopener noreferrer">Open demo</a><a class="btn inline" href="https://danieloculus0-bot.github.io/EZ-FEA/joint-matrix.html" target="_blank" rel="noopener noreferrer">Joint matrix</a></div><span class="micro">Preview is not a live arbitrary-CAD structural solver.</span></article>
-<article class="demo"><span class="mini">04 / Browser arcade game</span><h3>Emperor Gauntlet</h3><p>Survive waves of Antarctic penguins in a gloriously ridiculous mobile-friendly arcade shooter.</p><div class="demo-actions"><a class="btn primary inline" href="https://danieloculus0-bot.github.io/FUN/" target="_blank" rel="noopener noreferrer">Play game</a><a class="btn inline" href="https://github.com/danieloculus0-bot/FUN" target="_blank" rel="noopener noreferrer">Source</a></div><span class="micro">Independent game; separate from enterprise software.</span></article>
-<article class="demo"><span class="mini">05 / AI research lab</span><h3>BEAN Laboratory</h3><p>Meet the official mascot. Explore persistent reasoning research, experiments and evidence receipts.</p><div class="demo-actions"><a class="btn primary inline" href="../">Visit the lab</a><a class="btn inline" href="https://github.com/danieloculus0-bot/BEAN" target="_blank" rel="noopener noreferrer">Core source</a></div><span class="micro">Public website is separate from the local Ollama runtime.</span></article>
+<article class="demo"><span class="mini">04 / Browser arcade game</span><h3>Emperor Gauntlet</h3><p>Play an independent browser-based arcade game with mobile controls.</p><div class="demo-actions"><a class="btn primary inline" href="https://danieloculus0-bot.github.io/FUN/" target="_blank" rel="noopener noreferrer">Play game</a><a class="btn inline" href="https://github.com/danieloculus0-bot/FUN" target="_blank" rel="noopener noreferrer">Source</a></div><span class="micro">Independent game; separate from enterprise software.</span></article>
+<article class="demo"><span class="mini">05 / AI research lab</span><h3>BEAN Laboratory</h3><p>Explore BEAN's architecture, published experiments and documented test results.</p><div class="demo-actions"><a class="btn primary inline" href="../">Visit the lab</a><a class="btn inline" href="https://github.com/danieloculus0-bot/BEAN" target="_blank" rel="noopener noreferrer">Core source</a></div><span class="micro">Public website is separate from the local Ollama runtime.</span></article>
 <article class="demo"><span class="mini">06 / Read-only trading simulation</span><h3>AIscend</h3><p>Inspect the public trading strategy concept and read-only simulated dashboard.</p><div class="demo-actions"><a class="btn primary inline" href="../aiscend.html">Open simulation</a><a class="btn inline" href="https://github.com/danieloculus0-bot/AIscend" target="_blank" rel="noopener noreferrer">Source</a></div><span class="micro">No wallet connection; no real trading in this demo.</span></article>
 <article class="demo"><span class="mini">07 / Enterprise architecture tour</span><h3>Axiom × BEAN</h3><p>See how controlled drawings, engineering evidence, manufacturing operations and intelligence are intended to fit together.</p><div class="demo-actions"><a class="btn primary inline" href="../axiom.html">Explore the vision</a><a class="btn inline" href="https://github.com/danieloculus0-bot/Axiom_Beta" target="_blank" rel="noopener noreferrer">App source</a></div><span class="micro">Architecture overview, not a deployed ERP demo.</span></article>
 </div>
 </section>
 <section id="architecture" class="standard"><div class="wrap">
-<span class="kicker">One connected ecosystem</span><h2 class="section-title">Different tools. Shared direction.</h2><p class="section-intro">The architecture is converging on common records, controlled engineering data and explainable intelligence. Shared code and integration tests do not automatically mean that every standalone app is synchronized in production.</p>
+<span class="kicker">One connected ecosystem</span><h2 class="section-title">Different tools. Shared direction.</h2><p class="section-intro">The planned architecture brings engineering records, manufacturing workflows and evidence-based AI tools into a shared system. Shared code and integration tests do not automatically mean that every standalone app is synchronized in production.</p>
 <div class="diagram">
 <div class="node"><small>01 / Make and verify</small><h3>Engineering layer</h3><p>ForgeVault manages file versions. EZ-FAIR proposes inspection characteristics. EZ-FEA investigates structural models. EZstimate prepares traceable quotes.</p></div>
 <div class="node"><small>02 / Run the operation</small><h3>Axiom / JERP layer</h3><p>Quality, maintenance, methods, workforce research, production and purchasing are being organized into a coherent ERP architecture.</p></div>
@@ -202,7 +203,7 @@ section{padding-block:75px}
 <div class="actions"><a class="btn inline" href="https://github.com/danieloculus0-bot/Axiom_Beta/blob/main/docs/CURRENT_PORTFOLIO.md" target="_blank" rel="noopener noreferrer">View project ownership map</a><a class="btn inline" href="../axiom.html">Read the public vision</a></div>
 </div></section>
 <section id="projects" class="catalog"><div class="wrap">
-<div class="directory-top"><div><span class="kicker">Complete directory</span><h2 class="section-title">Everything on the bench.</h2><p class="section-intro">Every public repository found in the October 20 inventory. Filter by area or search by name and purpose. GitHub links open the actual source and documentation.</p></div></div>
+<div class="directory-top"><div><span class="kicker">Complete directory</span><h2 class="section-title">Project directory.</h2><p class="section-intro">Every public repository found in the October 20 inventory. Filter by area or search by name and purpose. GitHub links open the actual source and documentation.</p></div></div>
 <div class="search-wrap"><label class="search-label"><span class="sr-only" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0">Search projects</span><input id="search" type="search" placeholder="Search projects, tools, quality, robotics..." autocomplete="off" aria-label="Search projects"></label></div>
 <div class="filterbar" role="group" aria-label="Filter projects"><button class="filter" type="button" data-filter="all" aria-pressed="true">All 17</button><button class="filter" type="button" data-filter="ai" aria-pressed="false">AI & research</button><button class="filter" type="button" data-filter="erp" aria-pressed="false">Enterprise</button><button class="filter" type="button" data-filter="engineering" aria-pressed="false">Engineering</button><button class="filter" type="button" data-filter="operations" aria-pressed="false">Operations</button><button class="filter" type="button" data-filter="platform" aria-pressed="false">Platforms</button><button class="filter" type="button" data-filter="games" aria-pressed="false">Games</button></div>
 <p class="counter" id="count" role="status" aria-live="polite">Showing all 17 projects</p>
@@ -227,8 +228,8 @@ section{padding-block:75px}
 </div><div class="empty" id="empty">No projects match this search. Clear the search or try another category.</div>
 </div></section>
 <section class="standard" id="readme"><div class="wrap">
-<span class="kicker">The fine print matters</span><h2 class="section-title">Real projects. Honest boundaries.</h2>
-<div class="disclosure"><p>These projects include released source, browser demos, local beta software, experimental research and architecture plans. A browser simulation does not imply access to an actual ERP, wallet, physical robot or engineering solver. CI receipts are evidence for the specific jobs and commits they tested, not a blanket production certification.</p><p>The repositories are public to inspect. Public visibility does not automatically grant redistribution rights. Check the license in each repository before reuse. For current build evidence, follow each project's <a href="https://github.com/danieloculus0-bot?tab=repositories" target="_blank" rel="noopener noreferrer">README and GitHub Actions</a>.</p></div>
+<span class="kicker">The fine print matters</span><h2 class="section-title">Project status and limitations.</h2>
+<div class="disclosure"><p>These projects include released source, browser demos, local beta software, experimental research and architecture plans. A browser simulation does not imply access to an actual ERP, wallet, physical robot or engineering solver. Automated test results apply only to the code revisions and checks explicitly identified; they do not establish production readiness.</p><p>The repositories are public to inspect. Public visibility does not automatically grant redistribution rights. Check the license in each repository before reuse. For current build evidence, follow each project's <a href="https://github.com/danieloculus0-bot?tab=repositories" target="_blank" rel="noopener noreferrer">README and GitHub Actions</a>.</p></div>
 <div class="actions"><a class="btn primary" href="https://github.com/danieloculus0-bot" target="_blank" rel="noopener noreferrer">Explore the GitHub profile</a><a class="btn" href="../">Back to BEAN Lab</a></div>
 </div></section>
 </main>
