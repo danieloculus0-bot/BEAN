@@ -1,5 +1,7 @@
 # BEAN 🌱
 
+**[THE WORKSHOP | Full portfolio and browser demos](https://danieloculus0-bot.github.io/BEAN/portfolio/)** · Browse all 17 public projects and six featured browser experiences on a mobile-first GitHub Pages hub.
+
 Persistent experimental reasoning and evidence system. BEAN Core maintains SQLite-backed observations, source-aware claims, revision history, recovery and repeatable research tests. It is not a production-grade autonomous software engineer.
 
 ## Current build state
