@@ -53,7 +53,7 @@ button:focus-visible,a:focus-visible,summary:focus-visible{outline-color:var(--f
 <section id="learning" aria-labelledby="learning-heading"><div class="wrap">
 <span class="label">Measured reinforcement learning · October 2026</span>
 <h2 id="learning-heading">Experience. Scores. Memory. Another attempt.</h2>
-<p class="lead">BEAN has demonstrated real tabular Q-learning within a simplified Breakout game. Separate research branches explore scored, compressed learning memories and evolving neural networks. A trained policy beat an untrained baseline, but improving <em>the learning algorithm itself</em> is still unproven and none of these research learners have been merged into Core Main.</p>
+<p class="lead">BEAN already has <strong>two real reinforcement-learning implementations</strong> in separate research branches: SpongeTD tabular Q-learning and a trainable <strong>PyTorch Deep Q-Network (SpongeDQN)</strong> with experience replay, target network and compressed, restorable neural checkpoints. Trained game policies have beaten untrained controls on specific synthetic Breakout trials. Neither learner is merged into Core Main, and self-improving algorithms, neural ledger retrieval, and cross-domain transfer remain unproven.</p>
 <div class="learning-panel">
 <div class="learning-feature">
 <span class="category">Sponge TD · Independent training randomization · Verified on Windows and Linux</span>
@@ -87,10 +87,42 @@ button:focus-visible,a:focus-visible,summary:focus-visible{outline-color:var(--f
 <tr><td>46</td><td>1.383</td><td>3.283</td><td>Evolved DQN</td></tr>
 </tbody></table>
 <p class="caption">A preregistered-style two-cohort validation gate rejected the evolved candidate on seed 44 before sealed holdout testing. The evolved policy still underperformed standard DQN by 4.85 bricks on that seed. Selected policies on seeds 45 and 46 showed gains of 0.23 and 1.90. Across all three seeds, the <strong>raw evolved policy averaged 0.91 fewer bricks</strong> than standard DQN. This is <strong>not a replicated evolutionary advantage</strong>; adoption-gate results reflect fallbacks and should not be confused with better neural training.</p>
-<p class="micro">Controlled synthetic game, engineered three-number observations, not DeepMind pixel Atari. Draft research PR #107 only, with no production deployment or replicated advantage. The complete October 12 findings and evidence limits are recorded in the <a href="https://github.com/danieloculus0-bot/BEAN/blob/main/README.md#learning-lab-experience-scoring-and-repeatable-tests" target="_blank" rel="noopener noreferrer">Main README learning section</a>.</p>
+<p class="micro">Controlled synthetic game, engineered three-number observations, not DeepMind pixel Atari. Draft research PR #107 only, with no production deployment or replicated advantage. The complete October 12 findings and evidence limits are recorded in the <a href="https://github.com/danieloculus0-bot/BEAN/blob/experiment/bean-deep-q-learning-20261012/experiments/sponge_breakout/evolve.py" target="_blank" rel="noopener noreferrer">Neuroevolution experiment source</a>.</p>
 <div class="evidence-links"><a href="https://github.com/danieloculus0-bot/BEAN/actions/runs/38229337741" target="_blank" rel="noopener noreferrer">Inspect seed-level CI and artifacts ↗</a><a href="https://github.com/danieloculus0-bot/BEAN/blob/experiment/bean-deep-q-learning-20261012/docs/BEAN_NEUROEVOLUTION_FIRST_REPLICATION_20261012.md" target="_blank" rel="noopener noreferrer">Read first replication failures ↗</a></div>
 </div>
-</div></section>
+</div>
+<div class="learning-panel" style="margin-top:20px">
+<div class="learning-feature">
+<span class="category">SpongeDQN · Real PyTorch neural training · Research branch</span>
+<h3>The Q-network was already here.</h3>
+<p><strong>SpongeDQN</strong> uses a <strong>3 → 64 → 64 → 3</strong> multilayer network on a three-value engineered Breakout state. It performs genuine gradient updates via PyTorch, keeps a replay buffer, uses a periodically synchronized target network, and can restore SHA-256-identified compressed neural weights from its research journal.</p>
+<div class="learning-steps">
+<p><strong>Network.</strong> Two 64-unit hidden layers; three actions: left, stay, right.</p>
+<p><strong>Learning.</strong> Replay minibatches, target Q-values, backpropagation and optimizer updates.</p>
+<p><strong>Persistence.</strong> Scored neural weight capsules and restart/recovery checks.</p>
+<p><strong>Comparison.</strong> DQN versus SpongeTD tabular Q-learning versus a cold policy on separate synthetic holdout games.</p>
+</div>
+<p class="caption">This is <strong>existing, runnable experimental code</strong>, not a proposal or merely a diagram. It is not pixel-based Atari, a general-purpose LLM, a trained semantic ledger ranker or a production BEAN Core capability. The neural-evolution experiments above include losses; no overall superiority is claimed.</p>
+<div class="evidence-links"><a href="https://github.com/danieloculus0-bot/BEAN/blob/experiment/bean-deep-q-learning-20261012/bean/optimization/sponge_dqn.py" target="_blank" rel="noopener noreferrer">PyTorch DQN source ↗</a><a href="https://github.com/danieloculus0-bot/BEAN/blob/experiment/bean-deep-q-learning-20261012/experiments/sponge_breakout/deep_trial.py" target="_blank" rel="noopener noreferrer">Head-to-head harness ↗</a><a href="https://github.com/danieloculus0-bot/BEAN/actions/runs/38229337741" target="_blank" rel="noopener noreferrer">Related experiment CI ↗</a></div>
+</div>
+<div class="learning-feature">
+<span class="category">Compressed evidence · Frozen replay · Indexed recall</span>
+<h3>BEAN can inspect the scoreboard, without inventing a victory.</h3>
+<div class="split-numbers"><div><b>0/3</b><small>Lab009 baseline</small></div><div><b>2/3</b><small>Frozen after restart</small></div><div><b>3/3</b><small>After new research</small></div></div>
+<p>Bridge Lab009's revised synthetic experiment distinguishes <strong>knowledge retained across a restart</strong> from a novel answer acquired <strong>during evaluation</strong>. Four Windows/Linux Python-version jobs passed the targeted learning-loop CI matrix.</p>
+<p>Separately, BEAN Core selected a tested SQLite indexed-recall strategy over repeatedly scanning compressed archives. In the synthetic 1,200-case benchmark, retrieval was 11.3×–39.5× faster across four CI environments; all imported cases remained exact and failures were retained. Warm-query speed is not end-to-end performance.</p>
+<p><strong>New experimental reward adapter:</strong> BEAN can receive a bounded JSON view of the historical scoreboards and compute a signed reward for a matched performance change. Positive = improvement; negative = regression; zero = verified tie; unavailable = no justified comparison. The same evaluation receipt cannot mint additional credit simply by changing run labels. See <a href="https://github.com/danieloculus0-bot/BEAN/pull/141" target="_blank" rel="noopener noreferrer">scoreboard/reward PR #141</a>.</p>
+<p class="caption">The ledger, scoreboard reader and reward adapter remain research-only; the connected BEAN memory plugin and neural learner are <strong>not yet wired to this reward source</strong>. Historical CI artifacts may expire and some case details are not archived long-term. This is not evidence of neural policy improvement or a trained semantic retrieval ranker.</p>
+<div class="evidence-links"><a href="https://github.com/danieloculus0-bot/BEAN/tree/experiment/anticipatory-ledger-20261020/research/persistent_ledger" target="_blank" rel="noopener noreferrer">Persistent compressed ledger ↗</a><a href="https://github.com/danieloculus0-bot/BEAN-AI-Bridge-/pull/46" target="_blank" rel="noopener noreferrer">Bridge replay validation ↗</a><a href="https://github.com/danieloculus0-bot/BEAN/pull/140" target="_blank" rel="noopener noreferrer">BEAN tests BEAN ↗</a></div>
+</div>
+</div>
+<div class="learning-feature" style="margin-top:20px">
+<span class="category">AI collaboration · Context before construction</span>
+<h3>Before developing BEAN, remember what we've already built.</h3>
+<p>The <strong>BEAN AI activity gatekeeper</strong> asks any AI collaborator to acknowledge the current Core, Bridge, Q-network, compressed ledger, unfinished branches and evidence before starting work. It is a project-context handoff prompt, <strong>not a new runtime safeguard or permission to claim automated enforcement</strong>.</p>
+<div class="evidence-links"><a href="https://github.com/danieloculus0-bot/BEAN/blob/main/docs/AI_GATEKEEPER.md" target="_blank" rel="noopener noreferrer">Read the AI gatekeeper ↗</a><a href="https://github.com/danieloculus0-bot/BEAN/blob/main/AGENTS.md" target="_blank" rel="noopener noreferrer">AI collaborator entry point ↗</a></div>
+</div>
+</section>
 <section id="lab"><div class="wrap"><div class="section-head"><div><span class="label">Experimental evidence</span><h2>The BEAN Laboratory</h2><p>Filter real published findings, inspect the controls, and open the original GitHub receipts. These panels are evidence summaries, not live experiment execution.</p></div><span class="lab-counter" id="count" aria-live="polite">8 studies shown</span></div>
 <div class="controls" role="group" aria-label="Filter experiments"><button class="filter" data-filter="all" aria-pressed="true">All experiments</button><button class="filter" data-filter="win" aria-pressed="false">Measured improvements</button><button class="filter" data-filter="learning" aria-pressed="false">Learning research</button><button class="filter" data-filter="limits" aria-pressed="false">Inconclusive / tie</button></div>
 <div class="cards" id="experiments">
