@@ -17,4 +17,37 @@ class LedgerTests(unittest.TestCase):
             ledger.rebuild()
             self.assertEqual(ledger.original_junit('run1'),raw)
 
+
+class AdversarialLedgerTests(unittest.TestCase):
+    def test_modified_compressed_archive_is_rejected(self):
+        with tempfile.TemporaryDirectory() as work:
+            ledger=IndexedLedger(work)
+            ledger.append('case1',[{'kind':'test','name':'A','status':'passed'}])
+            ledger.rebuild()
+            file=ledger.archive/'case1.jsonl.gz'
+            bytes_=bytearray(file.read_bytes())
+            bytes_[-4] ^= 1
+            file.write_bytes(bytes_)
+            with self.assertRaisesRegex(ValueError,'archive hash mismatch'):
+                ledger.rebuild()
+
+    def test_duplicate_names_are_two_real_events(self):
+        with tempfile.TemporaryDirectory() as work:
+            ledger=IndexedLedger(work)
+            ledger.append('case2',[
+                {'kind':'test','name':'same','status':'passed'},
+                {'kind':'test','name':'same','status':'failed'}])
+            ledger.rebuild()
+            cases=[ledger.get(i)['status'] for i in ledger.ids(name='same')]
+            self.assertEqual(cases,['passed','failed'])
+
+    def test_missing_archive_is_detected(self):
+        with tempfile.TemporaryDirectory() as work:
+            ledger=IndexedLedger(work)
+            ledger.append('case3',[{'kind':'test','name':'A','status':'passed'}])
+            (ledger.archive/'case3.jsonl.gz').unlink()
+            with self.assertRaisesRegex(ValueError,'orphaned archive'):
+                ledger.rebuild()
+
+
 if __name__=='__main__': unittest.main()
