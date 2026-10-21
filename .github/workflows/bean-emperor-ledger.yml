@@ -1,0 +1,22 @@
+name: BEAN Emperor learning bridge checks
+on:
+  push:
+    branches:
+      - experiment/emperor-gauntlet-qledger-bridge-20261020
+  pull_request:
+    paths:
+      - "bean/evaluation/emperor_gauntlet_ledger.py"
+      - "bean/tests/test_emperor_gauntlet_ledger.py"
+      - ".github/workflows/bean-emperor-ledger.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  import-ledger-and-report:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: python -m unittest bean.tests.test_emperor_gauntlet_ledger -v
