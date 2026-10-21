@@ -1,0 +1,35 @@
+date,experiment,metric,condition,value,unit,sample,source
+2026-10-20,environment,host,isolated,x86_64_cpu_sandbox,text,1 run,README.md
+2026-10-20,intent,top1_accuracy,typed_20pct,0.1979,fraction,96 held-out prompts,results.json
+2026-10-20,intent,top1_accuracy,typed_40pct,0.2604,fraction,96 held-out prompts,results.json
+2026-10-20,intent,top1_accuracy,typed_60pct,0.3958,fraction,96 held-out prompts,results.json
+2026-10-20,intent,top1_accuracy,typed_80pct,0.5312,fraction,96 held-out prompts,results.json
+2026-10-20,intent,top1_accuracy,typed_100pct,0.6354,fraction,96 held-out prompts,results.json
+2026-10-20,intent,prefetch_coverage,confidence_0.75_margin_0.25,0,fraction,96 held-out prompts,results.json
+2026-10-20,intent,classifier_time,batched_partial_prompt_only,0.064,ms,synthetic CPU workload,results.json
+2026-10-20,intent,serialized_classifier_size,pickle,230.2,KiB,1 model,results.json
+2026-10-20,intent_ablation,full_message_accuracy,full_only_char,0.6354,fraction,96 held-out prompts,followup_results.json
+2026-10-20,intent_ablation,full_message_accuracy,progressive_char,0.5625,fraction,96 held-out prompts,followup_results.json
+2026-10-20,intent_ablation,full_message_accuracy,progressive_word,0.4792,fraction,96 held-out prompts,followup_results.json
+2026-10-20,policy,expected_utility,fixed_fast,0.6567,fraction,30 seeds; 2400 episodes/seed,results.json
+2026-10-20,policy,expected_utility,fixed_deep,0.8,fraction,30 seeds; 2400 episodes/seed,results.json
+2026-10-20,policy,expected_utility,learned_mean,0.8417,fraction,30 seeds; 2400 episodes/seed,results.json
+2026-10-20,policy,expected_utility,simulator_oracle,0.8475,fraction,30 seeds; 2400 episodes/seed,results.json
+2026-10-20,policy,sqlite_reload_policy_identical,checkpoint_restart,true,boolean,1 restart check,results.json
+2026-10-20,policy,sqlite_checkpoint_size,checkpoint_restart,12288,bytes,1 checkpoint,results.json
+2026-10-20,drift,expected_utility,all_history_episode_1500,0.7464,fraction,12 seeds,followup_results.json
+2026-10-20,drift,expected_utility,all_history_episode_1600,0.7669,fraction,12 seeds,followup_results.json
+2026-10-20,drift,expected_utility,all_history_episode_2000,0.8158,fraction,12 seeds,followup_results.json
+2026-10-20,drift,expected_utility,all_history_episode_3000,0.8248,fraction,12 seeds,followup_results.json
+2026-10-20,drift,expected_utility,recent_30_episode_1500,0.742,fraction,12 seeds,followup_results.json
+2026-10-20,drift,expected_utility,recent_30_episode_1600,0.8095,fraction,12 seeds,followup_results.json
+2026-10-20,drift,expected_utility,recent_30_episode_2000,0.8188,fraction,12 seeds,followup_results.json
+2026-10-20,drift,expected_utility,recent_30_episode_3000,0.8176,fraction,12 seeds,followup_results.json
+2026-10-20,drift,expected_utility,recent_80_episode_1500,0.7399,fraction,12 seeds,followup_results.json
+2026-10-20,drift,expected_utility,recent_80_episode_1600,0.8097,fraction,12 seeds,followup_results.json
+2026-10-20,drift,expected_utility,recent_80_episode_2000,0.8151,fraction,12 seeds,followup_results.json
+2026-10-20,drift,expected_utility,recent_80_episode_3000,0.8227,fraction,12 seeds,followup_results.json
+2026-10-20,drift,expected_utility,post_shift_simulator_oracle,0.8275,fraction,synthetic oracle,followup_results.json
+2026-10-20,provenance,claimed_origin_labels,assumption_only_not_core_execution,4,count,1 scenario,results.json
+2026-10-20,provenance,actual_origin_owners,assumption_only_not_core_execution,1,count,1 scenario,results.json
+2026-10-20,assertions,passed,pytest_isolated_lab,6,count,6 tests,README.md
