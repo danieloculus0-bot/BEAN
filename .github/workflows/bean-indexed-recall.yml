@@ -1,0 +1,57 @@
+name: BEAN compressed ledger self benchmark
+
+on:
+  push:
+    branches: [experiment/bean-self-benchmark-ledger-20261020]
+    paths:
+      - 'research/persistent_ledger/indexed_recall/**'
+      - '.github/workflows/bean-indexed-recall.yml'
+  pull_request:
+    branches: [experiment/anticipatory-ledger-20261020]
+    paths:
+      - 'research/persistent_ledger/indexed_recall/**'
+      - '.github/workflows/bean-indexed-recall.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  replay:
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        python-version: ['3.11', '3.12']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Test exact replay on Linux
+        if: runner.os != 'Windows'
+        env:
+          PYTHONPATH: research/persistent_ledger/indexed_recall:.
+        run: python -m unittest discover -s research/persistent_ledger/indexed_recall -p 'test_*.py' -v
+      - name: Test exact replay on Windows
+        if: runner.os == 'Windows'
+        env:
+          PYTHONPATH: research/persistent_ledger/indexed_recall;.
+        run: python -m unittest discover -s research/persistent_ledger/indexed_recall -p 'test_*.py' -v
+      - name: BEAN selector benchmark on Linux
+        if: runner.os != 'Windows'
+        env:
+          PYTHONPATH: research/persistent_ledger/indexed_recall:.
+        run: python research/persistent_ledger/indexed_recall/benchmark.py --out bean-recall-benchmark.json
+      - name: BEAN selector benchmark on Windows
+        if: runner.os == 'Windows'
+        env:
+          PYTHONPATH: research/persistent_ledger/indexed_recall;.
+        run: python research/persistent_ledger/indexed_recall/benchmark.py --out bean-recall-benchmark.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: recall-benchmark-${{ matrix.os }}-py${{ matrix.python-version }}
+          path: bean-recall-benchmark.json
+          if-no-files-found: ignore
