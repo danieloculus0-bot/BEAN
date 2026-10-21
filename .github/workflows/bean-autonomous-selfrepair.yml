@@ -158,7 +158,7 @@ jobs:
           retention-days: 21
 
   propose:
-    name: Automatically upgrade Core only after both platform validations
+    name: Propose Core repair for review after independent validations
     needs: [author, independent_verify]
     if: needs.author.outputs.needs_work == 'true'
     runs-on: ubuntu-latest
@@ -166,7 +166,6 @@ jobs:
     permissions:
       contents: write
       pull-requests: write
-      actions: write
     steps:
       - uses: actions/checkout@v4
         with:
@@ -223,19 +222,10 @@ jobs:
           git diff --cached --quiet && { echo 'No source improvement'; exit 1; }
           gh auth setup-git
           git commit -m "fix(bean): self-authored validated Core upgrade [run $GITHUB_RUN_ID]"
-          # Fast-forward only; if source changed during the experiment this
-          # cannot overwrite the human or any other autonomous developer.
-          if git push origin HEAD:refs/heads/main; then
-            echo "BEAN AUTONOMOUSLY UPGRADED MAIN after hidden acceptance and full Windows/Linux Core suites." >> "$GITHUB_STEP_SUMMARY"
-            echo "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" >> "$GITHUB_STEP_SUMMARY"
-            # GitHub suppresses push-triggered Actions from GITHUB_TOKEN.
-            # workflow_dispatch does trigger, so obtain a fresh CI receipt.
-            gh workflow run brain-smoke.yml --ref main || true
-          else
-            # Protected main or concurrent newer commit: keep tested source.
-            git push origin "HEAD:refs/heads/$BRANCH"
-            gh pr create --base main --head "$BRANCH" \
-              --title "BEAN verified self-authored source upgrade" \
-              --body "Model-produced source passed a separately red baseline, sealed acceptance, and full Core regression on Windows and Ubuntu in run $GITHUB_RUN_ID. Direct auto-promotion blocked by protection or head drift." || true
-            echo "AUTO-PROMOTION BLOCKED; review validated branch $BRANCH" >> "$GITHUB_STEP_SUMMARY"
-          fi
+          # NO autonomous push or merge into main. Keep tested code on an
+          # isolated review branch until a separate authorized review and CI.
+          git push origin "HEAD:refs/heads/$BRANCH"
+          gh pr create --draft --base main --head "$BRANCH" \
+            --title "BEAN independently verified candidate for review" \
+            --body "Model-produced patch passed red baseline, sealed acceptance and full Core regression on Windows and Ubuntu in run $GITHUB_RUN_ID. Review and fresh protected-branch CI are required before human merge. Rollback: close the PR and delete this branch; main is unchanged."
+          echo "BEAN created a draft PR; no source was promoted to main." >> "$GITHUB_STEP_SUMMARY"
