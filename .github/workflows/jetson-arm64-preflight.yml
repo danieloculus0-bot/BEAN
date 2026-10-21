@@ -1,0 +1,61 @@
+name: BEAN Jetson preflight on ARM64 (no physical device)
+
+on:
+  pull_request:
+    paths:
+      - 'install/jetson_deployment_gate.py'
+      - 'install/jetson_brain_install.sh'
+      - 'install/jetson_platform_check.py'
+      - 'install/bean.service'
+      - 'bean/tests/test_jetson_*'
+      - 'docs/JETSON_ORIN_NANO_ISO_GATE.md'
+      - '.github/workflows/jetson-arm64-preflight.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  arm64-preflight:
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Check actual test runner architecture
+        run: |
+          test "$(uname -m)" = "aarch64"
+          uname -a
+          python --version
+      - name: Install only Core smoke dependencies
+        run: python -m pip install pytest psutil
+      - name: Test installer and fake-hardware failures
+        run: |
+          python -m pytest bean/tests/test_jetson_deployment_gate.py bean/tests/test_jetson_installer_contract.py -q
+          bash -n install/jetson_brain_install.sh
+      - name: Exercise native ARM64 no-motion brain and restart continuity
+        run: |
+          python -m bean.runtime.boot_readiness --temp | tee jetson-arm64-boot-receipt.json
+          python -m examples.restart_continuity | tee jetson-arm64-restart-receipt.txt
+      - name: Readiness receipt scope declaration
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          report = json.loads(Path("jetson-arm64-boot-receipt.json").read_text())
+          assert report["success"], report
+          assert report["physical_output_enabled"] is False
+          assert report["motion_enabled"] is False
+          assert report["platform"]["arm64"] is True
+          print("ARM64 user-space Core smoke PASS; Jetson BSP and physical ISO boot NOT TESTED.")
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: bean-arm64-userspace-only
+          path: |
+            jetson-arm64-boot-receipt.json
+            jetson-arm64-restart-receipt.txt
+          if-no-files-found: warn
