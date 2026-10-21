@@ -52,6 +52,25 @@ class LedgerTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "chain broken"):
                 verify(ledger)
 
+    def test_persist_unchanged_and_reject_conflicting_replays(self):
+        from .publish_ledger import merge
+        with tempfile.TemporaryDirectory() as tmp:
+            folder = Path(tmp)
+            temporary = folder / "ci.jsonl"
+            persistent = folder / "research.jsonl"
+            append_result(temporary, fixture("first"))
+            self.assertEqual(merge(temporary, persistent), 1)
+            self.assertEqual(merge(temporary, persistent), 0)
+            append_result(temporary, fixture("second"))
+            self.assertEqual(merge(temporary, persistent), 1)
+            self.assertEqual(len(verify(persistent)), 2)
+            incompatible = fixture("first")
+            incompatible["holdout_delta"] = 9
+            competing = folder / "conflict.jsonl"
+            append_result(competing, incompatible)
+            with self.assertRaisesRegex(ValueError, "conflicting historical run"):
+                merge(competing, persistent)
+
     def test_source_hash_ignores_windows_checkout_newlines(self):
         from .train import digest_source
         with tempfile.TemporaryDirectory() as tmp:
