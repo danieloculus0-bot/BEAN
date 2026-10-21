@@ -1,0 +1,46 @@
+{
+  "schema": "bean.emperor_gauntlet.verification.v1",
+  "experiment_id": "bean-emperor-exact-35-run-continued",
+  "game": "Original HTML5 Emperor Gauntlet physics, experimental BEAN adapter",
+  "seed": 11047754,
+  "original_training_run": 39545665843,
+  "original_ledger_run": 39546036769,
+  "replication_run": 39547469612,
+  "first_160_decisions_verified_identical": true,
+  "first_160_decision_terminal_flag_adjusted_for_continuation": true,
+  "at_160": {
+    "kills": 35,
+    "hp": 62.04492706032919,
+    "temp": 88.036711898814,
+    "status": "running",
+    "cause": ""
+  },
+  "continued_to": {
+    "kills": 39,
+    "steps": 173,
+    "status": "over",
+    "cause": "Got swarmed by furious tuxedo linebackers",
+    "final_hp_rounded": -7,
+    "final_temp_rounded": 100
+  },
+  "beat_legendary_37": true,
+  "time_limit_conclusion": "The 160-decision cutoff truncated this specific 35-kill healthy run and hid the 39-kill result.",
+  "broader_population_conclusion": "Only 3 of the latest 3000 games reached the 160-decision cutoff. Most game-over events are hazard deaths, not timeouts.",
+  "latest_3000_game_death_causes_pct": {
+    "river": 41.6,
+    "yeti": 29.9,
+    "weak_ice": 12.2,
+    "leopard_seal": 8.4,
+    "penguin_swarm": 6.7,
+    "pressure_crack": 0.7,
+    "other_ice": 0.4,
+    "time_limit": 0.1
+  },
+  "strongest_root_cause": "State encoder and observations lack river, hole, hostile-Yeti, and leopard threat information; policy sends direct straight-line moves and attack by default.",
+  "proof_links": {
+    "continuation": "https://github.com/danieloculus0-bot/FUN/actions/runs/39547469612/artifacts/12322955006",
+    "death_cause_diagnosis": "https://github.com/danieloculus0-bot/FUN/actions/runs/39546932758/artifacts/12322400681",
+    "historical_ledger": "https://github.com/danieloculus0-bot/FUN/actions/runs/39546036769/artifacts/12321607585"
+  },
+  "limitations": "New 39-kill result is one exactly reproduced and continued training trajectory, not a claim of statistically improved average performance. Prior holdout statistics remain unchanged."
+}
