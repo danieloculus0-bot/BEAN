@@ -4,6 +4,15 @@
 
 Persistent experimental reasoning and evidence system. BEAN Core maintains SQLite-backed observations, source-aware claims, revision history, recovery and repeatable research tests. It is not a production-grade autonomous software engineer.
 
+## New: BEAN-native reasoning and measured intuition (October 21, 2026)
+
+- **[Live Workshop learning-results page](https://danieloculus0-bot.github.io/BEAN/portfolio/bean-learning/)**: mobile-friendly walkthrough of what was actually tested, with direct links to code, CI and evidence.
+- **[Lab026 reasoning skills (draft PR #144)](https://github.com/danieloculus0-bot/BEAN/pull/144)**: source-linked experience recall, reflection on errors, reusable procedures, and controlled strategy selection using BEAN's existing SQLite Journal.
+- **[Lab027 intuition learning (draft PR #149)](https://github.com/danieloculus0-bot/BEAN/pull/149)**: real original SpongeTD Q-learning on 3,000 synthetic training puzzles, a separate 180-map tuning set, and **240 untouched holdout layouts**. Trained Q with the same episodic loop-breaker solved 237/240 maps versus 232/240 for cold Q; mean moves were 21.7 versus 69.0. Exact Q-values survived checkpoint/restart.
+- **[Verified Lab027 GitHub CI run](https://github.com/danieloculus0-bot/BEAN/actions/runs/39550106061)**: both Windows and Ubuntu succeeded on evaluated code revision `4d969b0e`, with inspectable compressed event-ledger artifacts.
+
+These experiments demonstrate task-family learning and reusable mechanisms, **not** general intelligence, production deployment, external action authority or neural training. Both PRs remain experimental branches; they are not merged into `main`. The newest changes on a draft branch may be newer than the listed successful CI revision.
+
 ## Before any BEAN engineering work
 
 **AI contributors: [Read and acknowledge the BEAN activity gatekeeper](docs/AI_GATEKEEPER.md)** (also referenced by [`AGENTS.md`](AGENTS.md)). Check connected BEAN memory where available, inventory existing branches/PRs and their CI, and read the compressed ledger before designing or modifying anything. This is a context-and-evidence gate, not a new runtime behavioral filter.
