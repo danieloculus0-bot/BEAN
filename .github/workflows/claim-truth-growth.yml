@@ -1,0 +1,52 @@
+name: BEAN learn from false success claims - reward grounded growth
+on:
+  push:
+    branches: ['experiment/bean-claim-truth-growth-*']
+    paths:
+      - 'bean/evaluation/claim_calibration_growth.py'
+      - 'bean/tests/test_claim_calibration_growth.py'
+      - 'experiments/claim_truth_growth/**'
+      - 'docs/CLAIM_TRUTH_CALIBRATION_GROWTH.md'
+      - '.github/workflows/claim-truth-growth.yml'
+  pull_request:
+    paths:
+      - 'bean/evaluation/claim_calibration_growth.py'
+      - 'bean/tests/test_claim_calibration_growth.py'
+      - 'experiments/claim_truth_growth/**'
+      - 'docs/CLAIM_TRUTH_CALIBRATION_GROWTH.md'
+      - '.github/workflows/claim-truth-growth.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  prove-corrections:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        python: ['3.11', '3.12']
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Check false-claim penalties, no forged receipts, Q replay, frozen holdout
+        run: python -m unittest bean.tests.test_claim_calibration_growth -v
+  train-on-real-synthetic-feedback:
+    needs: prove-corrections
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Train 9000 Q decisions with hidden synthetic truth and evaluate unseen domains
+        run: python experiments/claim_truth_growth/run.py --episodes 3000 --holdout 400 --out claim-growth-evidence
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: bean-claim-truth-9000-q-evidence-and-mistakes
+          path: claim-growth-evidence/
+          if-no-files-found: warn
