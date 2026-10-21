@@ -12,7 +12,7 @@ import sys
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
-from bean.optimization.information_balloon import canonical, run_experiment
+from bean.optimization.information_balloon import canonical, growth_experiment, run_experiment
 
 
 def fixture():
@@ -41,6 +41,11 @@ def main():
             records,archive_budget=3500,context_budget=2048,
             queries=["inspection","maintenance","scheduling","estimation"],
             min_recall=1.0,iterations=16,seed=seed))
+    growth = growth_experiment(
+        records,checkpoints=[12,24,36],
+        archive_budget=3500,context_budget=2048,
+        queries=["inspection","maintenance","scheduling","estimation"],
+        min_recall=1.0,iterations=12,seed=31)
     report = {
         "schema": "bean.balloon.study.v1", "evidence": "synthetic",
         "generated_utc": datetime.now(timezone.utc).isoformat(),
@@ -55,7 +60,7 @@ def main():
             "Weissman-style unit-normalized diagnostic is not the canonical Weissman Score",
             "Complete source bytes stay outside the working context shelf; no retention deletion",
             "HMAC authenticity requires an externally protected secret; SHA-256 alone is not authentication",
-        ],"runs": runs}
+        ],"runs": runs,"growth":growth}
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(report,indent=2,sort_keys=True)+"\n",encoding="utf-8")
     print(json.dumps({
@@ -66,8 +71,11 @@ def main():
                     "recall":r["relevance"]["mean_recall"],
                     "recipe":r["selected_recipe"],"trials":r["candidate_count"]}
                    for r in runs],
+        "growth":[{"records":x["source_records"],"retained":x["retained"],
+                   "accepted":x["accepted"],"recall":x["recall"]}
+                  for x in growth["snapshots"]],
         "report":str(args.output)},indent=2))
-    return 0 if all(run["accepted"] for run in runs) else 2
+    return 0 if all(run["accepted"] for run in runs) and growth["last_accepted"] else 2
 
 
 if __name__ == "__main__":
