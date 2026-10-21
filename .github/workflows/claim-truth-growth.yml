@@ -43,7 +43,7 @@ jobs:
         with:
           python-version: '3.11'
       - name: Train 9000 Q decisions with hidden synthetic truth and evaluate unseen domains
-        run: python experiments/claim_truth_growth/run.py --episodes 3000 --holdout 400 --out claim-growth-evidence
+        run: python -m experiments.claim_truth_growth.run --episodes 3000 --holdout 400 --out claim-growth-evidence
       - uses: actions/upload-artifact@v4
         if: always()
         with:
