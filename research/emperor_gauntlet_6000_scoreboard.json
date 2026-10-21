@@ -1,0 +1,64 @@
+{
+  "schema": "bean.emperor_gauntlet.reward_learning_scoreboard.v1",
+  "experiment_id": "bean-emperor-next-3000-20261021",
+  "recorded_utc_date": "2026-10-21",
+  "benchmark_engine": "actual Emperor Gauntlet HTML game engine",
+  "parent_run_id": 39545071171,
+  "source_training_run_id": 39545665843,
+  "verified_reconciliation_run_id": 39546036769,
+  "training": {
+    "prior_recorded_training_games": 3350,
+    "new_training_games": 3000,
+    "total_recorded_training_games": 6350,
+    "independent_parallel_learners": 6,
+    "episodes_per_learner": 500,
+    "seed_format": "11000001 + (shard*500 + episode)*53",
+    "new_training_kills_total": 19585,
+    "new_training_average_kills": 6.528333333333333,
+    "new_training_best_kills": 35,
+    "cumulative_best_kills": 35,
+    "original_user_record_to_beat": 37,
+    "distinct_new_training_seeds": 3000,
+    "prior_merged_q_updates": 99348,
+    "additional_q_updates": 89431,
+    "new_merged_q_updates": 188779,
+    "new_merged_q_states": 13511,
+    "off_policy_replay_ledger_transitions": 89431
+  },
+  "evaluation": {
+    "separate_validation_games": 20,
+    "independent_holdout_games": 48,
+    "holdout_seed_format": "12000001 + i*97",
+    "mean_kills": {
+      "random": 5.333333333333333,
+      "original_champion_policy": 6.333333333333333,
+      "prior_merged_policy": 6.458333333333333,
+      "new_merged_policy": 7.1875,
+      "replay_policy": 6.5625
+    },
+    "paired_gain_new_merged_vs_prior_merged": 0.7291666666666666,
+    "approx_95pct_confidence_interval": [
+      -0.46929377574814135,
+      1.9276271090814747
+    ],
+    "statistically_supported_promotion": false,
+    "retain_previous_policy_as_baseline": true,
+    "new_merged_challenger_saved": true
+  },
+  "provenance": {
+    "prior_training_artifact_run": 39545071171,
+    "original_champion_artifact_run": 39543055899,
+    "training_shard_run": 39545665843,
+    "evaluation_run": 39546036769,
+    "full_ledger_and_Q_snapshot_artifact_id": 12321607585,
+    "archive_url": "https://github.com/danieloculus0-bot/FUN/actions/runs/39546036769/artifacts/12321607585",
+    "archive_sha256": "711bd62a6c43060632d3f46dac5aa000eb65cbdfd0eaa0ef5f72fd6f2600a219",
+    "artifact_retention_days": 90
+  },
+  "limitations": [
+    "3000 actual-game training matches in six independent parallel Q-learners, not one continuous 3000-game agent",
+    "Improvement in held-out average is not statistically conclusive; confidence interval includes zero",
+    "This demonstrates game-specific reinforcement-policy updating, not learning of BEAN model weights",
+    "Complete high-volume episode logs archived in GitHub Actions for 90 days; this JSON is a compact persistent summary"
+  ]
+}
