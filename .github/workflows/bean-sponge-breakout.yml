@@ -26,14 +26,18 @@ jobs:
         with:
           python-version: '3.12'
       - run: python -m pip install numpy
-      - name: Run scored-memory and delayed-reward contract tests
-        run: python -m unittest experiments.sponge_breakout.test_bridge_sponge -v
-      - name: Execute real SpongeTD learning with independent holdout
-        run: python -m experiments.sponge_breakout.train --episodes 3000 --out sponge-breakout
-      - name: Archive all evidence including failures
+      - name: Run scored-memory, replay, ledger integrity and seed-window tests
+        run: python -m unittest experiments.sponge_breakout.test_bridge_sponge experiments.sponge_breakout.test_ledger -v
+      - name: Repeat original fixed-seed benchmark with a fresh journal
+        run: python -m experiments.sponge_breakout.train --episodes 3000 --run-key original-20261011 --out sponge-evidence/original --ledger sponge-evidence/score_ledger.jsonl
+      - name: Independent randomization with disjoint validation and holdout seeds
+        run: python -m experiments.sponge_breakout.train --episodes 3000 --run-key replication-20261020 --train-offset 1200000 --validation-offset 40000 --holdout-offset 50000 --learner-seed 20261020 --out sponge-evidence/replication --ledger sponge-evidence/score_ledger.jsonl
+      - name: Verify two SHA-linked receipts after process restarts
+        run: python -m experiments.sponge_breakout.ledger sponge-evidence/score_ledger.jsonl --expect-runs 2
+      - name: Archive complete journal, policies and compact scoreboard, including failures
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: sponge-breakout-${{ matrix.os }}
-          path: sponge-breakout/
+          name: sponge-breakout-ledger-${{ matrix.os }}
+          path: sponge-evidence/
           if-no-files-found: warn
