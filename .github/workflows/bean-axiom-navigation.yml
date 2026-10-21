@@ -1,0 +1,53 @@
+name: BEAN and Axiom ChatGPT favorites connector
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "integrations/chatgpt/axiom_*"
+      - "bean/tests/test_axiom*"
+      - ".github/workflows/bean-axiom-navigation.yml"
+  push:
+    branches: [main]
+    paths:
+      - "integrations/chatgpt/axiom_*"
+      - "bean/tests/test_axiom*"
+      - ".github/workflows/bean-axiom-navigation.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  actual-axiom-navigation:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    env:
+      PYTHONPATH: ${{ github.workspace }}/axiom-src
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Checkout Axiom's actual Favorites implementation
+        uses: actions/checkout@v4
+        with:
+          repository: danieloculus0-bot/Axiom_Beta
+          ref: d4c37e9f036ca3a6a413462b0eb0b23fec332f35
+          path: axiom-src
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install cross-repository dependencies
+        run: python -m pip install -r axiom-src/requirements.txt psutil "mcp>=2,<3"
+      - name: Verify source and true favorites API behavior
+        run: |
+          python -m compileall -q integrations/chatgpt/axiom_navigation.py integrations/chatgpt/axiom_server.py
+          python -m unittest bean.tests.test_axiom_navigation_chatgpt -v
+          python -m unittest bean.tests.test_axiom_favorites_cross_repo -v
+      - name: Check honest MCP tool registration
+        run: python -m integrations.chatgpt.axiom_smoke
