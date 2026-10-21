@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#101713">
 <meta name="description" content="Explore a read-only interactive demonstration of AIscend, the BEAN capital research console. No real wallet or private account data.">
 <meta property="og:title" content="BEAN AIscend | Public Interactive Demo">
-<meta property="og:description" content="Explore AIscend's research dashboard with safe, simulated states and the real BEAN pixel mascot.">
+<meta property="og:description" content="Explore AIscend research with illustrative data, strategy evaluations and links to application source code.">
 <link rel="icon" href="./bean-official.webp" type="image/webp">
 <link rel="canonical" href="https://danieloculus0-bot.github.io/BEAN/aiscend.html">
 <title>BEAN | AIscend Demo</title>
@@ -62,7 +62,7 @@ h2{letter-spacing:-.025em;line-height:1.2;margin:0 0 3px;font-size:clamp(24px,3v
 .petbox{border:2px solid #4a6950;background:#0c140e;border-radius:9px;padding:10px;text-align:center}
 #pet{width:192px;height:192px;max-width:100%;display:block;margin:auto;image-rendering:pixelated}
 .petname{font:bold 14px "Courier New",monospace;color:#c4e9ae;letter-spacing:.14em}
-#petMood{font:12px "Courier New",monospace;color:#9acc89;min-height:18px}
+
 .demo-button{display:flex;align-items:center;justify-content:space-between;width:100%;padding:10px 11px;margin:6px 0;border:1px solid #4f6c51;border-radius:9px;background:#203626;color:#d4eed0;text-align:left;font-weight:750;font-size:13px}
 .demo-button[aria-pressed=true]{background:#a0e682;border-color:#b7f2a2;color:#152c17}.demo-button:hover{border-color:#a5df9c}
 .note{font-size:12px;color:#b9cfb7;line-height:1.55;margin:10px 0 0}
@@ -84,6 +84,7 @@ footer{border-top:1px solid #3b5540;padding:23px 0;color:var(--muted);font-size:
 @media(max-width:900px){.hero{grid-template-columns:1fr}.mascot{min-height:180px}.mascot img{max-height:210px;width:auto}.dashboard{grid-template-columns:1fr}.column:first-child{grid-template-columns:200px 1fr}.features{grid-template-columns:1fr 1fr}}
 @media(max-width:600px){.wrap{width:calc(100% - 24px)}.nav{gap:6px;padding:10px 0}.links{gap:11px;font-size:12px}.hero{padding:29px 0 21px}.console{padding:10px}.metrics{grid-template-columns:1fr 1fr}.column:first-child{grid-template-columns:1fr}.school-grid{grid-template-columns:1fr 1fr}.features{grid-template-columns:1fr}.notice{font-size:10px}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+.hero-brief{padding:27px;border:1px solid #55795a;border-radius:21px;background:linear-gradient(140deg,#1b3222,#121f17);display:flex;flex-direction:column;gap:15px}.hero-brief strong{font-size:1.5rem;letter-spacing:-.03em;color:#d6ffc0}.hero-brief p{margin:0;color:#c1d5c0}.hero-brief a{font-size:.9rem;font-weight:800}.statusbox{padding:22px 20px;background:linear-gradient(150deg,#1c3523,#111a15);border:1px solid #527653;border-radius:12px;min-height:128px}.statusbox strong{font-size:1rem;color:#d4f6c9}.statusbox p{font-size:.82rem;color:#bcd2b6;margin:13px 0 0}
 </style>
 
 <style>
@@ -135,7 +136,7 @@ h1{font-size:clamp(3.25rem,7.5vw,6.4rem);line-height:1;letter-spacing:-.055em;ma
 <p>Explore a <strong>read-only sample account</strong> using fields and research capabilities present in the actual AIscend dashboard. The numbers are illustrative; this page cannot connect a private wallet or run the trading engine.</p>
 <div class="buttons"><a class="btn primary" href="#demo">Open the interactive console ↓</a><a class="btn" href="https://github.com/danieloculus0-bot/AIscend">Inspect the code ↗</a></div>
 </div>
-<figure class="mascot"><img src="./bean-official.webp" alt="Official smiling lime-green BEAN mascot with two sprout leaves and arms" width="290"><figcaption>BEAN · BEHAVIOR ENABLED AVATAR NODE</figcaption></figure>
+<aside class="hero-brief"><strong>Read-only research demonstration</strong><p>Explore research states, strategy experiments and example decision records.</p><p>Public quotes are informational. No wallet is connected and the demo cannot place trades.</p><a href="https://github.com/danieloculus0-bot/AIscend" target="_blank" rel="noopener noreferrer">Inspect the source code →</a></aside>
 </section>
 <section class="wrap" id="demo" aria-labelledby="demoTitle">
 <div class="heading"><div><h2 id="demoTitle">Inside AIscend</h2><p>Try the interface states. Every interaction below is simulated.</p></div><div class="notice">● PUBLIC DEMO · SAMPLE DATA · NO WALLET CONNECTED</div></div>
@@ -173,18 +174,18 @@ h1{font-size:clamp(3.25rem,7.5vw,6.4rem);line-height:1;letter-spacing:-.055em;ma
 
 <div class="dashboard">
 <div class="column">
-<section class="panel"><h3 id="traderThingTitle">BEAN</h3><div class="petbox"><canvas id="pet" width="192" height="192" role="img" aria-label="Original AIscend dot-matrix BEAN character"></canvas><div class="petname">BEAN</div><div id="petMood">just sitting there</div></div></section>
-<section class="panel"><h3>GAME SCORE · SAMPLE</h3>
+<section class="panel"><h3 id="traderThingTitle">RESEARCH STATUS</h3><div class="statusbox"><strong>BEAN / AIscend</strong><p id="researchStateSummary" role="status" aria-live="polite">Market observation selected. This is a sample research state.</p></div></section>
+<section class="panel"><h3>STRATEGY MILESTONES · SAMPLE</h3>
 <div class="pair"><div><div class="label">Completed bankroll doublings</div><strong>0 points</strong></div><div><div class="label">Next point</div><strong>2X / POINT 1</strong></div></div>
-<p class="note">Level 1: $100,000 OR BUST. Exactly one point is earned for every completed doubling of the starting bankroll, as implemented in AIscend. This example shows 1.0240×, so no point has been earned.</p>
+<p class="note">Illustrative long-term research target: $100,000. Exactly one point is earned for every completed doubling of the starting bankroll, as implemented in AIscend. This example shows 1.0240×, so no point has been earned.</p>
 <a class="note" href="https://github.com/danieloculus0-bot/AIscend/blob/main/src/game.py" target="_blank" rel="noopener noreferrer">Inspect actual scoring code ↗</a></section>
 <section class="panel"><h3>VIEW SAMPLE RESEARCH STATES</h3><button type="button" class="demo-button" data-scene="watch" aria-pressed="true">Market observation <span>›</span></button><button type="button" class="demo-button" data-scene="experiment" aria-pressed="false">Strategy experiment <span>›</span></button><button type="button" class="demo-button" data-scene="paper" aria-pressed="false">Forward paper trial <span>›</span></button><button type="button" class="demo-button" data-scene="gate" aria-pressed="false">BUY confirmation gate <span>›</span></button><p class="note">These are presentation-only view selectors, <strong>not additional AIscend trading controls</strong>. They display example output states from research capabilities in the actual source. They cannot submit orders, activate trading or alter real experiments.</p></section>
 <section class="soft"><strong>Identity protected.</strong> No names, wallet addresses, account IDs, API keys, credentials or proprietary strategy settings. Sample balances are illustrative.</section>
 </div>
 <div class="column">
-<section class="panel"><h3>RESEARCH BRAIN</h3><div class="pair"><div><div class="label">Research state</div><strong id="brainState">BULLISH</strong></div><div><div class="label">Example confidence</div><strong id="confidence">65.4%</strong></div></div><p class="note" id="thesis">Market observations have been logged with confidence; a hypothesis is not yet a trade.</p></section>
+<section class="panel"><h3>RESEARCH STATUS</h3><div class="pair"><div><div class="label">Research state</div><strong id="brainState">BULLISH</strong></div><div><div class="label">Example confidence</div><strong id="confidence">65.4%</strong></div></div><p class="note" id="thesis">Market observations have been logged with confidence; a hypothesis is not yet a trade.</p></section>
 <section class="panel"><h3>BEAN MEMORY</h3><div class="pair"><div><div class="label">Claims · example snapshot</div><strong>3,062</strong></div><div><div class="label">Predictions · example snapshot</div><strong>208</strong></div></div><p class="note">Retained observations, predictions and evidence persist across runs. A stored claim is not necessarily verified.</p></section>
-<section class="panel"><div class="school-head"><h3>BEAN STRATEGY SCHOOL</h3><span class="tag" id="researchTag">RESEARCH SELECTED</span></div><div class="school-grid"><div><div class="label">Experiments · example</div><strong>75</strong></div><div><div class="label">Candidates · example</div><strong>79</strong></div><div><div class="label">Historical holdout</div><strong id="holdout">+7.59%</strong></div></div>
+<section class="panel"><div class="school-head"><h3>STRATEGY EVALUATION</h3><span class="tag" id="researchTag">RESEARCH SELECTED</span></div><div class="school-grid"><div><div class="label">Experiments · example</div><strong>75</strong></div><div><div class="label">Candidates · example</div><strong>79</strong></div><div><div class="label">Historical holdout</div><strong id="holdout">+7.59%</strong></div></div>
 <div class="soft" id="examText">Historical research result. Not actual wallet profit or a verified forward return.</div>
 <hr><div class="label">Five-minute research + forward paper</div><p class="note" id="paperText">BEAN evaluates new market windows and tests promising rules on independently arriving candles. No forward result is asserted by this demo.</p>
 <div class="label" style="margin-top:15px">Independent BEAN gate</div><p class="note" id="gateText">A selected strategy can confirm or veto an existing proposed BUY; it cannot originate an order from research.</p></section>
@@ -194,7 +195,7 @@ h1{font-size:clamp(3.25rem,7.5vw,6.4rem);line-height:1;letter-spacing:-.055em;ma
 </div>
 </section>
 <section class="wrap detail" id="how-it-works">
-<div class="eyebrow"><span class="dot" aria-hidden="true"></span> Built software · Inspectable evidence</div><h2 style="margin-top:17px">Behind the pretty green screen.</h2><p class="muted">The actual application is a working local beta. This public demo is not connected to its live installation.</p>
+<div class="eyebrow"><span class="dot" aria-hidden="true"></span> Built software · Inspectable evidence</div><h2 style="margin-top:17px">Implementation and demonstration scope.</h2><p class="muted">The actual application is a working local beta. This public demo is not connected to its live installation.</p>
 <div class="features">
 <article class="feature"><h3>Persistent market memory</h3><p>Hypotheses, outcomes and contradictory evidence are recorded rather than replaced with manufactured certainty.</p><a href="https://github.com/danieloculus0-bot/AIscend/blob/main/src/bean.py">Inspect memory ↗</a></article>
 <article class="feature"><h3>Five-minute strategy research</h3><p>Experimental rules are backtested on Coinbase candle histories; forward-paper trials use separate later observations.</p><a href="https://github.com/danieloculus0-bot/AIscend/blob/main/src/bean_five_minute.py">Inspect research ↗</a></article>
@@ -219,246 +220,15 @@ h1{font-size:clamp(3.25rem,7.5vw,6.4rem);line-height:1;letter-spacing:-.055em;ma
 <script>
 "use strict";
 const $=id=>document.getElementById(id);
-let petState="curious",petBlink=false,petQuipIndex=0;
-function drawPet(){
-  const canvas=$('pet');
-  const ctx=canvas.getContext('2d');
-  if(!ctx) return;
-  // 48x48 Game Boy-inspired pixel canvas, scaled without smoothing.
-  // BEAN's silhouette follows the official two-leaf sprout + waving body.
-  const unit=4, size=48;
-  const color={
-    bg:'#0b100b', outline:'#29482d', shadow:'#457c42',
-    bean:'#83ba60', light:'#a7d49b', shine:'#d7edba',
-    ink:'#081108', blush:'#619d51'
-  };
-  ctx.imageSmoothingEnabled=false;
-  ctx.fillStyle=color.bg;
-  ctx.fillRect(0,0,canvas.width,canvas.height);
-  const pixel=(x,y,shade)=>{
-    x=Math.round(x); y=Math.round(y);
-    if(x<0||y<0||x>=size||y>=size) return;
-    ctx.fillStyle=shade;
-    ctx.fillRect(x*unit,y*unit,unit,unit);
-  };
-  const oval=(cx,cy,rx,ry,shade,rotation=0)=>{
-    const co=Math.cos(rotation), si=Math.sin(rotation);
-    const reach=Math.ceil(Math.max(rx,ry))+2;
-    for(let y=Math.floor(cy-reach);y<=cy+reach;y++){
-      for(let x=Math.floor(cx-reach);x<=cx+reach;x++){
-        const dx=x-cx, dy=y-cy;
-        const u=dx*co+dy*si, v=-dx*si+dy*co;
-        if(u*u/(rx*rx)+v*v/(ry*ry)<=1) pixel(x,y,shade);
-      }
-    }
-  };
-  const stroke=(ax,ay,bx,by,width,shade)=>{
-    const dx=bx-ax,dy=by-ay,len=dx*dx+dy*dy||1;
-    for(let y=Math.floor(Math.min(ay,by)-width-1);y<=Math.ceil(Math.max(ay,by)+width+1);y++){
-      for(let x=Math.floor(Math.min(ax,bx)-width-1);x<=Math.ceil(Math.max(ax,bx)+width+1);x++){
-        const t=Math.max(0,Math.min(1,((x-ax)*dx+(y-ay)*dy)/len));
-        if((x-ax-t*dx)**2+(y-ay-t*dy)**2<=width*width) pixel(x,y,shade);
-      }
-    }
-  };
-
-  // Two distinct leaves, curved stem, and chunky four-color foliage.
-  stroke(24,15,24,8,2.0,color.outline);
-  stroke(24,13,27,7,1.7,color.shadow);
-  oval(17.5,6.7,8.8,4.2,color.outline,0.34);
-  oval(17.5,6.2,7.5,3.1,color.bean,0.34);
-  oval(15.5,5.0,3.7,1.0,color.shine,0.34);
-  oval(32.2,7.0,8.2,4.0,color.outline,-0.32);
-  oval(32,6.4,7.0,2.9,color.bean,-0.32);
-  oval(34,5.1,3.6,1.0,color.light,-0.32);
-  stroke(24,14,24,9,1.1,color.light);
-
-  // Arms remain visible outside the body. BEAN waves one hand.
-  const waving=['buy','win','point','up','interested'].includes(petState);
-  const handY=waving?13:16;
-  stroke(14,25,8,23,4,color.outline);
-  stroke(8,23,5,handY+3,3.5,color.outline);
-  oval(5.8,handY+1,3.7,4.2,color.outline,-0.15);
-  stroke(14,25,8,23,2.8,color.bean);
-  stroke(8,23,5,handY+3,2.3,color.bean);
-  oval(5.7,handY+1,2.5,3.1,color.bean,-0.15);
-  stroke(8,handY+1,10,handY+4,1.8,color.outline);
-  stroke(8,handY+1,10,handY+4,1.1,color.bean);
-  pixel(4,handY-1,color.light);
-  stroke(37,27,42,30,4,color.outline);
-  stroke(42,30,43,34,3.6,color.outline);
-  stroke(37,27,42,30,2.7,color.bean);
-  stroke(42,30,43,34,2.3,color.bean);
-  oval(43,34.5,3.4,3.4,color.outline);
-  oval(43,34,2.4,2.5,color.bean);
-  pixel(44,33,color.light);
-
-  // Rounded bean body, rim light and belly shading. No black faceplate.
-  oval(24.5,27.6,14.6,15.7,color.outline);
-  oval(25,32,13.7,10.5,color.outline);
-  oval(24.5,27.1,13.2,14.4,color.shadow);
-  oval(25,32,12.3,9.5,color.shadow);
-  oval(23.2,26.4,11.5,12.7,color.bean);
-  oval(23.5,32,10.6,8.0,color.bean);
-  oval(20,22,6.9,6.0,color.light,-0.18);
-  oval(20,17.1,5.3,1.6,color.shine,-0.14);
-  oval(21,34,6.6,5.1,color.light,0.12);
-  oval(30.8,34,4.3,5.9,color.shadow,0.20);
-  oval(23,28,9,7,color.bean);
-
-  // Expressive DARK eyes set directly in the GREEN body, with tiny highlights.
-  const unhappy=['down','poop','sell','trouble'].includes(petState);
-  const happy=['up','buy','point','win','interested'].includes(petState);
-  if(petState==='dead'){
-    stroke(17,24,21,28,1.0,color.ink);
-    stroke(21,24,17,28,1.0,color.ink);
-    stroke(28,24,32,28,1.0,color.ink);
-    stroke(32,24,28,28,1.0,color.ink);
-  }else if(petBlink){
-    stroke(17,26,21,26,0.85,color.ink);
-    stroke(28,26,32,26,0.85,color.ink);
-  }else{
-    oval(19,26,2.7,3.2,color.ink);
-    oval(30,26,2.7,3.2,color.ink);
-    pixel(18,24,color.shine);
-    pixel(29,24,color.shine);
-    if(petState==='curious'){ pixel(31,25,color.light); }
-    if(unhappy){
-      stroke(17,22,21,23,0.7,color.outline);
-      stroke(28,23,32,22,0.7,color.outline);
-    }
-  }
-  // Rounded cheeks and a stateful pixel mouth preserve the familiar moods.
-  pixel(15,30,color.blush);
-  pixel(16,31,color.blush);
-  pixel(33,30,color.blush);
-  pixel(34,31,color.blush);
-  if(unhappy){
-    stroke(21,34,24,32,0.8,color.ink);
-    stroke(24,32,27,34,0.8,color.ink);
-  }else if(petState==='think'||petState==='bean'){
-    oval(24.5,33.5,1.8,2.2,color.ink);
-    pixel(38,15,color.light);
-    pixel(41,12,color.light);
-  }else if(petState==='dead'){
-    stroke(22,33,27,33,0.8,color.ink);
-  }else if(petState==='curious'){
-    oval(24.5,33,2.4,2.5,color.ink);
-  }else{
-    oval(24.5,33.3,happy?5.0:3.9,happy?2.9:2.2,color.ink);
-    oval(24.5,34.6,happy?2.7:2.0,0.9,color.blush);
-  }
-
-  // Independent little shoes, shaded like chunky original-game sprites.
-  oval(17.5,42.0,5.1,3.6,color.outline);
-  oval(31.3,42.0,5.1,3.6,color.outline);
-  oval(17.1,41.6,3.8,2.6,color.shadow);
-  oval(31.0,41.6,3.8,2.6,color.shadow);
-  oval(16,40.8,2.2,1.1,color.light);
-  oval(29.8,40.8,2.2,1.1,color.light);
-  pixel(14,43,color.bean); pixel(29,43,color.bean);
-
-  const moods={
-    idle:[
-      'just sitting there',
-      'waiting for some shit to happen',
-      'refusing to buy bullshit'
-    ],
-    think:[
-      'thinking extremely hard',
-      'doing fucked-up little math',
-      'consulting the tiny oracle'
-    ],
-    bean:[
-      'BEAN is chewing on it',
-      'grading its own bullshit',
-      'remembering what happened last time'
-    ],
-    curious:[
-      'hmm.',
-      'something moved',
-      'mildly interested'
-    ],
-    interested:[
-      'oh?',
-      'now we are getting somewhere',
-      'trade-shaped object detected'
-    ],
-    trouble:[
-      'something smells fucked',
-      'evidence is fighting itself',
-      'troubleshooting this bullshit'
-    ],
-    buy:[
-      'bought the damn thing',
-      'money deployed. hell yeah.',
-      'committed to the bit'
-    ],
-    sell:[
-      'sold that shit',
-      'nope. we are out.',
-      'yeeted the bag'
-    ],
-    up:[
-      'feeling smug as hell',
-      'number went up. excellent.',
-      'tiny capitalist noises'
-    ],
-    down:[
-      'having a shitty little day',
-      'deeply unimpressed',
-      'market kicked me in the nuts'
-    ],
-    poop:[
-      'taking a tactical shit',
-      'market looks like ass',
-      'this is my bearish analysis'
-    ],
-    point:[
-      'ONE WHOLE POINT',
-      'FUCK YEAH. A POINT.',
-      'doubling achieved. absurd.'
-    ],
-    win:[
-      'LEVEL 1. HOLY SHIT.',
-      'WE FUCKING DID IT.',
-      '$100K. WHAT THE FUCK.'
-    ],
-    dead:[
-      'something is fucked',
-      'i have died of computers',
-      'goddammit.'
-    ]
-  };
-  const labels={
-    idle:'BEAN',
-    think:'BEAN · THINKING',
-    curious:'BEAN · WATCHING',
-    interested:'BEAN · INTERESTED',
-    bean:'BEAN · LEARNING',
-    trouble:'BEAN · TROUBLESHOOTER',
-    poop:'BEAN · SOMETHING IS FUCKED',
-    buy:'BEAN · BUY',
-    sell:'BEAN · SELL',
-    up:'BEAN · SMUG',
-    down:'BEAN · PISSED',
-    point:'BEAN · POINT',
-    win:'BEAN · WINNER',
-    dead:'BEAN · DEAD'
-  };
-  $('traderThingTitle').textContent=labels[petState] || 'BEAN';
-  const lines=moods[petState] || ['...'];
-  $('petMood').textContent=lines[petQuipIndex % lines.length];
-}
 const scenarios={
-watch:{pet:"curious",tag:"MARKET OBSERVATION",brain:"BULLISH",confidence:"65.4%",school:"RESEARCH SELECTED",holdout:"+7.59%",thesis:"Market observations have been logged with confidence; a hypothesis is not yet a trade.",exam:"Historical research result. Not actual wallet profit or a verified forward return.",paper:"BEAN can test completed five-minute candles, then forward paper-track later observations.",gate:"Read-only evaluation does not originate an order.",rows:[["Research","HOLD","Observed","Evidence under review"],["Strategy","TEST","Logged","Historical rules archived"],["Forward","WAIT","Pending","New samples required"]]},
-experiment:{pet:"think",tag:"STRATEGY EXPERIMENT",brain:"EXPERIMENTING",confidence:"N/A",school:"RESEARCH ONLY",holdout:"+7.59%",thesis:"Strategy School compares rule families, rotates candidates and retains earlier lessons.",exam:"Historical example: +7.59% holdout. Research-only, not a live or independent forward gain.",paper:"A later forward paper trial is separate from this backtest.",gate:"Historical results cannot override existing execution checks.",rows:[["School","TEST","Research","Evaluate historical candidate"],["Memory","RETAIN","Stored","Lesson archived"],["Live","NO ORDER","Protected","Research-only result"]]},
-paper:{pet:"interested",tag:"FORWARD PAPER TRIAL",brain:"OBSERVING",confidence:"N/A",school:"FORWARD TEST",holdout:"N/A",thesis:"Subsequent observations give evidence that did not exist when a candidate was chosen.",exam:"A historical test alone never counts as forward validation.",paper:"Illustrative trial: 86/288 five-minute samples. Verdict PENDING. Hypothetical fills include costs; Coinbase orders are never submitted.",gate:"A paper strategy has no direct permission to trade a funded wallet.",rows:[["Paper","OBSERVE","86/288","Illustrative sample count"],["Paper","WAIT","Pending","Forward verdict not complete"],["Wallet","NO ORDER","Protected","Paper ledger only"]]},
-gate:{pet:"trouble",tag:"BUY CONFIRMATION GATE",brain:"VERIFYING",confidence:"N/A",school:"CURRENT-DATA GATE",holdout:"N/A",thesis:"Fresh complete candles can confirm or veto a buy already proposed by the live engine.",exam:"A selected research result still requires independent fresh-data evaluation.",paper:"Forward paper evidence remains separate from live order eligibility.",gate:"Example HOLD: the fresh-data gate vetoes an existing BUY idea. This is a staged example, not a real executed decision.",rows:[["Market","BUY?","Proposed","Existing engine hypothesis"],["BEAN","VETO","Example","Fresh-data disagreement"],["Wallet","NO ORDER","Protected","No research-originated trade"]]}
+watch:{tag:"MARKET OBSERVATION",brain:"BULLISH",confidence:"65.4%",school:"RESEARCH SELECTED",holdout:"+7.59%",thesis:"Market observations have been logged with confidence; a hypothesis is not yet a trade.",exam:"Historical research result. Not actual wallet profit or a verified forward return.",paper:"BEAN can test completed five-minute candles, then forward paper-track later observations.",gate:"Read-only evaluation does not originate an order.",rows:[["Research","HOLD","Observed","Evidence under review"],["Strategy","TEST","Logged","Historical rules archived"],["Forward","WAIT","Pending","New samples required"]]},
+experiment:{tag:"STRATEGY EXPERIMENT",brain:"EXPERIMENTING",confidence:"N/A",school:"RESEARCH ONLY",holdout:"+7.59%",thesis:"Strategy School compares rule families, rotates candidates and retains earlier lessons.",exam:"Historical example: +7.59% holdout. Research-only, not a live or independent forward gain.",paper:"A later forward paper trial is separate from this backtest.",gate:"Historical results cannot override existing execution checks.",rows:[["School","TEST","Research","Evaluate historical candidate"],["Memory","RETAIN","Stored","Lesson archived"],["Live","NO ORDER","Protected","Research-only result"]]},
+paper:{tag:"FORWARD PAPER TRIAL",brain:"OBSERVING",confidence:"N/A",school:"FORWARD TEST",holdout:"N/A",thesis:"Subsequent observations give evidence that did not exist when a candidate was chosen.",exam:"A historical test alone never counts as forward validation.",paper:"Illustrative trial: 86/288 five-minute samples. Verdict PENDING. Hypothetical fills include costs; Coinbase orders are never submitted.",gate:"A paper strategy has no direct permission to trade a funded wallet.",rows:[["Paper","OBSERVE","86/288","Illustrative sample count"],["Paper","WAIT","Pending","Forward verdict not complete"],["Wallet","NO ORDER","Protected","Paper ledger only"]]},
+gate:{tag:"BUY CONFIRMATION GATE",brain:"VERIFYING",confidence:"N/A",school:"CURRENT-DATA GATE",holdout:"N/A",thesis:"Fresh complete candles can confirm or veto a buy already proposed by the live engine.",exam:"A selected research result still requires independent fresh-data evaluation.",paper:"Forward paper evidence remains separate from live order eligibility.",gate:"Example HOLD: the fresh-data gate vetoes an existing BUY idea. This is a staged example, not a real executed decision.",rows:[["Market","BUY?","Proposed","Existing engine hypothesis"],["BEAN","VETO","Example","Fresh-data disagreement"],["Wallet","NO ORDER","Protected","No research-originated trade"]]}
 };
 function show(scene){
 const s=scenarios[scene];if(!s)return;
-petState=s.pet;petQuipIndex=0;
+
 $("stageTag").textContent="DEMO · "+s.tag;
 $("brainState").textContent=s.brain;
 $("confidence").textContent=s.confidence;
@@ -471,7 +241,7 @@ $("gateText").textContent=s.gate;
 const body=$("journal");body.replaceChildren();
 for(const cells of s.rows){const tr=document.createElement("tr");for(const cell of cells){const td=document.createElement("td");td.textContent=cell;tr.append(td)}body.append(tr)}
 for(const btn of document.querySelectorAll("[data-scene]"))btn.setAttribute("aria-pressed",String(btn.dataset.scene===scene));
-drawPet();
+$('researchStateSummary').textContent=s.tag+'. Sample research state; no trades are executed here.';
 }
 document.querySelectorAll("[data-scene]").forEach(b=>b.addEventListener("click",()=>show(b.dataset.scene)));
 show("watch");
@@ -520,8 +290,8 @@ async function refreshPublicMarkets(){
 refreshPublicMarkets();
 setInterval(refreshPublicMarkets,60000);
 document.addEventListener("visibilitychange",()=>{if(!document.hidden)refreshPublicMarkets()});
-setInterval(()=>{petBlink=true;drawPet();setTimeout(()=>{petBlink=false;drawPet()},160)},5300);
-setInterval(()=>{petQuipIndex++;drawPet()},8600);
+
+
 </script>
 
 </body>
