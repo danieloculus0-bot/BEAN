@@ -1,0 +1,35 @@
+{
+  "bean_core_events_recorded": 21,
+  "branch_source": "danieloculus0-bot/BEAN-AI-Bridge-:experiment/lab009-frozen-replay-20261020",
+  "causal_model_learning_demonstrated": false,
+  "ci": {
+    "matrix_jobs_passed": 4,
+    "matrix_jobs_total": 4,
+    "related_workflows_passed": 4,
+    "related_workflows_total": 4
+  },
+  "date_utc": "2026-10-21",
+  "event_log_csv_sha256": "3405641f0db51b7289895da5cba3be965259ee1440bc5f1887c0aa7e4d3c2ef6",
+  "event_log_gzip_sha256": "684b122d16bd4eb350a36e81eff7eca3e3286c0a719941b2f42b615b2e2edb39",
+  "event_log_ref": "research/persistent_ledger/lab009_20261020/event_log.csv.gz",
+  "events": 14,
+  "evidence_url": "https://github.com/danieloculus0-bot/BEAN-AI-Bridge-/actions/runs/39534731732",
+  "history_policy": "append_only_original_and_replay_ledgers_unchanged",
+  "interpretation": "2 answers retained after restart; 1 new answer researched during evaluation; no weights update, blind transfer or agent policy adaptation proof",
+  "pr": "https://github.com/danieloculus0-bot/BEAN-AI-Bridge-/pull/46",
+  "pr_status_at_record": "draft_unmerged",
+  "runtime_integration": false,
+  "schema": "bean.lab009.scoring.v1",
+  "scope": "Lab009 synthetic fixture; BEAN Bridge with pinned BEAN Core",
+  "score": {
+    "baseline_correct": 0,
+    "frozen_post_restart_correct": 2,
+    "model_outputs_accepted": 0,
+    "new_answers_acquired_online": 1,
+    "online_post_investigation_correct": 3,
+    "total_cases": 3
+  },
+  "source_commit": "86d6733861c9114c749077584ec96a7f4da74f24",
+  "test_classification": "synthetic_fixture_only",
+  "workflow_run": 39534731732
+}
