@@ -1,0 +1,13 @@
+# BEAN Persistent Compressed Scoring Ledger (research only)
+
+**Two separate records. Do not replace either.**
+
+1. **Historical baseline:** `../anticipatory_ledger_20261020.csv.gz` (34 original aggregate KPI rows; never rewritten).
+2. **Replay event ledger:** `replay_event_log.csv.gz` (gzip CSV; append records for every pass, including failures). Columns: `pass_id,test,status,value,baseline,unit,evidence,ref,source_sha256`.
+3. **Active scoreboard:** `scoreboard.json` (compact snapshot, updated after every pass; rebuildable from the event log and referenced original KPI baseline).
+
+Each pass appends six assertion outcomes plus a `score_refresh` row. `score_refresh` reflects the referenced synthetic benchmark KPI, **not** a new independent accuracy measurement. Duplicated deterministic tests verify reproducibility, **not learning progress**. `latest_event_hash` chains the event rows with SHA-256 for simple tamper detection; Git commits version history. Host attestation and hashes do not independently authenticate evidence.
+
+Recovery: decompress both gzip CSV files, verify the baseline SHA-256 from `scoreboard.json`, reconstruct test counts and latest score refresh, and compare the score snapshot. Failed tests and any future regression must remain visible.
+
+Experiment executed on an isolated x86_64 CPU container; not Jetson or the live BEAN core. No BEAN runtime wiring or model updates are authorized by these logs.
