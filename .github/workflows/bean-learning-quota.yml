@@ -1,0 +1,31 @@
+name: BEAN 3000 optimization quota integrity
+on:
+  push:
+    branches: ['experiment/bean-information-balloon-*']
+    paths:
+      - 'bean/optimization/learning_quota.py'
+      - 'bean/tests/test_learning_quota.py'
+      - '.github/workflows/bean-learning-quota.yml'
+  pull_request:
+    paths:
+      - 'bean/optimization/learning_quota.py'
+      - 'bean/tests/test_learning_quota.py'
+      - '.github/workflows/bean-learning-quota.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verified-self-repair-quota:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        python: ['3.11', '3.12']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Prevent false and duplicate BEAN repair credits
+        run: python -m unittest bean.tests.test_learning_quota -v
