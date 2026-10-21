@@ -1,0 +1,57 @@
+name: BEAN native reasoning skills experiment
+
+on:
+  push:
+    branches:
+      - experiment/bean-native-reasoning-skills-20261020
+    paths:
+      - "bean/learning/**"
+      - "bean/tests/test_native_reasoning_skills.py"
+      - "docs/BEAN_NATIVE_REASONING_SKILLS.md"
+      - ".github/workflows/bean-native-reasoning-skills.yml"
+  pull_request:
+    paths:
+      - "bean/learning/**"
+      - "bean/tests/test_native_reasoning_skills.py"
+      - "docs/BEAN_NATIVE_REASONING_SKILLS.md"
+      - ".github/workflows/bean-native-reasoning-skills.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  native-core-and-bridge:
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, windows-2025]
+    env:
+      PYTHONPATH: ${{ github.workspace }}/bridge-src/src
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/checkout@v4
+        with:
+          repository: danieloculus0-bot/BEAN-AI-Bridge-
+          ref: 876251345ec95b282465ce1b311af4b2b6d1e032
+          path: bridge-src
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m pip install pytest pytest-cov psutil
+      - run: python -m compileall -q bean/learning bean/tests/test_native_reasoning_skills.py
+      - run: python -m unittest bean.tests.test_native_reasoning_skills -v
+      - run: python -m unittest bean.tests.test_adaptive_brain_port_lab026 -v
+      - run: python -m pytest bean/tests -q -ra --tb=short --junitxml=native-skills-junit.xml
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: native-bean-skills-${{ matrix.os }}
+          path: native-skills-junit.xml
+          if-no-files-found: warn
+          retention-days: 30
