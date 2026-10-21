@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0b100e">
+<meta name="color-scheme" content="dark">
+<meta name="description" content="Explore 17 public projects, browser demos, engineering tools, AI research and manufacturing software across the BEAN and Axiom ecosystem.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="The Workshop | BEAN × AXIOM">
+<meta property="og:description" content="Real software. Open experiments. Demos you can actually try. Explore the full engineering and AI portfolio.">
+<meta property="og:image" content="https://danieloculus0-bot.github.io/BEAN/bean-official.webp">
+<link rel="icon" href="../bean-official.webp" type="image/webp">
+<link rel="canonical" href="https://danieloculus0-bot.github.io/BEAN/portfolio/">
+<title>The Workshop | BEAN × AXIOM</title>
+<style>
+:root{color-scheme:dark;--bg:#090d0b;--panel:#121a15;--raised:#1a261d;--edge:#304136;--lime:#a3f46b;--lime2:#76b900;--white:#ecf4ea;--muted:#aec1b0;--gold:#e8c97b;--radius:22px;--max:1250px}
+*,*::before,*::after{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:95px}
+body{margin:0;min-width:320px;background:var(--bg);color:var(--white);font:16px/1.55 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+body::before{content:"";position:absolute;top:0;left:0;right:0;height:680px;z-index:-1;pointer-events:none;background:radial-gradient(ellipse at 76% 6%,#284b2d 0%,transparent 47%),radial-gradient(ellipse at 10% 0%,#132d1e,transparent 55%)}
+a{color:inherit;text-decoration:none}a:hover{color:var(--lime)}
+button,input{font:inherit}
+button{cursor:pointer}
+:focus-visible{outline:3px solid var(--lime);outline-offset:4px}
+.wrap{width:min(calc(100% - 36px),var(--max));margin-inline:auto}
+.skip{position:absolute;top:-80px;left:10px;z-index:100;padding:12px;background:var(--lime);color:#05100a}.skip:focus{top:10px}
+header{position:sticky;top:0;z-index:50;border-bottom:1px solid #304334ad;background:#090f0cde;backdrop-filter:blur(17px)}
+.nav{display:flex;align-items:center;gap:22px;min-height:73px}
+.logo{display:inline-flex;align-items:center;gap:11px;flex-shrink:0;font-size:.93rem;font-weight:900;letter-spacing:.11em}
+.logo img{width:43px;height:43px;border-radius:12px;object-fit:cover;border:1px solid #5b8e4b}
+.logo b{color:var(--lime)}
+nav{display:flex;align-items:center;gap:9px;margin-left:auto}
+nav a{display:inline-block;padding:11px 12px;color:#e2eddf;font-size:.85rem;font-weight:750;border-radius:10px}
+nav a:hover{background:#203023}
+nav a.nav-cta{color:#0a1608;background:var(--lime)}
+nav a.nav-cta:hover{background:#d0ffac}
+.hero{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(290px,.7fr);align-items:center;gap:44px;padding-top:87px;padding-bottom:80px}
+.kicker{display:inline-flex;align-items:center;gap:10px;font-size:.72rem;letter-spacing:.19em;text-transform:uppercase;font-weight:900;color:var(--lime)}
+.kicker::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--lime);box-shadow:0 0 18px #a3f469}
+h1,h2,h3,p{margin-top:0}
+h1{max-width:840px;font-size:clamp(3.3rem,8vw,7rem);line-height:.94;letter-spacing:-.075em;margin:23px 0 27px;font-weight:900}
+h1 span{color:var(--lime)}
+.hero p{max-width:660px;color:#c3d4c3;font-size:clamp(1rem,2vw,1.27rem);line-height:1.6}
+.actions{display:flex;align-items:center;flex-wrap:wrap;gap:12px;margin-top:31px}
+.btn{display:inline-flex;align-items:center;justify-content:center;min-height:48px;padding:11px 18px;border:1px solid #526c55;border-radius:11px;font-weight:850;font-size:.91rem;color:var(--white);background:#1a2a1f;transition:transform .18s,background .18s}
+.btn:hover{background:#2c4431;color:white;transform:translateY(-1px)}
+.btn.primary{border-color:var(--lime);background:var(--lime);color:#102009}.btn.primary:hover{background:#d8ffc0;color:#11220b}
+.btn.inline{min-height:40px;padding:8px 13px;font-size:.82rem}
+.hero-meta{display:flex;flex-wrap:wrap;gap:25px;margin-top:34px;padding-top:20px;border-top:1px solid #3f5a46}
+.hero-meta strong{display:block;color:var(--white);font-size:1.45rem;line-height:1.1}
+.hero-meta span{font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:.11em;font-weight:800}
+.hero-art{display:grid;place-items:center;min-height:375px;position:relative}
+.ring{position:absolute;inset:8%;border:1px solid #a3f46b47;border-radius:50%;box-shadow:0 0 70px #a3f46b14,inset 0 0 70px #a3f46b11}
+.ring:before,.ring:after{content:"";position:absolute;inset:10%;border:1px dashed #7ccc6555;border-radius:50%}
+.ring:after{inset:23%;border-style:solid;border-color:#80c75528}
+.bean{position:relative;width:min(74%,310px);aspect-ratio:1;object-fit:cover;border-radius:28%;border:2px solid #8ed34d5a;box-shadow:0 28px 95px #0009,0 0 75px #86ff482e;transform:rotate(-4deg)}
+.art-label{position:absolute;left:0;bottom:7%;padding:10px 13px;background:#17221bc9;border:1px solid #56704d;border-radius:9px;font-size:.7rem;font-weight:900;letter-spacing:.15em;color:var(--lime)}
+.art-label.top{left:auto;bottom:auto;top:7%;right:0;color:#d1efd2}
+.strip{border-block:1px solid #304e34;background:linear-gradient(90deg,#14231a,#182c1c,#132019)}
+.strip-inner{display:flex;gap:16px;align-items:center;justify-content:space-between;flex-wrap:wrap;padding-block:16px;font-size:.83rem}
+.strip b{color:var(--lime);text-transform:uppercase;letter-spacing:.12em;font-size:.72rem}
+.strip span{color:#c2d1c0}
+section{padding-block:75px}
+.section-title{font-size:clamp(2rem,4.7vw,3.6rem);line-height:1.07;letter-spacing:-.05em;margin:11px 0 15px}
+.section-intro{color:var(--muted);max-width:740px;line-height:1.65}
+.spotlight{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:30px}
+.demo{min-width:0;display:flex;flex-direction:column;gap:12px;position:relative;padding:25px;border:1px solid #37503a;border-radius:var(--radius);background:linear-gradient(150deg,#1d3221,#111b15 80%);overflow:hidden}
+.demo::after{content:"";position:absolute;width:180px;height:180px;top:-110px;right:-85px;border:1px solid #9bf56850;border-radius:50%;pointer-events:none}
+.demo:nth-child(2n){background:linear-gradient(150deg,#26321b,#121a15 80%)}
+.demo .mini{font-size:.69rem;color:var(--lime);font-weight:900;letter-spacing:.13em;text-transform:uppercase}
+.demo h3{font-size:1.42rem;line-height:1.14;letter-spacing:-.025em;margin:0}
+.demo p{font-size:.91rem;color:#c6d5c4;flex:1;margin-bottom:5px}
+.demo .demo-actions{display:flex;flex-wrap:wrap;gap:9px;margin-top:auto}
+.demo .micro{font-size:.76rem;color:#a6bca8}
+.diagram{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px;margin-top:27px}
+.node{position:relative;border:1px solid #3f5543;border-radius:17px;padding:21px;background:#131c16}
+.node::before{content:"";display:block;width:31px;height:3px;margin-bottom:17px;background:var(--lime)}
+.node h3{margin:0 0 9px;font-size:1.14rem}
+.node p{font-size:.88rem;line-height:1.55;color:var(--muted);margin:0}
+.node small{display:block;color:var(--lime);font-size:.67rem;text-transform:uppercase;letter-spacing:.1em;font-weight:850;margin-bottom:10px}
+.catalog{background:linear-gradient(180deg,#0b110d,#0e1610)}
+.directory-top{display:flex;justify-content:space-between;align-items:end;gap:20px;flex-wrap:wrap}
+.directory-top .section-intro{margin-bottom:0}
+.search-wrap{margin-top:26px;display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+.search-label{flex:1 1 280px;min-width:0}
+.search-label input{width:100%;min-height:51px;border-radius:12px;background:#1c2a20;border:1px solid #46604a;padding:12px 16px;color:white}
+.search-label input::placeholder{color:#b2c7b3}
+.filterbar{display:flex;gap:8px;overflow-x:auto;max-width:100%;padding:3px 0 12px;scrollbar-width:thin}
+.filter{flex:0 0 auto;min-height:44px;padding:9px 15px;background:#19251b;border:1px solid #405744;border-radius:999px;color:#d3e4d0;font-weight:850;font-size:.8rem}
+.filter[aria-pressed="true"]{color:#11200d;background:var(--lime);border-color:var(--lime)}
+.counter{font-size:.79rem;color:var(--muted);margin:0 0 14px}
+.projects{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.project{display:flex;flex-direction:column;min-width:0;padding:22px;border:1px solid #354738;border-radius:17px;background:#172119}
+.project[hidden]{display:none}
+.project .topline{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.type{font-size:.7rem;letter-spacing:.1em;color:var(--lime);text-transform:uppercase;font-weight:900}
+.tag{display:inline-flex;align-items:center;gap:5px;padding:4px 7px;font-size:.65rem;font-weight:850;border:1px solid #526c49;color:#cfefc7;border-radius:6px;white-space:nowrap}
+.tag.review{color:var(--gold);border-color:#786942}
+.project h3{font-size:1.28rem;letter-spacing:-.025em;margin:17px 0 7px}
+.project p{color:#b8cabb;font-size:.88rem;line-height:1.58;margin:0 0 19px;flex:1}
+.project .foot{display:flex;gap:10px;flex-wrap:wrap;align-items:center;padding-top:14px;border-top:1px solid #3c5140}
+.project .foot a{font-size:.81rem;font-weight:850;color:var(--lime);padding:7px 0}
+.project .foot a:hover{color:white;text-decoration:underline}
+.project .foot span{font-size:.72rem;color:var(--muted);margin-left:auto}
+.empty{display:none;border:1px dashed #526c55;border-radius:14px;padding:25px;color:var(--muted);margin-top:12px}
+.empty.show{display:block}
+.standard{border-top:1px solid #344c38}
+.disclosure{border:1px solid #445a48;border-radius:17px;padding:21px;background:#142019;max-width:920px}
+.disclosure p{margin:7px 0;color:var(--muted);font-size:.92rem}
+.disclosure a{text-decoration:underline;text-underline-offset:3px;color:var(--lime)}
+.bottom{display:flex;align-items:center;gap:30px;justify-content:space-between;padding-block:26px;border-top:1px solid #3a543d;flex-wrap:wrap}
+.bottom small{color:var(--muted);font-size:.78rem}
+.bottom a{color:var(--lime);font-weight:850}
+@media(max-width:960px){.spotlight,.projects{grid-template-columns:repeat(2,minmax(0,1fr))}.hero{gap:10px}.hero-art{min-height:320px}.bean{width:73%}}
+@media(max-width:700px){.wrap{width:min(calc(100% - 28px),var(--max))}.nav{flex-wrap:wrap;gap:0;justify-content:space-between;padding:10px 0}.logo{font-size:.82rem}.logo img{width:37px;height:37px}nav{width:100%;margin-left:0;justify-content:space-between;gap:3px;overflow-x:auto}nav a{font-size:.78rem;padding:10px 8px;white-space:nowrap}.hero{grid-template-columns:1fr;padding-block:48px 42px}.hero h1{font-size:clamp(3rem,14vw,5rem);margin-block:19px}.hero-art{min-height:240px;order:-1}.bean{width:210px}.ring{inset:2% 19%}.art-label{left:7%}.art-label.top{right:7%}.hero-meta{gap:16px}.hero-meta strong{font-size:1.22rem}.spotlight,.projects,.diagram{grid-template-columns:1fr}.demo{padding:21px}.node{padding:18px}section{padding-block:54px}.strip-inner{justify-content:flex-start}.section-title{font-size:2.25rem}}
+@media(min-width:520px) and (max-width:700px){.spotlight,.projects{grid-template-columns:repeat(2,minmax(0,1fr))}.hero-art{min-height:290px}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.btn{transition:none}}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header><div class="wrap nav">
+<a class="logo" href="../" aria-label="BEAN home"><img src="../bean-official.webp" alt="" width="43" height="43"><span>BEAN <b>×</b> AXIOM</span></a>
+<nav aria-label="Main navigation"><a href="#demos">Try demos</a><a href="#architecture">The system</a><a href="#projects">All projects</a><a class="nav-cta" href="https://github.com/danieloculus0-bot" target="_blank" rel="noopener noreferrer">GitHub</a></nav>
+</div></header>
+<main id="main">
+<div class="wrap hero">
+<div>
+<span class="kicker">The public workshop · October 2026</span>
+<h1>We're building <span>some serious shit.</span></h1>
+<p>AI experiments. Engineering software. Manufacturing systems. Wild browser games. The whole damn workshop, connected in one place. Explore what runs, see what is still experimental, and follow the code.</p>
+<div class="actions"><a class="btn primary" href="#demos">Try the browser demos</a><a class="btn" href="#projects">Explore all 17 projects</a></div>
+<div class="hero-meta"><div><strong>17</strong><span>Public repositories</span></div><div><strong>6</strong><span>Featured web experiences</span></div><div><strong>1</strong><span>Connected vision</span></div></div>
+</div>
+<div class="hero-art" aria-label="Official smiling BEAN mascot"><div class="ring" aria-hidden="true"></div><img class="bean" src="../bean-official.webp" alt="Official BEAN mascot, a cheerful green sprout" loading="eager" width="360" height="360"><span class="art-label">ENGINEERING IN PUBLIC</span><span class="art-label top">LAB ACTIVE / BETA</span></div>
+</div>
+<div class="strip"><div class="wrap strip-inner"><b>Built in public</b><span>Manufacturing + mechanical engineering + AI + robotics + tools + games</span><span>Evidence matters more than hype.</span></div></div>
+<section id="demos" class="wrap">
+<span class="kicker">Touch it. Test it.</span><h2 class="section-title">Start with the demos.</h2><p class="section-intro">These are public browser experiences documented by their repositories. Some run interactive demonstrations; others show an architecture or a read-only simulation. None should be mistaken for access to private live operations.</p>
+<div class="spotlight">
+<article class="demo"><span class="mini">01 / Interactive estimating</span><h3>EZstimate</h3><p>Load a sample RFQ, review drawing and BOM fields, build a draft quote and explore evidence-aware estimating.</p><div class="demo-actions"><a class="btn primary inline" href="https://danieloculus0-bot.github.io/EZstimate/" target="_blank" rel="noopener noreferrer">Open demo</a><a class="btn inline" href="https://github.com/danieloculus0-bot/EZstimate" target="_blank" rel="noopener noreferrer">Source</a></div><span class="micro">Browser demonstration; no live ERP purchase dispatch.</span></article>
+<article class="demo"><span class="mini">02 / Structural analysis preview</span><h3>EZ-FEA</h3><p>Explore the educational analysis preview, then try the spreadsheet-style joint matrix for assembly connections.</p><div class="demo-actions"><a class="btn primary inline" href="https://danieloculus0-bot.github.io/EZ-FEA/" target="_blank" rel="noopener noreferrer">Open demo</a><a class="btn inline" href="https://danieloculus0-bot.github.io/EZ-FEA/joint-matrix.html" target="_blank" rel="noopener noreferrer">Joint matrix</a></div><span class="micro">Preview is not a live arbitrary-CAD structural solver.</span></article>
+<article class="demo"><span class="mini">03 / Browser arcade game</span><h3>Emperor Gauntlet</h3><p>Survive waves of Antarctic penguins in a gloriously ridiculous mobile-friendly arcade shooter.</p><div class="demo-actions"><a class="btn primary inline" href="https://danieloculus0-bot.github.io/FUN/" target="_blank" rel="noopener noreferrer">Play game</a><a class="btn inline" href="https://github.com/danieloculus0-bot/FUN" target="_blank" rel="noopener noreferrer">Source</a></div><span class="micro">Independent game; separate from enterprise software.</span></article>
+<article class="demo"><span class="mini">04 / AI research lab</span><h3>BEAN Laboratory</h3><p>Meet the official mascot. Explore persistent reasoning research, experiments and evidence receipts.</p><div class="demo-actions"><a class="btn primary inline" href="../">Visit the lab</a><a class="btn inline" href="https://github.com/danieloculus0-bot/BEAN" target="_blank" rel="noopener noreferrer">Core source</a></div><span class="micro">Public website is separate from the local Ollama runtime.</span></article>
+<article class="demo"><span class="mini">05 / Read-only trading simulation</span><h3>AIscend</h3><p>Inspect the public trading strategy concept and read-only simulated dashboard.</p><div class="demo-actions"><a class="btn primary inline" href="../aiscend.html">Open simulation</a><a class="btn inline" href="https://github.com/danieloculus0-bot/AIscend" target="_blank" rel="noopener noreferrer">Source</a></div><span class="micro">No wallet connection; no real trading in this demo.</span></article>
+<article class="demo"><span class="mini">06 / Enterprise architecture tour</span><h3>Axiom × BEAN</h3><p>See how controlled drawings, engineering evidence, manufacturing operations and intelligence are intended to fit together.</p><div class="demo-actions"><a class="btn primary inline" href="../axiom.html">Explore the vision</a><a class="btn inline" href="https://github.com/danieloculus0-bot/Axiom_Beta" target="_blank" rel="noopener noreferrer">App source</a></div><span class="micro">Architecture overview, not a deployed ERP demo.</span></article>
+</div>
+</section>
+<section id="architecture" class="standard"><div class="wrap">
+<span class="kicker">One connected ecosystem</span><h2 class="section-title">Different tools. Shared direction.</h2><p class="section-intro">The architecture is converging on common records, controlled engineering data and explainable intelligence. Shared code and integration tests do not automatically mean that every standalone app is synchronized in production.</p>
+<div class="diagram">
+<div class="node"><small>01 / Make and verify</small><h3>Engineering layer</h3><p>ForgeVault manages file versions. EZ-FAIR proposes inspection characteristics. EZ-FEA investigates structural models. EZstimate prepares traceable quotes.</p></div>
+<div class="node"><small>02 / Run the operation</small><h3>Axiom / JERP layer</h3><p>Quality, maintenance, methods, workforce research, production and purchasing are being organized into a coherent ERP architecture.</p></div>
+<div class="node"><small>03 / Observe and learn</small><h3>BEAN intelligence layer</h3><p>Persistent source-aware reasoning, experimental learning, evidence bridges and independently checkable results. Integration is verified feature by feature.</p></div>
+</div>
+<div class="actions"><a class="btn inline" href="https://github.com/danieloculus0-bot/Axiom_Beta/blob/main/docs/CURRENT_PORTFOLIO.md" target="_blank" rel="noopener noreferrer">View project ownership map</a><a class="btn inline" href="../axiom.html">Read the public vision</a></div>
+</div></section>
+<section id="projects" class="catalog"><div class="wrap">
+<div class="directory-top"><div><span class="kicker">Complete directory</span><h2 class="section-title">Everything on the bench.</h2><p class="section-intro">Every public repository found in the October 20 inventory. Filter by area or search by name and purpose. GitHub links open the actual source and documentation.</p></div></div>
+<div class="search-wrap"><label class="search-label"><span class="sr-only" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0">Search projects</span><input id="search" type="search" placeholder="Search projects, tools, quality, robotics..." autocomplete="off" aria-label="Search projects"></label></div>
+<div class="filterbar" role="group" aria-label="Filter projects"><button class="filter" type="button" data-filter="all" aria-pressed="true">All 17</button><button class="filter" type="button" data-filter="ai" aria-pressed="false">AI & research</button><button class="filter" type="button" data-filter="erp" aria-pressed="false">Enterprise</button><button class="filter" type="button" data-filter="engineering" aria-pressed="false">Engineering</button><button class="filter" type="button" data-filter="operations" aria-pressed="false">Operations</button><button class="filter" type="button" data-filter="platform" aria-pressed="false">Platforms</button><button class="filter" type="button" data-filter="games" aria-pressed="false">Games</button></div>
+<p class="counter" id="count" role="status" aria-live="polite">Showing all 17 projects</p>
+<div class="projects" id="project-grid">
+<article class="project" data-category="ai" data-search="bean persistent reasoning ai memory ollama experiments"><div class="topline"><span class="type">AI & research</span><span class="tag">LAB WEBSITE</span></div><h3>BEAN Core</h3><p>Persistent reasoning, source-aware observations, local model experiments and evidence tracking. The intelligence research foundation.</p><div class="foot"><a href="../">Public lab</a><a href="https://github.com/danieloculus0-bot/BEAN" target="_blank" rel="noopener noreferrer">Repository</a></div></article>
+<article class="project" data-category="ai" data-search="bridge bean ledger events research integration agent cross repository"><div class="topline"><span class="type">AI & research</span><span class="tag review">EXPERIMENTAL</span></div><h3>BEAN AI Bridge</h3><p>Persistent evidence ledger, offline ERP fixtures, cross-repository handoffs and independent research tests.</p><div class="foot"><a href="https://github.com/danieloculus0-bot/BEAN-AI-Bridge-" target="_blank" rel="noopener noreferrer">Repository & tests</a></div></article>
+<article class="project" data-category="ai" data-search="aiscend trading crypto wallet strategy research"><div class="topline"><span class="type">AI & research</span><span class="tag">WEB SIM</span></div><h3>AIscend</h3><p>Experimental crypto-trading research application with local execution code and a separate public read-only simulation.</p><div class="foot"><a href="../aiscend.html">Simulation</a><a href="https://github.com/danieloculus0-bot/AIscend" target="_blank" rel="noopener noreferrer">Repository</a></div></article>
+<article class="project" data-category="erp" data-search="axiom beta manufacturing erp quality methods records workbook"><div class="topline"><span class="type">Enterprise</span><span class="tag review">BETA</span></div><h3>Axiom Beta</h3><p>Local-first manufacturing and quality workspaces, with controlled FAI import and integration tests. Not a secured public ERP.</p><div class="foot"><a href="../axiom.html">Overview</a><a href="https://github.com/danieloculus0-bot/Axiom_Beta" target="_blank" rel="noopener noreferrer">Repository</a></div></article>
+<article class="project" data-category="erp" data-search="jerp jet erp jetson platform purchasing inventory workforce"><div class="topline"><span class="type">Enterprise</span><span class="tag review">PLANNING</span></div><h3>JERP / JET-ERP</h3><p>Jetson-ready, local-first enterprise architecture for manufacturing, purchasing, inventory and connected engineering workflows.</p><div class="foot"><a href="https://github.com/danieloculus0-bot/JET-ERP" target="_blank" rel="noopener noreferrer">Architecture & source</a></div></article>
+<article class="project" data-category="erp" data-search="mfgforge superforge legacy flask manufacturing erp"><div class="topline"><span class="type">Enterprise</span><span class="tag review">LEGACY</span></div><h3>MFGForge</h3><p>Earlier runnable manufacturing ERP foundation. Separate historical source line, now feeding Axiom design work.</p><div class="foot"><a href="https://github.com/danieloculus0-bot/MFGForge" target="_blank" rel="noopener noreferrer">Repository</a></div></article>
+<article class="project" data-category="erp" data-search="superforge unofficial artifacts installer manifests planning"><div class="topline"><span class="type">Enterprise</span><span class="tag review">PLANNING</span></div><h3>SuperForge Unofficial</h3><p>Historical build and release-manifest planning, not a deployed or verified standalone ERP application.</p><div class="foot"><a href="https://github.com/danieloculus0-bot/SuperForge_Unofficial" target="_blank" rel="noopener noreferrer">Documentation</a></div></article>
+<article class="project" data-category="engineering" data-search="forgevault pdm engineering files revision control release"><div class="topline"><span class="type">Engineering</span><span class="tag review">BETA</span></div><h3>ForgeVault</h3><p>Versioned engineering file custody, release packages and checksum-verified controlled handoffs to inspection workflows.</p><div class="foot"><a href="https://github.com/danieloculus0-bot/ForgeVault" target="_blank" rel="noopener noreferrer">Repository & tests</a></div></article>
+<article class="project" data-category="engineering" data-search="ez fair first article inspection pdf drawing balloon tolerance gdt"><div class="topline"><span class="type">Engineering</span><span class="tag review">BETA</span></div><h3>EZ-FAIR</h3><p>Drawing-to-FAI assistance with candidate dimensions, GD&T, reviewable balloon annotations and spreadsheet export.</p><div class="foot"><a href="https://github.com/danieloculus0-bot/EZ-FAIR" target="_blank" rel="noopener noreferrer">Repository & tests</a></div></article>
+<article class="project" data-category="engineering" data-search="ez fea gmsh calculix simulation finite element step mate joint matrix"><div class="topline"><span class="type">Engineering</span><span class="tag">WEB DEMO</span></div><h3>EZ-FEA</h3><p>Real native meshing/solver research plus a separate educational browser demo and interactive assembly joint matrix.</p><div class="foot"><a href="https://danieloculus0-bot.github.io/EZ-FEA/" target="_blank" rel="noopener noreferrer">Demo</a><a href="https://github.com/danieloculus0-bot/EZ-FEA" target="_blank" rel="noopener noreferrer">Repository</a></div></article>
+<article class="project" data-category="engineering" data-search="ezstimate estimating quoting cost purchasing price forecast bill materials rfq"><div class="topline"><span class="type">Engineering</span><span class="tag">WEB DEMO</span></div><h3>EZstimate</h3><p>RFQ extraction, quoting and local price/forecast intelligence with a standalone static estimating workbench.</p><div class="foot"><a href="https://danieloculus0-bot.github.io/EZstimate/" target="_blank" rel="noopener noreferrer">Demo</a><a href="https://github.com/danieloculus0-bot/EZstimate" target="_blank" rel="noopener noreferrer">Repository</a></div></article>
+<article class="project" data-category="operations" data-search="forgeqc quality car ncr rma supplier quoting audit"><div class="topline"><span class="type">Operations</span><span class="tag review">BETA</span></div><h3>ForgeQC</h3><p>Standalone manufacturing quality workflows, corrective actions, audit records and reporting with quoting support.</p><div class="foot"><a href="https://github.com/danieloculus0-bot/ForgeQC" target="_blank" rel="noopener noreferrer">Repository</a></div></article>
+<article class="project" data-category="operations" data-search="pm tracker maintenance machines work orders qr loto"><div class="topline"><span class="type">Operations</span><span class="tag review">BETA</span></div><h3>PM-Tracker</h3><p>Preventive maintenance schedules, asset records, QR-linked machine pages and completion history.</p><div class="foot"><a href="https://github.com/danieloculus0-bot/PM-Tracker" target="_blank" rel="noopener noreferrer">Repository</a></div></article>
+<article class="project" data-category="operations" data-search="ez expedite rma customer supplier corrective action reminders"><div class="topline"><span class="type">Operations</span><span class="tag review">BETA</span></div><h3>EZ Expedite</h3><p>No-fee RMA and action-expediting tool for ownership, due dates, escalation and resolution tracking.</p><div class="foot"><a href="https://github.com/danieloculus0-bot/EZ_Expedite" target="_blank" rel="noopener noreferrer">Repository</a></div></article>
+<article class="project" data-category="operations" data-search="64 delta facility digital twin chess workforce staff timeclock machine"><div class="topline"><span class="type">Operations</span><span class="tag review">LOCAL HTML</span></div><h3>64Δ Facility Board</h3><p>Browser-based facility what-if board, movable worker tokens, asset states and evidence reconciliation. Open index.html locally.</p><div class="foot"><a href="https://github.com/danieloculus0-bot/64-" target="_blank" rel="noopener noreferrer">Source & instructions</a></div></article>
+<article class="project" data-category="platform" data-search="venvwin linux wine windows compatibility puppy usb iso portable"><div class="topline"><span class="type">Platforms</span><span class="tag review">EXPERIMENTAL</span></div><h3>venvWin</h3><p>Windows-compatibility capsule and portable Linux tooling; bootable-image and hardware support remain under validation.</p><div class="foot"><a href="https://github.com/danieloculus0-bot/venvWin" target="_blank" rel="noopener noreferrer">Build project</a></div></article>
+<article class="project" data-category="games" data-search="fun emperor gauntlet penguin arcade shooting browser game"><div class="topline"><span class="type">Games</span><span class="tag">PLAY NOW</span></div><h3>FUN / Emperor Gauntlet</h3><p>Independent, playable browser arcade game with mobile controls and offline HTML packaging for venvWin Portable.</p><div class="foot"><a href="https://danieloculus0-bot.github.io/FUN/" target="_blank" rel="noopener noreferrer">Play</a><a href="https://github.com/danieloculus0-bot/FUN" target="_blank" rel="noopener noreferrer">Repository</a></div></article>
+</div><div class="empty" id="empty">No projects match this search. Clear the search or try another category.</div>
+</div></section>
+<section class="standard" id="readme"><div class="wrap">
+<span class="kicker">The fine print matters</span><h2 class="section-title">Real projects. Honest boundaries.</h2>
+<div class="disclosure"><p>These projects include released source, browser demos, local beta software, experimental research and architecture plans. A browser simulation does not imply access to an actual ERP, wallet, physical robot or engineering solver. CI receipts are evidence for the specific jobs and commits they tested, not a blanket production certification.</p><p>The repositories are public to inspect. Public visibility does not automatically grant redistribution rights. Check the license in each repository before reuse. For current build evidence, follow each project's <a href="https://github.com/danieloculus0-bot?tab=repositories" target="_blank" rel="noopener noreferrer">README and GitHub Actions</a>.</p></div>
+<div class="actions"><a class="btn primary" href="https://github.com/danieloculus0-bot" target="_blank" rel="noopener noreferrer">Explore the GitHub profile</a><a class="btn" href="../">Back to BEAN Lab</a></div>
+</div></section>
+</main>
+<footer class="wrap bottom"><small>© 2026 The Workshop · BEAN × AXIOM · Independent experiments and engineering software.</small><a href="#main">Back to top</a></footer>
+<script>
+(function(){
+  const input=document.getElementById('search');
+  const buttons=[...document.querySelectorAll('[data-filter]')];
+  const cards=[...document.querySelectorAll('.project')];
+  const count=document.getElementById('count');
+  const empty=document.getElementById('empty');
+  let selected='all';
+  function update(){
+    const q=input.value.trim().toLowerCase();
+    let n=0;
+    cards.forEach(card=>{
+      const tags=(card.dataset.search+' '+card.textContent).toLowerCase();
+      const ok=(selected==='all'||card.dataset.category===selected)&&(!q||tags.includes(q));
+      card.hidden=!ok;
+      if(ok)n++;
+    });
+    count.textContent=n===17?'Showing all 17 projects':'Showing '+n+' of 17 projects';
+    empty.classList.toggle('show',n===0);
+  }
+  buttons.forEach(b=>b.addEventListener('click',()=>{
+    selected=b.dataset.filter;
+    buttons.forEach(el=>el.setAttribute('aria-pressed',String(el===b)));
+    update();
+  }));
+  input.addEventListener('input',update);
+})();
+</script>
+</body></html>
