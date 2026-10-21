@@ -8,7 +8,7 @@
 <meta name="description" content="BEAN Lab027: 3,000 real SpongeTD training episodes, four controlled arms, 240 unseen maps and reproducible Windows/Linux evidence.">
 <meta property="og:type" content="website">
 <meta property="og:title" content="BEAN Learning Lab | The Workshop">
-<meta property="og:description" content="Real Q-learning. Unseen puzzles. Receipts you can audit.">
+<meta property="og:description" content="Reinforcement-learning experiments, held-out puzzle evaluations and source-linked test results.">
 <meta property="og:image" content="https://danieloculus0-bot.github.io/BEAN/bean-official.webp">
 <link rel="icon" type="image/webp" href="../../bean-official.webp">
 <link rel="canonical" href="https://danieloculus0-bot.github.io/BEAN/portfolio/bean-learning/">
@@ -49,39 +49,39 @@ footer{border-top:1px solid var(--line);padding:27px 0 45px;color:var(--sub);fon
 <header><nav class="wrap"><a class="brand" href="../"><img src="../../bean-official.webp" alt="" width="38" height="38">THE WORKSHOP</a><div class="links"><a href="../">All projects</a><a href="../../">BEAN Lab</a><a href="https://github.com/danieloculus0-bot/BEAN/pull/149" target="_blank" rel="noopener noreferrer">Lab027 source</a></div></nav></header>
 <main id="main">
 <div class="wrap hero">
-<div><div class="kicker">BEAN research · October 21, 2026</div><h1>Hims <em>learning.</em><br>We have receipts.</h1><p>3,000 real Q-learning episodes. New puzzles. Four controls. A compressed evidence ledger and a policy that survives restart. Here's exactly what BEAN did, and what it <strong>doesn't</strong> prove.</p>
+<div><div class="kicker">BEAN research · October 21, 2026</div><h1>Reinforcement learning.<br><em>Measured results.</em></h1><p>BEAN's tabular Q-learning system completed 3,000 training episodes, followed by evaluation against 240 new maps under four controlled conditions. Results include compressed event records, checkpoint verification and explicitly stated limitations.</p>
 <div class="pill">Experimental research · not released in Core main</div>
-<div class="buttons"><a class="button primary" href="#scoreboard">Examine results</a><a class="button" href="https://github.com/danieloculus0-bot/BEAN/actions/runs/39550106061" target="_blank" rel="noopener noreferrer">Independent CI receipts</a></div></div>
-<div><img src="../../bean-official.webp" alt="Smiling green BEAN mascot with sprout leaves" loading="eager" width="290" height="290"></div>
+<div class="buttons"><a class="button primary" href="#scoreboard">Examine results</a><a class="button" href="https://github.com/danieloculus0-bot/BEAN/actions/runs/39550106061" target="_blank" rel="noopener noreferrer">GitHub Actions test results</a></div></div>
+<div class="panel" style="padding:28px"><span class="mini">Experiment configuration</span><h3>Controlled evaluation</h3><p><strong>3,000</strong> training maps<br><strong>180</strong> separate validation maps<br><strong>240</strong> held-out test maps</p><p>Original SpongeTD learning implementation, reproducible test seeds and persistent Q-value checkpoint.</p></div>
 </div>
 <div class="wrap stats" aria-label="Verified experiment summary">
 <div class="stat"><strong>3,000</strong><span>Training puzzles with real SpongeTD Q-learning</span></div>
-<div class="stat"><strong>237/240</strong><span>Unseen maps solved, trained with episodic intuition</span></div>
-<div class="stat"><strong>68.5%</strong><span>Fewer mean moves than cold Q with identical loop-breaker</span></div></div>
-<section id="scoreboard"><div class="wrap"><span class="kicker">Measured, not marketed</span><h2>The unseen-map scoreboard.</h2>
-<p>All four arms faced the same 240 held-out maps. The loop-breaker uses recent visits; Q-learning supplies preferences learned across earlier procedural maps. Toggle between completion rate and moves per map.</p>
+<div class="stat"><strong>237/240</strong><span>New maps solved by the trained policy with loop avoidance</span></div>
+<div class="stat"><strong>68.5%</strong><span>Fewer average moves than the untrained control</span></div></div>
+<section id="scoreboard"><div class="wrap"><span class="kicker">Measured evaluation</span><h2>Performance on unseen maps.</h2>
+<p>All four arms faced the same 240 held-out maps. The loop-avoidance controller tracks recent visits; the Q-learning policy provides action preferences learned during training. Toggle between completion rate and moves per map.</p>
 <div class="segment" role="group" aria-label="Choose experiment metric"><button id="metric-success" aria-pressed="true" type="button">Puzzles solved</button><button id="metric-moves" aria-pressed="false" type="button">Average moves</button></div>
 <p class="legend" id="metric-desc" aria-live="polite">Success percentage on 240 held-out maps (higher is better).</p>
 <div class="panel bars" id="bars">
-<div class="row cold"><label for="fill-cold-plain">Cold Q</label><div class="track"><div id="fill-cold-plain" class="fill" style="width:47.08%"></div></div><b id="value-cold-plain">47.1%</b></div>
+<div class="row cold"><label for="fill-cold-plain">Untrained Q</label><div class="track"><div id="fill-cold-plain" class="fill" style="width:47.08%"></div></div><b id="value-cold-plain">47.1%</b></div>
 <div class="row"><label for="fill-trained-plain">Trained Q</label><div class="track"><div id="fill-trained-plain" class="fill" style="width:50%"></div></div><b id="value-trained-plain">50.0%</b></div>
-<div class="row cold"><label for="fill-cold-intuition">Cold + intuition</label><div class="track"><div id="fill-cold-intuition" class="fill" style="width:96.67%"></div></div><b id="value-cold-intuition">96.7%</b></div>
-<div class="row"><label for="fill-trained-intuition">Trained + intuition</label><div class="track"><div id="fill-trained-intuition" class="fill" style="width:98.75%"></div></div><b id="value-trained-intuition">98.75%</b></div>
+<div class="row cold"><label for="fill-cold-intuition">Untrained + loop avoidance</label><div class="track"><div id="fill-cold-intuition" class="fill" style="width:96.67%"></div></div><b id="value-cold-intuition">96.7%</b></div>
+<div class="row"><label for="fill-trained-intuition">Trained + loop avoidance</label><div class="track"><div id="fill-trained-intuition" class="fill" style="width:98.75%"></div></div><b id="value-trained-intuition">98.75%</b></div>
 </div>
-<div class="grid" style="margin-top:18px"><div class="panel"><span class="mini">Matched holdout efficiency</span><h3>69.0 to 21.7 moves</h3><p>With identical loop-breaking, the trained Q-policy averaged 47.24 fewer moves across those same 240 maps. Paired bootstrap 95% interval: 40.43 to 54.26 moves saved.</p></div>
-<div class="panel"><span class="mini">Verified reproducibility</span><h3>Windows and Ubuntu passed</h3><p>The actual original SpongeTD implementation and compressed checkpoint were exercised in the CI run at commit <code>4d969b0e</code>. Both operating systems reported success. Full Core regression passed on Ubuntu with 707 passing tests, one skipped and 45 passing subtests.</p></div></div>
+<div class="grid" style="margin-top:18px"><div class="panel"><span class="mini">Matched test-set efficiency</span><h3>69.0 to 21.7 moves</h3><p>With identical loop-breaking, the trained Q-policy averaged 47.24 fewer moves across those same 240 maps. Paired bootstrap 95% interval: 40.43 to 54.26 moves saved.</p></div>
+<div class="panel"><span class="mini">GitHub Actions verification</span><h3>Windows and Ubuntu passed</h3><p>The actual original SpongeTD implementation and compressed checkpoint were exercised in the CI run at commit <code>4d969b0e</code>. Both operating systems reported success. Full Core regression passed on Ubuntu with 707 passing tests, one skipped and 45 passing subtests.</p></div></div>
 </div></section>
-<section><div class="wrap"><span class="kicker">How BEAN learned</span><h2>Intuition is a shortcut built from experience.</h2>
+<section><div class="wrap"><span class="kicker">Experiment method</span><h2>Learned preferences and short-term memory.</h2>
 <div class="steps"><div class="step"><b>01</b><h3>Explore</h3><p>Try actions and see what earns rewards.</p></div><div class="step"><b>02</b><h3>Update</h3><p>SpongeTD adjusts action values from actual transitions.</p></div><div class="step"><b>03</b><h3>Escape loops</h3><p>Episodic memory discourages repeated unproductive moves.</p></div><div class="step"><b>04</b><h3>Apply</h3><p>Frozen policy meets fresh maps with no training on the holdout.</p></div></div>
-<div class="important" style="margin-top:20px"><strong>The critical control:</strong> even an untrained agent with the same loop-breaker solved 232/240 maps. The largest evidence for learned Q-values is the reduction in navigation cost, not the nearly perfect success rate by itself.</div>
-<details class="details"><summary>What is actually measured and what isn't?</summary><p>The policy saw 3,000 training maps. An independent 180-map validation split selected among 18 episodic-escape settings. The 240-map test split used different deterministic random seeds. No holdout cases were used for policy updates or choosing settings. The task still supplies legal moves, target-relative features, and shaped rewards. It's strong transfer to novel layouts <em>within the same puzzle type</em>, not yet cross-domain reasoning or self-directed real-world autonomy.</p></details>
+<div class="important" style="margin-top:20px"><strong>Control comparison:</strong> even an untrained agent with the same loop-breaker solved 232/240 maps. The largest evidence for learned Q-values is the reduction in navigation cost, not the nearly perfect success rate by itself.</div>
+<details class="details"><summary>What is actually measured and what isn't?</summary><p>The policy saw 3,000 training maps. An independent 180-map validation split selected among 18 episodic-escape settings. The 240-map test split used different deterministic random seeds. The holdout cases were not used to update the policy or choose evaluation settings. The task still supplies legal moves, target-relative features, and shaped rewards. It's strong transfer to novel layouts <em>within the same puzzle type</em>, not yet cross-domain reasoning or self-directed real-world autonomy.</p></details>
 </div></section>
-<section id="skills"><div class="wrap"><span class="kicker">Lab026 + Lab027</span><h2>More than a one-off maze solver.</h2><p>These are two related research branches, not automatically merged into BEAN Core. Lab026 is the common BEAN-native reasoning layer; Lab027 builds reusable episodic action intuition over original Q-learning.</p>
+<section id="skills"><div class="wrap"><span class="kicker">Lab026 + Lab027</span><h2>Reusable learning components.</h2><p>These are two related research branches, not automatically merged into BEAN Core. Lab026 is the common BEAN-native reasoning layer; Lab027 builds reusable episodic action intuition over original Q-learning.</p>
 <div class="grid">
 <div class="panel"><span class="mini">Lab026 · Research PR #144</span><h3>Four BEAN-native reasoning skills</h3><p>Retrieve task-relevant experiences, reflect on errors, retain successful procedures, and compare candidate strategies against cold and placebo controls. Selection survives a journal restart.</p><a href="https://github.com/danieloculus0-bot/BEAN/pull/144" target="_blank" rel="noopener noreferrer">View actual source and CI</a></div>
 <div class="panel"><span class="mini">Lab027 · Research PR #149</span><h3>Learned action preferences</h3><p>Real tabular Q-learning, domain-neutral local-loop avoidance, exact SHA-verified checkpoint recovery, an unseen-map evaluation suite and full compressed event history.</p><a href="https://github.com/danieloculus0-bot/BEAN/pull/149" target="_blank" rel="noopener noreferrer">Inspect the experiment</a></div></div>
 </div></section>
-<section><div class="wrap"><span class="kicker">Provenance</span><h2>Audit it yourself.</h2><p>The experiment is published as source, an open draft PR and artifacts from GitHub Actions. This page is a presentation of frozen results, not a live training console or an invented BEAN session.</p>
+<section><div class="wrap"><span class="kicker">Provenance</span><h2>Review the evidence.</h2><p>The experiment is available as source code, an open draft pull request and GitHub Actions artifacts. This page is a presentation of frozen results, not a live training console or an invented BEAN session.</p>
 <div class="references">
 <a class="ref" target="_blank" rel="noopener noreferrer" href="https://github.com/danieloculus0-bot/BEAN/actions/runs/39550106061"><b>Lab027: full CI evidence</b><span>Successful Windows + Linux runs, logs, scoreboards and compressed ledger artifacts</span></a>
 <a class="ref" target="_blank" rel="noopener noreferrer" href="https://github.com/danieloculus0-bot/BEAN/blob/experiment/bean-intuition-maze-20261021/docs/BEAN_INTUITION_LAB027.md"><b>Study protocol</b><span>Methods, reward assumptions, separation of training and holdout, known limits</span></a>
@@ -89,7 +89,7 @@ footer{border-top:1px solid var(--line);padding:27px 0 45px;color:var(--sub);fon
 <a class="ref" target="_blank" rel="noopener noreferrer" href="https://github.com/danieloculus0-bot/BEAN/pull/144"><b>Lab026 native reasoning branch</b><span>Experience retrieval, reflection, skill retention and strategy evaluation</span></a>
 </div><p style="margin-top:18px;font-size:.8rem">Last content review: October 21, 2026. Experiment CI commit: <code>4d969b0eb1c09043d34174be056c5ecf15ebbd4f</code>. Later commits to PR #149 are not automatically covered by that earlier run. Both PRs are open drafts; they have not been promoted to Core main.</p>
 </div></section>
-</main><footer><div class="wrap">BEAN × AXIOM / THE WORKSHOP · Public research, exact evidence and unapologetically green beans. <a href="../">Back to Workshop</a>.</div></footer>
+</main><footer><div class="wrap">BEAN × AXIOM / THE WORKSHOP · Engineering research and documented evaluation results. <a href="../">Back to Workshop</a>.</div></footer>
 <script>
 (function(){
  const data=[
