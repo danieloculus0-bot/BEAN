@@ -157,8 +157,7 @@ class BEANReasoningSkills:
         receipt = run_paired_trial(
             bank=self.bank, cases=cases, model=model, judge=judge,
             arms=("cold", "placebo", "adaptive"), replicates=replicates)
-        receipt["scope"] = "post_selection_holdout_no_policy_change"
-        return receipt
+        return {"trial": receipt, "scope": "post_selection_holdout_no_policy_change"}
 
     def select_strategy(self, *, domain, rows, evaluator_id, dataset_id,
                         minimum_gain=1):
