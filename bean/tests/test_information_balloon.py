@@ -9,7 +9,7 @@ import unittest
 
 from bean.optimization.information_balloon import (
     Recipe, benchmark_once, canonical, contextual_recall, digest,
-    discover_tokens, fit_prefix, pack, propose, retain_verified, run_experiment,
+    discover_tokens, fit_prefix, growth_experiment, pack, propose, retain_verified, run_experiment,
     token_decode, token_encode, unpack, weissman_style,
 )
 
@@ -161,6 +161,23 @@ class BalloonTests(unittest.TestCase):
         self.assertTrue(feasible)
         self.assertTrue(all(t["metric"]["exact"] for t in feasible))
         self.assertEqual(result["omitted_ids"],[])
+
+    def test_growth_adapts_with_measured_reverified_prior_policy(self):
+        dataset=fixtures()
+        progress=growth_experiment(
+            dataset,checkpoints=[9,16,24],archive_budget=30000,
+            context_budget=10000,queries=["topic_0","topic_1"],
+            min_recall=1.0,iterations=10,seed=18)
+        points=progress["snapshots"]
+        self.assertEqual([x["source_records"] for x in points],[9,16,24])
+        self.assertTrue(all(x["accepted"] for x in points))
+        self.assertEqual([x["retained"] for x in points],[9,16,24])
+        self.assertIsNone(points[0]["previous_recipe"])
+        self.assertEqual(points[1]["previous_recipe"],points[0]["selected_recipe"])
+        self.assertTrue(any(
+            trial["proposed_by"]=="retained_previous_recipe_reverified"
+            for trial in points[1]["all_trials"]))
+        self.assertEqual(progress["source_records_total"],24)
 
     def test_recipe_validation_no_unsupported_lossy_encoder(self):
         for recipe in [Recipe("mp3",1),Recipe("raw",9),Recipe("zlib",6,4,0),
