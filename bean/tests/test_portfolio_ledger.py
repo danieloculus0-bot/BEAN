@@ -90,6 +90,24 @@ class PortfolioLedgerTests(unittest.TestCase):
         self.assertLessEqual(len(canonical(result)),700)
         self.assertEqual(self.ledger.verify()["events"],2)
 
+    def test_compact_reward_scoreboard_rebuilds_with_negative_results(self):
+        self.add("positive",reward=2)
+        self.add("negative",reward=-1)
+        self.add("no-credit",reward=None,action=None,kind="unverified")
+        scoreboard=self.ledger.state_context(app="FUN/EmperorGauntlet",
+                                             max_bytes=1500)["rewards"]
+        self.assertEqual(scoreboard["positive"],1)
+        self.assertEqual(scoreboard["negative"],1)
+        self.assertEqual(scoreboard["rewarded"],2)
+        self.assertEqual(scoreboard["reward_sum"],1)
+        self.assertEqual(self.ledger.verify()["rewarded_events"],2)
+        self.ledger.db.execute(
+            "UPDATE portfolio_scores SET positive=99 WHERE app=?",
+            ("FUN/EmperorGauntlet",))
+        self.ledger.db.commit()
+        with self.assertRaisesRegex(ValueError,"scoreboard diverges"):
+            self.ledger.verify()
+
     def test_tamper_detection(self):
         self.add()
         self.ledger.db.execute(
