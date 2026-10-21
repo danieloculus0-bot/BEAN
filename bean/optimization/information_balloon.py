@@ -403,9 +403,13 @@ def run_experiment(records, *, archive_budget, context_budget,
     tuning = canonical(records[first:second])
     holdout = canonical(records[second:])
     baseline = benchmark_once(tuning, Recipe("zlib", 6), b"", repeat=3)
+    # Rate target is derived from the declared whole-corpus storage budget.
+    # Compression only needs to be strong enough to meet it; once feasible,
+    # minimize measured work rather than chasing ever-higher ratios.
+    target_ratio = len(canonical(records)) / archive_budget
     trials = []
     visited = set()
-    leader, leader_metric = None, None
+    leader, leader_metric, leader_rank = None, None, None
     for iteration in range(iterations):
         recipe, origin = propose(leader, visited, rng)
         if recipe is None:
@@ -419,14 +423,19 @@ def run_experiment(records, *, archive_budget, context_budget,
             metric["weissman_style"] = round(weissman_style(
                 metric["ratio"], baseline["ratio"], metric["ms_median"],
                 baseline["ms_median"]), 6)
-            # Optimize measured saved bytes and actual compute cost. This
-            # does not reward repeated copies of one deterministic test.
-            utility = (baseline["bytes"] - metric["bytes"]) / baseline["bytes"]
-            utility -= 0.04 * (metric["ms_median"] / max(baseline["ms_median"], 0.01))
+            # A conservative proxy for full-archive feasibility; deployment
+            # still verifies the actual full serialized source independently.
+            feasible = metric["ratio"] >= target_ratio
+            # Prefer feasible candidates and the least encode time. If none
+            # fits, choose the best measured ratio, but report objective unmet.
+            rank = ((1, -metric["ms_median"], metric["ratio"]) if feasible
+                    else (0, metric["ratio"], -metric["ms_median"]))
             receipt.update({"result": "verified", "metric": metric,
-                            "utility": round(utility, 8)})
-            if leader_metric is None or utility > leader_metric:
-                leader, leader_metric = recipe, utility
+                            "meets_estimated_rate_target": feasible,
+                            "estimated_required_ratio": round(target_ratio, 6),
+                            "selection_rank": list(rank)})
+            if leader_rank is None or rank > leader_rank:
+                leader, leader_metric, leader_rank = recipe, list(rank), rank
         except (ValueError, AssertionError, EOFError, OSError) as exc:
             receipt.update({"result": "failed", "error": type(exc).__name__})
         trials.append(receipt)
@@ -451,7 +460,9 @@ def run_experiment(records, *, archive_budget, context_budget,
             "context_budget_bytes": context_budget,
             "min_recall": min_recall, "candidate_count": len(trials),
             "selected_recipe": asdict(leader),
-            "selected_training_utility": leader_metric,
+            "selection_priority": "meet_storage_goal_then_minimize_encoding_latency",
+            "target_ratio": target_ratio,
+            "selected_tuning_rank": leader_metric,
             "independent_holdout": final_holdout,
             "working_shelf_bytes": len(shelf["archive"]) if shelf["archive"] else None,
             "working_shelf_records": shelf["retained"],
