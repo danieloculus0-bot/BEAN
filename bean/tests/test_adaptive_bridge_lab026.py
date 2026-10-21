@@ -10,8 +10,14 @@ import tempfile
 import unittest
 
 from bean.learning.bridge import audit_sources,bridge_contract
-from ezbean.knowledge_gate import DefinitionLibrary
-from ezbean.learning_loop import SourceObservation
+try:
+    from ezbean.knowledge_gate import DefinitionLibrary
+    from ezbean.learning_loop import SourceObservation
+except ModuleNotFoundError as exc:
+    if exc.name != "ezbean":
+        raise
+    DefinitionLibrary = None
+    SourceObservation = None
 
 
 STAMP="2026-10-20T20:00:00Z"
@@ -30,6 +36,10 @@ class AuthenticatingFixtureVerifier:
         return source.value=="42" and source.ref.startswith("fixture:")
 
 
+@unittest.skipUnless(
+    DefinitionLibrary is not None,
+    "BEAN AI Bridge is an external checkout; tested in dedicated Lab026 CI",
+)
 class BridgeViabilityTests(unittest.TestCase):
     def setUp(self):
         self.tmp=tempfile.TemporaryDirectory()
