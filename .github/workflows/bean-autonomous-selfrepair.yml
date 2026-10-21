@@ -44,7 +44,7 @@ jobs:
       - name: Compile laboratory code and tests
         run: python -m compileall -q bean/evaluation/autonomous_selfrepair.py bean/evaluation/autonomous_selfrepair_verify.py bean/tests/test_autonomous_selfrepair_protocol.py experiments/autonomous_selfrepair/test_selfrepair_holdout.py
       - name: Test BEAN's actual patching and rejection protocol
-        run: python -m pytest bean/tests/test_autonomous_selfrepair_protocol.py -q -ra
+        run: python -m pytest bean/tests/test_autonomous_selfrepair_protocol.py bean/tests/test_autonomous_promotion_guard.py -q -ra
 
   author:
     name: BEAN authors a Core code change using neural inference
