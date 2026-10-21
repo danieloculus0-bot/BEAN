@@ -50,29 +50,27 @@ class PublicSkillsPageTests(unittest.TestCase):
         cls.markup = SiteMarkup()
         cls.markup.feed(cls.page)
 
-    def test_approved_mascot_keeps_portrait_ratio(self):
-        logo = [x for x in self.markup.images
-                if "official smiling sprout mascot" in x.get("alt", "")]
-        hero = [x for x in self.markup.images
-                if "Official glossy lime-green BEAN mascot" in x.get("alt", "")]
-        self.assertEqual(len(logo), 1)
-        self.assertEqual(len(hero), 1)
+    def test_project_brand_mark_and_research_hero(self):
+        marks = [x for x in self.markup.images
+                 if x.get("src") == "./bean-official.webp"]
+        self.assertEqual(len(marks), 1)
+        self.assertEqual(marks[0]["alt"], "BEAN brand mark")
         self.assertTrue((PAGE.parent / "bean-official.webp").is_file())
-        self.assertEqual(logo[0]["src"], "./bean-official.webp")
-        self.assertEqual(hero[0]["src"], "./bean-official.webp")
+        self.assertIn('class="hero-research"', self.page)
+        self.assertIn("View the experiment and evidence", self.page)
         self.assertIn("object-fit:contain", self.page)
         self.assertIn("flex-shrink:0", self.page)
-        # The previous square object-fit:cover rule distorted/cropped the logo.
         self.assertIn(".brand img{display:block;width:54px;height:62px", self.page)
         self.assertIn("height:auto;object-fit:contain", self.page)
 
     def test_identity_theme_and_home_links(self):
-        for phrase in ("Little bean.", "Serious brain.",
-                       "learn from experience, prove what works, and keep improving.",
-                       "--accent:#79DE4B", "No pretend victories"):
+        for phrase in ("Evidence-based AI.", "Measured progress.",
+                       "Published results link to code and test evidence.",
+                       "--accent:#79DE4B", "237 / 240"):
             self.assertIn(phrase, self.page)
         for href in ("#lab", "#learning", "#capabilities", "#aiscend", "#start",
-                     "./aiscend.html", "https://github.com/danieloculus0-bot/BEAN"):
+                     "./aiscend.html", "./portfolio/bean-learning/",
+                     "https://github.com/danieloculus0-bot/BEAN"):
             self.assertIn(href, self.markup.links)
         self.assertIn('href="./aiscend.html" target="_blank" rel="noopener noreferrer"',
                       self.page)
