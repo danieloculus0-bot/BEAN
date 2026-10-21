@@ -6,12 +6,14 @@ on:
       - 'bean/optimization/information_balloon.py'
       - 'bean/tests/test_information_balloon.py'
       - 'experiments/information_balloon/**'
+      - 'docs/ADAPTIVE_INFORMATION_BALLOON_COMPRESSION.md'
       - '.github/workflows/information-balloon.yml'
   pull_request:
     paths:
       - 'bean/optimization/information_balloon.py'
       - 'bean/tests/test_information_balloon.py'
       - 'experiments/information_balloon/**'
+      - 'docs/ADAPTIVE_INFORMATION_BALLOON_COMPRESSION.md'
       - '.github/workflows/information-balloon.yml'
   workflow_dispatch:
 permissions:
