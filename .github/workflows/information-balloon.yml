@@ -1,0 +1,41 @@
+name: BEAN Information Balloon adaptive compression research
+on:
+  push:
+    branches: ['experiment/bean-information-balloon-*']
+    paths:
+      - 'bean/optimization/information_balloon.py'
+      - 'bean/tests/test_information_balloon.py'
+      - 'experiments/information_balloon/**'
+      - '.github/workflows/information-balloon.yml'
+  pull_request:
+    paths:
+      - 'bean/optimization/information_balloon.py'
+      - 'bean/tests/test_information_balloon.py'
+      - 'experiments/information_balloon/**'
+      - '.github/workflows/information-balloon.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  compression-science:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        python: ['3.11', '3.12']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Exact source recovery and goal-constrained iteration
+        run: python -m unittest bean.tests.test_information_balloon -v
+      - name: Execute three seeded independent synthetic study runs
+        run: python experiments/information_balloon/run.py --output information-balloon-report.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: balloon-${{ matrix.os }}-py${{ matrix.python }}
+          path: information-balloon-report.json
+          if-no-files-found: ignore
