@@ -113,6 +113,53 @@ class BEANReasoningSkills:
         return self._store("prompt", domain, content, evidence_refs,
                            "unevaluated_instruction_candidate")
 
+    def evaluate_and_select(self, *, domain, cases, model, judge, replicates=1,
+                            minimum_gain=1):
+        """Run actual paired model trials; reuse Lab026's independent selector.
+
+        Synthetic providers remain synthetic. The judge owns the task answers;
+        no learned-weight or causal-generalization claim follows from selection.
+        """
+        from .experimental import run_paired_trial
+        from .strategy_selection import choose_strategy
+        domain = _text(domain, "domain", 100).casefold()
+        cases = list(cases)
+        if len(cases) < 2 or any(case.domain != domain for case in cases):
+            raise ValueError("Need >=2 selection tasks from the same domain")
+        receipt = run_paired_trial(
+            bank=self.bank, cases=cases, model=model, judge=judge,
+            replicates=replicates)
+        selection = choose_strategy(
+            self.bank, receipt, domain, minimum_gain=minimum_gain)
+        return {"trial": receipt, "selection": selection}
+
+    def evaluate_holdout(self, *, domain, cases, model, judge, replicates=1):
+        """Evaluate frozen chosen strategy on disjoint IDs, without reselection.
+
+        This does NOT certify that source questions were truly hidden.
+        Do not use this outcome to change the already selected strategy.
+        """
+        from .experimental import run_paired_trial
+        domain = _text(domain, "domain", 100).casefold()
+        cases = list(cases)
+        if len(cases) < 2 or any(case.domain != domain for case in cases):
+            raise ValueError("Need >=2 same-domain holdout tasks")
+        # Ensure a measured selection already exists.
+        self.bank.selected_arm(domain)
+        tested = {
+            row.get("task_id")
+            for event in self.bank.journal.events()
+            if event.get("kind") == "trial"
+            for row in event["data"].get("records", [])
+        }
+        if any(case.task_id in tested for case in cases):
+            raise ValueError("Holdout task IDs overlap previous measured trials")
+        receipt = run_paired_trial(
+            bank=self.bank, cases=cases, model=model, judge=judge,
+            arms=("cold", "placebo", "adaptive"), replicates=replicates)
+        receipt["scope"] = "post_selection_holdout_no_policy_change"
+        return receipt
+
     def select_strategy(self, *, domain, rows, evaluator_id, dataset_id,
                         minimum_gain=1):
         """Reuse BEAN's existing controlled Lab026 candidate selector."""
