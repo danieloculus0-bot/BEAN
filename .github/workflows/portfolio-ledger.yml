@@ -1,0 +1,25 @@
+name: BEAN portfolio ledger state memory
+on:
+  push:
+    branches: ['experiment/portfolio-ledger-state-memory-*']
+  pull_request:
+    paths:
+      - 'bean/optimization/portfolio_ledger.py'
+      - 'bean/tests/test_portfolio_ledger.py'
+      - '.github/workflows/portfolio-ledger.yml'
+  workflow_dispatch:
+jobs:
+  verify-ledger:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        python-version: ['3.11', '3.12']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Replay, reward, recovery and tamper tests
+        run: python -m unittest bean.tests.test_portfolio_ledger -v
