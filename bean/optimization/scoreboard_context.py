@@ -136,7 +136,12 @@ def score_reward(trial: RewardTrial) -> dict:
     pretending to represent a verified tie.
     """
     trial.validate()
-    receipt_id = "R." + _sha(_json(asdict(trial)))[:24]
+    # Credit is keyed by the evaluation evidence, not the caller's chosen
+    # run label. Reusing one evaluation receipt cannot mint fresh reward IDs.
+    credit_key = {"experiment":trial.experiment,"metric":trial.metric,
+                  "condition_id":trial.condition_id,
+                  "evaluation_sha256":trial.evaluation_sha256}
+    receipt_id = "R." + _sha(_json(credit_key))[:24]
     base = {"schema": VERSION, "receipt_id":receipt_id, "experiment":trial.experiment,
             "metric":trial.metric, "evaluation_sha256":trial.evaluation_sha256,
             "evidence_ref":trial.evidence_ref, "evidence_kind":trial.evidence_kind,
@@ -186,6 +191,10 @@ def apply_once(learner: object, recorded: dict, *, state: Any, action: int,
     if method is None:
         raise TypeError("expected an existing DQN observe or TD learn method")
     method(state,action,reward,next_state,done)
+    # In-process duplicate defense. Cross-process ingestion must go through
+    # record_reward, which checks the immutable receipt file on disk.
+    recorded["new_reward"] = False
+    recorded["applied_to_learner"] = True
     return True
 
 
