@@ -1,0 +1,1 @@
+{"attempt":2,"failed_jobs":0,"interprets_as":"repeatability, not learning","matrix_jobs":4,"passing_assertions":2698,"schema":"bean.core.matrix.scoreboard.v1","skipped_assertions":10,"source_commit":"a0c63d9fad7c128457f8fcda6685332de39094d7","subtests_reported":208,"successful_jobs":4,"workflow_run":39521813810}
