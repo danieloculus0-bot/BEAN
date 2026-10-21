@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#0b100e">
+<meta name="description" content="BEAN Lab027: 3,000 real SpongeTD training episodes, four controlled arms, 240 unseen maps and reproducible Windows/Linux evidence.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="BEAN Learning Lab | The Workshop">
+<meta property="og:description" content="Real Q-learning. Unseen puzzles. Receipts you can audit.">
+<meta property="og:image" content="https://danieloculus0-bot.github.io/BEAN/bean-official.webp">
+<link rel="icon" type="image/webp" href="../../bean-official.webp">
+<link rel="canonical" href="https://danieloculus0-bot.github.io/BEAN/portfolio/bean-learning/">
+<title>BEAN Learning Lab | The Workshop</title>
+<style>
+:root{color-scheme:dark;--bg:#090d0b;--panel:#141e17;--raised:#1c2920;--line:#38533e;--mint:#a3f46b;--txt:#eaf5e8;--sub:#b9cebb;--muted:#93ae99;--warn:#e9c87e}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:radial-gradient(ellipse at 85% 0%,#244b2b,transparent 50%),var(--bg);color:var(--txt);font:16px/1.6 system-ui,-apple-system,"Segoe UI",sans-serif}
+a{color:var(--mint);text-underline-offset:3px}a:hover{color:#fff}a:focus-visible,button:focus-visible{outline:3px solid var(--mint);outline-offset:3px}
+.wrap{width:min(1100px,calc(100% - 36px));margin:auto}
+header{border-bottom:1px solid var(--line);background:#0b120ddc;position:sticky;top:0;z-index:10;backdrop-filter:blur(12px)}
+nav{display:flex;align-items:center;gap:20px;min-height:68px;flex-wrap:wrap;padding-block:10px}nav .brand{display:flex;align-items:center;gap:10px;font-weight:900;color:var(--txt);text-decoration:none;letter-spacing:.08em}nav img{width:38px;height:38px;border-radius:11px}nav .links{display:flex;gap:14px;flex-wrap:wrap;margin-left:auto;font-size:.87rem;font-weight:750}nav .links a{text-decoration:none}
+.kicker{color:var(--mint);font-size:.74rem;font-weight:900;letter-spacing:.16em;text-transform:uppercase}
+.hero{display:grid;grid-template-columns:1.3fr .7fr;gap:22px;align-items:center;padding:72px 0 48px}
+h1{font-size:clamp(3rem,8vw,6.3rem);letter-spacing:-.075em;line-height:.98;margin:14px 0 24px}h1 em{color:var(--mint);font-style:normal}
+h2{font-size:clamp(1.8rem,4vw,3rem);letter-spacing:-.05em;line-height:1.13;margin:10px 0 15px}h3{font-size:1.15rem;line-height:1.3;margin:7px 0 11px}
+p{color:var(--sub);margin:0 0 14px}.hero p{font-size:1.12rem;max-width:650px}
+.hero img{width:min(100%,290px);display:block;margin:auto;aspect-ratio:1;object-fit:cover;border-radius:28%;border:2px solid #7fa35b;box-shadow:0 15px 95px #8afa382c}
+.pill{display:inline-flex;gap:7px;align-items:center;border:1px solid #607445;border-radius:100px;color:var(--warn);padding:5px 11px;font-size:.72rem;font-weight:850;letter-spacing:.04em;margin-bottom:9px}
+.buttons{display:flex;gap:11px;flex-wrap:wrap;margin:21px 0}.button{display:inline-flex;min-height:45px;align-items:center;border:1px solid #5a765a;border-radius:10px;background:#1c2b1e;padding:10px 15px;color:var(--txt);font-weight:800;text-decoration:none}.button.primary{color:#0b1c0d;background:var(--mint);border-color:var(--mint)}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:20px 0 40px}.stat{border:1px solid var(--line);border-radius:17px;padding:22px;background:var(--panel)}.stat strong{color:var(--mint);font-size:clamp(2rem,5vw,3rem);display:block;line-height:1.1;font-variant-numeric:tabular-nums}.stat span{font-size:.8rem;color:var(--sub)}
+section{padding:39px 0 50px;border-top:1px solid #304636}
+.segment{display:flex;gap:8px;flex-wrap:wrap;margin:22px 0 12px}button{font:inherit;cursor:pointer}.segment button{background:#1b2b20;border:1px solid #536b51;color:var(--txt);padding:10px 14px;min-height:43px;border-radius:11px;font-weight:750}.segment button[aria-pressed="true"]{background:var(--mint);color:#12210c;border-color:var(--mint)}
+.legend{color:var(--sub);font-size:.84rem;margin:0 0 18px}
+.bars{display:grid;gap:16px}.row{display:grid;grid-template-columns:220px 1fr 84px;align-items:center;gap:16px}.row label{font-size:.88rem;font-weight:800}.track{height:21px;background:#2d402f;border-radius:50px;overflow:hidden}.fill{height:100%;border-radius:50px;background:linear-gradient(90deg,#527c56,#a3f46b);transition:width .35s ease}.row.cold .fill{background:linear-gradient(90deg,#5b6c61,#92a79a)}.row b{font-variant-numeric:tabular-nums;text-align:right;font-size:.89rem}
+.panel{border:1px solid var(--line);border-radius:18px;background:var(--panel);padding:25px}.panel p:last-child{margin-bottom:0}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:15px}.mini{color:var(--mint);text-transform:uppercase;letter-spacing:.1em;font-size:.68rem;font-weight:850}
+.steps{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:11px}.step{background:#17241a;border:1px solid #3b5540;padding:16px;border-radius:14px}.step b{display:block;color:var(--mint);font-size:1.4rem}
+.details{margin-top:17px;border:1px solid #405c47;border-radius:12px;padding:15px 20px}summary{font-weight:800;color:var(--mint);cursor:pointer}
+.important{border-left:4px solid var(--warn);padding:15px 18px;background:#282619;border-radius:0 12px 12px 0;color:#f2dfb1}
+.references{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.ref{display:flex;flex-direction:column;gap:4px;padding:18px;border:1px solid var(--line);background:var(--panel);border-radius:13px;text-decoration:none}.ref b{color:var(--mint)}.ref span{font-size:.78rem;color:var(--sub)}
+footer{border-top:1px solid var(--line);padding:27px 0 45px;color:var(--sub);font-size:.78rem}
+@media(max-width:740px){.hero{grid-template-columns:1fr;padding-top:45px}.hero img{max-width:180px}.grid,.references,.stats{grid-template-columns:1fr}.steps{grid-template-columns:repeat(2,minmax(0,1fr))}.row{grid-template-columns:100px 1fr 60px;gap:9px}.row label{font-size:.74rem}.hero p{font-size:1rem}nav .links{margin-left:0}nav{gap:11px}}
+@media(prefers-reduced-motion:reduce){.fill{transition:none}}
+</style>
+</head>
+<body>
+<a class="button" style="position:absolute;left:-9999px;top:5px" href="#main" onfocus="this.style.left='8px'" onblur="this.style.left='-9999px'">Skip to results</a>
+<header><nav class="wrap"><a class="brand" href="../"><img src="../../bean-official.webp" alt="" width="38" height="38">THE WORKSHOP</a><div class="links"><a href="../">All projects</a><a href="../../">BEAN Lab</a><a href="https://github.com/danieloculus0-bot/BEAN/pull/149" target="_blank" rel="noopener noreferrer">Lab027 source</a></div></nav></header>
+<main id="main">
+<div class="wrap hero">
+<div><div class="kicker">BEAN research · October 21, 2026</div><h1>Hims <em>learning.</em><br>We have receipts.</h1><p>3,000 real Q-learning episodes. New puzzles. Four controls. A compressed evidence ledger and a policy that survives restart. Here's exactly what BEAN did, and what it <strong>doesn't</strong> prove.</p>
+<div class="pill">Experimental research · not released in Core main</div>
+<div class="buttons"><a class="button primary" href="#scoreboard">Examine results</a><a class="button" href="https://github.com/danieloculus0-bot/BEAN/actions/runs/39550106061" target="_blank" rel="noopener noreferrer">Independent CI receipts</a></div></div>
+<div><img src="../../bean-official.webp" alt="Smiling green BEAN mascot with sprout leaves" loading="eager" width="290" height="290"></div>
+</div>
+<div class="wrap stats" aria-label="Verified experiment summary">
+<div class="stat"><strong>3,000</strong><span>Training puzzles with real SpongeTD Q-learning</span></div>
+<div class="stat"><strong>237/240</strong><span>Unseen maps solved, trained with episodic intuition</span></div>
+<div class="stat"><strong>68.5%</strong><span>Fewer mean moves than cold Q with identical loop-breaker</span></div></div>
+<section id="scoreboard"><div class="wrap"><span class="kicker">Measured, not marketed</span><h2>The unseen-map scoreboard.</h2>
+<p>All four arms faced the same 240 held-out maps. The loop-breaker uses recent visits; Q-learning supplies preferences learned across earlier procedural maps. Toggle between completion rate and moves per map.</p>
+<div class="segment" role="group" aria-label="Choose experiment metric"><button id="metric-success" aria-pressed="true" type="button">Puzzles solved</button><button id="metric-moves" aria-pressed="false" type="button">Average moves</button></div>
+<p class="legend" id="metric-desc" aria-live="polite">Success percentage on 240 held-out maps (higher is better).</p>
+<div class="panel bars" id="bars">
+<div class="row cold"><label for="fill-cold-plain">Cold Q</label><div class="track"><div id="fill-cold-plain" class="fill" style="width:47.08%"></div></div><b id="value-cold-plain">47.1%</b></div>
+<div class="row"><label for="fill-trained-plain">Trained Q</label><div class="track"><div id="fill-trained-plain" class="fill" style="width:50%"></div></div><b id="value-trained-plain">50.0%</b></div>
+<div class="row cold"><label for="fill-cold-intuition">Cold + intuition</label><div class="track"><div id="fill-cold-intuition" class="fill" style="width:96.67%"></div></div><b id="value-cold-intuition">96.7%</b></div>
+<div class="row"><label for="fill-trained-intuition">Trained + intuition</label><div class="track"><div id="fill-trained-intuition" class="fill" style="width:98.75%"></div></div><b id="value-trained-intuition">98.75%</b></div>
+</div>
+<div class="grid" style="margin-top:18px"><div class="panel"><span class="mini">Matched holdout efficiency</span><h3>69.0 to 21.7 moves</h3><p>With identical loop-breaking, the trained Q-policy averaged 47.24 fewer moves across those same 240 maps. Paired bootstrap 95% interval: 40.43 to 54.26 moves saved.</p></div>
+<div class="panel"><span class="mini">Verified reproducibility</span><h3>Windows and Ubuntu passed</h3><p>The actual original SpongeTD implementation and compressed checkpoint were exercised in the CI run at commit <code>4d969b0e</code>. Both operating systems reported success. Full Core regression passed on Ubuntu with 707 passing tests, one skipped and 45 passing subtests.</p></div></div>
+</div></section>
+<section><div class="wrap"><span class="kicker">How BEAN learned</span><h2>Intuition is a shortcut built from experience.</h2>
+<div class="steps"><div class="step"><b>01</b><h3>Explore</h3><p>Try actions and see what earns rewards.</p></div><div class="step"><b>02</b><h3>Update</h3><p>SpongeTD adjusts action values from actual transitions.</p></div><div class="step"><b>03</b><h3>Escape loops</h3><p>Episodic memory discourages repeated unproductive moves.</p></div><div class="step"><b>04</b><h3>Apply</h3><p>Frozen policy meets fresh maps with no training on the holdout.</p></div></div>
+<div class="important" style="margin-top:20px"><strong>The critical control:</strong> even an untrained agent with the same loop-breaker solved 232/240 maps. The largest evidence for learned Q-values is the reduction in navigation cost, not the nearly perfect success rate by itself.</div>
+<details class="details"><summary>What is actually measured and what isn't?</summary><p>The policy saw 3,000 training maps. An independent 180-map validation split selected among 18 episodic-escape settings. The 240-map test split used different deterministic random seeds. No holdout cases were used for policy updates or choosing settings. The task still supplies legal moves, target-relative features, and shaped rewards. It's strong transfer to novel layouts <em>within the same puzzle type</em>, not yet cross-domain reasoning or self-directed real-world autonomy.</p></details>
+</div></section>
+<section id="skills"><div class="wrap"><span class="kicker">Lab026 + Lab027</span><h2>More than a one-off maze solver.</h2><p>These are two related research branches, not automatically merged into BEAN Core. Lab026 is the common BEAN-native reasoning layer; Lab027 builds reusable episodic action intuition over original Q-learning.</p>
+<div class="grid">
+<div class="panel"><span class="mini">Lab026 · Research PR #144</span><h3>Four BEAN-native reasoning skills</h3><p>Retrieve task-relevant experiences, reflect on errors, retain successful procedures, and compare candidate strategies against cold and placebo controls. Selection survives a journal restart.</p><a href="https://github.com/danieloculus0-bot/BEAN/pull/144" target="_blank" rel="noopener noreferrer">View actual source and CI</a></div>
+<div class="panel"><span class="mini">Lab027 · Research PR #149</span><h3>Learned action preferences</h3><p>Real tabular Q-learning, domain-neutral local-loop avoidance, exact SHA-verified checkpoint recovery, an unseen-map evaluation suite and full compressed event history.</p><a href="https://github.com/danieloculus0-bot/BEAN/pull/149" target="_blank" rel="noopener noreferrer">Inspect the experiment</a></div></div>
+</div></section>
+<section><div class="wrap"><span class="kicker">Provenance</span><h2>Audit it yourself.</h2><p>The experiment is published as source, an open draft PR and artifacts from GitHub Actions. This page is a presentation of frozen results, not a live training console or an invented BEAN session.</p>
+<div class="references">
+<a class="ref" target="_blank" rel="noopener noreferrer" href="https://github.com/danieloculus0-bot/BEAN/actions/runs/39550106061"><b>Lab027: full CI evidence</b><span>Successful Windows + Linux runs, logs, scoreboards and compressed ledger artifacts</span></a>
+<a class="ref" target="_blank" rel="noopener noreferrer" href="https://github.com/danieloculus0-bot/BEAN/blob/experiment/bean-intuition-maze-20261021/docs/BEAN_INTUITION_LAB027.md"><b>Study protocol</b><span>Methods, reward assumptions, separation of training and holdout, known limits</span></a>
+<a class="ref" target="_blank" rel="noopener noreferrer" href="https://github.com/danieloculus0-bot/BEAN/blob/experiment/bean-intuition-maze-20261021/bean/optimization/intuition_maze.py"><b>Executable Lab027 experiment</b><span>The source actually used to produce map-level results and select settings</span></a>
+<a class="ref" target="_blank" rel="noopener noreferrer" href="https://github.com/danieloculus0-bot/BEAN/pull/144"><b>Lab026 native reasoning branch</b><span>Experience retrieval, reflection, skill retention and strategy evaluation</span></a>
+</div><p style="margin-top:18px;font-size:.8rem">Last content review: October 21, 2026. Experiment CI commit: <code>4d969b0eb1c09043d34174be056c5ecf15ebbd4f</code>. Later commits to PR #149 are not automatically covered by that earlier run. Both PRs are open drafts; they have not been promoted to Core main.</p>
+</div></section>
+</main><footer><div class="wrap">BEAN × AXIOM / THE WORKSHOP · Public research, exact evidence and unapologetically green beans. <a href="../">Back to Workshop</a>.</div></footer>
+<script>
+(function(){
+ const data=[
+  {id:'cold-plain',success:113/240*100,moves:145.225},
+  {id:'trained-plain',success:50,moves:101.875},
+  {id:'cold-intuition',success:232/240*100,moves:68.95},
+  {id:'trained-intuition',success:237/240*100,moves:21.7083}
+ ];
+ const success=document.getElementById('metric-success');
+ const moves=document.getElementById('metric-moves');
+ const desc=document.getElementById('metric-desc');
+ function render(mode){
+  const isSuccess=mode==='success';
+  success.setAttribute('aria-pressed',String(isSuccess));
+  moves.setAttribute('aria-pressed',String(!isSuccess));
+  desc.textContent=isSuccess?'Success percentage on 240 held-out maps (higher is better).':'Mean steps per held-out map, including failures (lower is better).';
+  data.forEach(function(item){
+   const value=isSuccess?item.success:item.moves;
+   const max=isSuccess?100:150;
+   document.getElementById('fill-'+item.id).style.width=Math.min(100,value/max*100).toFixed(2)+'%';
+   document.getElementById('value-'+item.id).textContent=isSuccess?value.toFixed(item.id==='trained-intuition'?2:1)+'%':value.toFixed(1);
+  });
+ }
+ success.addEventListener('click',function(){render('success');});
+ moves.addEventListener('click',function(){render('moves');});
+})();
+</script>
+</body></html>
