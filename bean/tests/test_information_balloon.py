@@ -3,11 +3,13 @@ from __future__ import annotations
 
 import json
 import random
+import tempfile
+from pathlib import Path
 import unittest
 
 from bean.optimization.information_balloon import (
     Recipe, benchmark_once, canonical, contextual_recall, digest,
-    discover_tokens, fit_prefix, pack, propose, run_experiment,
+    discover_tokens, fit_prefix, pack, propose, retain_verified, run_experiment,
     token_decode, token_encode, unpack, weissman_style,
 )
 
@@ -123,6 +125,42 @@ class BalloonTests(unittest.TestCase):
         self.assertFalse(denied["accepted"])
         self.assertGreater(len(denied["omitted_ids"]),0)
         self.assertEqual(source,fixtures())
+
+    def test_write_once_cold_storage_integrity_and_no_deletion(self):
+        source=canonical(fixtures())
+        with tempfile.TemporaryDirectory() as folder:
+            key=b"synthetic-external-key-32bytes00!"
+            root=Path(folder)
+            result=retain_verified(root,source,Recipe("zlib",6,6,8),
+                                   training=source,key=key)
+            self.assertEqual(Path(result["raw_path"]).read_bytes(),source)
+            self.assertEqual(result["receipt"]["integrity"],
+                             "verified_against_immutable_original")
+            self.assertEqual(
+                retain_verified(root,source,Recipe("zlib",6,6,8),
+                                training=source,key=key)["receipt"],
+                result["receipt"])
+            p=Path(result["package_path"])
+            damaged=bytearray(p.read_bytes())
+            damaged[-1]^=1
+            p.write_bytes(damaged)
+            with self.assertRaisesRegex(ValueError,"retention conflict"):
+                retain_verified(root,source,Recipe("zlib",6,6,8),
+                                training=source,key=key)
+            self.assertEqual(Path(result["raw_path"]).read_bytes(),source)
+            self.assertTrue(Path(result["manifest_path"]).exists())
+
+    def test_compression_meets_budget_without_maximizing_ratio(self):
+        data=fixtures()
+        result=run_experiment(data,archive_budget=40000,context_budget=10000,
+                              queries=["topic_0"],min_recall=1,iterations=10,seed=4)
+        self.assertTrue(result["accepted"])
+        self.assertEqual(result["selection_priority"],
+                         "meet_storage_goal_then_minimize_encoding_latency")
+        feasible=[t for t in result["trials"] if t.get("meets_estimated_rate_target")]
+        self.assertTrue(feasible)
+        self.assertTrue(all(t["metric"]["exact"] for t in feasible))
+        self.assertEqual(result["omitted_ids"],[])
 
     def test_recipe_validation_no_unsupported_lossy_encoder(self):
         for recipe in [Recipe("mp3",1),Recipe("raw",9),Recipe("zlib",6,4,0),
