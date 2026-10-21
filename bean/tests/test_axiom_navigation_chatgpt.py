@@ -82,6 +82,8 @@ class AxiomNavigationConnectorTests(unittest.TestCase):
         fake = LocalServerFixture()
         client = AxiomNavigationClient(opener=fake)
         self.assertEqual(client.find("Quality")["items"][0]["href"], "/quality")
+        self.assertEqual(client.find("Quality")["items"][0]["local_url"],
+                         "http://127.0.0.1:5060/quality")
         before = client.list()
         self.assertEqual(before["items"], [])
 
