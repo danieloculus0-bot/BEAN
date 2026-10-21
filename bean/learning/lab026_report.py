@@ -13,6 +13,7 @@ import tempfile
 
 from .experimental import Lesson,TrialCase,ExperienceBank,assess_nodes,run_paired_trial
 from .bridge import bridge_contract
+from .native_skills import BEANReasoningSkills
 
 
 class SyntheticModel:
@@ -49,12 +50,41 @@ def smoke(output):
             judge=lambda expected,actual:expected==actual,
             context_chars=200,replicates=2,
         )
+        # Exercise all native skills using existing development lessons, then
+        # freeze a selection before running disjoint test IDs. Synthetic only.
+        skills = BEANReasoningSkills(bank)
+        choice = skills.evaluate_and_select(
+            domain="sorting",
+            cases=[TrialCase("native-select-1", "sorting", "sort h,c", "c,h"),
+                   TrialCase("native-select-2", "sorting", "sort m,a", "a,m")],
+            model=SyntheticModel(),
+            judge=lambda expected, actual: expected == actual, replicates=2)
+        holdout = skills.evaluate_holdout(
+            domain="sorting",
+            cases=[TrialCase("native-holdout-1", "sorting", "sort w,d", "d,w"),
+                   TrialCase("native-holdout-2", "sorting", "sort s,e", "e,s")],
+            model=SyntheticModel(),
+            judge=lambda expected, actual: expected == actual, replicates=2)
+        native = {
+            "schema": "bean.native_reasoning_skills.smoke.v1",
+            "selected_strategy": choice["selection"]["arm"],
+            "selection_scores": choice["trial"]["scores"],
+            "selection_hash": choice["trial"]["receipt_hash"],
+            "holdout_scores": holdout["trial"]["scores"],
+            "holdout_hash": holdout["trial"]["receipt_hash"],
+            "retrieved_relevant_lessons": len(skills.recall(
+                domain="sorting", query="SORT_ASC")),
+            "model_weights_modified": False,
+            "holdout_learning_proven": False,
+            "provider_kind": "synthetic_fixture",
+        }
         bridge=bridge_contract()
         result={
             "schema":"bean.adaptive_lab026.smoke.v1",
             "generated_at_utc":datetime.now(timezone.utc).isoformat(),
             "nodes":assess_nodes(bridge_present=bridge["bridge_available"]),
             "bridge_contract":bridge,
+            "native_skills":native,
             "trial":experiment,
             "interpretation":"Synthetic mechanism and persistence demonstration, not measured new model learning",
         }
@@ -66,6 +96,9 @@ def smoke(output):
             if not result["restart_verified"]:
                 raise ValueError("Restart did not recover all lessons")
             restored.journal.verify()
+            if restored.selected_arm("sorting") != native["selected_strategy"]:
+                raise ValueError("Native strategy was not retained at restart")
+            result["native_skills"]["restart_policy_verified"] = True
         finally:
             restored.close()
         (output/"mechanism_receipt.json").write_text(json.dumps(result,indent=2)+"\n")
@@ -88,6 +121,14 @@ def smoke(output):
         for arm,value in experiment["scores"].items():
             lines.append("| "+arm+" | "+str(value)+" / "+
                          str(experiment["cases"]*experiment["replicates"])+" |")
+        lines.extend(["", "## BEAN-native reasoning skills", "",
+                      "Four peer-inspired methods share the existing BEAN journal.",
+                      "Selected strategy: " + native["selected_strategy"] + ".",
+                      "Selection scores: " + str(native["selection_scores"]) + ".",
+                      "Disjoint-ID holdout scores: " + str(native["holdout_scores"]) + ".",
+                      "Policy recovered after restart: " +
+                          str(result["native_skills"]["restart_policy_verified"]) + ".",
+                      "This synthetic fixture does not prove model learning.", ""])
         lines.extend(["",
             "The provider is labeled synthetic_fixture. Sealed test labels are",
             "held by the local evaluator, not sent as a model input.",
