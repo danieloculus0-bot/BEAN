@@ -52,6 +52,15 @@ class LedgerTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "chain broken"):
                 verify(ledger)
 
+    def test_source_hash_ignores_windows_checkout_newlines(self):
+        from .train import digest_source
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "source.py"
+            path.write_bytes(b"print('hello')\\nprint('world')\\n".replace(b"\\n", b"\n"))
+            first = digest_source(path)
+            path.write_bytes(b"print('hello')\\r\\nprint('world')\\r\\n".replace(b"\\r\\n", b"\r\n"))
+            self.assertEqual(first, digest_source(path))
+
     def test_seed_overlap_rejected_without_running_training(self):
         from .train import run
         with tempfile.TemporaryDirectory() as tmp:
