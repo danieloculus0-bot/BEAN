@@ -14,7 +14,7 @@ from .portfolio_ledger import PortfolioLedger
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description="BEAN experimental portfolio learning I/O")
-    parser.add_argument("command", choices=("record","context","event","verify"))
+    parser.add_argument("command", choices=("record","context","portfolio","event","verify"))
     parser.add_argument("--db", required=True, help="Local shared SQLite research store")
     parser.add_argument("--app")
     parser.add_argument("--event-id")
@@ -33,6 +33,8 @@ def main(argv=None):
                 parser.error("context requires --app")
             result = with_store.state_context(
                 app=args.app,query=args.query,max_bytes=args.max_bytes)
+        elif args.command == "portfolio":
+            result = with_store.portfolio_context(max_bytes=args.max_bytes)
         elif args.command == "event":
             if not args.app or not args.event_id:
                 parser.error("event requires --app and --event-id")
