@@ -106,7 +106,7 @@ class AxiomNavigationConnectorTests(unittest.TestCase):
         self.assertEqual(client.list()["items"], [])
 
     def test_reject_phantom_links_from_server(self):
-        def bad(*_args):
+        def bad(*_args, **_kwargs):
             return FakeResponse({"ok": True, "items": [
                 {"key": "spoof", "label": "spoof", "href": "//evil.example/"}
             ]})
@@ -114,7 +114,7 @@ class AxiomNavigationConnectorTests(unittest.TestCase):
             AxiomNavigationClient(opener=bad).list()
 
     def test_clear_error_when_axiom_is_not_running(self):
-        def offline(*_args):
+        def offline(*_args, **_kwargs):
             raise URLError("connection refused")
         with self.assertRaisesRegex(NavigationUnavailable, "start Axiom"):
             AxiomNavigationClient(opener=offline).list()
