@@ -1,0 +1,50 @@
+name: BEAN Information Balloon 3000 true Q-learning compressions
+on:
+  push:
+    branches: ['experiment/bean-information-balloon-*']
+    paths:
+      - 'bean/optimization/information_balloon_q.py'
+      - 'bean/tests/test_information_balloon_q.py'
+      - 'experiments/information_balloon/run_q3000.py'
+      - '.github/workflows/information-balloon-q3000.yml'
+  pull_request:
+    paths:
+      - 'bean/optimization/information_balloon_q.py'
+      - 'bean/tests/test_information_balloon_q.py'
+      - 'experiments/information_balloon/run_q3000.py'
+      - '.github/workflows/information-balloon-q3000.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  q-invariants:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        python: ['3.11', '3.12']
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Verify Q learning, source recovery and unmodified holdout
+        run: python -m unittest bean.tests.test_information_balloon_q -v
+  full-3000-trials:
+    needs: q-invariants
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Execute 3000 real reversible compression Q trials
+        run: python experiments/information_balloon/run_q3000.py --episodes 3000 --eval-cases 120 --out-dir balloon-q-evidence
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: bean-balloon-3000-verified-q-evidence
+          path: balloon-q-evidence/
+          if-no-files-found: ignore
