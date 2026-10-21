@@ -265,12 +265,33 @@ def experiment(root: Path, training: int = 36, holdout: int = 18, seed: int = 71
     baseline_games=batch(heldout,None,root/'fixed_baseline','baseline')
     cold_games=batch(heldout,untrained,root/'untrained_neural','cold')
     learned_games=batch(heldout,recovered,root/'trained_neural','trained')
+    # BEAN Core reviews measured strategies; its ranking is NOT proof of learning.
+    try:
+        from bean.optimization.selection import ImprovementOpportunity, rank_improvements
+        arms=(('fixed_bruteforce',baseline_games),('untrained_neural',cold_games),
+              ('trained_neural',learned_games))
+        opportunities=[]
+        for label,measured in arms:
+            improvement=max(0.0,measured['mean_reward']-baseline_games['mean_reward'])
+            opportunities.append(ImprovementOpportunity(
+                identifier=label,
+                description='Vaultbreaker verified replay and reward: '+label,
+                evidence_refs=('vault:all-cases-replayed',f'vault:{label}:measured'),
+                impact=min(5,int(improvement/2)),reproducibility=5,
+                confidence=measured['win_rate'],risk=0,validation_ready=True))
+        review={'provider':'bean.optimization.selection.rank_improvements',
+                'ranked':[{'arm':entry.opportunity.identifier,'heuristic_score':entry.score}
+                          for entry in rank_improvements(opportunities)],
+                'caution':'Ranking heuristic only, not proof of neural learning.'}
+    except ImportError:
+        review={'provider':'unavailable_in_this_runtime','ranked':[],
+                'caution':'Core not imported; do not claim Core participation.'}
     result={'schema':'bean.vault.experiment.v1','synthetic':True,'secret_space':len(CODES),
             'training_cases':training,'holdout_cases':holdout,'seed':seed,
             'neural_updates':policy.updates,'initial_weights_sha256':initial_hash,
             'saved_weights_sha256':policy.digest(),'reloaded_weights_sha256':recovered.digest(),
             'training':trained_games,'fixed_bruteforce':baseline_games,
-            'untrained_neural':cold_games,'trained_neural':learned_games,
+            'untrained_neural':cold_games,'trained_neural':learned_games,'bean_core_review':review,
             'blind_holdout':'same never-trained secrets for all three arms; no weights update during evaluation',
             'causal_learning_claim':False,
             'interpretation':'Score comparisons use independent oracle; no generalized learning claim without matched advantage.'}
