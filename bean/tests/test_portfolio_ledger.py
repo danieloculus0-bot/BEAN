@@ -79,6 +79,17 @@ class PortfolioLedgerTests(unittest.TestCase):
             self.add("bogus",kind="unverified",reward=100)
         self.assertEqual(self.ledger.verify()["events"],0)
 
+    def test_portfolio_context_sees_multiple_apps_without_policy_mixing(self):
+        self.add()
+        self.add("another",app="Axiom_Beta",state="planning/late",
+                 action="review",reward=-0.5)
+        result=self.ledger.portfolio_context(max_bytes=700)
+        self.assertEqual(result["apps_total"],2)
+        self.assertEqual({r["app"] for r in result["apps"]},
+                         {"Axiom_Beta","FUN/EmperorGauntlet"})
+        self.assertLessEqual(len(canonical(result)),700)
+        self.assertEqual(self.ledger.verify()["events"],2)
+
     def test_tamper_detection(self):
         self.add()
         self.ledger.db.execute(
