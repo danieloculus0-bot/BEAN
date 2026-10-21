@@ -93,14 +93,21 @@ class PublicSkillsPageTests(unittest.TestCase):
         self.assertIn("## Verify BEAN Core locally", readme)
 
     def test_learning_claims_are_reproducible_and_scoped(self):
-        for phrase in ("11.305", "1.355", "98.5%",
-                       "200 previously unseen game seeds", "same deterministic experiment",
-                       "not independently randomized training runs",
-                       "Experimental", "SHA-256", "scored"):
+        # Both original and independently reseeded experiment must be
+        # represented, with comparable cold controls and an immutable receipt.
+        for phrase in ("11.305", "1.355", "12.040", "1.360", "98.5%",
+                       "200-game holdout", "disjoint validation and holdout seeds",
+                       "different training games", "Windows and Linux",
+                       "not evidence of improved learning algorithms",
+                       "SHA-256", "scored"):
             self.assertIn(phrase.casefold(), self.page.casefold())
-        for href in ("https://github.com/danieloculus0-bot/BEAN/pull/99",
-                     "https://github.com/danieloculus0-bot/BEAN/actions/runs/38187025075"):
+        for href in (
+            "https://github.com/danieloculus0-bot/BEAN/pull/99",
+            "https://github.com/danieloculus0-bot/BEAN/actions/runs/39536702492",
+            "https://github.com/danieloculus0-bot/BEAN/blob/experiment/bean-sponge-core-20261011/experiments/sponge_breakout/evidence/score_ledger.jsonl",
+        ):
             self.assertIn(href, self.markup.links)
+        self.assertNotIn("no independent training-seed replication yet", self.page.casefold())
 
     def test_neuroevolution_has_negative_findings_and_sources(self):
         for phrase in ("44", "45", "46", "9.683", "4.833",
@@ -129,7 +136,7 @@ class PublicSkillsPageTests(unittest.TestCase):
             self.assertTrue(any(link.endswith(suffix) for link in self.markup.links),
                             suffix)
         self.assertIn("research-only", self.page)
-        self.assertIn("not installed in Core Main", self.page)
+        self.assertIn("not merged into Core Main", self.page)
         self.assertIn("four-platform Core regression passed", self.page)
         self.assertIn("38257867402", self.page)
 
