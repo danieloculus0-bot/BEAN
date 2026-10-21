@@ -50,4 +50,20 @@ class AdversarialLedgerTests(unittest.TestCase):
                 ledger.rebuild()
 
 
+
+class ExistingLab009IntegrityTest(unittest.TestCase):
+    def test_previous_compressed_lab009_receipt(self):
+        import gzip
+        import hashlib
+        import json
+        from pathlib import Path
+        old=Path(__file__).resolve().parents[1]/'lab009_20261020'
+        snapshot=json.loads((old/'scoreboard.json').read_text())
+        zipped=(old/'event_log.csv.gz').read_bytes()
+        raw=gzip.decompress(zipped)
+        self.assertEqual(hashlib.sha256(zipped).hexdigest(),snapshot['event_log_gzip_sha256'])
+        self.assertEqual(hashlib.sha256(raw).hexdigest(),snapshot['event_log_csv_sha256'])
+        self.assertEqual(len(raw.splitlines())-1,snapshot['events'])
+
+
 if __name__=='__main__': unittest.main()
