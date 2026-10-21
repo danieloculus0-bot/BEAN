@@ -1,0 +1,43 @@
+name: BEAN self-benchmark puzzle and indexed ledger
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'research/persistent_ledger/indexed_recall/**'
+      - '.github/workflows/bean-self-benchmark-ledger.yml'
+  push:
+    branches:
+      - experiment/bean-self-benchmark-ledger-20261020
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  q-puzzle:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        python-version: ['3.11', '3.12']
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: research/persistent_ledger/indexed_recall
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Independent puzzle and recall contract tests
+        run: python -m unittest discover -s . -p 'test_*.py' -v
+      - name: Generate scored experiment and compressed Q-policy
+        run: python switch_puzzle.py --episodes 9000 --output puzzle-result.json
+      - name: Archive complete puzzle and policy evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bean-switch-puzzle-${{ matrix.os }}-py${{ matrix.python-version }}
+          path: |
+            research/persistent_ledger/indexed_recall/puzzle-result.json
+            research/persistent_ledger/indexed_recall/puzzle-result.q.json.gz
+          if-no-files-found: ignore
