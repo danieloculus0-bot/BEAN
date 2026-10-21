@@ -74,6 +74,11 @@ class PortfolioLedgerTests(unittest.TestCase):
         self.assertEqual(self.ledger.verify()["events"],30)
         self.assertEqual(self.ledger.event("FUN/EmperorGauntlet","night-29")["reward"],-1)
 
+    def test_unverified_event_cannot_train_a_policy(self):
+        with self.assertRaisesRegex(ValueError,"unverified"):
+            self.add("bogus",kind="unverified",reward=100)
+        self.assertEqual(self.ledger.verify()["events"],0)
+
     def test_tamper_detection(self):
         self.add()
         self.ledger.db.execute(
