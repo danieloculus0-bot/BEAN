@@ -26,8 +26,8 @@ def choose_strategy(bank, trial, domain, minimum_gain=1):
         raise ValueError("minimum_gain must be positive")
     if trial.get("schema") != SCHEMA or not trial.get("receipt_hash"):
         raise ValueError("Expected a genuine Lab026 experiment receipt")
-    if trial.get("provider_kind") not in ("synthetic_fixture", "real_model"):
-        raise ValueError("Model provider classification missing")
+    if trial.get("provider_kind") not in ("synthetic_fixture", "real_model", "observed_outcomes"):
+        raise ValueError("Trial provider classification missing")
     # Never choose from a fabricated or edited caller-supplied scorecard:
     # reconcile all values with the append-only BEAN journal entry.
     saved = [
