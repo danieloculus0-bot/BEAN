@@ -253,5 +253,36 @@ class PortfolioLedger:
                 raise ValueError("context budget too small")
         return output
 
+    def portfolio_context(self, *, max_bytes=4096):
+        """Small cross-repository scoreboard. Q policies remain app-isolated."""
+        if not isinstance(max_bytes,int) or not 512<=max_bytes<=65536:
+            raise ValueError("invalid portfolio context budget")
+        rows = self.db.execute("""
+            SELECT app,COUNT(*) AS events,MAX(seq) AS last_seq
+            FROM portfolio_events GROUP BY app ORDER BY last_seq DESC
+        """).fetchall()
+        output = {"schema":SCHEMA,"scope":"all_apps",
+                  "apps_total":len(rows),"apps":[],"apps_omitted":0}
+        for row in rows:
+            q = self.db.execute("""
+                SELECT COUNT(*) AS states,COALESCE(SUM(updates),0) AS updates
+                FROM portfolio_q WHERE app=?""",(row["app"],)).fetchone()
+            latest = self.db.execute("""
+                SELECT event_id,chain_hash FROM portfolio_events
+                WHERE app=? ORDER BY seq DESC LIMIT 1""",(row["app"],)).fetchone()
+            summary = {"app":row["app"],"events":row["events"],
+                       "q_entries":q["states"],"q_updates":q["updates"],
+                       "latest_event":latest["event_id"],
+                       "tip":latest["chain_hash"][:16]}
+            output["apps"].append(summary)
+            output["apps_omitted"]=len(rows)-len(output["apps"])
+            if len(canonical(output))>max_bytes:
+                output["apps"].pop()
+                output["apps_omitted"]=len(rows)-len(output["apps"])
+                break
+        if len(canonical(output))>max_bytes:
+            raise ValueError("portfolio context too small")
+        return output
+
     def close(self):
         self.db.close()
