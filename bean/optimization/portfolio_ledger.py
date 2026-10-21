@@ -88,6 +88,8 @@ class PortfolioLedger:
                 isinstance(tag, str) and 0 < len(tag) <= 50 for tag in tags):
             raise ValueError("invalid tags")
         if reward is not None:
+            if kind == "unverified":
+                raise ValueError("unverified observations cannot earn Q reward")
             if not (type(reward) in (int, float) and math.isfinite(reward)):
                 raise ValueError("invalid reward")
             if not isinstance(action, str) or not action or len(action) > 80:
