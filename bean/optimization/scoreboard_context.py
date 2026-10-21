@@ -56,6 +56,14 @@ def _brief(path: Path, root: Path) -> dict:
                              "online_post_investigation_correct", "total_cases")}
         entry["meaning"] = "synthetic frozen knowledge versus online acquisition"
         entry["source_revision"] = doc.get("source_commit")
+    elif schema == "bean.reward.contract.scoreboard.v1":
+        entry["metrics"] = {"jobs_passed":doc.get("jobs_passed"),
+                            "jobs_total":doc.get("jobs_total"),
+                            "test_cases_passed":doc.get("test_cases_passed"),
+                            "test_cases_total":doc.get("test_cases_total"),
+                            "test_cases_failed":doc.get("test_cases_failed")}
+        entry["source_revision"] = doc.get("source_commit")
+        entry["meaning"] = "unit-test replay, not measured policy learning"
     else:
         entry["meaning"] = "unrecognized scoreboard schema: metadata only"
         entry["metrics"] = {}
