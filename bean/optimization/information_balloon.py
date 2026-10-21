@@ -345,13 +345,14 @@ def benchmark_once(source, recipe, training, *, repeat=3):
             "exact": True}
 
 
-def propose(best, visited, rng):
+def propose(best, visited, rng, prior_recipe=None):
     """Test-time recipe inventor: mutate measured winner, then explore.
 
     This is a deterministic experimental search over reversible candidate
     encodings, not a pretrained neural coder or unbounded autonomous learner.
     """
-    seeds = [Recipe("zlib", 6), Recipe("zlib", 1), Recipe("zlib", 9),
+    seeds = ([prior_recipe] if prior_recipe is not None else []) + [
+             Recipe("zlib", 6), Recipe("zlib", 1), Recipe("zlib", 9),
              Recipe("bz2", 1), Recipe("lzma", 0), Recipe("raw", 0),
              Recipe("zlib", 6, 6, 16), Recipe("zlib", 6, 4, 16)]
     for recipe in seeds:
@@ -375,7 +376,8 @@ def propose(best, visited, rng):
 
 
 def run_experiment(records, *, archive_budget, context_budget,
-                   queries, min_recall=1.0, iterations=14, seed=7):
+                   queries, min_recall=1.0, iterations=14, seed=7,
+                   prior_recipe=None):
     """Iterative selection with single final heldout test and immutable receipts.
 
     Train dictionary only on train partition. Tune proposals on a different
@@ -383,6 +385,10 @@ def run_experiment(records, *, archive_budget, context_budget,
     Archived data are never deleted to make a benchmark pass.
     """
     validate_records(records)
+    if prior_recipe is not None and not isinstance(prior_recipe, Recipe):
+        raise ValueError("prior recipe must be a Recipe")
+    if prior_recipe is not None:
+        prior_recipe.validate()
     if not isinstance(queries, list) or not queries or not all(
             isinstance(q, str) and q for q in queries):
         raise ValueError("expected explicit relevance queries")
@@ -411,10 +417,12 @@ def run_experiment(records, *, archive_budget, context_budget,
     visited = set()
     leader, leader_metric, leader_rank = None, None, None
     for iteration in range(iterations):
-        recipe, origin = propose(leader, visited, rng)
+        recipe, origin = propose(leader, visited, rng, prior_recipe)
         if recipe is None:
             break
         visited.add(recipe)
+        if prior_recipe is not None and recipe == prior_recipe:
+            origin = "retained_previous_recipe_reverified"
         receipt = {"iteration": iteration, "recipe": asdict(recipe),
                    "proposed_by": origin, "training_sha256": digest(training),
                    "tuning_sha256": digest(tuning), "phase": "tuning"}
@@ -456,6 +464,7 @@ def run_experiment(records, *, archive_budget, context_budget,
             "source_records": len(records), "source_bytes": len(canonical(records)),
             "training_records": first, "tuning_records": second - first,
             "holdout_records": n - second,
+            "previous_recipe": asdict(prior_recipe) if prior_recipe else None,
             "budget_bytes": archive_budget,
             "context_budget_bytes": context_budget,
             "min_recall": min_recall, "candidate_count": len(trials),
@@ -547,3 +556,49 @@ def retain_verified(root, original, recipe, *, training=b"", key=None):
     return {"receipt":receipt,"raw_path":str(raw_path),
             "package_path":str(package_path),
             "manifest_path":str(manifest_path)}
+
+
+def growth_experiment(records, *, checkpoints, archive_budget,
+                      context_budget, queries, min_recall=1.0,
+                      iterations=12, seed=19):
+    """Test more records at fixed budgets while re-testing past winning recipes.
+
+    Prior results are *proposals*, never assumed correct for changed data.
+    This is a finite progression, not an autonomous daemon or live ingestion.
+    """
+    validate_records(records)
+    if not isinstance(checkpoints, (tuple,list)) or not checkpoints:
+        raise ValueError("at least one growth checkpoint is required")
+    if sorted(set(checkpoints)) != list(checkpoints) or any(
+            type(n) is not int or n < 3 or n > len(records) for n in checkpoints):
+        raise ValueError("growth checkpoints must be increasing valid record counts")
+    prior=None
+    snapshots=[]
+    for episode, count in enumerate(checkpoints):
+        outcome=run_experiment(
+            records[:count],archive_budget=archive_budget,
+            context_budget=context_budget,queries=queries,
+            min_recall=min_recall,iterations=iterations,
+            seed=seed+episode,prior_recipe=prior)
+        snapshots.append({
+            "episode":episode,
+            "source_records":count,
+            "accepted":outcome["accepted"],
+            "retained":outcome["working_shelf_records"],
+            "recall":outcome["relevance"]["mean_recall"],
+            "source_sha256":outcome["source_sha256"],
+            "archive_sha256":outcome["archive_sha256"],
+            "selected_recipe":outcome["selected_recipe"],
+            "previous_recipe":outcome["previous_recipe"],
+            "all_trials":outcome["trials"],
+            "reason":outcome["reason"]})
+        # Prefer the most recent verified recipe, but never propagate a
+        # failed codec as proof of a successful retention policy.
+        if outcome["accepted"]:
+            prior=Recipe(**outcome["selected_recipe"]).validate()
+    return {"schema": VERSION, "mode": "growth",
+            "archive_budget_bytes":archive_budget,
+            "context_budget_bytes":context_budget,
+            "snapshots":snapshots,
+            "last_accepted":snapshots[-1]["accepted"],
+            "source_records_total":len(records)}
