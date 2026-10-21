@@ -1,0 +1,76 @@
+name: BEAN Factory Fault Detective 3000
+on:
+  push:
+    branches: [experiment/bean-fault-detective-3000-20261020]
+    paths:
+      - 'research/persistent_ledger/indexed_recall/fault_detective.py'
+      - 'research/persistent_ledger/indexed_recall/test_fault_detective.py'
+      - '.github/workflows/bean-fault-detective-3000.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'research/persistent_ledger/indexed_recall/fault_detective.py'
+      - 'research/persistent_ledger/indexed_recall/test_fault_detective.py'
+      - '.github/workflows/bean-fault-detective-3000.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  test-and-score:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        python-version: ['3.11', '3.12']
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Compile all experiment components
+        run: python -m compileall -q research/persistent_ledger/indexed_recall
+      - name: Test Q learner and immutable ledger contracts
+        run: python -m unittest discover -s research/persistent_ledger/indexed_recall -p test_fault_detective.py -v
+      - name: Train and evaluate exactly 3000 unique faults
+        run: python research/persistent_ledger/indexed_recall/fault_detective.py --output fault-detective-results
+      - name: Replay every case and all learning checkpoints
+        run: python research/persistent_ledger/indexed_recall/fault_detective.py --output fault-detective-results --verify
+      - name: Upload full compressible evidence and scoreboards
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: fault-detective-${{ matrix.os }}-python${{ matrix.python-version }}
+          path: |
+            fault-detective-results/ledger/archive/*.jsonl.gz
+            fault-detective-results/ledger/archive/*.manifest.json
+            fault-detective-results/scoreboard.json
+            fault-detective-results/trained-policy.json.gz
+          if-no-files-found: ignore
+  keep-archive:
+    needs: test-and-score
+    if: github.event_name == 'push' && github.ref == 'refs/heads/experiment/bean-fault-detective-3000-20261020'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download verified research archive
+        uses: actions/download-artifact@v4
+        with:
+          name: fault-detective-ubuntu-latest-python3.12
+          path: fault-detective-results
+      - name: Record complete compressed experimental ledger
+        shell: bash
+        run: |
+          set -euo pipefail
+          folder="research/persistent_ledger/fault_detective_evidence/${GITHUB_SHA}"
+          mkdir -p "$folder"
+          cp -R fault-detective-results/. "$folder/"
+          printf 'This is a synthetic experiment on immutable source commit %s.\nSee scoreboard.json for all outcomes. Every diagnostic attempt is recoverable from 30 compressed JSONL event archives. Not validated on industrial equipment.\n' "$GITHUB_SHA" > "$folder/README.txt"
+          git config user.name "bean-ledger-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f "$folder"
+          git commit -m "research: persist 3000 factory fault traces for ${GITHUB_SHA}"
+          git push origin "HEAD:${GITHUB_REF_NAME}"
