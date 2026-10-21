@@ -5,7 +5,8 @@ on:
     paths:
       - 'bean/optimization/sponge_td.py'
       - 'bean/memory/compression.py'
-      - 'experiments/sponge_breakout/**'
+      - 'experiments/sponge_breakout/*.py'
+      - 'experiments/sponge_breakout/README.md'
       - '.github/workflows/bean-sponge-breakout.yml'
   workflow_dispatch:
 permissions:
@@ -41,3 +42,54 @@ jobs:
           name: sponge-breakout-ledger-${{ matrix.os }}
           path: sponge-evidence/
           if-no-files-found: warn
+
+  compare-and-publish:
+    name: Compare OS receipts and preserve Git research ledger
+    needs: learning
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout research branch
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - name: Download Linux evidence
+        uses: actions/download-artifact@v4
+        with:
+          name: sponge-breakout-ledger-ubuntu-latest
+          path: ci-receipts/linux
+      - name: Download Windows evidence
+        uses: actions/download-artifact@v4
+        with:
+          name: sponge-breakout-ledger-windows-latest
+          path: ci-receipts/windows
+      - name: Confirm identical source hashes, runs, scores and evidence receipts
+        shell: bash
+        run: |
+          python -m experiments.sponge_breakout.ledger ci-receipts/linux/score_ledger.jsonl --expect-runs 2
+          python -m experiments.sponge_breakout.ledger ci-receipts/windows/score_ledger.jsonl --expect-runs 2
+          python - <<'PY'
+          from pathlib import Path
+          from hashlib import sha256
+          a = Path('ci-receipts/linux/score_ledger.jsonl').read_bytes()
+          b = Path('ci-receipts/windows/score_ledger.jsonl').read_bytes()
+          if a != b:
+              raise SystemExit('Cross-platform ledger mismatch: cannot publish')
+          print('Identical Windows/Linux ledger SHA256', sha256(a).hexdigest())
+          PY
+      - name: Preserve new receipts, never overwrite conflicting history
+        run: |
+          python -m experiments.sponge_breakout.publish_ledger ci-receipts/linux/score_ledger.jsonl experiments/sponge_breakout/evidence/score_ledger.jsonl
+      - name: Commit durable small scoreboard (no secret or binary artifact)
+        shell: bash
+        run: |
+          git add experiments/sponge_breakout/evidence/score_ledger.jsonl
+          if git diff --cached --quiet; then
+            echo 'Persistent scoreboard already contains identical receipts'
+          else
+            git config user.name 'github-actions[bot]'
+            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+            git commit -m 'Research: preserve checked Sponge receipts [skip ci]'
+            git push origin HEAD:experiment/bean-sponge-core-20261011
+          fi
