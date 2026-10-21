@@ -1,0 +1,54 @@
+name: BEAN Vaultbreaker neural reward and full-replay CI
+
+on:
+  pull_request:
+    branches: [experiment/anticipatory-ledger-20261020]
+    paths:
+      - 'research/persistent_ledger/indexed_recall/**'
+      - '.github/workflows/bean-vaultbreaker.yml'
+  push:
+    branches: [experiment/bean-self-benchmark-ledger-20261020]
+    paths:
+      - 'research/persistent_ledger/indexed_recall/**'
+      - '.github/workflows/bean-vaultbreaker.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  vaultbreaker:
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        python-version: ['3.11', '3.12']
+    defaults:
+      run:
+        working-directory: research/persistent_ledger/indexed_recall
+    env:
+      PYTHONPATH: ${{ github.workspace }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Verify compressed history, oracle and real neural update
+        run: python -m unittest discover -s . -p "test_*.py" -v
+      - name: Compete on held-out codes and archive every decision
+        run: python vaultbreaker.py --training 12 --holdout 8 --output vault-evidence
+      - name: Confirm real BEAN Core reviewed the strategies
+        run: python -c "import json; r=json.load(open('vault-evidence/report.json')); assert r['bean_core_review']['provider']=='bean.optimization.selection.rank_improvements'; assert r['trained_neural']['replayed_games']==8; assert r['saved_weights_sha256']==r['reloaded_weights_sha256']"
+      - name: Archive original compressed full traces and evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bean-vaultbreaker-${{ matrix.os }}-py${{ matrix.python-version }}
+          path: |
+            research/persistent_ledger/indexed_recall/vault-evidence/report.json
+            research/persistent_ledger/indexed_recall/vault-evidence/neural_state.json
+            research/persistent_ledger/indexed_recall/vault-evidence/**/archive/*.jsonl.gz
+            research/persistent_ledger/indexed_recall/vault-evidence/**/archive/*.manifest.json
+          if-no-files-found: error
