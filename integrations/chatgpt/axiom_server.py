@@ -10,6 +10,8 @@ authorized connection; the endpoint must not be published as-is.
 """
 from __future__ import annotations
 
+from typing import Any
+
 from mcp.server import MCPServer
 from mcp.types import ToolAnnotations
 
@@ -34,7 +36,7 @@ mcp = MCPServer(
     readOnlyHint=True, destructiveHint=False, idempotentHint=True,
     openWorldHint=False,
 ))
-def bean_find_axiom_pages(query: str) -> dict:
+def bean_find_axiom_pages(query: str) -> dict[str, Any]:
     """Find real Axiom screens to offer as navigation links.
 
     Use for 'take me to quality', 'where is the FAI screen?' and similar.
@@ -49,7 +51,7 @@ def bean_find_axiom_pages(query: str) -> dict:
     readOnlyHint=True, destructiveHint=False, idempotentHint=True,
     openWorldHint=False,
 ))
-def bean_list_axiom_favorites() -> dict:
+def bean_list_axiom_favorites() -> dict[str, Any]:
     """List actually saved Axiom Favorites. Does not infer from conversation."""
     return AxiomNavigationClient().list()
 
@@ -59,7 +61,7 @@ def bean_list_axiom_favorites() -> dict:
     readOnlyHint=False, destructiveHint=False, idempotentHint=True,
     openWorldHint=False,
 ))
-def bean_pin_axiom_favorite(module_key: str) -> dict:
+def bean_pin_axiom_favorite(module_key: str) -> dict[str, Any]:
     """Save a registered screen to the real Axiom Favorites menu.
 
     Use when the user directly asks to bookmark/pin/add to Favorites or accepts
@@ -74,7 +76,7 @@ def bean_pin_axiom_favorite(module_key: str) -> dict:
     readOnlyHint=False, destructiveHint=False, idempotentHint=True,
     openWorldHint=False,
 ))
-def bean_remove_axiom_favorite(module_key: str) -> dict:
+def bean_remove_axiom_favorite(module_key: str) -> dict[str, Any]:
     """Unpin a saved registered screen when the user asks to remove it."""
     return AxiomNavigationClient().remove(module_key)
 
