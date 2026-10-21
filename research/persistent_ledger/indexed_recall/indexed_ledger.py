@@ -6,6 +6,7 @@ may alter a source record or assert that a test passed without original evidence
 from __future__ import annotations
 
 import base64
+from contextlib import closing
 import gzip
 import hashlib
 import json
@@ -154,7 +155,7 @@ class IndexedLedger:
 
     def get(self, identifier: str) -> dict:
         """Fast lookup from rebuilt index, verifying original payload hash."""
-        with sqlite3.connect(self.cache) as db:
+        with closing(sqlite3.connect(self.cache)) as db:
             row=db.execute('SELECT event_sha256,event_json FROM events WHERE id=?',(identifier,)).fetchone()
         if row is None:
             raise KeyError(identifier)
@@ -168,12 +169,12 @@ class IndexedLedger:
             where.append('run=?');params.append(run)
         if name is not None:
             where.append('name=?');params.append(name)
-        with sqlite3.connect(self.cache) as db:
+        with closing(sqlite3.connect(self.cache)) as db:
             sql='SELECT id FROM events'+(' WHERE '+' AND '.join(where) if where else '')+' ORDER BY run,ordinal'
             return [r[0] for r in db.execute(sql,params)]
 
     def scoreboard(self) -> dict:
-        with sqlite3.connect(self.cache) as db:
+        with closing(sqlite3.connect(self.cache)) as db:
             pairs=db.execute("SELECT run,status,count(*) FROM events WHERE kind='test' GROUP BY run,status ORDER BY run,status").fetchall()
         per={}
         for run,status,count in pairs:
