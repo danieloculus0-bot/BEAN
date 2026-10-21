@@ -1,0 +1,57 @@
+{
+  "schema": "bean.emperor_gauntlet.reward_learning_scoreboard.v1",
+  "experiment_id": "bean-emperor-3000-2026-10-20",
+  "recorded_utc_date": "2026-10-21",
+  "simulation": "original Emperor Gauntlet HTML5 gameplay physics",
+  "study_design": "six independently trained Q policies, 500 actual games each, all starting with existing 350-episode Q checkpoint; aggregated and replayed experience; 20 validation seeds and 48 different holdout seeds",
+  "training": {
+    "new_episodes": 3000,
+    "parallel_shards": 6,
+    "episodes_per_shard": 500,
+    "total_eliminations": 19237,
+    "mean_kills_per_training_episode": 6.412333333333334,
+    "best_kills": 35,
+    "previous_record": 24,
+    "unique_seeds": 3000,
+    "new_q_updates": 85929,
+    "prior_q_updates": 13419,
+    "merged_q_updates": 99348,
+    "states_in_merged_policy": 9558,
+    "full_record_count_training_only": 3350
+  },
+  "heldout": {
+    "episodes": 48,
+    "mean_kills": {
+      "random": 5.770833333333333,
+      "original_champion": 6.75,
+      "preexperiment_incumbent": 5.645833333333333,
+      "merged_q": 7.1875,
+      "off_policy_replay_q": 6.895833333333333
+    },
+    "merged_minus_original_champion": 0.4375,
+    "approx_95pct_interval": [
+      -1.104200684884407,
+      1.979200684884407
+    ],
+    "statistically_supported_promotion": false
+  },
+  "preservation": {
+    "previous_champion_retained": true,
+    "merged_candidate_retained": true,
+    "full_gameplay_decision_ledger_retained": true,
+    "sha256_of_actions_zip": "5c54f69c33a0d5b62e659c87908db40b55d3fd568242628aef9da4508f370a1d",
+    "artifact_id": 12320822998,
+    "artifact_run_id": 39545071171,
+    "artifact_download_url": "https://github.com/danieloculus0-bot/FUN/actions/runs/39545071171/artifacts/12320822998",
+    "artifact_retention_days": 90,
+    "training_run_id": 39544727605,
+    "parent_training_run_id": 39543978578,
+    "original_champion_run_id": 39543055899
+  },
+  "epistemic_status": "measured game-specific Q policy learning; higher heldout mean preliminary; neither general cognitive improvement nor neural model weight learning proven",
+  "limitations": [
+    "3,000 episodes are six parallel independent Q-learning batches, not 3,000 serial games with one online policy",
+    "confidence interval includes zero",
+    "GitHub Actions detailed ledger artifacts expire per retention policy; this compact scoreboard remains in Git"
+  ]
+}
