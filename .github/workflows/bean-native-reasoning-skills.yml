@@ -48,10 +48,13 @@ jobs:
       - run: python -m unittest bean.tests.test_native_reasoning_skills -v
       - run: python -m unittest bean.tests.test_adaptive_brain_port_lab026 -v
       - run: python -m pytest bean/tests -q -ra --tb=short --junitxml=native-skills-junit.xml
+      - run: python -m bean.learning.lab026_report --output native-lab026-receipts
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: native-bean-skills-${{ matrix.os }}
-          path: native-skills-junit.xml
+          path: |
+            native-skills-junit.xml
+            native-lab026-receipts/
           if-no-files-found: warn
           retention-days: 30
