@@ -76,8 +76,7 @@ class AxiomNavigationClient:
     def list(self) -> dict:
         return self._destinations(self._call("GET", "/api/favorites"))
 
-    @staticmethod
-    def _destinations(data: dict) -> dict:
+    def _destinations(self, data: dict) -> dict:
         items = data.get("items")
         if not isinstance(items, list):
             raise NavigationUnavailable("Axiom did not supply a destination list")
@@ -88,10 +87,11 @@ class AxiomNavigationClient:
                     or not item["href"].startswith("/")
                     or item["href"].startswith("//")):
                 raise NavigationUnavailable("Axiom supplied an invalid destination")
-            clean.append({k: item[k] for k in ("key", "label", "href")})
+            clean.append({**{k: item[k] for k in ("key", "label", "href")},
+                          "local_url": self.origin + item["href"]})
         return {
             "ok": True, "items": clean, "scope": "local_axiom",
-            "note": "Paths are relative to Axiom. Do not imply a publicly reachable URL.",
+            "note": "Local URLs open only on the computer running Axiom. Do not promise these links work from phones or other devices.",
         }
 
     def pin(self, module_key: str) -> dict:
@@ -105,7 +105,8 @@ class AxiomNavigationClient:
             raise NavigationUnavailable("Axiom confirmed a different favorite")
         return {
             "ok": True, "saved": True, "created": result.get("created") is True,
-            "favorite": {k: item[k] for k in ("key", "label", "href")},
+            "favorite": {**{k: item[k] for k in ("key", "label", "href")},
+                         "local_url": self.origin + item["href"]},
             "scope": "local_axiom",
         }
 
