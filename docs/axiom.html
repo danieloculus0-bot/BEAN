@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#0f1113">
+<meta name="description" content="Axiom + BEAN: a local-first enterprise software direction built around real workflows, familiar spreadsheets, natural-language navigation and evidence-linked actions. Public research beta, not a production release.">
+<meta property="og:title" content="Axiom × BEAN | Work, not another spreadsheet">
+<meta property="og:description" content="Keep the spreadsheet. Connect the company. An evidence-first enterprise computing architecture in progress.">
+<meta property="og:image" content="https://danieloculus0-bot.github.io/BEAN/bean-official.webp">
+<link rel="icon" href="./bean-official.webp" type="image/webp">
+<link rel="canonical" href="https://danieloculus0-bot.github.io/BEAN/axiom.html">
+<title>Axiom × BEAN | Work, not another spreadsheet</title>
+<style>
+:root{color-scheme:dark;--bg:#0f1113;--surface:#1a1d20;--raised:#22282a;--line:#343d3b;--text:#e7ede7;--muted:#a1b0aa;--green:#79de4b;--gold:#e6d39a;--max:1120px}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:radial-gradient(ellipse 80% 510px at 72% 0%,#193922 0%,transparent 80%),var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,Segoe UI,sans-serif}
+a{color:var(--green);text-underline-offset:4px}
+a:focus-visible{outline:3px solid var(--green);outline-offset:4px}
+.wrap{width:min(calc(100% - 36px),var(--max));margin:auto}
+header{border-bottom:1px solid var(--line);background:#0f1113ed}
+nav{min-height:75px;display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:10px;font-size:1.02rem;font-weight:900;letter-spacing:.08em;color:white;text-decoration:none}
+.brand img{width:46px;height:54px;object-fit:contain}
+nav .right{display:flex;gap:24px;flex-wrap:wrap;font-size:.91rem}
+nav .right a{text-decoration:none;color:var(--text)}
+nav .right a:hover{color:var(--green)}
+.hero{padding:86px 0 75px}
+.eyebrow{font-weight:850;text-transform:uppercase;letter-spacing:.16em;color:var(--green);font-size:.78rem}
+h1,h2,h3,p{margin-top:0}
+h1{font-size:clamp(3rem,7.6vw,6.5rem);line-height:1.01;letter-spacing:-.06em;margin:19px 0 28px}
+h1 span{color:var(--green)}
+h2{font-size:clamp(1.85rem,4.2vw,3.1rem);line-height:1.15;letter-spacing:-.037em}
+h3{font-size:1.13rem}
+p{color:var(--muted)}
+strong{color:var(--text)}
+.lead{font-size:clamp(1.04rem,2vw,1.26rem);max-width:780px}
+.actions{display:flex;gap:12px;flex-wrap:wrap;margin:27px 0 20px}
+.btn{display:inline-flex;padding:12px 18px;border:1px solid var(--line);border-radius:11px;text-decoration:none;color:var(--text);background:var(--raised);font-weight:750}
+.btn.primary{background:var(--green);color:#0b210d;border-color:var(--green)}
+.btn:hover{border-color:var(--green)}
+.micro{font-size:.84rem}
+.hero-note{display:inline-flex;border:1px solid #4e533e;border-radius:8px;padding:7px 12px;color:var(--gold);background:#2a2b21;font-size:.82rem}
+section{padding:68px 0;border-top:1px solid var(--line)}
+.cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:15px}
+.card{background:linear-gradient(140deg,#202824,#171d1a);border:1px solid var(--line);border-radius:18px;padding:23px}
+.card .number{display:block;color:var(--green);font-weight:850;font-size:1.55rem;margin-bottom:12px}
+.card p{margin-bottom:0}
+.flow{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:27px}
+.node{border:1px solid var(--line);border-radius:14px;padding:17px;background:var(--surface);min-width:0}
+.node b{display:block;margin-bottom:6px}
+.node small{color:var(--muted)}
+.node .status{color:var(--green);text-transform:uppercase;letter-spacing:.06em;font-size:.68rem;font-weight:850}
+.node .status.planned{color:var(--gold)}
+.detail{display:grid;grid-template-columns:1fr 1fr;gap:30px;align-items:start}
+.detail .card{padding:27px}
+table{width:100%;border-collapse:collapse;font-size:.91rem}
+th,td{padding:14px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+th{color:var(--muted);text-transform:uppercase;letter-spacing:.08em;font-size:.74rem}
+tr:last-child td{border-bottom:0}
+.link-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-top:26px}
+.link-grid a{display:block;text-decoration:none;background:var(--surface);border:1px solid var(--line);border-radius:13px;padding:16px;font-weight:800}
+.link-grid a span{display:block;color:var(--muted);font-weight:400;font-size:.83rem;margin-top:5px}
+.link-grid a:hover{border-color:var(--green)}
+.callout{padding:24px;border-radius:16px;border-left:4px solid var(--green);background:#19281e}
+.callout p:last-child{margin-bottom:0}
+footer{border-top:1px solid var(--line);padding:30px 0 48px;font-size:.86rem;color:var(--muted)}
+footer .wrap{display:flex;justify-content:space-between;gap:15px;flex-wrap:wrap}
+@media(max-width:820px){.cards,.flow{grid-template-columns:repeat(2,1fr)}.detail{grid-template-columns:1fr}.hero{padding:60px 0}}
+@media(max-width:540px){.cards,.flow,.link-grid{grid-template-columns:1fr}.hero{padding:47px 0}.node{padding:16px}section{padding:47px 0}nav{padding:10px 0}.card{padding:19px}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+</style></head>
+<body>
+<header><nav class="wrap" aria-label="Primary navigation"><a class="brand" href="./"><img src="./bean-official.webp" alt="BEAN sprout mascot">BEAN <span aria-hidden="true">×</span> AXIOM</a><div class="right"><a href="#workflow">Workflow</a><a href="#evidence">What works</a><a href="#jetson">Jetson</a><a href="./">BEAN Lab ↗</a></div></nav></header>
+<main>
+<div class="wrap hero">
+<span class="eyebrow">A different approach to enterprise software</span>
+<h1>Keep the spreadsheet.<br><span>Connect the company.</span></h1>
+<p class="lead">People should not need to memorize ten applications—or operate a business out of a maze of disconnected private workbooks. <strong>Axiom</strong> is building one place for manufacturing and operations. <strong>BEAN</strong> provides evidence-aware decision components. Language connectors help people find and use the tools without forcing a local language model onto every workstation.</p>
+<div class="actions"><a class="btn primary" href="https://github.com/danieloculus0-bot/Axiom_Beta">Explore Axiom source ↗</a><a class="btn" href="https://github.com/danieloculus0-bot/BEAN">Inspect BEAN ↗</a><a class="btn" href="#evidence">See verified boundaries ↓</a></div>
+<span class="hero-note">Architecture and working beta components • Not an enterprise production release</span>
+</div>
+<section id="workflow"><div class="wrap">
+<span class="eyebrow">The document remains useful</span><h2>Excel can stay Excel.<br>Axiom makes the information usable.</h2>
+<p class="lead">The goal is a lightweight native viewer/editor for Excel-compatible files. Employees can inspect and edit familiar workbooks; Axiom keeps a controlled original and proposes structured imports of the rows that matter. <strong>Review comes before shared business records change.</strong></p>
+<div class="cards">
+<div class="card"><span class="number">01</span><h3>Open and edit</h3><p>Use a familiar Excel-compatible interface instead of inventing another spreadsheet engine. Keep workbook tabs, formulas, formatting and the original file.</p></div>
+<div class="card"><span class="number">02</span><h3>Interpret and map</h3><p>Recognize candidate tables, headers, dates, part numbers, employees, jobs or transactions. Show column mappings and uncertainties before importing.</p></div>
+<div class="card"><span class="number">03</span><h3>Share approved facts</h3><p>Move accepted records to their owning Axiom module, with document revision, identity, provenance and import receipt. No silent replacement of a system of record.</p></div>
+</div>
+<div class="flow" aria-label="Proposed controlled workbook workflow">
+<div class="node"><span class="status">Available in beta</span><b>Spreadsheet input</b><small>Axiom Sheet Workbench imports XLSX/CSV and provides a basic editable grid</small></div>
+<div class="node"><span class="status planned">Planned</span><b>Managed original</b><small>Retain all workbook bytes, versions, tabs, styles and formulas intact</small></div>
+<div class="node"><span class="status planned">Planned</span><b>Interpretation review</b><small>Suggest field mappings and require explicit acceptance</small></div>
+<div class="node"><span class="status planned">Planned</span><b>Module ownership</b><small>Write approved data into ERP, quality, engineering or maintenance records</small></div>
+</div>
+<p class="micro" style="margin-top:17px">The current Axiom Sheet Workbench edits a simplified grid and imports the active worksheet. It does <strong>not yet</strong> preserve and round-trip arbitrary multi-sheet Excel workbooks faithfully. Axiom-controlled original files and inferred cross-module import mappings are proposed improvements—not shipped functions.</p>
+</div></section>
+<section id="architecture"><div class="wrap detail">
+<div><span class="eyebrow">Intelligence where it matters</span><h2>BEAN thinks.<br>Connectors communicate.</h2><p>BEAN Core's role is to maintain evidence, remember outcomes, select strategies and support inspectable decisions. Natural-language services can explain those decisions and route people to the correct screen. Keeping language inference outside the device lets lightweight workstations focus on application services.</p><p>For example, “Add Quality Forge to my Favorites” can map to a real Axiom module key, save it in Axiom's database, and confirm success only after the write is acknowledged. No staged chat response is necessary.</p></div>
+<div class="card"><h3>A single recognizable workspace</h3><p>Dark graphite, electric-lime controls, repairable hardware targets, browser-accessible modules and deep links into the records employees actually use.</p><div class="callout"><strong>One important boundary:</strong><p>We have tested the local BEAN-to-Axiom navigation connector. Connecting that tool to an authenticated remote ChatGPT session—particularly on phones—still requires a hosted identity and network pathway.</p></div></div>
+</div></section>
+<section id="evidence"><div class="wrap">
+<span class="eyebrow">Evidence over slogans</span><h2>Built, tested, and still unfinished.</h2>
+<table><thead><tr><th>Capability</th><th>Current state</th><th>Evidence</th></tr></thead><tbody>
+<tr><td>Unified Axiom workspaces</td><td>Working beta modules in Flask/SQLite; not a production multiuser ERP</td><td><a href="https://github.com/danieloculus0-bot/Axiom_Beta">Axiom source</a></td></tr>
+<tr><td>Spreadsheet viewer/editor basics</td><td>Existing Sheet Workbench supports basic grid edits and CSV/XLSX import/export. Fidelity limits apply</td><td><a href="https://github.com/danieloculus0-bot/Axiom_Beta/blob/main/superforge/modules/finance_ui.py">Workbench routes</a></td></tr>
+<tr><td>AI-assisted navigation foundation</td><td>Real, persistent favorites and matching local BEAN connector verified on Windows/Linux</td><td><a href="https://github.com/danieloculus0-bot/BEAN/actions/workflows/bean-axiom-navigation.yml">Cross-repository tests</a></td></tr>
+<tr><td>BEAN evidence and memory</td><td>Source-backed experimental Core with testable persistence and revision mechanics</td><td><a href="https://github.com/danieloculus0-bot/BEAN">BEAN repository</a></td></tr>
+<tr><td>Fully automatic workbook interpretation</td><td>Not delivered as a universal verified importer</td><td><a href="https://github.com/danieloculus0-bot/Axiom_Beta">Development target</a></td></tr>
+<tr><td>Enterprise-wide deployment</td><td>Not yet proven: authentication, device fleet, backup, and shop acceptance remain</td><td><a href="https://github.com/danieloculus0-bot/JET-ERP">JERP architecture</a></td></tr>
+</tbody></table>
+</div></section>
+<section id="jetson"><div class="wrap detail">
+<div><span class="eyebrow">Affordable compute</span><h2>Jetson-ready in direction.<br>Not yet Jetson-verified.</h2><p>JERP's JetPack deployment target uses an ARM64 native office editor, a browser-based Axiom shell and lightweight BEAN services. A language model is optional, not a system requirement. Native LibreOffice Calc is a practical office-app candidate for supported Linux distributions; compatibility and editing fidelity still need hardware tests.</p><p><strong>Original Jetson Nano note:</strong> NVIDIA's final Nano-supported JetPack is 4.6.6 on a legacy Ubuntu 18.04 base. We'll distinguish that target from newer Orin boards, and won't pretend one installer works equally on all Jetsons.</p></div>
+<div class="card"><h3>Design principle</h3><p>Use the device for the actual job. Don't burn the memory budget running a local LLM just to speak a sentence.</p><p>Office and file-editing integration is a compatibility feature. Axiom remains the owner of approved company records; a workbook never silently gets to override them.</p><a href="https://github.com/danieloculus0-bot/JET-ERP">Read the JERP deployment blueprint ↗</a></div>
+</div></section>
+<section id="source"><div class="wrap">
+<span class="eyebrow">Build in public</span><h2>A real project, with receipts.</h2>
+<p>Reproducible cross-repository integration tests matter more than a scripted demo. The repositories below are public for inspection; visibility does not imply permission to reuse or redistribute any code without an applicable license.</p>
+<div class="link-grid">
+<a href="https://github.com/danieloculus0-bot/Axiom_Beta">Axiom Beta ↗<span>Working operations shell, favorites, and spreadsheet workbench</span></a>
+<a href="https://github.com/danieloculus0-bot/BEAN">BEAN Core ↗<span>Evidence, memory, learning research and connector tooling</span></a>
+<a href="https://github.com/danieloculus0-bot/JET-ERP">JERP / JetPack direction ↗<span>Jetson-focused enterprise packaging blueprint</span></a>
+<a href="https://github.com/danieloculus0-bot/BEAN-AI-Bridge-">BEAN AI Bridge ↗<span>Experimental evidence and engineering module contracts</span></a>
+</div>
+</div></section>
+</main>
+<footer><div class="wrap"><span>BEAN × AXIOM · Manufacturing systems research</span><span>Updated October 20, 2026 · Evidence first, claims second</span></div></footer>
+</body></html>
