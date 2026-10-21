@@ -141,7 +141,7 @@ def accept_feedback(ledger,claim,action,oracle):
     receipt adapter. A caller saying 'passed' or giving a URL is NOT proof.
     """
     if not isinstance(oracle,AdjudicatedOutcome) or claim.case_id!=oracle.case_id:
-        raise ValueError("independent synthetic outcome required")
+        raise ValueError("independent synthetic oracle outcome required")
     expected=digest({"case_id":oracle.case_id,
                      "supported":oracle.actually_supported,
                      "source":"synthetic_hidden_oracle_v1"})
