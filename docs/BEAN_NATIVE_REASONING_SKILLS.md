@@ -54,3 +54,20 @@ python -m pytest bean/tests -q -ra --tb=short
 The workflow `bean-native-reasoning-skills.yml` checks Windows/Ubuntu with the pinned Bridge dependency. Cases are synthetic, and repeated tests demonstrate implementation correctness, not learned general intelligence. Real domain holdouts and direct Bridge task dispatch remain separate experiments.
 
 **Source inspiration, no copied external framework**, no new identity, consent, or behavioral policies, no implicit downloads, LLM inference, neural weight updates or production deployment. Holdout gains are not yet proven.
+
+## Native experimental evaluation cycle
+
+The API also exposes `evaluate_and_select`, which calls BEAN's pre-existing
+`run_paired_trial` (real model if explicitly provided, or declared synthetic
+fixture), then `choose_strategy` with matched controls. It stores the trial
+receipt and selection in BEAN's journal. `evaluate_holdout` subsequently
+runs cold, placebo and adaptive arms on separately supplied task IDs, without
+reselecting a policy or mutating the hashed receipt. It rejects task-ID overlap
+with earlier measured trials.
+
+This makes memory, reflection, reusable skill and instruction proposals
+participate in one tested adaptive decision workflow. It does not implement
+Letta's full memory architecture, Voyager's autonomous curriculum, or GEPA's
+reflective evolutionary prompt search. It cannot prove holdout questions were
+kept secret if the caller leaks them through the model or previous context.
+Actual independent engineering evaluation remains required.
