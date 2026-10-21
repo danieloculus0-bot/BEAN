@@ -1,0 +1,34 @@
+{
+  "schema": "bean.reward.contract.scoreboard.v1",
+  "source_commit": "caacaebd69833bf90102181c8ecbbad90d05ddea",
+  "snapshot_date_utc": "2026-10-21",
+  "source": "GitHub Actions stdout test case records",
+  "test_cases_total": 56,
+  "test_cases_passed": 56,
+  "test_cases_failed": 0,
+  "distinct_tests_per_job": 7,
+  "jobs_total": 8,
+  "jobs_passed": 8,
+  "platforms": [
+    "ubuntu-latest",
+    "windows-latest"
+  ],
+  "python": [
+    "3.11",
+    "3.12"
+  ],
+  "runs": [
+    39539948527,
+    39540021508
+  ],
+  "event_log_ref": "research/persistent_ledger/reward_contract_20261021/test_cases.jsonl",
+  "originals_scope": "unit test case outcomes only, not byte-for-byte complete GitHub job logs",
+  "learning_improvement_claim": false,
+  "neural_training": false,
+  "limitations": [
+    "two CI invocations of same source, not two independent learning trials",
+    "job logs may expire; original complete logs not committed",
+    "per-case results extracted from actual CI job logs",
+    "archived rows reflect evaluated source commit only, not future branches"
+  ]
+}
