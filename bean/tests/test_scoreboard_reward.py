@@ -65,6 +65,13 @@ class ScoreboardRewardTests(unittest.TestCase):
             self.assertFalse(apply_once(agent,second,state=(0,0,0),action=1,next_state=(1,1,1),done=False))
             self.assertEqual(len(agent.calls),1)
             self.assertEqual(agent.calls[0][2],first["reward"])
+            self.assertFalse(apply_once(agent,first,state=(0,0,0),action=1,
+                                        next_state=(1,1,1),done=False))
+            self.assertEqual(len(agent.calls),1)
+            # A renamed run using the same benchmark evidence must not earn
+            # another reward or overwrite the original receipt.
+            with self.assertRaisesRegex(ValueError,"immutable receipt conflict"):
+                record_reward(tmp,example(candidate_run="renamed"))
 
     def test_missing_ledger_is_not_a_fake_zero(self):
         with tempfile.TemporaryDirectory() as tmp:
