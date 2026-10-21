@@ -49,17 +49,22 @@ class PublicAiscendDemoTests(unittest.TestCase):
         self.assertIn("./aiscend.html", self.home)
         self.assertIn("./index.html", self.markup.links)
         self.assertIn("./index.html#applications", self.markup.links)
-        for item in ("demo", "how-it-works", "pet", "petMood", "demoTitle",
+        for item in ("demo", "how-it-works", "researchStateSummary", "demoTitle",
                      "researchTag", "journal", "gateText"):
             self.assertIn(item, self.markup.ids)
 
-    def test_actual_official_mascot_and_retro_sprite(self):
-        self.assertIn("./bean-official.webp", self.markup.images)
-        self.assertTrue((DEMO.parent / "bean-official.webp").is_file())
-        for marker in ("function drawPet(){", "48x48 Game Boy-inspired pixel canvas",
-                       "oval(19,26,2.7,3.2,color.ink)",
-                       "oval(30,26,2.7,3.2,color.ink)"):
-            self.assertIn(marker, self.html)
+    def test_professional_research_status_replaces_cartoon(self):
+        self.assertIn("id=\"researchStateSummary\"", self.html)
+        self.assertIn("Read-only research demonstration", self.html)
+        self.assertIn("RESEARCH STATUS", self.html)
+        self.assertIn("hero-brief", self.html)
+        self.assertNotIn("function drawPet(){", self.html)
+        self.assertNotIn('id="pet"', self.html)
+        self.assertNotIn("petQuipIndex", self.html)
+        self.assertNotIn("petMood", self.html)
+        self.assertNotIn("let petState=", self.html)
+        for term in ("hims", "bullshit", "fucking", "yeeted", "damn thing"):
+            self.assertNotIn(term, self.html.casefold())
 
     def test_demo_scenarios_are_interactive_but_never_connected(self):
         self.assertEqual(set(self.markup.actions),
@@ -114,10 +119,10 @@ class PublicAiscendDemoTests(unittest.TestCase):
         self.assertIn("No names, wallet addresses, account IDs", self.html)
         self.assertIn("not a private transaction log", self.html)
 
-    def test_sample_account_uses_actual_aiscend_fields_and_game_score(self):
+    def test_sample_account_uses_actual_aiscend_fields_and_strategy_milestones(self):
         # Public samples may change numbers but not invent UI fields or actions.
         for phrase in ("Net liquidation", "Cash / USDC", "Wealth multiple",
-                       "GAME SCORE", "2X / POINT 1", "$100,000 OR BUST",
+                       "STRATEGY MILESTONES", "2X / POINT 1", "research target: $100,000",
                        "one point is earned for every completed doubling",
                        "SAMPLE ACCOUNT", "not additional AIscend trading controls"):
             self.assertIn(phrase.casefold(), self.html.casefold())
@@ -151,7 +156,7 @@ class PublicAiscendDemoTests(unittest.TestCase):
                           self.markup.links)
         self.assertIn("#research-updates", self.markup.links)
 
-    def test_nav_mascot_no_longer_cropped(self):
+    def test_navigation_brand_mark_is_responsive(self):
         self.assertIn(".brand img{width:51px;height:60px;object-fit:contain", self.html)
         self.assertIn("flex-shrink:0", self.html)
         self.assertIn('src="./bean-official.webp"', self.html)
@@ -174,7 +179,9 @@ class PublicAiscendDemoTests(unittest.TestCase):
                 out = subprocess.run([shutil.which("node"), "--check"],
                                      input=script, text=True, capture_output=True)
                 self.assertEqual(out.returncode, 0, out.stderr)
-        self.assertIn('function drawPet(){', scripts[0])
+        self.assertIn("const scenarios={", scripts[0])
+        self.assertIn('researchStateSummary', scripts[0])
+        self.assertNotIn("drawPet", scripts[0])
 
 
 if __name__ == '__main__':
