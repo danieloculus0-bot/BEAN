@@ -81,3 +81,61 @@ The separate plugin CI job installs `mcp>=2,<3` on Python 3.12 and checks SDK to
 The first major **future** feature after proper per-user authentication and secure tenant storage is individual user continuity. That must never be implemented by sharing Core's global SQLite singleton or a public anonymous shared memory database across users.
 
 **Public preview is not the same as a published ChatGPT integration.** BEAN remains publicly viewable source; repository visibility does not grant a redistribution license.
+
+## Axiom Favorites and navigation actions (separate local connector)
+
+BEAN now has a **distinct local-only MCP navigation service** for the real
+Axiom_Beta Favorites feature, under
+`integrations/chatgpt/axiom_server.py`. It is **not** part of the existing
+anonymous public read-only evidence demo above.
+
+The service has four purpose-specific tools:
+
+| MCP action | What it really does |
+| --- | --- |
+| `bean_find_axiom_pages(query)` | Searches Axiom's actual registered workspace destinations and returns local paths |
+| `bean_list_axiom_favorites()` | Reads saved entries from the real Axiom SQLite database via its HTTP API |
+| `bean_pin_axiom_favorite(module_key)` | Saves an existing registered workspace; confirms `saved=true` only after Axiom responds |
+| `bean_remove_axiom_favorite(module_key)` | Unpins an existing workspace, reporting whether it was found |
+
+Example: if the user asks "Pin Quality Forge in my favorites", the
+connector looks up the real `quality` module key, calls the Axiom write API,
+and says it was saved **only after** the response confirms it.
+"I'll add that to your Favorites menu" alone is not a completion receipt.
+BEAN remains responsible for deciding what to recommend; ChatGPT is the
+natural-language interface.
+
+Run **Axiom_Beta with its favorites branch installed** on the same PC; by
+default it binds to `http://127.0.0.1:5060`. Then:
+
+~~~sh
+python -m pip install "mcp>=2,<3"
+python -m integrations.chatgpt.axiom_server
+~~~
+
+The independent MCP service binds at `127.0.0.1:8001/mcp`. Axiom and the
+connector stay on localhost, make no LLM calls, and use only registered suite
+module keys. This is a **working local development contract**, not a
+published ChatGPT app or an internet-accessible navigation service.
+A remote ChatGPT session cannot directly connect to the user's localhost.
+Supporting phones and remote sessions requires authenticated hosting/gateway
+and per-user account routing, rather than blindly exposing this write-capable
+service to the internet.
+
+The tool result returns each item's `href` as a relative **Axiom path**.
+Do not invent a public link from it. When a device has a reachable authenticated
+Axiom host, its UI can make those paths clickable. The Axiom app itself
+shows persistent Favorites in the left navigation and offers pin/unpin controls.
+
+Tests:
+
+~~~sh
+python -m unittest bean.tests.test_axiom_navigation_chatgpt -v
+python -m integrations.chatgpt.axiom_smoke
+~~~
+
+The `bean-axiom-navigation.yml` GitHub workflow additionally checks out
+the actual Axiom source at a pinned commit and exercises the real Flask
+database and HTTP endpoints on both Windows and Linux. These results prove
+local integration only; no real-user authentication or ChatGPT deployment
+has been established.
