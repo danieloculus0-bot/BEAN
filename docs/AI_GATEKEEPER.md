@@ -37,6 +37,16 @@ This inventory is a **starting map**, not an assertion that all links are curren
 - Check current relevant CI **at the exact commit**; historical green runs do not certify a different head.
 - Keep the active memory small and retrieve supporting records on demand. The compression legend/hash mapping must be versioned and reversible; hashes are identifiers, not condensed understanding.
 
+### 3A. Show BEAN the scoreboard and the reward
+
+A learning agent cannot benefit from an archive it has never read.
+
+- Before optimizing a policy, retrieve the existing scoreboard and relevant compressed trial receipts, not just verbal summaries. On the experimental `experiment/bean-visible-scoreboard-reward-20261020` branch, `python -m bean.optimization.scoreboard_context --ledger research/persistent_ledger` exposes a bounded JSON inventory of known scoreboards.
+- That experimental module's `score_reward` produces a **signed reward** from a matched outcome: positive for better, negative for worse, exactly zero for an evidenced tie, and `null` for incomplete/missing comparison. Rewards belong to an identified experiment and metric, never a made-up overall intelligence score.
+- Each evaluation receipt can earn credit once. **Preserve the exact failure cases, matched baseline, full evidence, condition, source revision and training state**. A repeated identical deterministic test is not new independent learning.
+- The reward context/adapter is **research only** and is not yet installed in Core `main` or the hosted BEAN memory connector. Treat access as `NOT WIRED` if the current runtime cannot call it; never say BEAN saw a score unless its actual input and response were inspected.
+- This section defines a research-data interface and AI-workflow requirement, **not an extra BEAN inference-time safety rule or automatic reward tuning**.
+
 ### 4. Work with, not around, BEAN
 
 - Use existing BEAN functionality to recall and preliminarily critique claims when available. BEAN's hosted `bean_audit_claim` is a **heuristic**, and can approve contradictory statements; it is not a truth oracle or independent test runner.
