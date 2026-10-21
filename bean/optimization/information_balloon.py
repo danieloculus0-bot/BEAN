@@ -471,3 +471,79 @@ def run_experiment(records, *, archive_budget, context_budget,
                       "objective_unmet_retained_source_unchanged",
             "archive_sha256": digest(shelf["archive"]) if shelf["archive"] else None,
             "trials": trials}
+
+
+def retain_verified(root, original, recipe, *, training=b"", key=None):
+    """Durable retention trial: commit raw evidence BEFORE compressed copies.
+
+    Write-once source and candidate files are content-addressed. Reopening and
+    comparing both is mandatory. No file is deleted, replaced or overwritten;
+    cold raw evidence remains authoritative even if compression fails.
+    """
+    import os
+    from pathlib import Path
+
+    if not isinstance(original, bytes) or len(original)>MAX_RAW:
+        raise ValueError("invalid original evidence")
+    root=Path(root)
+    if root.is_symlink():
+        raise ValueError("retention root cannot be symlink")
+    root.mkdir(parents=True,exist_ok=True)
+    folders=[root/"raw",root/"packages",root/"receipts"]
+    for folder in folders:
+        if folder.is_symlink():
+            raise ValueError("retention folder cannot be symlink")
+        folder.mkdir(parents=True,exist_ok=True)
+
+    def write_once(path, content):
+        if path.is_symlink():
+            raise ValueError("retention path cannot be symlink")
+        if path.exists():
+            if path.read_bytes()!=content:
+                raise ValueError("immutable retention conflict")
+            return False
+        try:
+            with path.open("xb") as output:
+                output.write(content)
+                output.flush()
+                os.fsync(output.fileno())
+        except FileExistsError:
+            if path.is_symlink() or path.read_bytes()!=content:
+                raise ValueError("immutable retention conflict")
+            return False
+        if path.read_bytes()!=content:
+            raise ValueError("retention write/read verification failed")
+        return True
+
+    original_hash=digest(original)
+    raw_path=folders[0]/(original_hash+".bin")
+    write_once(raw_path,original)
+    if raw_path.read_bytes()!=original:
+        raise ValueError("cold original integrity mismatch")
+    try:
+        archive=pack(original,recipe,training=training,key=key)
+        if unpack(archive,key=key)!=original:
+            raise ValueError("staged archive is not lossless")
+    except Exception:
+        # Never remove or rewrite authoritative raw input on failure.
+        raise
+    package_hash=digest(archive)
+    package_path=folders[1]/(package_hash+".bean")
+    write_once(package_path,archive)
+    disk_archive=package_path.read_bytes()
+    if unpack(disk_archive,key=key,expected_hash=package_hash)!=raw_path.read_bytes():
+        raise ValueError("persisted package did not reproduce cold raw source")
+    receipt={"schema": VERSION, "source_sha256":original_hash,
+             "package_sha256":package_hash,
+             "source_bytes":len(original),"package_bytes":len(archive),
+             "recipe":asdict(recipe),
+             "authentication":"HMAC-SHA256-external-key" if key is not None
+                              else "SHA256-accidental-corruption-only",
+             "integrity":"verified_against_immutable_original",
+             "retention":"source_and_candidate_kept_without_deletion"}
+    receipt_bytes=canonical(receipt)+b"\n"
+    manifest_path=folders[2]/(original_hash+"-"+package_hash+".json")
+    write_once(manifest_path,receipt_bytes)
+    return {"receipt":receipt,"raw_path":str(raw_path),
+            "package_path":str(package_path),
+            "manifest_path":str(manifest_path)}
