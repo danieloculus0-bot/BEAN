@@ -66,10 +66,10 @@ def reward(before: int, after: int, solved: bool, checks: int) -> float:
     return round(10*math.log2(before/after) - 9 - .00002*checks + (100 if solved else 0), 5)
 
 
-def _input(board: dict, candidates: int, turn: int) -> list[float]:
+def _input(board: dict, candidates: int, turn: int, live_reward: float = 0) -> list[float]:
     return [1.0, math.log2(candidates)/math.log2(len(CODES)),
             turn/MAX_TURNS, board['wins']/max(1,board['games']),
-            max(-1.0, min(1.0,board['reward_total']/max(1,board['games'])/100))]
+            max(-1.0, min(1.0,(board['reward_total']/max(1,board['games'])+live_reward)/120))]
 
 
 class TinyNeuralPolicy:
@@ -133,9 +133,11 @@ def play(secret: tuple[int, ...], policy: TinyNeuralPolicy | None, board: dict, 
     history = []
     for turn in range(1,MAX_TURNS+1):
         score_view = copy.deepcopy(board)
-        score_view['live'] = {'episode':episode,'turn':turn,'remaining':len(candidates)}
+        live_reward=round(sum(x['reward'] for x in moves),5)
+        score_view['live'] = {'episode':episode,'turn':turn,'remaining':len(candidates),
+                              'reward_so_far':live_reward}
         view_hash = sha(encode(score_view))
-        features = _input(board,len(candidates),turn)
+        features = _input(board,len(candidates),turn,live_reward)
         weights_before = policy.digest() if policy else None
         tactic = policy.select(features,episode,turn,explore=train) if policy else 'first'
         guess, checks = _tactic(candidates,tactic,history)
@@ -181,7 +183,8 @@ def verify_trace(trace: dict):
         if guess!=predicted or checks!=move['evaluations'] or guess not in candidates:
             raise AssertionError('illegal or incorrectly reported strategy guess')
         view=move['scoreboard_seen']
-        if (view.get('live')!={'episode':trace['episode'],'turn':i,'remaining':len(candidates)}
+        if (view.get('live')!={'episode':trace['episode'],'turn':i,'remaining':len(candidates),
+                          'reward_so_far':round(sum(x['reward'] for x in trace['moves'][:i-1]),5)}
             or any(view.get(k)!=trace['moves'][0]['scoreboard_seen'].get(k)
                    for k in ('games','wins','reward_total','total_guesses','tactics'))
             or sha(encode(view))!=move['scoreboard_seen_sha256']):
