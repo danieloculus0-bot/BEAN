@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#111e20">
+  <meta name="color-scheme" content="dark light">
+  <title>EZ-Office | Lightweight local applications</title>
+  <link rel="icon" href="assets/ez-office.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="styles.css">
+  <script defer src="shell.js"></script>
+</head>
+<body>
+  <div class="workspace">
+    <aside class="sidebar" aria-label="Application menu">
+      <div class="brand"><img src="assets/ez-office.svg" width="38" height="38" alt=""><div><strong>EZ-Office</strong><small>LIGHTWEIGHT WORKSPACE</small></div></div>
+      <nav id="app-menu" aria-label="Applications">
+        <button class="nav-item active" type="button" data-tool="home" aria-current="page"><span class="glyph">⌂</span> Home</button>
+        <button class="nav-item" type="button" data-tool="writer"><span class="glyph">▤</span> Writer</button>
+        <button class="nav-item" type="button" data-tool="sheets"><span class="glyph">▦</span> Sheets</button>
+        <button class="nav-item" type="button" data-tool="slides"><span class="glyph">▣</span> Slides</button>
+        <button class="nav-item" type="button" data-tool="media"><span class="glyph">▶</span> Media</button>
+        <button class="nav-item" type="button" data-tool="mail"><span class="glyph">✉</span> Mail drafts</button>
+      </nav>
+      <div class="sidebar-footer">One shell. No duplicate runtimes.<br>No account. No cloud dependency.</div>
+    </aside>
+    <main class="main">
+      <header class="top"><a href="../" title="Back to BEAN Workshop" aria-label="Back to BEAN Workshop" style="font-size:12px;color:#b8f65b;text-decoration:none;white-space:nowrap;margin-right:8px">← Workshop</a><div><h1 id="tool-title">EZ-Office</h1><p id="tool-subtitle">Local tools, loaded only when used</p></div><div class="mode">OFFLINE-FIRST</div></header>
+      <section id="tool-root" aria-label="Current application"></section>
+      <footer id="status" role="status" aria-live="polite">Ready. Nothing running in the background.</footer>
+    </main>
+  </div>
+</body>
+</html>
