@@ -26,25 +26,15 @@ class LearnerProbe:
 
 
 class ScoreboardRewardTests(unittest.TestCase):
-    def test_visible_existing_real_repository_scoreboards(self):
-        root = Path(__file__).resolve().parents[2]/"research"/"persistent_ledger"
-        result=scoreboard_context(root)
-        labels={x["schema"] for x in result["entries"]}
-        self.assertIn("bean.lab009.scoring.v1", labels)
-        self.assertIn("bean.scoreboard.experimental.v1", labels)
-        self.assertIn("bean.core.matrix.scoreboard.v1", labels)
-        self.assertIn("bean.reward.contract.scoreboard.v1", labels)
-        reward=next(e for e in result["entries"] if e["schema"]=="bean.reward.contract.scoreboard.v1")
-        self.assertEqual(reward["metrics"]["test_cases_total"],56)
-        self.assertEqual(reward["metrics"]["test_cases_passed"],56)
-        self.assertEqual(reward["metrics"]["test_cases_failed"],0)
-        lab=next(e for e in result["entries"] if e["schema"]=="bean.lab009.scoring.v1")
-        self.assertEqual(lab["metrics"]["baseline_correct"],0)
-        self.assertEqual(lab["metrics"]["frozen_post_restart_correct"],2)
-        self.assertEqual(lab["metrics"]["online_post_investigation_correct"],3)
-        self.assertEqual(lab["metrics"]["total_cases"],3)
-        self.assertEqual(result["entries_omitted"],0)
-        self.assertIn("not a live model score",result["agent_note"])
+    def test_scoreboard_context_on_missing_and_empty_sources(self):
+        # Research snapshots are maintained on their research branches.
+        # The promoted scoring contract must not invent missing receipts.
+        with tempfile.TemporaryDirectory() as tmp:
+            empty=scoreboard_context(tmp)
+            self.assertEqual(empty["entries"],[])
+            self.assertEqual(empty["entries_total"],0)
+            self.assertEqual(empty["entries_omitted"],0)
+            self.assertIn("historical",empty["agent_note"])
 
     def test_reward_positive_zero_negative(self):
         self.assertAlmostEqual(score_reward(example())["reward"],1.0)

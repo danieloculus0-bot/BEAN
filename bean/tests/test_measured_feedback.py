@@ -112,11 +112,13 @@ class MeasuredFeedbackTests(unittest.TestCase):
         self.assertEqual(self.service.policy.steps,1)
 
     def test_failed_checkpoint_rolls_back_q_and_receipt(self):
+        from unittest.mock import patch
         self.choose()
-        with self.assertRaises(ValueError):
-            self.bridge.record(episode_id="e1",trial=self.trial(
-                baseline=1e308,candidate=-1e308,
-                evaluation_sha256="5"*64))
+        with patch.object(self.service, "checkpoint",
+                          side_effect=RuntimeError("checkpoint disk error")):
+            with self.assertRaisesRegex(RuntimeError, "checkpoint disk error"):
+                self.bridge.record(episode_id="e1",trial=self.trial(
+                    evaluation_sha256="5"*64))
         self.assertEqual(self.service.policy.steps,0)
         self.assertEqual(self.bridge.history()["records"],[])
         # Choice is still pending after the failed assessment.
