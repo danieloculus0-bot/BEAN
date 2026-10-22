@@ -31,6 +31,7 @@ jobs:
         shell: bash
         run: |
           node --check docs/portfolio/ez-office/shell.js
+          node --check docs/portfolio/ez-office/lib/office-export.js
           for script in docs/portfolio/ez-office/apps/*.js; do node --check "$script"; done
       - uses: actions/setup-python@v5
         with:
