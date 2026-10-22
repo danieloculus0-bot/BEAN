@@ -1,8 +1,16 @@
 # BEAN
 
-**[BEAN Workshop — Projects and demonstrations](https://danieloculus0-bot.github.io/BEAN/portfolio/)** · Browse 17 catalogued projects and seven browser experiences, with published source code, development status and available test evidence.
+**[BEAN Workshop — Projects and demonstrations](https://danieloculus0-bot.github.io/BEAN/portfolio/)** · Browse 19 catalogued projects and nine featured browser experiences, with published source code, development status and available test evidence.
 
 Persistent experimental reasoning and evidence system. BEAN Core maintains SQLite-backed observations, source-aware claims, revision history, recovery and repeatable research tests. It is not a production-grade autonomous software engineer.
+
+## Featured application: EZ-Office (October 22, 2026)
+
+**[Launch the EZ-Office suite in the Workshop](https://danieloculus0-bot.github.io/BEAN/portfolio/ez-office/)** · [Standalone source and automated tests](https://github.com/danieloculus0-bot/EZ-Office)
+
+EZ-Office is a **working offline-first HTML/JavaScript office experiment**: Writer edits TXT/Markdown; Sheets imports/exports CSV; Slides presents text-based decks; Media opens browser-supported local audio/video/images; and Mail exports `.eml` drafts or hands off to a configured mail program. Five tools share one interface with on-demand loading and cleanup when switching. No login, cloud service, or separate application server is necessary for these functions.
+
+The Workshop serves a pinned copy of the working application. It does **not** imply BEAN AI runs inside EZ-Office, that native DOCX/XLSX/PPTX documents are compatible, that mail accounts can synchronize, or that host-RAM savings were measured. Read the [EZ-Office README](https://github.com/danieloculus0-bot/EZ-Office/blob/main/README.md) for exact scope. EZ-Office is a separate project from BEAN Core and Axiom.
 
 ## New: BEAN-native reasoning and measured intuition (October 21, 2026)
 
