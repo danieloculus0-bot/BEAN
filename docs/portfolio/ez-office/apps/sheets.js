@@ -104,7 +104,7 @@ function calculate(rows,r,c,cache=new Map(),visiting=new Set()){
 EZOffice.register("sheets",function(ctx){
   const {elem,button,root,toolbar,choose,download,message,info,markDirty,onDispose}=ctx;
   const MAX_ROWS=5000,MAX_COLS=40,PAGE_SIZE=35;
-  let rows=Array.from({length:15},()=>Array(8).fill("")),cols=8,page=0,frame=0;
+  let rows=Array.from({length:15},()=>Array(8).fill("")),cols=8,page=0,frame=0,freeze=true;
   rows[0].splice(0,4,"Item","Qty","Price","Total");
   rows[1].splice(0,4,"Sheet metal",2,125,"=B2*C2");
   rows[2].splice(0,4,"Fasteners",10,4.5,"=B3*C3");
@@ -112,6 +112,9 @@ EZOffice.register("sheets",function(ctx){
   const bar=toolbar(),filename=elem("input",{type:"text",value:"Estimate.csv","aria-label":"Sheet filename"},bar);
   const summary=elem("small",{},bar);
   const host=elem("div",{className:"grid-wrap"},root),controls=toolbar();
+  const freezeButton=button(controls,"Unfreeze panes",()=>{freeze=!freeze;freezeButton.textContent=freeze?"Unfreeze panes":"Freeze panes";render();});
+  freezeButton.setAttribute("aria-label","Toggle freeze top row and first column");
+  freezeButton.setAttribute("aria-pressed","true");
   const back=button(controls,"← Previous",()=>{page--;render();});
   const next=button(controls,"Next →",()=>{page++;render();});
   const counter=elem("small",{},controls);
@@ -126,14 +129,16 @@ EZOffice.register("sheets",function(ctx){
   }
   function schedule(){if(frame)cancelAnimationFrame(frame);frame=requestAnimationFrame(()=>{frame=0;refresh();});}
   function render(){
-    host.replaceChildren();const table=elem("table",{className:"sheet"},host),hrow=elem("tr",{},elem("thead",{},table));
+    const scrollX=host.scrollLeft,scrollY=host.scrollTop;
+    host.replaceChildren();const table=elem("table",{className:"sheet"+(freeze?" freeze-panes":"")},host),hrow=elem("tr",{},elem("thead",{},table));
+    freezeButton.setAttribute("aria-pressed",String(freeze));
     elem("th",{className:"row-head",text:"#"},hrow);
     for(let c=0;c<cols;c++)elem("th",{text:colLabel(c)},hrow);
     const body=elem("tbody",{},table);
     for(let r=page*PAGE_SIZE;r<Math.min(rows.length,(page+1)*PAGE_SIZE);r++){
-      const tr=elem("tr",{},body);elem("th",{className:"row-head",text:String(r+1)},tr);
+      const tr=elem("tr",{className:r===page*PAGE_SIZE?"first-visible-row":""},body);elem("th",{className:"row-head",text:String(r+1)},tr);
       for(let c=0;c<cols;c++){
-        const td=elem("td",{},tr);
+        const td=elem("td",{className:c===0?"first-data-col":""},tr);
         const raw=String(rows[r][c]??"");
         const input=elem("input",{type:"text",value:raw,"aria-label":colLabel(c)+(r+1)},td);
         const output=elem("output",{"data-result":r+":"+c,className:"formula-result"},td);
@@ -145,6 +150,7 @@ EZOffice.register("sheets",function(ctx){
     counter.textContent="Page "+(page+1)+" / "+Math.ceil(rows.length/PAGE_SIZE);
     back.disabled=page===0;next.disabled=(page+1)*PAGE_SIZE>=rows.length;
     refresh();
+    host.scrollLeft=scrollX;host.scrollTop=scrollY;
   }
   function setRows(input,name){
     if(!Array.isArray(input)||input.length>MAX_ROWS||input.some(r=>!Array.isArray(r)||r.length>MAX_COLS))throw Error("Grid exceeds 5,000 rows or 40 columns");
