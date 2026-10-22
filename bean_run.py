@@ -104,6 +104,7 @@ def main():
     ctx = start_bean(db_path=db_path)
     session_uuid = ctx["session_uuid"]
 
+    learning_service = None
     try:
         initialize_optional_brain_layers(session_uuid)
 
@@ -258,6 +259,17 @@ def main():
             coherence_engine=coherence,
             state_manager=state_mgr,
         )
+        # Connect real local Q-learning when a durable learning DB is configured.
+        # External applications must supply actual observations and rewards.
+        learning_db = os.environ.get("BEAN_LEARNING_DB")
+        if learning_db:
+            from bean.learning.runtime import LearningRuntime, register_learning_handlers
+            learning_actions = json.loads(os.environ.get(
+                "BEAN_LEARNING_ACTIONS", '["up","right","down","left"]'))
+            learning_service = LearningRuntime(
+                learning_db, actions=learning_actions)
+            register_learning_handlers(inbox, learning_service)
+            ctx["learning_service"] = learning_service
         loop.run()
     except KeyboardInterrupt:
         pass
@@ -266,6 +278,8 @@ def main():
         log_event(session_uuid, EventType.ERROR, f"Unhandled exception in bean_run.py: {e}", Source.SYSTEM, data={"traceback": traceback.format_exc()})
         raise
     finally:
+        if learning_service is not None:
+            learning_service.close()
         shutdown_bean(ctx, reason="clean")
 
 
