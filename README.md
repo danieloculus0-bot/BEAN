@@ -18,6 +18,14 @@ The Workshop serves a pinned copy of the working application. It does **not** im
 
 The integration passed [Windows/Ubuntu learning CI](https://github.com/danieloculus0-bot/BEAN/actions/runs/39865857319) and [the four-job full Core regression matrix](https://github.com/danieloculus0-bot/BEAN/actions/runs/39865857419) at PR head `15ba3357`. Source-identical Lab027 files also match the experimentally tested blob hashes at `4d969b0e`. **This is actual tabular reinforcement learning in the local Python runtime, not a live hosted connector, autonomous reward collection, LLM weight training, or proof of general cross-domain intelligence.** Uncheckpointed updates are not durable; reward and validation values are host-reported.
 
+## Measured outcome rewards and durable learning (October 22, 2026)
+
+[**Merged PR #154**](https://github.com/danieloculus0-bot/BEAN/pull/154) promotes the existing signed-reward scoring contract and connects it to the real local Q learner. Complete, matched evaluator reports now feed signed Q updates, so observed regressions reduce learned action values and improvements increase them. The `learning_evaluated_feedback` inbox command stores each uniquely identified reward receipt and its Q checkpoint **in one SQLite transaction**; `learning_reward_history` retrieves prior observations and source links. Duplicates, incomplete comparisons, and fewer than 30 matched cases do not mint learning credit.
+
+[**Feedback integration CI**](https://github.com/danieloculus0-bot/BEAN/actions/runs/39867858101) passed on Windows and Ubuntu, Python 3.10 and 3.12, including Core regressions. See [the exact feedback API and limitations](docs/BEAN_MEASURED_FEEDBACK_2026-10-22.md).
+
+**Evidence boundary:** the evaluator values, URL, and receipt hash are supplied by the calling application, **not independently authenticated by BEAN**. The general reasoning engine still produces ungraded proposals requiring review; it is **not** autonomously rewarding itself. The hosted BEAN memory connector and separate BEAN applications have not been wired to this local evaluator interface.
+
 ## BEAN-native reasoning and measured intuition (October 21, 2026)
 
 - **[Workshop learning-results page](https://danieloculus0-bot.github.io/BEAN/portfolio/bean-learning/)**: mobile-friendly walkthrough of what was actually tested, with direct links to code, CI and evidence.
