@@ -1,14 +1,16 @@
-"""Real offline Chromium smoke test. Dev-only dependency: Python Playwright."""
+"""Real Chromium smoke through a local HTTP server mimicking GitHub Pages URLs."""
 from __future__ import annotations
 
 from pathlib import Path
+from functools import partial
+from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
+from threading import Thread
 import base64
 import tempfile
 from playwright.sync_api import sync_playwright
 
-ROOT = Path(__file__).resolve().parents[1] / "docs" / "portfolio" / "ez-office"
-WORKSHOP = (ROOT.parent / "index.html").as_uri()
-PAGE = (ROOT / "index.html").as_uri()
+ROOT = Path(__file__).resolve().parents[1] / "docs"
+
 PNG = base64.b64decode(
     "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4"
     "z8DwHwAFgAI/ScL/nwAAAABJRU5ErkJggg=="
@@ -20,6 +22,12 @@ def test_offline_suite() -> None:
         tempdir = Path(temp)
         picture = tempdir / "tiny.png"
         picture.write_bytes(PNG)
+        server = ThreadingHTTPServer(
+            ("127.0.0.1", 0),
+            partial(SimpleHTTPRequestHandler, directory=str(ROOT)),
+        )
+        Thread(target=server.serve_forever, daemon=True).start()
+        origin = f"http://127.0.0.1:{server.server_port}"
         with sync_playwright() as pw:
             browser = pw.chromium.launch(headless=True)
             page = browser.new_page(accept_downloads=True)
@@ -27,9 +35,9 @@ def test_offline_suite() -> None:
             requests = []
             page.on("pageerror", lambda error: console_errors.append(str(error)))
             page.on("request", lambda req: requests.append(req.url))
-            page.goto(WORKSHOP)
+            page.goto(origin + "/portfolio/")
             page.locator('a[href="ez-office/"]').first.click()
-            page.wait_for_url(PAGE)
+            page.wait_for_url(origin + "/portfolio/ez-office/")
             assert page.title().startswith("EZ-Office")
             initial = page.evaluate("EZOffice.inspect()")
             assert initial["current"] == "home"
@@ -116,10 +124,13 @@ def test_offline_suite() -> None:
             assert "Subject: Quick hello" in contents
             assert "Testing local mail." in contents
             assert not console_errors, console_errors
-            assert not any(url.startswith(("https://", "http://")) for url in requests), requests
+            assert requests, "Browser did not request any local site assets"
+            assert all(url.startswith(origin + "/") for url in requests), requests
             browser.close()
+        server.shutdown()
+        server.server_close()
 
 
 if __name__ == "__main__":
     test_offline_suite()
-    print("EZ-OFFICE_OFFLINE_BROWSER_PASS")
+    print("BEAN_WORKSHOP_EZ_OFFICE_BROWSER_PASS")
