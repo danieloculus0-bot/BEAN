@@ -1,41 +1,119 @@
+/* EZ Writer: real formatting with restricted HTML import/export, text import and print. */
 (function(){
 "use strict";
+const TAGS=new Set(["P","DIV","BR","B","STRONG","I","EM","U","S","H1","H2","H3","UL","OL","LI","BLOCKQUOTE","A","SPAN","FONT"]);
+function cleanHTML(source){
+  const parsed=new DOMParser().parseFromString(source,"text/html");
+  function copy(node,out){
+    if(node.nodeType===Node.TEXT_NODE){out.append(document.createTextNode(node.textContent));return;}
+    if(node.nodeType!==Node.ELEMENT_NODE)return;
+    if(["SCRIPT","STYLE","IFRAME","OBJECT","EMBED","SVG","FORM","INPUT","META","LINK","IMG","VIDEO","AUDIO"].includes(node.tagName))return;
+    const el=TAGS.has(node.tagName)?document.createElement(node.tagName.toLowerCase()):document.createDocumentFragment();
+    if(el.nodeType===Node.ELEMENT_NODE){
+      if(node.tagName==="A"){
+        try{const u=new URL(node.getAttribute("href")||"",location.href);if(["https:","http:","mailto:"].includes(u.protocol))el.setAttribute("href",u.href);}catch(e){}
+      }
+      if(node.tagName==="FONT" && /^[1-7]$/.test(node.getAttribute("size")||""))el.setAttribute("size",node.getAttribute("size"));
+      // Permit only simple color, alignment and background-color formatting.
+      const align=node.style.textAlign;
+      if(["left","right","center","justify"].includes(align))el.style.textAlign=align;
+      const color=node.style.color;
+      if(/^(#[0-9a-f]{3,8}|rgb[a]?\([\d\s,.%]+\)|[a-z]{1,18})$/i.test(color))el.style.color=color;
+      const background=node.style.backgroundColor;
+      if(/^(#[0-9a-f]{3,8}|rgb[a]?\([\d\s,.%]+\)|[a-z]{1,18})$/i.test(background))el.style.backgroundColor=background;
+    }
+    for(const c of node.childNodes)copy(c,el);
+    out.append(el);
+  }
+  const out=document.createElement("div");
+  for(const n of parsed.body.childNodes)copy(n,out);
+  return out.innerHTML;
+}
 EZOffice.register("writer",function(ctx){
   const {elem,button,root,toolbar,message,download,choose,info,markDirty,onDispose}=ctx;
-  let filename="Untitled.txt",dirty=false;
-  const actions=toolbar();
-  const name=elem("input",{type:"text",value:filename,"aria-label":"Document filename"},actions);
-  const stats=elem("small",{text:"0 words · 0 characters"},actions);
-  const textarea=elem("textarea",{className:"document",spellcheck:"true","aria-label":"Document editor",placeholder:"Write here. Open a .txt or .md file, or start a new document."},root);
-  function mark(value){dirty=value;markDirty(value);}
-  function tally(){
-    const t=textarea.value.trim();
-    const words=t?t.split(/\s+/u).length:0;
-    stats.textContent=words.toLocaleString()+" words · "+textarea.value.length.toLocaleString()+" characters";
+  let dirty=false;
+  const bar=toolbar();
+  const name=elem("input",{type:"text",value:"Document.html","aria-label":"Document filename"},bar);
+  const stats=elem("small",{},bar);
+  const tools=toolbar();
+  const editor=elem("div",{className:"rich-editor",contenteditable:"true",role:"textbox","aria-label":"Rich document editor","aria-multiline":"true",spellcheck:"true"},root);
+  editor.innerHTML="<p>Start writing. Highlight text to format it, or choose a heading style.</p>";
+  function mark(v){dirty=v;markDirty(v);}
+  function tally(){const t=editor.innerText.trim();stats.textContent=(t?t.split(/\s+/u).length:0)+" words · "+t.length+" characters";}
+  function command(cmd,arg){
+    const formats={bold:"strong",italic:"em",underline:"u",strikeThrough:"s"};
+    const selection=window.getSelection();
+    const activeRange=selection&&selection.rangeCount?selection.getRangeAt(0).cloneRange():null;
+    if(formats[cmd]&&activeRange&&!activeRange.collapsed&&
+       editor.contains(activeRange.commonAncestorContainer)){
+      // Explicitly wrap selected text instead of relying on inconsistent
+      // document.execCommand HTML output across Chromium / WebKit versions.
+      const wrap=document.createElement(formats[cmd]);
+      try{activeRange.surroundContents(wrap);}
+      catch(e){const selected=activeRange.extractContents();wrap.appendChild(selected);activeRange.insertNode(wrap);}
+      selection.removeAllRanges();const range=document.createRange();
+      range.selectNodeContents(wrap);selection.addRange(range);
+      editor.focus();mark(true);tally();return;
+    }
+    editor.focus();
+    document.execCommand(cmd,false,arg||null);
+    mark(true);tally();
   }
-  function save(){
-    const file=(name.value.trim()||"Untitled.txt").replace(/[\\/]/g,"_");
-    download(file,textarea.value,"text/plain;charset=utf-8");
-    filename=file;mark(false);
+  const formats=[
+    ["Bold","bold"],["Italic","italic"],["Underline","underline"],["Strike","strikeThrough"],
+    ["Bullets","insertUnorderedList"],["Numbers","insertOrderedList"],
+    ["Left","justifyLeft"],["Center","justifyCenter"],["Right","justifyRight"],
+    ["Undo","undo"],["Redo","redo"]
+  ];
+  for(const [label,cmd] of formats){
+    const b=button(tools,label,()=>command(cmd));
+    b.setAttribute("aria-label",label);
+    // Mouse-down on a button should not drop the selected range in the editor.
+    b.addEventListener("mousedown",e=>e.preventDefault());
   }
-  button(actions,"Open",()=>choose(".txt,.md,.markdown,.log,.json,.csv,text/plain",async file=>{
-    if(file.size>5*1024*1024)throw Error("Text file exceeds this editor's 5 MB limit");
-    if(dirty&&!window.confirm("Discard unsaved changes and open another file?"))return;
-    const contents=await file.text();
-    if(!ctx.isActive())return;
-    textarea.value=contents;name.value=file.name;filename=file.name;mark(false);tally();
-    message("Opened "+file.name+" ("+file.size.toLocaleString()+" bytes)");
+  const headings=elem("select",{"aria-label":"Paragraph style"},tools);
+  for(const [value,label] of [["P","Paragraph"],["H1","Heading 1"],["H2","Heading 2"],["H3","Heading 3"],["BLOCKQUOTE","Quote"]])elem("option",{value,text:label},headings);
+  headings.addEventListener("change",()=>command("formatBlock",headings.value));
+  const colors=elem("select",{"aria-label":"Text color"},tools);
+  for(const [value,label] of [["#edf4f2","Default"],["#1e293b","Black"],["#c0392b","Red"],["#287fb8","Blue"],["#16875f","Green"]])elem("option",{value,text:label},colors);
+  colors.addEventListener("change",()=>command("foreColor",colors.value));
+  function exportHTML(){return "<!doctype html><html lang=\"en\"><head><meta charset=\"utf-8\"><title>EZ Writer document</title><style>body{font:16px/1.6 Georgia,serif;max-width:800px;margin:40px auto;padding:20px}h1,h2,h3{line-height:1.25}a{color:#2563eb}</style></head><body>"+cleanHTML(editor.innerHTML)+"</body></html>";}
+  function save(asText){
+    const text=editor.innerText;
+    const basename=(name.value.replace(/[\\/]/g,"_").replace(/\.(html?|txt|md)$/i,"")||"Document");
+    download(basename+(asText?".txt":".html"),asText?text:exportHTML(),asText?"text/plain;charset=utf-8":"text/html;charset=utf-8");
+    mark(false);
+  }
+  button(bar,"Open",()=>choose(".html,.htm,.txt,.md,text/html,text/plain",async file=>{
+    if(file.size>5*1024*1024)throw Error("File exceeds the 5 MB editor limit");
+    if(dirty&&!confirm("Discard unsaved document changes?"))return;
+    const t=await file.text();if(!ctx.isActive())return;
+    if(/\.html?$/i.test(file.name))editor.innerHTML=cleanHTML(t);
+    else{editor.replaceChildren();const p=document.createElement("p");p.textContent=t;editor.append(p);editor.style.whiteSpace="pre-wrap";}
+    name.value=file.name;mark(false);tally();message("Opened "+file.name);
   }));
-  button(actions,"Save copy",save,true);
-  button(actions,"New",()=>{
-    if(dirty&&!window.confirm("Discard unsaved changes?"))return;
-    textarea.value="";name.value="Untitled.txt";mark(false);tally();
+  button(bar,"Save DOCX",()=>{
+    const basename=(name.value.replace(/[\/]/g,"_").replace(/.(html?|txt|md|docx)$/i,"")||"Document");
+    download(basename+".docx",EZOfficeExport.docx(editor),"application/vnd.openxmlformats-officedocument.wordprocessingml.document");
+    mark(false);
+  },true);
+  button(bar,"Save HTML",()=>save(false));
+  button(bar,"Export text",()=>save(true));
+  button(bar,"Print / PDF",()=>window.print());
+  button(bar,"New",()=>{
+    if(dirty&&!confirm("Discard unsaved document changes?"))return;
+    editor.innerHTML="<p></p>";name.value="Document.html";mark(false);tally();
   });
-  function keydown(e){if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==="s"){e.preventDefault();save();}}
-  document.addEventListener("keydown",keydown);
-  onDispose(()=>document.removeEventListener("keydown",keydown));
-  textarea.addEventListener("input",()=>{mark(true);tally();});
-  info("Plain text and Markdown. Ctrl/Cmd+S exports a new local file; it does not silently overwrite the original. The browser's native text undo and spell-check remain available.");
-  return ()=>{textarea.value="";};
+  editor.addEventListener("input",()=>{mark(true);tally();});
+  editor.addEventListener("paste",e=>{
+    // Plain-text paste by default, so pasted websites cannot execute code.
+    if(e.clipboardData){e.preventDefault();document.execCommand("insertText",false,e.clipboardData.getData("text/plain"));}
+  });
+  function key(e){if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==="s"){e.preventDefault();save(false);}}
+  document.addEventListener("keydown",key);
+  onDispose(()=>document.removeEventListener("keydown",key));
+  tally();
+  info("Export real DOCX for Word and LibreOffice, HTML, plain text, and Print / Save as PDF from your browser. Real editable formatted HTML: headings, bold, italic, underline, lists, alignment, colors and printing. Opens HTML safely with restricted tags. DOCX import and advanced page layout remain unsupported.");
+  return ()=>{editor.replaceChildren();};
 });
 })();
