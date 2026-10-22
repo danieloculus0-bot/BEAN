@@ -155,6 +155,35 @@ def test_browser():
             browser.close()
 
 
+
+def test_mobile_layout():
+    with sync_playwright() as play:
+        browser=play.chromium.launch(headless=True)
+        for width in (390,360):
+            page=browser.new_page(viewport={"width":width,"height":844},device_scale_factor=2,is_mobile=True,has_touch=True)
+            page.goto(PAGE)
+            for app in ("home","writer","sheets","slides","media","mail"):
+                page.locator(f'[data-tool="{app}"]').click()
+                page.wait_for_function("(name) => EZOffice.inspect().current === name",arg=app)
+                if app!="home":
+                    page.wait_for_function("document.querySelector('#tool-root .hint')?.textContent?.startsWith('Opening') !== true")
+                metrics=page.evaluate("""() => ({
+                    html:document.documentElement.scrollWidth,
+                    body:document.body.scrollWidth,
+                    width:window.innerWidth
+                })""")
+                assert metrics["html"]<=metrics["width"]+2,metrics
+                assert metrics["body"]<=metrics["width"]+2,metrics
+                if app=="sheets":
+                    assert page.locator(".grid-wrap").evaluate("(e)=>e.scrollWidth>e.clientWidth")
+                if app=="slides":
+                    preview=page.locator(".slide-preview").bounding_box()
+                    controls=page.locator(".slide-controls").bounding_box()
+                    assert preview and controls and preview["y"]<controls["y"]
+            page.close()
+        browser.close()
+
 if __name__=="__main__":
     test_browser()
-    print("EZ_OFFICE_RICH_FORMATS_EXPORT_SMOKE_PASS")
+    test_mobile_layout()
+    print("EZ_OFFICE_WORKSHOP_MOBILE_PASS")
