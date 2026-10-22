@@ -7,7 +7,7 @@
   const subtitle=document.getElementById("tool-subtitle");
   const status=document.getElementById("status");
   const buttons=[...document.querySelectorAll("[data-tool]")];
-  const titles={home:["EZ-Office","Local tools, loaded only when used"],writer:["EZ Writer","Plain text and Markdown documents"],sheets:["EZ Sheets","Lightweight CSV spreadsheet"],slides:["EZ Slides","Present text slides fullscreen"],media:["EZ Media","Open local video, audio, and images"],mail:["EZ Mail","Compose and export local email drafts"]};
+  const titles={home:["EZ-Office","Local tools, loaded only when used"],writer:["EZ Writer","Formatted documents, HTML export and print"],sheets:["EZ Sheets","Recalculating formulas and CSV workbooks"],slides:["EZ Slides","Multimedia decks with images, audio and video"],media:["EZ Media","Open local video, audio, and images"],mail:["EZ Mail","Gmail, Outlook and local email drafts"]};
   const factories=new Map(),loading=new Map();
   let current="home",destroy=null,epoch=0,dirty=false;
   function elem(tag,props,parent){
@@ -82,11 +82,11 @@
     elem("p",{className:"hint",text:"One shared HTML window. Tools load on demand, and their working documents and media are released when you switch. Save a copy before switching."},root);
     const tiles=elem("div",{className:"tiles"},root);
     [
-      ["writer","▤","Writer","Edit .txt and .md files"],
-      ["sheets","▦","Sheets","Edit CSV tables, preserve quoted cells"],
-      ["slides","▣","Slides","Create and present text slides"],
+      ["writer","▤","Writer","Rich text, colors, headings and printable HTML"],
+      ["sheets","▦","Sheets","Real formulas, ranges and CSV workbooks"],
+      ["slides","▣","Slides","Embed images, audio and video, present fullscreen"],
       ["media","▶","Media","Play local audio and video, view photos"],
-      ["mail","✉","Mail drafts","Compose and export .eml messages"]
+      ["mail","✉","Mail","OAuth Gmail/Outlook, inbox and .eml drafts"]
     ].forEach(([id,glyph,name,desc])=>{
       const tile=button(tiles,"",()=>switchTool(id));
       tile.className="tile";
@@ -94,7 +94,7 @@
       elem("strong",{text:name},tile);
       elem("small",{text:desc},tile);
     });
-    ctx.info("Offline MVP. Does not claim DOCX/XLSX/PPTX compatibility or a live email inbox. No file contents are uploaded.");
+    ctx.info("Functional lightweight productivity tools. DOCX/XLSX/PPTX import is not included. Gmail/Outlook require explicit OAuth setup; no files are uploaded by default.");
   }
   function switchTool(id){
     if(!Object.hasOwn(titles,id))id="home";
@@ -130,4 +130,6 @@
   };
   buttons.forEach(b=>b.addEventListener("click",()=>switchTool(b.dataset.tool)));
   home(context("home"));
+  // Resume an Outlook authorization-code redirect in the actual mail tool.
+  if(new URLSearchParams(location.search).has("code")||new URLSearchParams(location.search).has("error"))switchTool("mail");
 })();

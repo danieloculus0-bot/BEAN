@@ -16,3 +16,46 @@ nav{display:grid;gap:5px}.nav-item{text-align:left;border:1px solid transparent;
 .form-grid{display:grid;grid-template-columns:90px minmax(0,1fr);align-items:center;gap:10px;margin-bottom:12px}.form-grid label{color:var(--muted);font-size:13px}.mail-body{min-height:35vh}
 @media(max-width:720px){.workspace{display:block}.sidebar{border-right:0;border-bottom:1px solid var(--border);padding:8px 10px}.brand{padding:0 5px}.brand strong{font-size:17px}.sidebar-footer{display:none}nav{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:2px}.nav-item{font-size:10px;text-align:center;padding:6px 2px}.glyph{display:block;margin:auto;font-size:18px}.top{padding:12px 14px}#tool-root{padding:12px}.mode{font-size:9px}.sheet th,.sheet td{min-width:100px}.sheet input{min-width:100px}#status{padding:10px 14px}.form-grid{grid-template-columns:1fr;gap:4px}}
 @media print{.sidebar,.top,#status,.toolbar,.info{display:none!important}.workspace,.main{display:block;background:white;color:black}#tool-root{padding:0}.document{background:white;color:black;border:0}.slide-preview{background:white;color:black}}
+
+
+/* Rich document paper, slide editor, and formula result surfaces. */
+.rich-editor{display:block;min-height:58vh;width:min(100%,850px);margin:0 auto;padding:35px 44px;color:#1d2933;background:#fff;border:1px solid #c8d3d0;border-radius:6px;box-shadow:0 12px 40px #0005;line-height:1.6;font-family:Georgia,"Times New Roman",serif;outline-offset:4px;overflow-wrap:anywhere}
+.rich-editor h1,.rich-editor h2,.rich-editor h3{margin:.6em 0 .4em;color:inherit;line-height:1.25}
+.rich-editor h1{font-size:2.1rem}.rich-editor h2{font-size:1.65rem}.rich-editor p{color:inherit}.rich-editor a{color:#2563eb}.rich-editor:empty:before{content:"Start writing...";color:#789}
+.toolbar select{max-width:180px;padding:9px 10px}.toolbar button{font-weight:650}.formula-result{display:block;max-width:180px;border-top:1px dotted #415d57;background:#203332;padding:2px 8px;color:#adfa7f;font-size:12px;text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.formula-result[hidden]{display:none}.formula-result.formula-error{color:#ffb0a2}
+.slide-editor-layout{display:grid;grid-template-columns:minmax(240px,.35fr) minmax(0,.65fr);gap:14px;align-items:start}
+.slide-controls{display:grid;gap:8px;padding:18px;background:var(--panel);border:1px solid var(--border);border-radius:13px}
+.slide-controls label{font-size:.76rem;font-weight:700;color:#becfc8}
+.slide-controls input,.slide-controls textarea,.slide-controls select{width:100%}
+.slide-controls textarea{min-height:70px}
+.slide-preview{aspect-ratio:16/9;min-height:310px;padding:25px;display:flex;justify-content:center;align-items:center;overflow:hidden;white-space:normal}
+.slide-preview .slide-inner{width:100%;max-width:100%;display:flex;flex-direction:column;justify-content:center;align-items:inherit;gap:14px}
+.slide-preview .slide-heading{font-size:clamp(21px,2.8vw,44px);line-height:1.15;margin:0;color:inherit;text-wrap:balance}
+.slide-preview .slide-copy{font-size:clamp(14px,1.55vw,24px);white-space:pre-wrap;line-height:1.35;overflow-wrap:anywhere;margin:0;color:inherit}
+.slide-preview .slide-media{display:block;width:auto;max-width:90%;max-height:34vh;object-fit:contain;border-radius:6px;margin:auto}
+.slide-theme-night{background:linear-gradient(135deg,#192c45,#111525);color:#edf7fa}
+.slide-theme-lime{background:linear-gradient(135deg,#b8f65b,#4d864c);color:#172718}
+.slide-theme-paper{background:#f9f8f2;color:#1a2730}
+.slide-theme-sunset{background:linear-gradient(135deg,#632653,#eb8c52);color:#fff6e8}
+.slide-preview:fullscreen{padding:5vw;max-width:none;max-height:none;aspect-ratio:auto}.slide-preview:fullscreen .slide-inner{align-items:inherit}
+.slide-preview:fullscreen .slide-heading{font-size:5vw}.slide-preview:fullscreen .slide-copy{font-size:2.6vw}.slide-preview:fullscreen .slide-media{max-height:52vh}
+.mail-connect{border:1px solid var(--border);border-radius:14px;padding:18px;margin-top:18px;background:#152126}
+.mail-connect h2{font-size:1.25rem}.mail-connect p{line-height:1.5}.mail-connect .form-grid{margin-top:14px}.mail-connect .form-grid label{max-width:135px}.mail-connect .form-grid{grid-template-columns:145px minmax(0,1fr)}
+.inbox-list{display:grid;gap:8px;max-height:440px;overflow:auto}.message-preview{padding:12px;border-radius:9px;background:#203135;border:1px solid #39545a;display:grid;gap:3px}.message-preview strong{font-size:14px}.message-preview small{font-size:11px;color:var(--accent)}.message-preview p{font-size:12px;margin:0;color:var(--muted);overflow-wrap:anywhere}
+@media(max-width:900px){.slide-editor-layout{grid-template-columns:1fr}.slide-preview{min-height:260px}.slide-preview .slide-media{max-height:40vh}}
+@media(max-width:720px){.rich-editor{padding:20px 16px;min-height:45vh}.mail-connect .form-grid{grid-template-columns:1fr}.slide-preview .slide-heading{font-size:25px}.slide-preview .slide-copy{font-size:16px}}
+@media print{body{background:#fff;color:#111}.rich-editor{border:0;box-shadow:none;width:100%;padding:0}.slide-controls,.slide-editor-layout~.toolbar,.mail-connect{display:none!important}.slide-editor-layout{display:block}.slide-preview{width:100%;height:auto;min-height:90vh;break-inside:avoid;print-color-adjust:exact}}
+
+.slides-print-pages{display:none}
+@media print{
+  @page{size:auto;margin:12mm}
+  @page ez-slide{size:landscape;margin:0}
+  body:has(.slides-print-pages) .slide-editor-layout,body:has(.slides-print-pages) .slide-preview,body:has(.slides-print-pages) .slide-controls{display:none!important}
+  body:has(.slides-print-pages) .slides-print-pages{display:block!important}
+  .slides-print-pages .print-slide{page:ez-slide;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:20px;width:100%;height:100vh;padding:7vw;break-after:page;page-break-after:always;print-color-adjust:exact!important;-webkit-print-color-adjust:exact!important}
+  .slides-print-pages .print-slide h1{font-size:4vw;line-height:1.1;color:inherit}
+  .slides-print-pages .print-slide p{font-size:2.1vw;white-space:pre-wrap;color:inherit}
+  .slides-print-pages .slide-print-image{max-height:42vh;max-width:86%;object-fit:contain}
+  .slides-print-pages .print-slide:last-child{break-after:auto}
+}
