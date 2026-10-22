@@ -125,7 +125,7 @@ def test_offline_suite() -> None:
             assert "Testing local mail." in contents
             assert not console_errors, console_errors
             assert requests, "Browser did not request any local site assets"
-            assert all(url.startswith(origin + "/") for url in requests), requests
+            assert all(url.startswith(origin + "/") or url.startswith("blob:" + origin + "/") for url in requests), requests
             browser.close()
         server.shutdown()
         server.server_close()
