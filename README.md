@@ -12,14 +12,20 @@ EZ-Office is a **working offline-first HTML/JavaScript office experiment**: Writ
 
 The Workshop serves a pinned copy of the working application. It does **not** imply BEAN AI runs inside EZ-Office, that native DOCX/XLSX/PPTX documents are compatible, that mail accounts can synchronize, or that host-RAM savings were measured. Read the [EZ-Office README](https://github.com/danieloculus0-bot/EZ-Office/blob/main/README.md) for exact scope. EZ-Office is a separate project from BEAN Core and Axiom.
 
-## New: BEAN-native reasoning and measured intuition (October 21, 2026)
+## Integrated Core Q-learning (October 22, 2026)
+
+**[Merged integration PR #153](https://github.com/danieloculus0-bot/BEAN/pull/153)** brings the original tested SpongeTD Q-learning, exact compressed/recoverable Q-value checkpoints, SpongeIntuition controller and Lab027 benchmark into Python BEAN Core. A [real local learning runtime](bean/learning/runtime.py) now accepts host-observed outcomes and updates the Q table through `learning_choose`, `learning_feedback`, `learning_checkpoint`, and `learning_status` in BEAN's existing command inbox. Configure `BEAN_LEARNING_DB` and see the [integration contract](docs/BEAN_LEARNING_CORE_INTEGRATION_2026-10-22.md) for use and limitations.
+
+The integration passed [Windows/Ubuntu learning CI](https://github.com/danieloculus0-bot/BEAN/actions/runs/39865857319) and [the four-job full Core regression matrix](https://github.com/danieloculus0-bot/BEAN/actions/runs/39865857419) at PR head `15ba3357`. Source-identical Lab027 files also match the experimentally tested blob hashes at `4d969b0e`. **This is actual tabular reinforcement learning in the local Python runtime, not a live hosted connector, autonomous reward collection, LLM weight training, or proof of general cross-domain intelligence.** Uncheckpointed updates are not durable; reward and validation values are host-reported.
+
+## BEAN-native reasoning and measured intuition (October 21, 2026)
 
 - **[Workshop learning-results page](https://danieloculus0-bot.github.io/BEAN/portfolio/bean-learning/)**: mobile-friendly walkthrough of what was actually tested, with direct links to code, CI and evidence.
 - **[Lab026 reasoning skills (draft PR #144)](https://github.com/danieloculus0-bot/BEAN/pull/144)**: source-linked experience recall, reflection on errors, reusable procedures, and controlled strategy selection using BEAN's existing SQLite Journal.
 - **[Lab027 reinforcement-learning evaluation (draft PR #149)](https://github.com/danieloculus0-bot/BEAN/pull/149)**: real original SpongeTD Q-learning on 3,000 synthetic training puzzles, a separate 180-map tuning set, and **240 untouched holdout layouts**. Trained Q-learning with the same loop-avoidance controller solved 237/240 maps versus 232/240 for cold Q; mean moves were 21.7 versus 69.0. Exact Q-values survived checkpoint/restart.
 - **[Verified Lab027 GitHub CI run](https://github.com/danieloculus0-bot/BEAN/actions/runs/39550106061)**: both Windows and Ubuntu succeeded on evaluated code revision `4d969b0e`, with inspectable compressed event-ledger artifacts.
 
-These experiments demonstrate task-family learning and reusable mechanisms, **not** general intelligence, production deployment, external action authority or neural training. Both PRs remain experimental branches; they are not merged into `main`. The newest changes on a draft branch may be newer than the listed successful CI revision.
+These experiments demonstrate task-family learning and reusable mechanisms, **not** general intelligence, production deployment, external action authority or neural training. Lab026 and the broader Lab027 research PRs remain separate experiments; the source-identical tabular learner and its held-out tests were promoted to Python Core through PR #153. The newest changes on other draft branches may be newer than their listed successful CI revisions.
 
 ## Before any BEAN engineering work
 
@@ -27,7 +33,7 @@ These experiments demonstrate task-family learning and reusable mechanisms, **no
 
 ## Already-built learning infrastructure
 
-- [**SpongeTD tabular Q-learning**](https://github.com/danieloculus0-bot/BEAN/blob/experiment/bean-sponge-core-20261011/bean/optimization/sponge_td.py): real temporal-difference updates and scored, recoverable Q-value memory, with [holdout ledger](https://github.com/danieloculus0-bot/BEAN/blob/experiment/bean-sponge-core-20261011/experiments/sponge_breakout/evidence/score_ledger.jsonl).
+- [**SpongeTD tabular Q-learning in Core main**](bean/optimization/sponge_td.py): real temporal-difference updates and scored, recoverable Q-value memory, with [reproducible held-out maze benchmark](bean/optimization/intuition_maze.py). The earlier [Breakout holdout ledger](https://github.com/danieloculus0-bot/BEAN/blob/experiment/bean-sponge-core-20261011/experiments/sponge_breakout/evidence/score_ledger.jsonl) remains on its research branch.
 - [**SpongeDQN neural Q-network**](https://github.com/danieloculus0-bot/BEAN/blob/experiment/bean-deep-q-learning-20261012/bean/optimization/sponge_dqn.py): experimental PyTorch 3→64→64→3 network with minibatch replay, target network, real gradient training and compressed neural checkpoint restoration. [Matched tabular/DQN/cold evaluation](https://github.com/danieloculus0-bot/BEAN/blob/experiment/bean-deep-q-learning-20261012/experiments/sponge_breakout/deep_trial.py) is game-specific, not general neural recall or production runtime.
 - [**Neural evolution**](https://github.com/danieloculus0-bot/BEAN/blob/experiment/bean-deep-q-learning-20261012/experiments/sponge_breakout/evolve.py): candidate inheritance and mutation; trials include important regressions, not a replicated overall gain.
 - [**Persistent compressed scoring ledger**](https://github.com/danieloculus0-bot/BEAN/tree/experiment/anticipatory-ledger-20261020/research/persistent_ledger): append-only historical evidence with small rebuildable scoring summaries.
@@ -35,14 +41,15 @@ These experiments demonstrate task-family learning and reusable mechanisms, **no
 - [**BEAN Bridge Lab009**](https://github.com/danieloculus0-bot/BEAN-AI-Bridge-/pull/46): revised frozen-replay versus online-acquisition scoring (0/3 baseline, 2/3 after restart without new evidence, 3/3 after new synthetic research).
 - [**BEAN-readable scoreboard and reward**](https://github.com/danieloculus0-bot/BEAN/pull/141): experimental JSON scoreboard context, signed reward for matched improvement/regression, and duplicate evaluation-credit detection. Not yet consumed automatically by the hosted BEAN connector or neural DQN.
 
-These are **distinct research branches and draft PRs**, not all part of Core `main`. Consult [the public learning page](https://danieloculus0-bot.github.io/BEAN/#learning) and exact linked test receipts. All neural claims remain limited to controlled synthetic experiments.
+Some assets above remain **distinct research branches and draft PRs**; SpongeTD and its local runtime now exist in Core `main`. Consult [the public learning page](https://danieloculus0-bot.github.io/BEAN/#learning) and exact linked test receipts. All neural claims remain limited to controlled synthetic experiments.
 
 ## Current build state
 
-**Reviewed:** 2026-10-20 · **Inspected main:** `4e4b5f84683f` · **Type:** working experimental/beta code; not automatically production-certified.
+**Reviewed:** 2026-10-22 · **Merged learning Core:** `a9c945b19e11` · **Type:** working experimental/beta code; not automatically production-certified.
 
 - [BEAN AIscend public demo checks](https://github.com/danieloculus0-bot/BEAN/actions/runs/39503225654) — **Passed** on an earlier `main` revision; the static demo has a separate check.
-- [BEAN full core regression](https://github.com/danieloculus0-bot/BEAN/actions/runs/39512878059) — **Passed** at inspected `main` on Windows/Linux.
+- [BEAN full Core regression](https://github.com/danieloculus0-bot/BEAN/actions/runs/39865857419) — **Passed** across Windows/Linux and Python 3.10/3.12 at integration PR head; merge includes the unchanged tested files.
+- [BEAN learning integration](https://github.com/danieloculus0-bot/BEAN/actions/runs/39865857319) — **Passed** across Windows and Ubuntu, including 3,000-episode Lab027 evaluation.
 - [Pages build and deployment](https://github.com/danieloculus0-bot/BEAN/actions/runs/39512878048) — **Passed** at inspected `main`.
 
 [See live Actions](https://github.com/danieloculus0-bot/BEAN/actions) for newer results; this is a dated evidence snapshot, not a continuously updated indicator.
@@ -50,6 +57,7 @@ These are **distinct research branches and draft PRs**, not all part of Core `ma
 ## Implemented today
 
 - Persistent memory, source/contradiction tracking and offline replay backed by runnable Core code.
+- Local Python Q-learning and reward feedback with explicit checkpoint persistence through the runtime inbox.
 - Experimental local model/Ollama and voice integrations, with host-neutral reasoning interfaces.
 - Public [BEAN laboratory](https://danieloculus0-bot.github.io/BEAN/) and the shared charcoal/electric-lime interface.
 
@@ -71,12 +79,13 @@ The public AIscend browser demo is a read-only simulation, not a live wallet/tra
 
 ## Next engineering work
 
-Reproduce improvements on holdout tasks, verify restart continuity, and expand tested source integration without falsely claiming model learning or production autonomy.
+Connect measured observations and reward sources from real BEAN modules, persist evidence for every feedback event, and separately integrate the hosted connector and Bridge. Reproduce gains on independent holdout tasks rather than assuming one synthetic puzzle family generalizes.
 
 ## Documentation
 
 - [BEAN site](https://danieloculus0-bot.github.io/BEAN/)
 - [Research and verification docs](docs/experimental-research-index-2026-10.md)
+- [Local Q-learning integration contract](docs/BEAN_LEARNING_CORE_INTEGRATION_2026-10-22.md)
 - [**Complete prior README, including history and detailed instructions**](docs/archive/README_2026-10-20_before_refresh.md)
 
 Historical experiments, dated reports and superseded architectural claims have been moved out of this landing page, **not deleted**.
