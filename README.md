@@ -8,9 +8,9 @@ Persistent experimental reasoning and evidence system. BEAN Core maintains SQLit
 
 **[Launch the EZ-Office suite in the Workshop](https://danieloculus0-bot.github.io/BEAN/portfolio/ez-office/)** · [Standalone source and automated tests](https://github.com/danieloculus0-bot/EZ-Office)
 
-EZ-Office is a **working offline-first HTML/JavaScript office experiment**: Writer edits TXT/Markdown; Sheets imports/exports CSV; Slides presents text-based decks; Media opens browser-supported local audio/video/images; and Mail exports `.eml` drafts or hands off to a configured mail program. Five tools share one interface with on-demand loading and cleanup when switching. No login, cloud service, or separate application server is necessary for these functions.
+EZ-Office is a **working offline-first HTML/JavaScript productivity suite**. Writer formats text and exports actual DOCX, HTML, or TXT; Sheets recalculates formulas and exports XLSX/CSV; Slides adds images, audio, video, themes and PPTX/native multimedia output; Media saves original files or PNG frames; Mail handles EML drafts and optional Google Gmail / Microsoft Outlook provider connections. Documents and presentations can use browser Print / Save as PDF. Five tools share one interface with on-demand loading and cleanup when switching.
 
-The Workshop serves a pinned copy of the working application. It does **not** imply BEAN AI runs inside EZ-Office, that native DOCX/XLSX/PPTX documents are compatible, that mail accounts can synchronize, or that host-RAM savings were measured. Read the [EZ-Office README](https://github.com/danieloculus0-bot/EZ-Office/blob/main/README.md) for exact scope. EZ-Office is a separate project from BEAN Core and Axiom.
+The Workshop hosts a pinned copy of the actual application, not a fake dashboard. Basic DOCX/XLSX/PPTX **export** works and ZIP/XML files are checked in browser tests; import of those formats, full Microsoft Office compatibility and host-RAM savings are **not** established. Gmail/Outlook connect only after registering an OAuth public client and authorizing the mail scopes. This is separate from BEAN Core. Read the [EZ-Office README](https://github.com/danieloculus0-bot/EZ-Office/blob/main/README.md) for exact scope. EZ-Office is a separate project from BEAN Core and Axiom.
 
 ## Integrated Core Q-learning (October 22, 2026)
 
