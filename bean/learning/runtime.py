@@ -125,4 +125,6 @@ def register_learning_handlers(inbox, service):
     inbox.register("learning_feedback", lambda msg, _: service.feedback(**msg.args))
     inbox.register("learning_checkpoint", lambda msg, _: service.checkpoint(**msg.args))
     inbox.register("learning_status", lambda msg, _: service.status())
+    from bean.learning.measured_feedback import register_measured_feedback
+    register_measured_feedback(inbox, service)
     return inbox
