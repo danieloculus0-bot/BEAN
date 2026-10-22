@@ -25,6 +25,8 @@ def test_office_demo_is_locally_complete_and_in_menu():
     assert "<title>EZ-Office" in page
     assert 'href="../"' in page  # Back to Workshop, not BEAN agent integration
     assert 'src="shell.js"' in page
+    assert 'src="lib/office-export.js"' in page
+    assert (OFFICE / "lib/office-export.js").is_file()
     assert 'href="styles.css"' in page
     assets = Assets()
     assets.feed(page)
