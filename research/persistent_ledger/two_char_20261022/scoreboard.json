@@ -1,0 +1,63 @@
+{
+  "schema": "bean.twochar.results.v1",
+  "source": "standalone synthetic, 2026-10-22",
+  "seed": 220261022,
+  "events": 9000,
+  "values": 72000,
+  "cases_per_condition": 3000,
+  "source_values_retained_in_downloadable_sqlite_and_jsonl_gz": true,
+  "full_event_values_committed_to_github": false,
+  "conditions": {
+    "high_reuse": {
+      "vocab_per_slot": 4,
+      "json_gzip_bytes": 15140,
+      "pair_gzip_bytes": 8609,
+      "onebyte_dictionary_gzip_bytes": 7131,
+      "hierarchy_gzip_bytes": 10499,
+      "plain_json_bzip2_bytes": 6199,
+      "plain_json_lzma_bytes": 14320,
+      "tsv_gzip_bytes": 15819,
+      "pair_gain_vs_json_gzip_pct": 43.137
+    },
+    "moderate_reuse": {
+      "vocab_per_slot": 24,
+      "json_gzip_bytes": 57709,
+      "pair_gzip_bytes": 25112,
+      "onebyte_dictionary_gzip_bytes": 17675,
+      "hierarchy_gzip_bytes": 45284,
+      "plain_json_bzip2_bytes": 21636,
+      "plain_json_lzma_bytes": 35580,
+      "tsv_gzip_bytes": 57979,
+      "pair_gain_vs_json_gzip_pct": 56.485
+    },
+    "low_reuse": {
+      "vocab_per_slot": 80,
+      "json_gzip_bytes": 112537,
+      "pair_gzip_bytes": 37730,
+      "onebyte_dictionary_gzip_bytes": 25758,
+      "hierarchy_gzip_bytes": 63733,
+      "plain_json_bzip2_bytes": 39201,
+      "plain_json_lzma_bytes": 55364,
+      "tsv_gzip_bytes": 110803,
+      "pair_gain_vs_json_gzip_pct": 66.473
+    }
+  },
+  "integrity": {
+    "all_9000_roundtrips": true,
+    "db_restart_replay": true,
+    "hash_chain_ok": true,
+    "duplicate_rejected": true,
+    "tamper_canary_detected": true,
+    "comparison_events": 12
+  },
+  "local_artifact_sha256": {
+    "original_event_archive": "29f97009d9e235628f063701942266c662b2b827ede0cfc4973677693c1a85c2",
+    "initial_scoreboard": "3fdf5c0fc76464f973cedb7067843174a727365b00ca5031f6463936d78133e1",
+    "controls_scoreboard": "e6150e6d53e491fbd2968ad2c10013b7de473cd9da86eca6e3c0683041175098",
+    "original_script": "80354a0fc6044ac8a56166ac184c7d727b8db15557758a5d83cc9b05f416be17",
+    "control_script": "19ce5dd39d89f1348d9dec6b331052162ca921a4e73b3fa027950c6cfeafe218"
+  },
+  "ledger_tip": "75e66debfaf1bed0b83f337a7babb830daffa3ce3ddd86fda98bf8b6d62357f0",
+  "comparison_tip": "f62bf68ccd0fe7a4f1c8407c5f9fd1aa41006db431fc91c123fc653a70e13d1d",
+  "notice": "This benchmark did not run BEAN's Core learning runtime or demonstrate general learning. Archive hashes are internal integrity checks, not authenticated independent witnessing."
+}
