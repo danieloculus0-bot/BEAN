@@ -12,7 +12,9 @@ EZ-Office is a **working offline-first HTML/JavaScript productivity suite**. Wri
 
 **Buildout pass 01 (October 22, 2026):** Added Writer find/replace, Sheets multi-cell clipboard paste and cell navigation, a slide navigator and notes export, Media speed/loop controls and metadata, local EML reopening, and an unsaved-tab-close warning. See the [functionality/deployability audit](https://github.com/danieloculus0-bot/EZ-Office/blob/main/docs/BUILDOUT_AUDIT.md) for verification gates and remaining gaps.
 
-The Workshop hosts a pinned copy of the actual application, not a fake dashboard. Basic DOCX/XLSX/PPTX **export** works and ZIP/XML files are checked in browser tests; import of those formats, full Microsoft Office compatibility and host-RAM savings are **not** established. Gmail/Outlook connect only after registering an OAuth public client and authorizing the mail scopes. This is separate from BEAN Core. Read the [EZ-Office README](https://github.com/danieloculus0-bot/EZ-Office/blob/main/README.md) for exact scope. EZ-Office is a separate project from BEAN Core and Axiom.
+**Buildout pass 02 (October 22, 2026):** Added bounded offline import for Word DOCX paragraphs and the first Excel XLSX worksheet, along with view-only Sheets sort/filter, evaluated visible CSV and complete small-sheet Print/PDF. PPTX output now preserves paragraph breaks and alignment. Import ZIP size, integrity and compressed-file round-trips are browser-tested.
+
+The Workshop hosts a pinned copy of the actual application, not a fake dashboard. Basic DOCX/XLSX/PPTX **export** and limited DOCX/XLSX **import** are working and covered by structural/browser tests. Complex Office formatting, native PPTX import, full Office compatibility and host-RAM savings are **not** established. Gmail/Outlook connect only after registering an OAuth public client and authorizing the mail scopes. This is separate from BEAN Core. Read the [EZ-Office README](https://github.com/danieloculus0-bot/EZ-Office/blob/main/README.md) for exact scope. EZ-Office is a separate project from BEAN Core and Axiom.
 
 ## Integrated Core Q-learning (October 22, 2026)
 
