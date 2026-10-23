@@ -32,6 +32,7 @@ jobs:
         run: |
           node --check docs/portfolio/ez-office/shell.js
           node --check docs/portfolio/ez-office/lib/office-export.js
+          node --check docs/portfolio/ez-office/lib/office-import.js
           for script in docs/portfolio/ez-office/apps/*.js; do node --check "$script"; done
       - uses: actions/setup-python@v5
         with:
@@ -44,5 +45,5 @@ jobs:
         run: |
           python -m pip install 'playwright==1.55.0'
           python -m playwright install --with-deps chromium webkit
-      - name: Test suite and detached spreadsheet axes in Chromium and WebKit
+      - name: Test Pass 02 compressed Office import and mobile sheet scrolling in browsers
         run: python tests/ez_office_browser_smoke.py

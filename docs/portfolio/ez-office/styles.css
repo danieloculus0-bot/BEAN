@@ -282,3 +282,26 @@ nav{display:grid;gap:5px}.nav-item{text-align:left;border:1px solid transparent;
 .toolbar input[aria-label="Find text"],.toolbar input[aria-label="Replacement text"]{width:min(220px,40vw)}
 @media(max-width:720px){.slide-thumb{flex-basis:126px;min-height:68px;font-size:12px;padding:10px}.slide-thumbnails{margin-top:5px}}
 @media print{.slide-thumbnails{display:none!important}}
+
+
+/* Pass 02: document-first print output with a bounded full-sheet print surface. */
+.sheet-print-pages{display:none}
+@media print{
+  .workspace:has(.sheet-print-pages) .sidebar,
+  .workspace:has(.sheet-print-pages) .top,
+  .workspace:has(.sheet-print-pages) #status,
+  .workspace:has(.sheet-print-pages) #tool-root > :not(.sheet-print-pages){display:none!important}
+  .workspace:has(.sheet-print-pages) .main{display:block!important;width:100%!important;margin:0!important;padding:0!important}
+  .workspace:has(.sheet-print-pages) #tool-root{padding:0!important;display:block!important}
+  .sheet-print-pages{display:block!important;background:#fff!important;color:#111!important;font:11pt/1.35 Arial,sans-serif;padding:8mm}
+  .sheet-print-pages h1{font-size:16pt;margin:0 0 12px}
+  .sheet-print-table{width:100%;border-collapse:collapse;table-layout:auto}
+  .sheet-print-table :is(th,td){border:1px solid #666;padding:5px 8px;white-space:pre-wrap;overflow-wrap:anywhere;color:#111;background:#fff}
+  .sheet-print-table th{background:#e9eef0;font-weight:bold;text-align:left}
+  .sheet-print-table thead{display:table-header-group}
+  .sheet-print-table tr{break-inside:avoid}
+  body:has(.rich-editor) .sidebar,body:has(.rich-editor) .top,
+  body:has(.rich-editor) .toolbar,body:has(.rich-editor) .info,body:has(.rich-editor) #status{display:none!important}
+  body:has(.rich-editor) .main{width:100%!important;margin:0!important;padding:0!important}
+  body:has(.rich-editor) .rich-editor{display:block!important;margin:0!important;border:0!important;box-shadow:none!important;min-height:0!important;width:100%!important;max-width:none!important;color:#111!important}
+}
