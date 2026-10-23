@@ -128,6 +128,10 @@
     // Test-only: count registered scripts and mounted controls, not heap estimates.
     inspect:()=>({current,registered:[...factories.keys()],mounted:root.querySelectorAll("*").length,dirty})
   };
+  window.addEventListener("beforeunload",event=>{
+    // Native browser prompt only for edits that were not saved/exported.
+    if(dirty){event.preventDefault();event.returnValue="";}
+  });
   buttons.forEach(b=>b.addEventListener("click",()=>switchTool(b.dataset.tool)));
   home(context("home"));
   // Resume an Outlook authorization-code redirect in the actual mail tool.
