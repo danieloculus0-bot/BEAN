@@ -95,6 +95,13 @@ def test_browser():
             expect(result).to_have_text("23")
             calc=page.locator('[data-result="3:3"]')
             expect(calc).to_have_text("295")
+            # Mixed data range: Qty label is text, B2 and B3 are numeric.
+            page.get_by_role("textbox",name="B7",exact=True).fill("=SUM(B1:B3)")
+            page.get_by_role("textbox",name="C7",exact=True).fill("=COUNT(B1:B3)")
+            page.get_by_role("textbox",name="D7",exact=True).fill("=AVERAGE(B1:B3)")
+            expect(page.locator('[data-result="6:1"]')).to_have_text("12")
+            expect(page.locator('[data-result="6:2"]')).to_have_text("2")
+            expect(page.locator('[data-result="6:3"]')).to_have_text("6")
             xlsx=downloaded(page,"Save XLSX",p/"sheet.xlsx")
             content=validate_office(xlsx,["xl/worksheets/sheet1.xml","xl/workbook.xml"])
             assert "<f>A6*2+3</f>" in content["xl/worksheets/sheet1.xml"]
