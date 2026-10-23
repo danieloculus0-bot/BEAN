@@ -145,6 +145,17 @@ EZOffice.register("writer",function(ctx){
     else{editor.replaceChildren();const p=document.createElement("p");p.textContent=t;editor.append(p);editor.style.whiteSpace="pre-wrap";}
     name.value=file.name;mark(false);tally();message("Opened "+file.name);
   }));
+  button(bar,"Open DOCX",()=>choose(".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document",async file=>{
+    if(file.size>10*1024*1024)throw Error("DOCX exceeds the 10 MB import limit");
+    if(dirty&&!confirm("Discard unsaved document changes?"))return;
+    const parsed=EZOfficeImport.readDOCX(await file.arrayBuffer());
+    if(!ctx.isActive())return;
+    editor.innerHTML=cleanHTML(parsed.html);
+    editor.style.whiteSpace="";
+    name.value=file.name;
+    mark(false);tally();
+    message("Imported "+parsed.blocks+" Word paragraph(s). Images, page layout and advanced objects are not imported.");
+  }));
   button(bar,"Save DOCX",()=>{
     const basename=(name.value.replace(/[\/]/g,"_").replace(/.(html?|txt|md|docx)$/i,"")||"Document");
     download(basename+".docx",EZOfficeExport.docx(editor),"application/vnd.openxmlformats-officedocument.wordprocessingml.document");
@@ -166,7 +177,7 @@ EZOffice.register("writer",function(ctx){
   document.addEventListener("keydown",key);
   onDispose(()=>document.removeEventListener("keydown",key));
   tally();
-  info("Export real DOCX for Word and LibreOffice, HTML, plain text, and Print / Save as PDF from your browser. Real editable formatted HTML with find/replace, headings, bold, italic, underline, lists, alignment, colors and printing. Opens HTML safely with restricted tags. DOCX import and advanced page layout remain unsupported.");
+  info("Export real DOCX for Word and LibreOffice, HTML, plain text, and Print / Save as PDF from your browser. Real editable formatted HTML with find/replace, headings, bold, italic, underline, lists, alignment, colors and printing. Opens HTML safely with restricted tags. Imports DOCX paragraphs, basic headings and text emphasis; images, tables, complex page layout and other advanced Word features are not reproduced.");
   return ()=>{editor.replaceChildren();};
 });
 })();
