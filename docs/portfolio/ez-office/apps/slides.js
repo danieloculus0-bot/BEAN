@@ -60,6 +60,10 @@ EZOffice.register("slides",function(ctx){
     const s=deck[at];
     stage.className="slide-preview slide-theme-"+s.theme;
     stage.style.textAlign=s.align;
+    // Do not leave an old audio/video decoder playing after a slide is edited.
+    stage.querySelectorAll("audio,video").forEach(media=>{
+      media.pause();media.removeAttribute("src");media.load();
+    });
     stage.replaceChildren();
     const wrap=elem("div",{className:"slide-inner"},stage);
     elem("h2",{className:"slide-heading",text:s.title},wrap);
@@ -68,7 +72,16 @@ EZOffice.register("slides",function(ctx){
       const tag={image:"img",audio:"audio",video:"video"}[s.media.kind];
       const media=elem(tag,{src:s.media.data,"aria-label":s.media.name,className:"slide-media"},wrap);
       if(tag==="img")media.alt=s.media.name;
-      else{media.controls=true;media.preload="metadata";media.playsInline=true;}
+      else{
+        media.controls=true;media.preload="metadata";media.playsInline=true;
+        media.setAttribute("playsinline","");
+        media.setAttribute("webkit-playsinline","");
+        media.addEventListener("error",()=>{
+          if(!media.isConnected)return;
+          message("Slide media codec not supported by this browser. Try an H.264/AAC MP4 or VP8/Opus WebM, or open the file in EZ Media.");
+          elem("p",{className:"hint",text:"This browser could not decode the embedded "+tag+"; no extra decoder is bundled."},wrap);
+        });
+      }
     }
     pages.textContent="Slide "+(at+1)+" / "+deck.length;
     renderThumbnails();
@@ -143,6 +156,12 @@ EZOffice.register("slides",function(ctx){
   });
   button(deckTools,"Move earlier",()=>{if(at<1)return;[deck[at-1],deck[at]]=[deck[at],deck[at-1]];at--;markDirty(true);changeSlide(at);});
   button(deckTools,"Move later",()=>{if(at>=deck.length-1)return;[deck[at+1],deck[at]]=[deck[at],deck[at+1]];at++;markDirty(true);changeSlide(at);});
+  button(deckTools,"Play / Pause slide media",()=>{
+    const element=stage.querySelector("video,audio");
+    if(!element){message("This slide has no video or audio to play");return;}
+    if(!element.paused){element.pause();return;}
+    element.play().catch(e=>message("Cannot play embedded media ("+(e.name||"browser error")+"). This browser must support the file's codec."));
+  });
   button(deckTools,"Present fullscreen",()=>{
     if(!stage.requestFullscreen){message("Fullscreen unavailable");return;}
     stage.requestFullscreen().catch(e=>message("Fullscreen unavailable: "+e.message));

@@ -68,7 +68,7 @@
     // File loading only occurs on first activation of each tool.
     const p=new Promise((resolve,reject)=>{
       const script=document.createElement("script");
-      script.src="apps/"+id+".js?v=buildout-02";
+      script.src="apps/"+id+".js?v=native-media-03";
       script.async=true;
       script.onload=()=>factories.has(id)?resolve():reject(Error("Tool did not register: "+id));
       script.onerror=()=>reject(Error("Cannot load "+id+".js from local application files"));
