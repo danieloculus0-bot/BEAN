@@ -127,3 +127,149 @@ nav{display:grid;gap:5px}.nav-item{text-align:left;border:1px solid transparent;
   #tool-root {overflow:visible!important;}
   .toolbar {overflow:visible!important;}
 }
+
+/* EZ Sheets coordinate gutters: DOM layers outside the only scrollport.
+   Unlike CSS position:sticky on <table> descendants, iOS Safari cannot
+   detach these labels from the scroll position or create huge layout gaps. */
+.sheet-frame{
+  --sheet-cell-width:144px;
+  --sheet-row-height:76px;
+  --sheet-index-width:44px;
+  --sheet-label-height:43px;
+  display:grid;
+  grid-template-columns:var(--sheet-index-width) minmax(0,1fr);
+  grid-template-rows:var(--sheet-label-height) minmax(0,1fr);
+  width:100%;
+  height:min(58dvh,560px);
+  min-width:0;
+  min-height:240px;
+  overflow:hidden;
+  position:relative;
+  isolation:isolate;
+  border:1px solid var(--border);
+  border-radius:12px;
+  background:#111e22;
+}
+.sheet-corner,.sheet-x-header,.sheet-y-header{
+  color:#edf4f2;
+  font-weight:700;
+  background:#2a3c43;
+}
+.sheet-corner{
+  grid-column:1;grid-row:1;
+  display:grid;place-items:center;
+  border-right:1px solid #5c7377;
+  border-bottom:1px solid #5c7377;
+  z-index:2;
+}
+.sheet-x-header{
+  grid-column:2;grid-row:1;
+  overflow:hidden;min-width:0;
+  border-bottom:1px solid #5c7377;
+}
+.sheet-y-header{
+  grid-column:1;grid-row:2;
+  overflow:hidden;min-height:0;
+  border-right:1px solid #5c7377;
+}
+.sheet-x-strip{
+  display:flex;
+  width:max-content;
+  height:100%;
+  will-change:transform;
+}
+.sheet-y-strip{
+  display:flex;
+  flex-direction:column;
+  width:100%;
+  will-change:transform;
+}
+.sheet-axis-cell{
+  flex:0 0 var(--sheet-cell-width);
+  width:var(--sheet-cell-width);
+  height:100%;
+  display:grid;place-items:center;
+  box-sizing:border-box;
+  border-right:1px solid #455a5f;
+  font-size:14px;
+}
+.sheet-index-cell{
+  flex:0 0 var(--sheet-row-height);
+  height:var(--sheet-row-height);
+  width:100%;
+  display:grid;place-items:center;
+  box-sizing:border-box;
+  border-bottom:1px solid #455a5f;
+  font-size:14px;
+}
+.sheet-frame .grid-wrap{
+  grid-column:2;grid-row:2;
+  width:100%;height:100%;
+  max-width:none;max-height:none;
+  min-width:0;min-height:0;
+  padding:0;margin:0;
+  overflow:auto;
+  overscroll-behavior:contain;
+  border:0;border-radius:0;
+  background:#101b20;
+  -webkit-overflow-scrolling:touch;
+  touch-action:pan-x pan-y;
+}
+.sheet-frame .sheet{
+  table-layout:fixed;
+  border-collapse:separate;
+  border-spacing:0;
+  padding:0;margin:0;
+  min-width:0;
+  max-width:none;
+  background:#101b20;
+}
+.sheet-frame .sheet tbody tr{
+  height:var(--sheet-row-height);
+  max-height:var(--sheet-row-height);
+}
+.sheet-frame .sheet td{
+  display:table-cell;
+  position:static;
+  width:var(--sheet-cell-width);
+  min-width:var(--sheet-cell-width);
+  max-width:var(--sheet-cell-width);
+  height:var(--sheet-row-height);
+  padding:0;
+  box-sizing:border-box;
+  vertical-align:middle;
+  border:0;
+  border-right:1px solid #344b50;
+  border-bottom:1px solid #344b50;
+  overflow:hidden;
+}
+.sheet-frame .sheet td input{
+  display:block;
+  box-sizing:border-box;
+  width:100%;min-width:0;max-width:100%;
+  min-height:44px;
+  height:46px;
+  padding:8px 10px;
+  font-size:16px;
+  border:0;border-radius:0;
+  background:transparent;
+}
+.sheet-frame .sheet td output.formula-result{
+  width:100%;max-width:none;
+  box-sizing:border-box;
+  height:23px;line-height:19px;
+  padding:2px 8px;
+}
+.sheet-frame .sheet td output[hidden]{display:none}
+@media(max-width:720px){
+  .sheet-frame{
+    --sheet-index-width:42px;
+    height:min(57dvh,560px);
+    border-radius:12px;
+  }
+}
+@media print{
+  .sheet-frame{height:auto!important;overflow:visible!important;display:block;border:0}
+  .sheet-corner,.sheet-x-header,.sheet-y-header{display:none!important}
+  .sheet-frame .grid-wrap{overflow:visible!important;height:auto!important}
+}
