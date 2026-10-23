@@ -80,7 +80,15 @@ function calculate(rows,r,c,cache=new Map(),visiting=new Set()){
           expect("(");const args=[];
           if(!eat(")")){do{args.push(expression());}while(eat(","));expect(")");}
           const vals=args.flatMap(x=>Array.isArray(x)?x:[x]);
-          const nums=vals.filter(x=>x!==""&&x!=null).map(number);
+          // Spreadsheet aggregations ignore text headers/labels in ranges.
+          // Propagate formula errors rather than silently hiding them.
+          const nums=[];
+          for(const value of vals){
+            if(value===""||value==null)continue;
+            if(typeof value==="string"&&value.startsWith("#"))throw Error(value);
+            const candidate=Number(value);
+            if(Number.isFinite(candidate))nums.push(candidate);
+          }
           if(tok==="SUM")return nums.reduce((a,b)=>a+b,0);
           if(tok==="AVERAGE"||tok==="AVG")return nums.length?nums.reduce((a,b)=>a+b,0)/nums.length:0;
           if(tok==="MIN")return nums.length?Math.min(...nums):0;
