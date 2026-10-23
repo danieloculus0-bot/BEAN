@@ -52,10 +52,10 @@
   },
   "local_artifact_sha256": {
     "original_event_archive": "29f97009d9e235628f063701942266c662b2b827ede0cfc4973677693c1a85c2",
-    "initial_scoreboard": "3fdf5c0fc76464f973cedb7067843174a727365b00ca5031f6463936d78133e1",
+    "initial_scoreboard": "4419390860d7879ff980b318ac3fc02d7dc8a4202892c308343af9841a5838ec",
     "controls_scoreboard": "e6150e6d53e491fbd2968ad2c10013b7de473cd9da86eca6e3c0683041175098",
-    "original_script": "80354a0fc6044ac8a56166ac184c7d727b8db15557758a5d83cc9b05f416be17",
-    "control_script": "19ce5dd39d89f1348d9dec6b331052162ca921a4e73b3fa027950c6cfeafe218"
+    "original_script": "64caadd279f47994ead0ce4ff8a44f6e74447caaf4162430bd15f43e7e99475e",
+    "control_script": "f4bec93cafe9f294b5accf482a36993f5d5f48ecac18113d2d837fcf33b779"
   },
   "ledger_tip": "75e66debfaf1bed0b83f337a7babb830daffa3ce3ddd86fda98bf8b6d62357f0",
   "comparison_tip": "f62bf68ccd0fe7a4f1c8407c5f9fd1aa41006db431fc91c123fc653a70e13d1d",
