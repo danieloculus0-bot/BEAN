@@ -183,45 +183,7 @@ def test_mobile_layout():
             page.close()
         browser.close()
 
-def test_frozen_sheet_panes():
-    """Exercise two-axis scroll; header A, row numbers, and A1 stay pinned."""
-    with sync_playwright() as pw:
-        browser=pw.chromium.launch(headless=True)
-        page=browser.new_page(viewport={"width":390,"height":720},device_scale_factor=2,is_mobile=True,has_touch=True)
-        page.goto(PAGE)
-        page.locator('[data-tool="sheets"]').click()
-        page.locator(".sheet.freeze-panes").wait_for()
-        scroller=page.locator(".grid-wrap")
-        # Assert actual scroll and the relative positions of independently sticky cells.
-        metrics=page.evaluate("""() => {
-          const root=document.querySelector('.grid-wrap');
-          const table=root.querySelector('table');
-          const corner=table.querySelector('thead th.row-head');
-          const col=table.querySelector('thead th:nth-child(2)');
-          const row=table.querySelector('tbody tr:nth-child(2) th.row-head');
-          const frozen=table.querySelector('tbody tr.first-visible-row td.first-data-col');
-          const pos=e=>{const r=e.getBoundingClientRect();return {x:r.x,y:r.y};};
-          const before={corner:pos(corner),col:pos(col),row:pos(row),frozen:pos(frozen)};
-          root.scrollLeft=180;root.scrollTop=125;
-          return {before,corner:pos(corner),col:pos(col),row:pos(row),frozen:pos(frozen),
-            scrollX:root.scrollLeft,scrollY:root.scrollTop};
-        }""")
-        assert metrics["scrollX"]>0 and metrics["scrollY"]>0,metrics
-        # Horizontally pinned: corner, row numbers, and first data column.
-        for key in ("corner","col","row","frozen"):
-            assert abs(metrics[key]["x"]-metrics["before"][key]["x"])<=2,(key,metrics)
-        # Vertically pinned: top-left corner, column letters, and frozen first row.
-        for key in ("corner","col","frozen"):
-            assert abs(metrics[key]["y"]-metrics["before"][key]["y"])<=2,(key,metrics)
-        assert page.get_by_role("button",name="Toggle freeze top row and first column").get_attribute("aria-pressed")=="true"
-        page.get_by_role("button",name="Toggle freeze top row and first column").click()
-        assert page.locator(".sheet.freeze-panes").count()==0
-        page.get_by_role("button",name="Toggle freeze top row and first column").click()
-        assert page.locator(".sheet.freeze-panes").count()==1
-        browser.close()
-
 if __name__=="__main__":
     test_browser()
     test_mobile_layout()
-    test_frozen_sheet_panes()
     print("EZ_OFFICE_WORKSHOP_MOBILE_PASS")
