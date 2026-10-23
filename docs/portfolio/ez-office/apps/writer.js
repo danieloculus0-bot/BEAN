@@ -71,6 +71,59 @@ EZOffice.register("writer",function(ctx){
     // Mouse-down on a button should not drop the selected range in the editor.
     b.addEventListener("mousedown",e=>e.preventDefault());
   }
+  // Find/replace operates on text nodes so bold, headings and links survive edits.
+  const findBar=toolbar();
+  const findTerm=elem("input",{type:"text",placeholder:"Find in document","aria-label":"Find text"},findBar);
+  const replaceTerm=elem("input",{type:"text",placeholder:"Replace with","aria-label":"Replacement text"},findBar);
+  let findPosition=0;
+  function textNodes(){
+    const walker=document.createTreeWalker(editor,NodeFilter.SHOW_TEXT);
+    const nodes=[];while(walker.nextNode())nodes.push(walker.currentNode);
+    return nodes;
+  }
+  function findNext(){
+    const needle=findTerm.value;
+    if(!needle){message("Enter text to find");return;}
+    const nodes=textNodes(),lower=needle.toLocaleLowerCase();
+    const total=nodes.reduce((n,v)=>n+v.textContent.length,0);
+    function seek(start){
+      let offset=0;
+      for(const node of nodes){
+        const source=node.textContent,at=source.toLocaleLowerCase().indexOf(lower,Math.max(0,start-offset));
+        if(at>=0){return {node,at,absolute:offset+at};}
+        offset+=source.length;
+      }
+      return null;
+    }
+    const result=seek(findPosition)||seek(0);
+    if(!result){message("No match for: "+needle);return;}
+    const range=document.createRange();
+    range.setStart(result.node,result.at);range.setEnd(result.node,result.at+needle.length);
+    const selection=window.getSelection();selection.removeAllRanges();selection.addRange(range);
+    result.node.parentElement?.scrollIntoView({block:"nearest"});
+    findPosition=result.absolute+needle.length;
+    if(findPosition>=total)findPosition=0;
+    message("Found: "+needle);
+  }
+  button(findBar,"Find next",findNext);
+  button(findBar,"Replace all",()=>{
+    const needle=findTerm.value;
+    if(!needle){message("Enter text to replace");return;}
+    let replacements=0;
+    for(const node of textNodes()){
+      const original=node.textContent;
+      const lower=original.toLocaleLowerCase(),wanted=needle.toLocaleLowerCase();
+      let cursor=0,next,updated="";
+      while((next=lower.indexOf(wanted,cursor))>=0){
+        updated+=original.slice(cursor,next)+replaceTerm.value;
+        cursor=next+needle.length;replacements++;
+      }
+      if(cursor)node.textContent=updated+original.slice(cursor);
+    }
+    if(replacements){mark(true);tally();findPosition=0;}
+    message(replacements+" text match"+(replacements===1?"":"es")+" replaced. Formatting preserved.");
+  });
+  findTerm.addEventListener("input",()=>{findPosition=0;});
   const headings=elem("select",{"aria-label":"Paragraph style"},tools);
   for(const [value,label] of [["P","Paragraph"],["H1","Heading 1"],["H2","Heading 2"],["H3","Heading 3"],["BLOCKQUOTE","Quote"]])elem("option",{value,text:label},headings);
   headings.addEventListener("change",()=>command("formatBlock",headings.value));
@@ -113,7 +166,7 @@ EZOffice.register("writer",function(ctx){
   document.addEventListener("keydown",key);
   onDispose(()=>document.removeEventListener("keydown",key));
   tally();
-  info("Export real DOCX for Word and LibreOffice, HTML, plain text, and Print / Save as PDF from your browser. Real editable formatted HTML: headings, bold, italic, underline, lists, alignment, colors and printing. Opens HTML safely with restricted tags. DOCX import and advanced page layout remain unsupported.");
+  info("Export real DOCX for Word and LibreOffice, HTML, plain text, and Print / Save as PDF from your browser. Real editable formatted HTML with find/replace, headings, bold, italic, underline, lists, alignment, colors and printing. Opens HTML safely with restricted tags. DOCX import and advanced page layout remain unsupported.");
   return ()=>{editor.replaceChildren();};
 });
 })();
