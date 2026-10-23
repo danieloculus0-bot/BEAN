@@ -123,6 +123,20 @@ EZOffice.register("sheets",function(ctx){
   const rowStrip=elem("div",{className:"sheet-y-strip"},sideHeader);
   const host=elem("div",{className:"grid-wrap",tabindex:"0","aria-label":"Scrollable spreadsheet cells"},sheetFrame);
   const controls=toolbar();
+  const jumpField=elem("input",{type:"text",placeholder:"A1","aria-label":"Go to cell reference"},controls);
+  button(controls,"Go to cell",()=>{
+    try{
+      const [r,c]=cellCoords(jumpField.value.trim().toUpperCase());
+      if(r<0||r>=rows.length||c<0||c>=cols)throw Error("Cell outside current sheet");
+      page=Math.floor(r/PAGE_SIZE);render();
+      host.scrollLeft=c*CELL_WIDTH;
+      host.scrollTop=(r-page*PAGE_SIZE)*ROW_HEIGHT;
+      syncHeaders();
+      const target=host.querySelector('[aria-label="'+colLabel(c)+(r+1)+'"]');
+      if(target)target.focus({preventScroll:true});
+      message("Selected "+colLabel(c)+(r+1));
+    }catch(e){message("Go to cell failed: "+e.message);}
+  });
   function syncHeaders(){
     columnStrip.style.transform="translate3d("+(-host.scrollLeft)+"px,0,0)";
     rowStrip.style.transform="translate3d(0,"+(-host.scrollTop)+"px,0)";
@@ -160,6 +174,22 @@ EZOffice.register("sheets",function(ctx){
         const output=elem("output",{"data-result":r+":"+c,className:"formula-result"},td);
         if(!raw.startsWith("="))output.hidden=true;
         input.addEventListener("input",()=>{rows[r][c]=input.value;output.hidden=!input.value.startsWith("=");markDirty(true);schedule();});
+        input.addEventListener("paste",event=>{
+          const pasted=event.clipboardData?.getData("text/plain");
+          if(!pasted||!/[\t\r\n]/.test(pasted))return;
+          const lines=pasted.replace(/\r\n/g,"\n").replace(/\r/g,"\n").replace(/\n$/,"").split("\n");
+          const cells=lines.map(line=>line.split("\t"));
+          const width=Math.max(0,...cells.map(line=>line.length));
+          if(r+cells.length>MAX_ROWS||c+width>MAX_COLS){
+            event.preventDefault();message("Paste exceeds sheet size limits (5,000 rows / 40 columns)");return;
+          }
+          event.preventDefault();
+          cols=Math.max(cols,c+width);
+          while(rows.length<r+cells.length)rows.push(Array(cols).fill(""));
+          for(const row of rows)while(row.length<cols)row.push("");
+          for(let y=0;y<cells.length;y++)for(let x=0;x<cells[y].length;x++)rows[r+y][c+x]=cells[y][x];
+          markDirty(true);render();message("Pasted "+cells.length+" row(s) × "+width+" column(s) into "+colLabel(c)+(r+1));
+        });
       }
     }
     summary.textContent=rows.length+" rows × "+cols+" columns";
@@ -196,6 +226,6 @@ EZOffice.register("sheets",function(ctx){
   button(bar,"Add column",()=>{if(cols>=MAX_COLS){message("Column limit reached");return;}cols++;rows.forEach(r=>r.push(""));markDirty(true);render();});
   onDispose(()=>{if(frame)cancelAnimationFrame(frame);rows.length=0;});
   render();
-  info("Export real .xlsx for Excel/LibreOffice, CSV, .ezsheet with formulas, or Print / Save PDF. Functional formulas: =A1*B1, =SUM(A1:A9), AVERAGE, MIN, MAX, COUNT, IF, arithmetic, powers and references. Circular references and division by zero report errors. CSV preserves formula text; .ezsheet preserves editable formulas. XLSX import remains unsupported.");
+  info("Export real .xlsx for Excel/LibreOffice, CSV, .ezsheet with formulas, or Print / Save PDF. Paste tabular ranges from a spreadsheet and jump directly to a cell. Functional formulas: =A1*B1, =SUM(A1:A9), AVERAGE, MIN, MAX, COUNT, IF, arithmetic, powers and references. Circular references and division by zero report errors. CSV preserves formula text; .ezsheet preserves editable formulas. XLSX import remains unsupported.");
 });
 })();
