@@ -14,11 +14,11 @@ PAGE=(ROOT/"index.html").as_uri()
 PNG=base64.b64decode("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4z8DwHwAFgAI/ScL/nwAAAABJRU5ErkJggg==")
 
 
-def downloaded(page,button,target):
+def downloaded(page,button,target,min_bytes=50):
     with page.expect_download() as d:
         page.get_by_role("button", name=button, exact=True).click()
     d.value.save_as(target)
-    assert target.stat().st_size>50, target
+    assert target.stat().st_size>=min_bytes, target
     return target
 
 
@@ -31,6 +31,31 @@ def validate_office(path,required):
             if name.endswith((".xml",".rels")) or name=="[Content_Types].xml":
                 ET.fromstring(z.read(name))
         return {key:z.read(key).decode("utf8") for key in required if key.endswith(".xml")}
+
+def compressed_copy(original, destination):
+    """Simulate ordinary compressed Office files (not only EZ-Office's stored ZIP)."""
+    with zipfile.ZipFile(original) as z, zipfile.ZipFile(destination,"w",compression=zipfile.ZIP_DEFLATED,compresslevel=9) as out:
+        for name in z.namelist():
+            out.writestr(name,z.read(name))
+    with zipfile.ZipFile(destination) as z:
+        assert z.testzip() is None
+        assert any(i.compress_type==zipfile.ZIP_DEFLATED for i in z.infolist())
+
+
+def external_shared_strings_xlsx(target):
+    """Common Excel OOXML: compressed ZIP, sharedStrings, workbook relationship, sparse cells."""
+    rel_ns="http://schemas.openxmlformats.org/officeDocument/2006/relationships"
+    main="http://schemas.openxmlformats.org/spreadsheetml/2006/main"
+    rel_package="http://schemas.openxmlformats.org/package/2006/relationships"
+    workbook=f'<workbook xmlns="{main}" xmlns:r="{rel_ns}"><sheets><sheet name="Inventory" sheetId="1" r:id="rId7"/></sheets></workbook>'
+    rels=f'<Relationships xmlns="{rel_package}"><Relationship Id="rId7" Type="{rel_ns}/worksheet" Target="worksheets/inventory.xml"/></Relationships>'
+    strings=f'<sst xmlns="{main}"><si><t>Part</t></si><si><r><t>Steel </t></r><r><t>plate</t></r></si></sst>'
+    sheet=f'<worksheet xmlns="{main}"><sheetData><row r="1"><c r="A1" t="s"><v>0</v></c><c r="B1" t="inlineStr"><is><t>Qty</t></is></c></row><row r="2"><c r="A2" t="s"><v>1</v></c><c r="B2"><v>12</v></c><c r="C2"><f>B2*2</f><v>24</v></c></row></sheetData></worksheet>'
+    with zipfile.ZipFile(target,"w",compression=zipfile.ZIP_DEFLATED,compresslevel=9) as z:
+        z.writestr("xl/workbook.xml",workbook)
+        z.writestr("xl/_rels/workbook.xml.rels",rels)
+        z.writestr("xl/sharedStrings.xml",strings)
+        z.writestr("xl/worksheets/inventory.xml",sheet)
 
 
 def test_browser():
@@ -67,6 +92,12 @@ def test_browser():
             contents=validate_office(word,["word/document.xml","word/styles.xml"])
             assert "Formatted sample document" in contents["word/document.xml"]
             assert "<w:b" in contents["word/document.xml"]
+            compressed_word=compressed_copy(word,p/"compressed.docx")
+            with page.expect_file_chooser() as picker:
+                page.get_by_role("button",name="Open DOCX").click()
+            picker.value.set_files(str(p/"compressed.docx"))
+            expect(writer).to_contain_text("Formatted sample document")
+            assert writer.locator("strong,b").count()>=1
             downloaded(page,"Save HTML",p/"document.html")
             with page.expect_file_chooser() as picker:
                 page.get_by_role("button",name="Open",exact=True).click()
@@ -106,12 +137,44 @@ def test_browser():
             content=validate_office(xlsx,["xl/worksheets/sheet1.xml","xl/workbook.xml"])
             assert "<f>A6*2+3</f>" in content["xl/worksheets/sheet1.xml"]
             assert "<v>23</v>" in content["xl/worksheets/sheet1.xml"]
+            compressed_copy(xlsx,p/"compressed.xlsx")
+            with page.expect_file_chooser() as picker:
+                page.get_by_role("button",name="Open XLSX").click()
+            picker.value.set_files(str(p/"compressed.xlsx"))
+            expect(page.get_by_role("textbox",name="B6",exact=True)).to_have_value("=A6*2+3")
+            expect(page.locator('[data-result="5:1"]')).to_have_text("23")
             csv=downloaded(page,"Save CSV",p/"sheet.csv")
             assert "=A6*2+3" in csv.read_text()
             b.fill("=B6")
             expect(result).to_have_text("#CYCLE!")
             # clear cycle before leaving
             b.fill("=A6+5")
+            # Sort and filter are view-only; original physical row ids remain correct.
+            page.get_by_role("searchbox",name="Filter spreadsheet rows").fill("Fasteners")
+            expect(page.locator(".sheet-index-cell")).to_have_count(2)
+            expect(page.get_by_role("textbox",name="A3",exact=True)).to_have_value("Fasteners")
+            page.evaluate("""() => {
+              window.__sheetPrint=null;
+              window.print=()=>{
+                const page=document.querySelector(".sheet-print-pages");
+                window.__sheetPrint={rows:page?.querySelectorAll("tbody tr").length,
+                                     headers:page?.querySelectorAll("thead th").length,
+                                     text:page?.textContent};
+                window.dispatchEvent(new Event("afterprint"));
+              };
+            }""")
+            page.get_by_role("button",name="Print / PDF").click()
+            printable=page.evaluate("window.__sheetPrint")
+            assert printable["rows"]==1 and printable["headers"]==4,printable
+            assert "Fasteners" in printable["text"] and "Sheet metal" not in printable["text"]
+            visible_csv=downloaded(page,"Export visible CSV",p/"visible.csv",min_bytes=20)
+            assert "Fasteners" in visible_csv.read_text()
+            assert "Sheet metal" not in visible_csv.read_text()
+            page.get_by_role("button",name="Clear view").click()
+            page.get_by_role("combobox",name="Sort view column").select_option("1")
+            page.get_by_role("combobox",name="Sort view direction").select_option("desc")
+            expect(page.locator(".sheet-index-cell").nth(1)).to_have_text("6")
+            page.get_by_role("button",name="Clear view").click()
             page.get_by_role("textbox",name="A9",exact=True).evaluate("""input=>{
                 const data=new DataTransfer();
                 data.setData("text/plain","Alpha\\t8\\nBeta\\t5");
@@ -122,12 +185,22 @@ def test_browser():
             page.get_by_role("textbox",name="Go to cell reference").fill("B10")
             page.get_by_role("button",name="Go to cell").click()
             assert page.get_by_role("textbox",name="B10",exact=True).evaluate("(e)=>e===document.activeElement")
+            # Import a compressed XLSX with shared strings, sparse cells and a custom sheet path.
+            fixture=p/"external.xlsx"
+            external_shared_strings_xlsx(fixture)
+            with page.expect_file_chooser() as picker:
+                page.get_by_role("button",name="Open XLSX").click()
+            picker.value.set_files(str(fixture))
+            expect(page.get_by_role("textbox",name="A2",exact=True)).to_have_value("Steel plate")
+            expect(page.get_by_role("textbox",name="C2",exact=True)).to_have_value("=B2*2")
+            expect(page.locator('[data-result="1:2"]')).to_have_text("24")
             page.locator('[data-tool="home"]').click()
 
             # Slides: image embedded in both native deck and PPTX.
             page.locator('[data-tool="slides"]').click()
             page.get_by_role("textbox",name="Slide title").fill("Revenue overview")
-            page.get_by_role("textbox",name="Slide body").fill("Hello slideshow")
+            page.get_by_role("textbox",name="Slide body").fill("Hello slideshow\nSecond line")
+            page.get_by_role("combobox",name="Text alignment").select_option("left")
             with page.expect_file_chooser() as picker:
                 page.get_by_role("button",name="Insert image / audio / video").click()
             picker.value.set_files(str(photo))
@@ -139,6 +212,9 @@ def test_browser():
             slides=downloaded(page,"Save PowerPoint",p/"show.pptx")
             content=validate_office(slides,["ppt/presentation.xml","ppt/slides/slide1.xml","ppt/slides/slide2.xml"])
             assert "Revenue overview" in content["ppt/slides/slide1.xml"]
+            assert "Second line" in content["ppt/slides/slide1.xml"]
+            assert 'algn="l"' in content["ppt/slides/slide1.xml"]
+            assert content["ppt/slides/slide1.xml"].count("<a:p>")>=3
             with zipfile.ZipFile(slides) as z:
                 assert "ppt/media/media1.png" in z.namelist()
                 assert z.read("ppt/media/media1.png")==PNG
@@ -310,4 +386,4 @@ if __name__=="__main__":
     test_browser()
     test_mobile_layout()
     test_sheet_independent_axes()
-    print("EZ_OFFICE_WORKSHOP_BUILDOUT_01_PASS")
+    print("EZ_OFFICE_WORKSHOP_PASS02")
