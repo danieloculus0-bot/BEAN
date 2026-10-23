@@ -103,7 +103,7 @@ function calculate(rows,r,c,cache=new Map(),visiting=new Set()){
 }
 EZOffice.register("sheets",function(ctx){
   const {elem,button,root,toolbar,choose,download,message,info,markDirty,onDispose}=ctx;
-  const MAX_ROWS=5000,MAX_COLS=40,PAGE_SIZE=35;
+  const MAX_ROWS=5000,MAX_COLS=40,PAGE_SIZE=35,CELL_WIDTH=144,ROW_HEIGHT=76;
   let rows=Array.from({length:15},()=>Array(8).fill("")),cols=8,page=0,frame=0;
   rows[0].splice(0,4,"Item","Qty","Price","Total");
   rows[1].splice(0,4,"Sheet metal",2,125,"=B2*C2");
@@ -111,7 +111,23 @@ EZOffice.register("sheets",function(ctx){
   rows[3].splice(0,4,"Grand total","","","=SUM(D2:D3)");
   const bar=toolbar(),filename=elem("input",{type:"text",value:"Estimate.csv","aria-label":"Sheet filename"},bar);
   const summary=elem("small",{},bar);
-  const host=elem("div",{className:"grid-wrap"},root),controls=toolbar();
+  // Fixed coordinate headers live OUTSIDE the scrolling cell viewport.
+  // No sticky table cells, no frozen data cells, no overlapping scroll layers.
+  const sheetFrame=elem("div",{className:"sheet-frame"},root);
+  sheetFrame.style.setProperty("--sheet-cell-width",CELL_WIDTH+"px");
+  sheetFrame.style.setProperty("--sheet-row-height",ROW_HEIGHT+"px");
+  elem("div",{className:"sheet-corner",text:"#","aria-label":"Row and column corner"},sheetFrame);
+  const topHeader=elem("div",{className:"sheet-x-header","aria-label":"Column labels"},sheetFrame);
+  const columnStrip=elem("div",{className:"sheet-x-strip"},topHeader);
+  const sideHeader=elem("div",{className:"sheet-y-header","aria-label":"Row numbers"},sheetFrame);
+  const rowStrip=elem("div",{className:"sheet-y-strip"},sideHeader);
+  const host=elem("div",{className:"grid-wrap",tabindex:"0","aria-label":"Scrollable spreadsheet cells"},sheetFrame);
+  const controls=toolbar();
+  function syncHeaders(){
+    columnStrip.style.transform="translate3d("+(-host.scrollLeft)+"px,0,0)";
+    rowStrip.style.transform="translate3d(0,"+(-host.scrollTop)+"px,0)";
+  }
+  host.addEventListener("scroll",syncHeaders,{passive:true});
   const back=button(controls,"← Previous",()=>{page--;render();});
   const next=button(controls,"Next →",()=>{page++;render();});
   const counter=elem("small",{},controls);
@@ -126,12 +142,17 @@ EZOffice.register("sheets",function(ctx){
   }
   function schedule(){if(frame)cancelAnimationFrame(frame);frame=requestAnimationFrame(()=>{frame=0;refresh();});}
   function render(){
-    host.replaceChildren();const table=elem("table",{className:"sheet"},host),hrow=elem("tr",{},elem("thead",{},table));
-    elem("th",{className:"row-head",text:"#"},hrow);
-    for(let c=0;c<cols;c++)elem("th",{text:colLabel(c)},hrow);
+    const x=host.scrollLeft,y=host.scrollTop;
+    host.replaceChildren();columnStrip.replaceChildren();rowStrip.replaceChildren();
+    for(let c=0;c<cols;c++)elem("div",{className:"sheet-axis-cell",text:colLabel(c)},columnStrip);
+    const table=elem("table",{className:"sheet","aria-label":"Spreadsheet data"},host);
+    table.style.width=(cols*CELL_WIDTH)+"px";
+    const cg=elem("colgroup",{},table);
+    for(let c=0;c<cols;c++)elem("col",{width:String(CELL_WIDTH)},cg);
     const body=elem("tbody",{},table);
     for(let r=page*PAGE_SIZE;r<Math.min(rows.length,(page+1)*PAGE_SIZE);r++){
-      const tr=elem("tr",{},body);elem("th",{className:"row-head",text:String(r+1)},tr);
+      elem("div",{className:"sheet-index-cell",text:String(r+1)},rowStrip);
+      const tr=elem("tr",{},body);
       for(let c=0;c<cols;c++){
         const td=elem("td",{},tr);
         const raw=String(rows[r][c]??"");
@@ -145,6 +166,8 @@ EZOffice.register("sheets",function(ctx){
     counter.textContent="Page "+(page+1)+" / "+Math.ceil(rows.length/PAGE_SIZE);
     back.disabled=page===0;next.disabled=(page+1)*PAGE_SIZE>=rows.length;
     refresh();
+    host.scrollLeft=x;host.scrollTop=y;
+    syncHeaders();
   }
   function setRows(input,name){
     if(!Array.isArray(input)||input.length>MAX_ROWS||input.some(r=>!Array.isArray(r)||r.length>MAX_COLS))throw Error("Grid exceeds 5,000 rows or 40 columns");
