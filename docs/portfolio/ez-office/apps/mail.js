@@ -70,6 +70,30 @@ EZOffice.register("mail",function(ctx){
     return ["MIME-Version: 1.0","Content-Type: text/plain; charset=UTF-8",
       "To: "+header(to.value),"Cc: "+header(cc.value),"Subject: "+header(subject.value),"",b,""].join("\r\n");
   }
+  button(bar,"Open .eml draft",()=>ctx.choose(".eml,message/rfc822",async file=>{
+    if(file.size>1024*1024)throw Error("Draft exceeds 1 MB");
+    const source=await file.text();
+    const boundary=/\r?\n\r?\n/.exec(source);
+    if(!boundary)throw Error("No email headers/body separator found");
+    const headerBlock=source.slice(0,boundary.index);
+    const fields={};
+    let current="";
+    for(const line of headerBlock.split(/\r?\n/)){
+      if(/^[ \t]/.test(line)&&current){fields[current]+=" "+line.trim();continue;}
+      const match=/^([a-z0-9-]+):\s*(.*)$/i.exec(line);
+      if(match){current=match[1].toLowerCase();fields[current]=match[2];}
+    }
+    const transfer=(fields["content-transfer-encoding"]||"8bit").toLowerCase();
+    const contentType=(fields["content-type"]||"text/plain").toLowerCase();
+    if(!contentType.startsWith("text/plain")||!["8bit","7bit","binary"].includes(transfer)){
+      throw Error("This import handles plain-text .eml drafts only (not attachments, HTML or encoded MIME)");
+    }
+    if(!ctx.isActive())return;
+    if((to.value||cc.value||subject.value||body.value)&&!confirm("Replace the current draft?"))return;
+    to.value=fields.to||"";cc.value=fields.cc||"";subject.value=fields.subject||"";
+    body.value=source.slice(boundary.index+boundary[0].length).replace(/\r\n/g,"\n").replace(/\n$/,"");
+    markDirty(false);message("Opened plain-text email draft: "+file.name);
+  }));
   button(bar,"Print / PDF",()=>window.print());
   button(bar,"Download .eml",()=>{download("EZ-Office-draft.eml",eml(),"message/rfc822;charset=utf-8");markDirty(false);},true);
   button(bar,"Open in mail app",()=>{
@@ -187,6 +211,6 @@ EZOffice.register("mail",function(ctx){
   }
   finishMicrosoftRedirect();
   onDispose(()=>{activeToken="";provider="";inbox.replaceChildren();});
-  info("Gmail: Google Identity Services OAuth with Gmail readonly/send scopes; Outlook: Microsoft identity authorization-code PKCE with Graph Mail.Read/Mail.Send. Both are real API requests after authorization, not sample inbox data. Register your own OAuth application and authorize this exact hosted URL; admin policy/consent may be required. No passwords, client secrets, refresh tokens or messages are saved locally. Not supported from file://.");
+  info("Open and export plain-text .eml drafts locally; Gmail: Google Identity Services OAuth with Gmail readonly/send scopes; Outlook: Microsoft identity authorization-code PKCE with Graph Mail.Read/Mail.Send. Both are real API requests after authorization, not sample inbox data. Register your own OAuth application and authorize this exact hosted URL; admin policy/consent may be required. No passwords, client secrets, refresh tokens or messages are saved locally. Not supported from file://.");
 });
 })();
