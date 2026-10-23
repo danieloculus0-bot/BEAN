@@ -5,6 +5,18 @@ EZOffice.register("media",function(ctx){
   const bar=toolbar();
   const stage=elem("div",{className:"media-stage"},root);
   let url=null,player=null,currentFile=null;
+  const rate=elem("select",{"aria-label":"Playback speed"},bar);
+  for(const [value,label] of [["0.5","0.5×"],["1","1× Normal"],["1.5","1.5×"],["2","2×"]])elem("option",{value,text:label},rate);
+  rate.value="1";
+  const loop=elem("input",{type:"checkbox","aria-label":"Loop playback"},bar);
+  const loopLabel=elem("label",{text:"Loop"},bar);
+  loopLabel.prepend(loop);
+  const details=elem("p",{className:"hint","aria-live":"polite",text:"No media selected."},root);
+  function playbackSettings(){
+    if(player&&player.tagName!=="IMG"){player.playbackRate=Number(rate.value);player.loop=loop.checked;}
+  }
+  rate.addEventListener("change",playbackSettings);
+  loop.addEventListener("change",playbackSettings);
   function release(){
     if(player){
       if(player.pause)player.pause();
@@ -24,7 +36,21 @@ EZOffice.register("media",function(ctx){
     release();currentFile=file;stage.replaceChildren();
     url=URL.createObjectURL(file);
     player=elem(kind,{src:url,"aria-label":file.name},stage);
-    if(kind!=="img"){player.controls=true;player.preload="metadata";}else player.alt=file.name;
+    if(kind!=="img"){
+      player.controls=true;player.preload="metadata";playbackSettings();
+      player.addEventListener("loadedmetadata",()=>{
+        if(player&&player.src===url){
+          const duration=Number.isFinite(player.duration)?Math.round(player.duration)+"s":"live / unknown";
+          details.textContent=file.name+" · "+duration+
+            (kind==="video"?" · "+player.videoWidth+" × "+player.videoHeight:"");
+        }
+      });
+    }else{
+      player.alt=file.name;
+      player.addEventListener("load",()=>{
+        if(player&&player.src===url)details.textContent=file.name+" · "+player.naturalWidth+" × "+player.naturalHeight+" pixels";
+      });
+    }
     player.addEventListener("error",()=>message("Browser could not decode "+file.name+". Codec support varies by platform."));
     message("Opened local "+kind+": "+file.name+" ("+(file.size/1024/1024).toFixed(2)+" MiB).");
   }
@@ -46,9 +72,9 @@ EZOffice.register("media",function(ctx){
     },"image/png");
   });
   button(bar,"Print / PDF",()=>window.print());
-  button(bar,"Close media",()=>{release();currentFile=null;stage.replaceChildren();elem("p",{className:"hint",text:"No media loaded."},stage);message("Media released");});
+  button(bar,"Close media",()=>{release();currentFile=null;details.textContent="No media selected.";stage.replaceChildren();elem("p",{className:"hint",text:"No media loaded."},stage);message("Media released");});
   elem("p",{className:"hint",text:"Open a file to play audio or video or view an image."},stage);
-  info("Save an exact copy of the current file, export a PNG still frame, or Print / Save as PDF. Uses a local object URL to stream directly from your selected file. Does not read an entire movie into JavaScript memory. Pauses, unloads, and revokes its URL when closed or when you switch applications.");
+  info("Change playback speed, loop recordings, inspect media dimensions or duration, save an exact copy of the current file, export a PNG still frame, or Print / Save as PDF. Uses a local object URL to stream directly from your selected file. Does not read an entire movie into JavaScript memory. Pauses, unloads, and revokes its URL when closed or when you switch applications.");
   onDispose(()=>{release();currentFile=null;stage.replaceChildren();});
 });
 })();

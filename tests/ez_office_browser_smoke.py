@@ -5,6 +5,7 @@ import base64
 import json
 import tempfile
 import zipfile
+import wave
 from xml.etree import ElementTree as ET
 from playwright.sync_api import sync_playwright, expect
 
@@ -74,6 +75,12 @@ def test_browser():
             assert writer.locator('[onclick]').count()==0
             assert page.evaluate("window.bad===undefined")
             expect(writer).to_contain_text("Visible heading")
+            page.get_by_role("textbox",name="Find text").fill("Safe")
+            page.get_by_role("textbox",name="Replacement text").fill("Protected")
+            page.get_by_role("button",name="Replace all").click()
+            expect(writer).to_contain_text("Protected text")
+            assert writer.locator("h2").inner_text()=="Visible heading"
+            assert page.evaluate("EZOffice.inspect().dirty")
             page.locator('[data-tool="home"]').click()
 
             # Sheets: dependencies, cell changes, circular errors and XLSX.
@@ -88,6 +95,13 @@ def test_browser():
             expect(result).to_have_text("23")
             calc=page.locator('[data-result="3:3"]')
             expect(calc).to_have_text("295")
+            # Mixed data range: Qty label is text, B2 and B3 are numeric.
+            page.get_by_role("textbox",name="B7",exact=True).fill("=SUM(B1:B3)")
+            page.get_by_role("textbox",name="C7",exact=True).fill("=COUNT(B1:B3)")
+            page.get_by_role("textbox",name="D7",exact=True).fill("=AVERAGE(B1:B3)")
+            expect(page.locator('[data-result="6:1"]')).to_have_text("12")
+            expect(page.locator('[data-result="6:2"]')).to_have_text("2")
+            expect(page.locator('[data-result="6:3"]')).to_have_text("6")
             xlsx=downloaded(page,"Save XLSX",p/"sheet.xlsx")
             content=validate_office(xlsx,["xl/worksheets/sheet1.xml","xl/workbook.xml"])
             assert "<f>A6*2+3</f>" in content["xl/worksheets/sheet1.xml"]
@@ -98,6 +112,16 @@ def test_browser():
             expect(result).to_have_text("#CYCLE!")
             # clear cycle before leaving
             b.fill("=A6+5")
+            page.get_by_role("textbox",name="A9",exact=True).evaluate("""input=>{
+                const data=new DataTransfer();
+                data.setData("text/plain","Alpha\\t8\\nBeta\\t5");
+                input.dispatchEvent(new ClipboardEvent("paste",{clipboardData:data,bubbles:true,cancelable:true}));
+            }""")
+            expect(page.get_by_role("textbox",name="A9",exact=True)).to_have_value("Alpha")
+            expect(page.get_by_role("textbox",name="B10",exact=True)).to_have_value("5")
+            page.get_by_role("textbox",name="Go to cell reference").fill("B10")
+            page.get_by_role("button",name="Go to cell").click()
+            assert page.get_by_role("textbox",name="B10",exact=True).evaluate("(e)=>e===document.activeElement")
             page.locator('[data-tool="home"]').click()
 
             # Slides: image embedded in both native deck and PPTX.
@@ -118,8 +142,14 @@ def test_browser():
             with zipfile.ZipFile(slides) as z:
                 assert "ppt/media/media1.png" in z.namelist()
                 assert z.read("ppt/media/media1.png")==PNG
+            expect(page.locator(".slide-thumb")).to_have_count(2)
             page.get_by_role("button",name="Next →").click()
             assert "New slide" in page.locator(".slide-preview").inner_text()
+            page.get_by_role("button",name="Select slide 1: Revenue overview").click()
+            expect(page.get_by_role("textbox",name="Slide title")).to_have_value("Revenue overview")
+            outline=downloaded(page,"Export outline & notes",p/"slides-outline.txt")
+            assert "SLIDE 1: Revenue overview" in outline.read_text()
+            assert "Presenter notes go here" in outline.read_text()
             # Native deck survives reopening.
             with page.expect_file_chooser() as picker:
                 page.get_by_role("button",name="Open deck").click()
@@ -137,6 +167,18 @@ def test_browser():
                 page.get_by_role("button",name="Save original").click()
             out=p/"copy.png";d.value.save_as(out)
             assert out.read_bytes()==PNG
+            audio=p/"sound.wav"
+            with wave.open(str(audio),"wb") as wav:
+                wav.setnchannels(1);wav.setsampwidth(2);wav.setframerate(8000)
+                wav.writeframes(bytes(16000))
+            with page.expect_file_chooser() as picker:
+                page.get_by_role("button",name="Open media").click()
+            picker.value.set_files(str(audio))
+            expect(page.locator(".media-stage audio")).to_have_count(1)
+            page.get_by_role("combobox",name="Playback speed").select_option("1.5")
+            assert page.locator("audio").evaluate("(e)=>e.playbackRate")==1.5
+            page.get_by_role("checkbox",name="Loop playback").check()
+            assert page.locator("audio").evaluate("(e)=>e.loop")
             page.locator('[data-tool="home"]').click()
 
             # Mail: local export, provider OAuth control is real (but no user auth in test).
@@ -146,6 +188,12 @@ def test_browser():
             page.get_by_role("textbox",name="Email body").fill("Real message body")
             mail=downloaded(page,"Download .eml",p/"draft.eml")
             assert "person@example.com" in mail.read_text()
+            page.get_by_role("textbox",name="Subject").fill("Changed")
+            with page.expect_file_chooser() as picker:
+                page.get_by_role("button",name="Open .eml draft").click()
+            picker.value.set_files(str(mail))
+            expect(page.get_by_role("textbox",name="Subject")).to_have_value("Hello")
+            expect(page.get_by_role("textbox",name="Email body")).to_have_value("Real message body")
             assert page.get_by_role("button",name="Connect Gmail").count()==1
             assert page.get_by_role("button",name="Connect Outlook").count()==1
             assert page.get_by_role("button",name="Send via connected account").is_disabled()
@@ -262,4 +310,4 @@ if __name__=="__main__":
     test_browser()
     test_mobile_layout()
     test_sheet_independent_axes()
-    print("EZ_OFFICE_WORKSHOP_AXES_PASS")
+    print("EZ_OFFICE_WORKSHOP_BUILDOUT_01_PASS")
