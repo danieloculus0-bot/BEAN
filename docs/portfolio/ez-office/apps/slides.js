@@ -60,6 +60,10 @@ EZOffice.register("slides",function(ctx){
     const s=deck[at];
     stage.className="slide-preview slide-theme-"+s.theme;
     stage.style.textAlign=s.align;
+    // Do not leave an old audio/video decoder playing after a slide is edited.
+    stage.querySelectorAll("audio,video").forEach(media=>{
+      media.pause();media.removeAttribute("src");media.load();
+    });
     stage.replaceChildren();
     const wrap=elem("div",{className:"slide-inner"},stage);
     elem("h2",{className:"slide-heading",text:s.title},wrap);
