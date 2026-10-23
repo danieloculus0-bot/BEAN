@@ -305,3 +305,23 @@ nav{display:grid;gap:5px}.nav-item{text-align:left;border:1px solid transparent;
   body:has(.rich-editor) .main{width:100%!important;margin:0!important;padding:0!important}
   body:has(.rich-editor) .rich-editor{display:block!important;margin:0!important;border:0!important;box-shadow:none!important;min-height:0!important;width:100%!important;max-width:none!important;color:#111!important}
 }
+
+
+/* Native media controls keep full width and stay accessible on narrow phones. */
+.media-stage{min-width:0;width:100%;padding:10px;box-sizing:border-box}
+.media-stage video{display:block;width:min(100%,960px);height:auto;max-height:68dvh;object-fit:contain;background:#05080a;border-radius:8px}
+.media-stage audio{min-width:220px;width:min(100%,680px);height:54px}
+.media-playback-state{min-height:24px;line-height:1.5;font-size:14px;overflow-wrap:anywhere}
+.media-details{font-size:12px;overflow-wrap:anywhere}
+.media-loop-label{display:inline-flex;align-items:center;gap:7px;min-height:44px;white-space:nowrap}
+.media-loop-label input{width:18px;height:18px;accent-color:var(--accent)}
+.media-capabilities:not(:empty){margin:5px 0 18px;padding:12px 14px;border:1px solid var(--border);border-radius:10px}
+.media-capabilities strong{display:block;font-size:13px;margin-bottom:6px}
+.media-capabilities p{font-size:12px;line-height:1.5;margin:4px 0}
+@media(max-width:720px){
+  .media-stage{padding:5px;min-height:160px}
+  .media-stage video{width:100%;max-height:55dvh}
+  .media-stage audio{width:100%;min-width:0}
+  .media-playback-state{font-size:13px}
+}
+@media print{.media-capabilities,.media-playback-state{display:none!important}}
