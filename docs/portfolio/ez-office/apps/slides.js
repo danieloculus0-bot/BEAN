@@ -43,6 +43,16 @@ EZOffice.register("slides",function(ctx){
   const attach=elem("div",{className:"toolbar"},panel);
   const stage=elem("div",{className:"slide-preview",tabindex:"0","aria-label":"Current slide"},sidebar);
   const pages=elem("small",{},deckTools);
+  const navigator=elem("div",{className:"slide-thumbnails",role:"region","aria-label":"Slide navigator"},root);
+  function renderThumbnails(){
+    navigator.replaceChildren();
+    deck.forEach((slide,index)=>{
+      const thumb=button(navigator,(index+1)+". "+(slide.title||"Untitled"),()=>changeSlide(index));
+      thumb.className="slide-thumb"+(index===at?" selected":"");
+      thumb.setAttribute("aria-label","Select slide "+(index+1)+": "+(slide.title||"Untitled"));
+      if(index===at)thumb.setAttribute("aria-current","true");
+    });
+  }
   function loadFields(){
     const s=deck[at];title.value=s.title;body.value=s.body;notes.value=s.notes;theme.value=s.theme;align.value=s.align;
   }
@@ -61,6 +71,7 @@ EZOffice.register("slides",function(ctx){
       else{media.controls=true;media.preload="metadata";media.playsInline=true;}
     }
     pages.textContent="Slide "+(at+1)+" / "+deck.length;
+    renderThumbnails();
   }
   function changeSlide(next){
     if(next<0||next>=deck.length)return;
@@ -86,6 +97,13 @@ EZOffice.register("slides",function(ctx){
       EZOfficeExport.pptx(deck),"application/vnd.openxmlformats-officedocument.presentationml.presentation");
     markDirty(false);
   },true);
+  button(bar,"Export outline & notes",()=>{
+    const text=deck.map((slide,index)=>[
+      "SLIDE "+(index+1)+": "+slide.title,slide.body,
+      slide.media?"Media: "+slide.media.name:"",slide.notes?"Notes: "+slide.notes:""
+    ].filter(Boolean).join("\n")).join("\n\n---\n\n");
+    download((name.value.replace(/\.(ezslides|pptx|txt|json)$/i,"")||"Presentation")+"-outline.txt",text,"text/plain;charset=utf-8");
+  });
   button(bar,"Save deck",()=>{
     download(name.value||"Presentation.ezslides",JSON.stringify({format:"EZSlides-2",slides:deck}),"application/json");
     markDirty(false);
@@ -157,6 +175,6 @@ EZOffice.register("slides",function(ctx){
     deck.length=0;stage.replaceChildren();
   });
   loadFields();repaint();
-  info("Export real .pptx for PowerPoint/LibreOffice with slide text, themes and image media; embedded audio/video remains in .ezslides and is stored as media in PPTX with playback subject to app support. Print / Save as PDF is available. Edit titles, layouts and themes; rearrange, duplicate or delete slides; embed actual image, audio and video files that survive .ezslides save/reopen. Present fullscreen or print. File sizes are bounded. Advanced native PowerPoint editing and animations are not supported.");
+  info("Export real .pptx for PowerPoint/LibreOffice with slide text, themes and image media; embedded audio/video remains in .ezslides and is stored as media in PPTX with playback subject to app support. Print / Save as PDF is available. Use the slide navigator, export presenter notes and outlines, edit titles, layouts and themes; rearrange, duplicate or delete slides; embed actual image, audio and video files that survive .ezslides save/reopen. Present fullscreen or print. File sizes are bounded. Advanced native PowerPoint editing and animations are not supported.");
 });
 })();

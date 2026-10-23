@@ -10,6 +10,8 @@ Persistent experimental reasoning and evidence system. BEAN Core maintains SQLit
 
 EZ-Office is a **working offline-first HTML/JavaScript productivity suite**. Writer formats text and exports actual DOCX, HTML, or TXT; Sheets recalculates formulas and exports XLSX/CSV; Slides adds images, audio, video, themes and PPTX/native multimedia output; Media saves original files or PNG frames; Mail handles EML drafts and optional Google Gmail / Microsoft Outlook provider connections. Documents and presentations can use browser Print / Save as PDF. Five tools share one interface with on-demand loading and cleanup when switching.
 
+**Buildout pass 01 (October 22, 2026):** Added Writer find/replace, Sheets multi-cell clipboard paste and cell navigation, a slide navigator and notes export, Media speed/loop controls and metadata, local EML reopening, and an unsaved-tab-close warning. See the [functionality/deployability audit](https://github.com/danieloculus0-bot/EZ-Office/blob/main/docs/BUILDOUT_AUDIT.md) for verification gates and remaining gaps.
+
 The Workshop hosts a pinned copy of the actual application, not a fake dashboard. Basic DOCX/XLSX/PPTX **export** works and ZIP/XML files are checked in browser tests; import of those formats, full Microsoft Office compatibility and host-RAM savings are **not** established. Gmail/Outlook connect only after registering an OAuth public client and authorizing the mail scopes. This is separate from BEAN Core. Read the [EZ-Office README](https://github.com/danieloculus0-bot/EZ-Office/blob/main/README.md) for exact scope. EZ-Office is a separate project from BEAN Core and Axiom.
 
 ## Integrated Core Q-learning (October 22, 2026)

@@ -68,7 +68,7 @@
     // File loading only occurs on first activation of each tool.
     const p=new Promise((resolve,reject)=>{
       const script=document.createElement("script");
-      script.src="apps/"+id+".js?v=grid-axes-1";
+      script.src="apps/"+id+".js?v=buildout-01";
       script.async=true;
       script.onload=()=>factories.has(id)?resolve():reject(Error("Tool did not register: "+id));
       script.onerror=()=>reject(Error("Cannot load "+id+".js from local application files"));
@@ -128,6 +128,10 @@
     // Test-only: count registered scripts and mounted controls, not heap estimates.
     inspect:()=>({current,registered:[...factories.keys()],mounted:root.querySelectorAll("*").length,dirty})
   };
+  window.addEventListener("beforeunload",event=>{
+    // Native browser prompt only for edits that were not saved/exported.
+    if(dirty){event.preventDefault();event.returnValue="";}
+  });
   buttons.forEach(b=>b.addEventListener("click",()=>switchTool(b.dataset.tool)));
   home(context("home"));
   // Resume an Outlook authorization-code redirect in the actual mail tool.
