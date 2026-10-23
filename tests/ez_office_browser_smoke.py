@@ -157,6 +157,7 @@ def test_browser():
 
 
 def test_mobile_layout():
+    """Check phone viewports across each application without page overflow."""
     with sync_playwright() as play:
         browser=play.chromium.launch(headless=True)
         for width in (390,360):
@@ -167,23 +168,98 @@ def test_mobile_layout():
                 page.wait_for_function("(name) => EZOffice.inspect().current === name",arg=app)
                 if app!="home":
                     page.wait_for_function("document.querySelector('#tool-root .hint')?.textContent?.startsWith('Opening') !== true")
-                metrics=page.evaluate("""() => ({
+                m=page.evaluate("""() => ({
                     html:document.documentElement.scrollWidth,
                     body:document.body.scrollWidth,
-                    width:window.innerWidth
+                    width:window.innerWidth,
+                    nav:document.querySelector('#app-menu').getBoundingClientRect().width
                 })""")
-                assert metrics["html"]<=metrics["width"]+2,metrics
-                assert metrics["body"]<=metrics["width"]+2,metrics
+                assert m["html"]<=m["width"]+2,m
+                assert m["body"]<=m["width"]+2,m
+                assert m["nav"]<=m["width"]+2,m
+                assert page.locator(f'[data-tool="{app}"]').is_visible()
                 if app=="sheets":
-                    assert page.locator(".grid-wrap").evaluate("(e)=>e.scrollWidth>e.clientWidth")
+                    grid=page.locator(".grid-wrap")
+                    assert grid.evaluate("(e) => e.scrollWidth > e.clientWidth")
                 if app=="slides":
                     preview=page.locator(".slide-preview").bounding_box()
                     controls=page.locator(".slide-controls").bounding_box()
-                    assert preview and controls and preview["y"]<controls["y"]
+                    assert preview and controls and preview["y"] < controls["y"]
             page.close()
         browser.close()
+
+
+def test_sheet_independent_axes():
+    """A finger-scrolled sheet keeps corner, column rail and row rail aligned.
+    Test both Chromium and WebKit (the rendering engine used on iOS).
+    """
+    with sync_playwright() as playwright:
+        for browser_type in (playwright.chromium, playwright.webkit):
+            browser=browser_type.launch(headless=True)
+            page=browser.new_page(viewport={"width":390,"height":844},
+                                  device_scale_factor=2,is_mobile=True,has_touch=True)
+            errors=[]
+            page.on("pageerror",lambda e: errors.append(str(e)))
+            page.goto(PAGE)
+            page.locator('[data-tool="sheets"]').click()
+            expect(page.locator(".sheet-axis-cell")).to_have_count(8)
+            expect(page.locator(".sheet-index-cell")).to_have_count(15)
+            assert page.get_by_role("button",name="Unfreeze panes").count()==0
+            assert page.locator(".sheet tbody th").count()==0
+
+            def measure():
+                return page.evaluate("""() => {
+                  const frame=document.querySelector(".sheet-frame");
+                  const grid=frame.querySelector(".grid-wrap");
+                  const corner=frame.querySelector(".sheet-corner");
+                  const top=frame.querySelector(".sheet-x-header");
+                  const side=frame.querySelector(".sheet-y-header");
+                  const a=frame.querySelector(".sheet-axis-cell");
+                  const one=frame.querySelector(".sheet-index-cell");
+                  const cell=frame.querySelector(".sheet tbody tr:first-child td:first-child");
+                  const rect=e=>{const r=e.getBoundingClientRect();return {x:r.x,y:r.y,width:r.width,height:r.height};};
+                  return {frame:rect(frame),grid:rect(grid),corner:rect(corner),
+                    top:rect(top),side:rect(side),a:rect(a),one:rect(one),
+                    cell:rect(cell),scrollX:grid.scrollLeft,scrollY:grid.scrollTop,
+                    maxX:grid.scrollWidth-grid.clientWidth,
+                    maxY:grid.scrollHeight-grid.clientHeight,
+                    snap:getComputedStyle(grid).scrollSnapType,
+                    cellPosition:getComputedStyle(cell).position};
+                }""")
+
+            first=measure()
+            assert abs(first["a"]["x"]-first["cell"]["x"])<=2,first
+            assert abs(first["one"]["y"]-first["cell"]["y"])<=2,first
+            assert first["maxX"]>=200 and first["maxY"]>=100,first
+            assert first["cellPosition"]=="static",first
+            assert first["snap"]=="none",first
+
+            page.locator(".grid-wrap").evaluate("""e=>{
+                e.scrollLeft=190;
+                e.scrollTop=120;
+            }""")
+            page.wait_for_function("""() => {
+                const f=document.querySelector('.sheet-frame');
+                const g=f.querySelector('.grid-wrap');
+                const a=f.querySelector('.sheet-axis-cell').getBoundingClientRect();
+                const first=f.querySelector('tbody tr:first-child td:first-child').getBoundingClientRect();
+                const row=f.querySelector('.sheet-index-cell').getBoundingClientRect();
+                return g.scrollLeft>150 && g.scrollTop>90 &&
+                  Math.abs(a.x-first.x)<1.5 && Math.abs(row.y-first.y)<1.5;
+            }""")
+            after=measure()
+            for name in ("corner","top","side"):
+                assert abs(after[name]["x"]-first[name]["x"])<2,(name,first,after)
+                assert abs(after[name]["y"]-first[name]["y"])<2,(name,first,after)
+            assert abs(after["a"]["x"]-after["cell"]["x"])<2,after
+            assert abs(after["one"]["y"]-after["cell"]["y"])<2,after
+            assert abs(after["cell"]["x"]-(first["cell"]["x"]-after["scrollX"]))<2,after
+            assert abs(after["cell"]["y"]-(first["cell"]["y"]-after["scrollY"]))<2,after
+            assert not errors,errors
+            browser.close()
 
 if __name__=="__main__":
     test_browser()
     test_mobile_layout()
-    print("EZ_OFFICE_WORKSHOP_MOBILE_PASS")
+    test_sheet_independent_axes()
+    print("EZ_OFFICE_WORKSHOP_AXES_PASS")

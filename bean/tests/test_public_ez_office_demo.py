@@ -24,18 +24,18 @@ def test_office_demo_is_locally_complete_and_in_menu():
     page = (OFFICE / "index.html").read_text(encoding="utf-8")
     assert "<title>EZ-Office" in page
     assert 'href="../"' in page  # Back to Workshop, not BEAN agent integration
-    assert 'src="shell.js"' in page
+    assert 'src="shell.js?v=grid-axes-1"' in page
     assert 'src="lib/office-export.js"' in page
     assert (OFFICE / "lib/office-export.js").is_file()
-    assert 'href="styles.css"' in page
+    assert 'href="styles.css?v=grid-axes-1"' in page
     assets = Assets()
     assets.feed(page)
     for path in assets.refs:
         assert not path.startswith(("http://", "https://")), path
-        assert (OFFICE / path).is_file(), path
+        assert (OFFICE / path.partition("?")[0]).is_file(), path
 
     shell = (OFFICE / "shell.js").read_text(encoding="utf-8")
-    assert 'script.src="apps/"+id+".js"' in shell
+    assert 'script.src="apps/"+id+".js?v=grid-axes-1"' in shell
     assert "const disposers=[]" in shell
     for tool in TOOLS:
         assert f'data-tool="{tool}"' in page
