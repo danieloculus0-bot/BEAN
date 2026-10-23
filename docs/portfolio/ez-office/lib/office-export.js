@@ -122,8 +122,13 @@ function xlsx(rows,evaluate){
 function pptx(slides){
   const entries=[],overrides=[],slideRels=[],masterRels=[];
   const prs=(x,y,w,h)=>'<a:xfrm><a:off x="'+x+'" y="'+y+'"/><a:ext cx="'+w+'" cy="'+h+'"/></a:xfrm>';
-  const ptx=(id,text,x,y,w,h,font=2400,color="FFFFFF")=>
-    '<p:sp><p:nvSpPr><p:cNvPr id="'+id+'" name="Text '+id+'"/><p:cNvSpPr txBox="1"/><p:nvPr/></p:nvSpPr><p:spPr>'+prs(x,y,w,h)+'</p:spPr><p:txBody><a:bodyPr wrap="square"/><a:lstStyle/><a:p><a:pPr algn="ctr"/><a:r><a:rPr lang="en-US" sz="'+font+'"><a:solidFill><a:srgbClr val="'+color+'"/></a:solidFill></a:rPr><a:t>'+xml(text)+'</a:t></a:r><a:endParaRPr lang="en-US"/></a:p></p:txBody></p:sp>';
+  const ptx=(id,text,x,y,w,h,font=2400,color="FFFFFF",alignment="center")=>{
+    const direction={left:"l",center:"ctr",right:"r"}[alignment]||"ctr";
+    const content=String(text??"").replace(/\r\n?/g,"\n").split("\n").map(line=>
+      '<a:p><a:pPr algn="'+direction+'"/><a:r><a:rPr lang="en-US" sz="'+font+'"><a:solidFill><a:srgbClr val="'+color+'"/></a:solidFill></a:rPr><a:t xml:space="preserve">'+xml(line)+'</a:t></a:r><a:endParaRPr lang="en-US"/></a:p>'
+    ).join("");
+    return '<p:sp><p:nvSpPr><p:cNvPr id="'+id+'" name="Text '+id+'"/><p:cNvSpPr txBox="1"/><p:nvPr/></p:nvSpPr><p:spPr>'+prs(x,y,w,h)+'</p:spPr><p:txBody><a:bodyPr wrap="square"/><a:lstStyle/>'+content+'</p:txBody></p:sp>';
+  };
   const bg={night:"182A40",lime:"A3EF69",paper:"FCFAF3",sunset:"953F67"};
   const fg={night:"FFFFFF",lime:"152A13",paper:"18232C",sunset:"FFFFFF"};
   const slideSizeX=12192000,slideSizeY=6858000;
@@ -152,7 +157,7 @@ function pptx(slides){
     }
     const shade=bg[s.theme]||bg.night,ink=fg[s.theme]||fg.night;
     const title=ptx(2,s.title||"",500000,450000,11200000,1800000,3600,ink);
-    const body=ptx(3,s.body||"",800000,2450000,10500000,pic?1100000:3100000,2100,ink);
+    const body=ptx(3,s.body||"",800000,2450000,10500000,pic?1100000:3100000,2100,ink,s.align);
     const more=note&&!pic?ptx(5,"Media: "+note,900000,5700000,10200000,450000,1300,ink):"";
     const slide=declaration+'<p:sld xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><p:cSld><p:bg><p:bgPr><a:solidFill><a:srgbClr val="'+shade+'"/></a:solidFill><a:effectLst/></p:bgPr></p:bg><p:spTree><p:nvGrpSpPr><p:cNvPr id="1" name=""/><p:cNvGrpSpPr/><p:nvPr/></p:nvGrpSpPr><p:grpSpPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="0" cy="0"/><a:chOff x="0" y="0"/><a:chExt cx="0" cy="0"/></a:xfrm></p:grpSpPr>'+title+body+pic+more+'</p:spTree></p:cSld><p:clrMapOvr><a:masterClrMapping/></p:clrMapOvr></p:sld>';
     entries.push(["ppt/slides/slide"+index+".xml",slide]);

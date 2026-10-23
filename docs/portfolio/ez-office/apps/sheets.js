@@ -119,6 +119,61 @@ EZOffice.register("sheets",function(ctx){
   rows[3].splice(0,4,"Grand total","","","=SUM(D2:D3)");
   const bar=toolbar(),filename=elem("input",{type:"text",value:"Estimate.csv","aria-label":"Sheet filename"},bar);
   const summary=elem("small",{},bar);
+  const viewBar=toolbar();
+  const filterInput=elem("input",{type:"search",placeholder:"Filter rows (text)","aria-label":"Filter spreadsheet rows"},viewBar);
+  const sortColumn=elem("select",{"aria-label":"Sort view column"},viewBar);
+  const sortDirection=elem("select",{"aria-label":"Sort view direction"},viewBar);
+  for(const [value,label] of [["none","No view sort"],["asc","Ascending"],["desc","Descending"]])elem("option",{value,text:label},sortDirection);
+  sortDirection.value="none";
+  const viewSummary=elem("small",{},viewBar);
+  let displayOrder=[];
+  function refreshSortOptions(){
+    const before=sortColumn.value;
+    sortColumn.replaceChildren();
+    for(let c=0;c<cols;c++)elem("option",{value:String(c),text:"Sort by "+colLabel(c)+(rows[0]?.[c]?" — "+String(rows[0][c]).slice(0,20):"")},sortColumn);
+    sortColumn.value=before&&Number(before)<cols?before:"0";
+  }
+  function viewRows(){
+    const query=filterInput.value.trim().toLocaleLowerCase();
+    const found=[];
+    // Row 1 is treated as a header; all view changes leave source row IDs intact.
+    if(rows.length)found.push(0);
+    for(let r=1;r<rows.length;r++){
+      if(!query||rows[r].some(value=>String(value??"").toLocaleLowerCase().includes(query)))found.push(r);
+    }
+    if(sortDirection.value!=="none"){
+      const col=Number(sortColumn.value)||0,direction=sortDirection.value==="desc"?-1:1;
+      const head=found.shift();
+      const cache=new Map();
+      const display=r=>{
+        try{const v=calculate(rows,r,col,cache);return String(v??"");}
+        catch(e){return String(rows[r][col]??"");}
+      };
+      found.sort((a,b)=>{
+        const va=display(a),vb=display(b),na=Number(va),nb=Number(vb);
+        const numeric=va.trim()!==""&&vb.trim()!==""&&Number.isFinite(na)&&Number.isFinite(nb);
+        const cmp=numeric?na-nb:va.localeCompare(vb,undefined,{numeric:true,sensitivity:"base"});
+        return direction*(cmp||a-b);
+      });
+      found.unshift(head);
+    }
+    return found;
+  }
+  function resetView(){filterInput.value="";sortDirection.value="none";page=0;}
+  for(const control of [filterInput,sortColumn,sortDirection]){
+    control.addEventListener(control===filterInput?"input":"change",()=>{page=0;render();});
+  }
+  button(viewBar,"Clear view",()=>{resetView();render();});
+  button(viewBar,"Export visible CSV",()=>{
+    const order=viewRows();
+    const displayed=order.map(r=>Array.from({length:cols},(_,c)=>{
+      const raw=String(rows[r]?.[c]??"");
+      if(!raw.startsWith("="))return raw;
+      try{return String(calculate(rows,r,c));}catch(e){return e.message||"#ERROR!";}
+    }));
+    download((filename.value.replace(/\.(xlsx|csv|ezsheet|json)$/i,"")||"Sheet")+"-visible.csv",csvText(displayed),"text/csv;charset=utf-8");
+    message("Exported visible rows as evaluated CSV values. Original row references unchanged.");
+  });
   // Fixed coordinate headers live OUTSIDE the scrolling cell viewport.
   // No sticky table cells, no frozen data cells, no overlapping scroll layers.
   const sheetFrame=elem("div",{className:"sheet-frame"},root);
@@ -136,9 +191,11 @@ EZOffice.register("sheets",function(ctx){
     try{
       const [r,c]=cellCoords(jumpField.value.trim().toUpperCase());
       if(r<0||r>=rows.length||c<0||c>=cols)throw Error("Cell outside current sheet");
-      page=Math.floor(r/PAGE_SIZE);render();
+      let displayIndex=viewRows().indexOf(r);
+      if(displayIndex<0){filterInput.value="";displayIndex=viewRows().indexOf(r);}
+      page=Math.floor(displayIndex/PAGE_SIZE);render();
       host.scrollLeft=c*CELL_WIDTH;
-      host.scrollTop=(r-page*PAGE_SIZE)*ROW_HEIGHT;
+      host.scrollTop=(displayIndex-page*PAGE_SIZE)*ROW_HEIGHT;
       syncHeaders();
       const target=host.querySelector('[aria-label="'+colLabel(c)+(r+1)+'"]');
       if(target)target.focus({preventScroll:true});
@@ -165,6 +222,8 @@ EZOffice.register("sheets",function(ctx){
   function schedule(){if(frame)cancelAnimationFrame(frame);frame=requestAnimationFrame(()=>{frame=0;refresh();});}
   function render(){
     const x=host.scrollLeft,y=host.scrollTop;
+    displayOrder=viewRows();
+    page=Math.min(page,Math.max(0,Math.ceil(displayOrder.length/PAGE_SIZE)-1));
     host.replaceChildren();columnStrip.replaceChildren();rowStrip.replaceChildren();
     for(let c=0;c<cols;c++)elem("div",{className:"sheet-axis-cell",text:colLabel(c)},columnStrip);
     const table=elem("table",{className:"sheet","aria-label":"Spreadsheet data"},host);
@@ -172,7 +231,8 @@ EZOffice.register("sheets",function(ctx){
     const cg=elem("colgroup",{},table);
     for(let c=0;c<cols;c++)elem("col",{width:String(CELL_WIDTH)},cg);
     const body=elem("tbody",{},table);
-    for(let r=page*PAGE_SIZE;r<Math.min(rows.length,(page+1)*PAGE_SIZE);r++){
+    for(let offset=page*PAGE_SIZE;offset<Math.min(displayOrder.length,(page+1)*PAGE_SIZE);offset++){
+      const r=displayOrder[offset];
       elem("div",{className:"sheet-index-cell",text:String(r+1)},rowStrip);
       const tr=elem("tr",{},body);
       for(let c=0;c<cols;c++){
@@ -201,20 +261,30 @@ EZOffice.register("sheets",function(ctx){
       }
     }
     summary.textContent=rows.length+" rows × "+cols+" columns";
-    counter.textContent="Page "+(page+1)+" / "+Math.ceil(rows.length/PAGE_SIZE);
-    back.disabled=page===0;next.disabled=(page+1)*PAGE_SIZE>=rows.length;
+    viewSummary.textContent=displayOrder.length+" visible of "+rows.length+" · view sort only";
+    counter.textContent="Page "+(page+1)+" / "+Math.max(1,Math.ceil(displayOrder.length/PAGE_SIZE));
+    back.disabled=page===0;next.disabled=(page+1)*PAGE_SIZE>=displayOrder.length;
     refresh();
     host.scrollLeft=x;host.scrollTop=y;
     syncHeaders();
   }
   function setRows(input,name){
     if(!Array.isArray(input)||input.length>MAX_ROWS||input.some(r=>!Array.isArray(r)||r.length>MAX_COLS))throw Error("Grid exceeds 5,000 rows or 40 columns");
-    cols=Math.max(1,...input.map(r=>r.length));rows=(input.length?input:[[""]]).map(r=>Array.from({length:cols},(_,i)=>String(r[i]??"")));
-    filename.value=name;page=0;markDirty(false);render();message("Opened "+name);
+    cols=Math.max(1,...input.map(r=>r.length));
+    // Imported workbooks often omit unused trailing rows. Keep blank editing room.
+    rows=Array.from({length:Math.max(15,input.length)},(_,r)=>
+      Array.from({length:cols},(_,i)=>String(input[r]?.[i]??"")));
+    filename.value=name;resetView();refreshSortOptions();markDirty(false);render();message("Opened "+name);
   }
   button(bar,"Open CSV",()=>choose(".csv,text/csv,text/plain",async file=>{
     if(file.size>2*1024*1024)throw Error("CSV larger than 2 MB");
     const parsed=parseCSV(await file.text());if(ctx.isActive())setRows(parsed,file.name);
+  }));
+  button(bar,"Open XLSX",()=>choose(".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",async file=>{
+    if(file.size>10*1024*1024)throw Error("XLSX exceeds the 10 MB import limit");
+    const parsed=EZOfficeImport.readXLSX(await file.arrayBuffer());
+    if(ctx.isActive())setRows(parsed.rows,file.name);
+    message("Imported first XLSX sheet: "+parsed.rows.length+" row(s), "+parsed.columns+" column(s). Unsupported charts/styles are omitted.");
   }));
   button(bar,"Open workbook",()=>choose(".ezsheet,.json,application/json",async file=>{
     if(file.size>2*1024*1024)throw Error("Workbook larger than 2 MB");
@@ -222,18 +292,39 @@ EZOffice.register("sheets",function(ctx){
     if(ctx.isActive())setRows(data.rows,file.name);
   }));
   button(bar,"Save XLSX",()=>{
-    const filenameX=(filename.value.replace(/.(csv|json|ezsheet|xlsx)$/i,"")||"Workbook")+".xlsx";
+    const filenameX=(filename.value.replace(/\.(csv|json|ezsheet|xlsx)$/i,"")||"Workbook")+".xlsx";
     const blob=EZOfficeExport.xlsx(values(),(r,c)=>calculate(rows,r,c));
     download(filenameX,blob,"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
     markDirty(false);
   },true);
-  button(bar,"Print / PDF",()=>window.print());
-  button(bar,"Save CSV",()=>{download((filename.value||"Sheet.csv").replace(/\.(ezsheet|json)$/i,".csv"),csvText(values()),"text/csv;charset=utf-8");markDirty(false);},true);
-  button(bar,"Save workbook",()=>{download("Workbook.ezsheet",JSON.stringify({format:"EZSheet-1",rows:values()}),"application/json");markDirty(false);});
+  button(bar,"Print / PDF",()=>{
+    const visible=viewRows();
+    if(visible.length>201||cols>20){message("Print is limited to 200 data rows and 20 columns. Use XLSX or Export visible CSV for large tables.");return;}
+    const paper=elem("div",{className:"sheet-print-pages"},root);
+    elem("h1",{text:filename.value||"EZ Sheets"},paper);
+    const table=elem("table",{className:"sheet-print-table"},paper);
+    const head=elem("thead",{},table),heading=elem("tr",{},head);
+    for(let c=0;c<cols;c++)elem("th",{text:String(rows[0]?.[c]||colLabel(c))},heading);
+    const tbody=elem("tbody",{},table);
+    for(const r of visible.slice(1)){
+      const tr=elem("tr",{},tbody);
+      for(let c=0;c<cols;c++){
+        const raw=String(rows[r]?.[c]??"");
+        let result=raw;
+        if(raw.startsWith("=")){try{result=String(calculate(rows,r,c));}catch(e){result=e.message||"#ERROR!";}}
+        elem("td",{text:result},tr);
+      }
+    }
+    const cleanup=()=>{paper.remove();window.removeEventListener("afterprint",cleanup);};
+    window.addEventListener("afterprint",cleanup,{once:true});
+    window.print();
+  });
+  button(bar,"Save CSV",()=>{download((filename.value||"Sheet").replace(/\.(csv|xlsx|ezsheet|json)$/i,"")+".csv",csvText(values()),"text/csv;charset=utf-8");markDirty(false);},true);
+  button(bar,"Save workbook",()=>{download((filename.value||"Workbook").replace(/\.(csv|xlsx|ezsheet|json)$/i,"")+".ezsheet",JSON.stringify({format:"EZSheet-1",rows:values()}),"application/json");markDirty(false);});
   button(bar,"Add row",()=>{if(rows.length>=MAX_ROWS){message("Row limit reached");return;}rows.push(Array(cols).fill(""));page=Math.floor((rows.length-1)/PAGE_SIZE);markDirty(true);render();});
-  button(bar,"Add column",()=>{if(cols>=MAX_COLS){message("Column limit reached");return;}cols++;rows.forEach(r=>r.push(""));markDirty(true);render();});
+  button(bar,"Add column",()=>{if(cols>=MAX_COLS){message("Column limit reached");return;}cols++;rows.forEach(r=>r.push(""));refreshSortOptions();markDirty(true);render();});
   onDispose(()=>{if(frame)cancelAnimationFrame(frame);rows.length=0;});
-  render();
-  info("Export real .xlsx for Excel/LibreOffice, CSV, .ezsheet with formulas, or Print / Save PDF. Paste tabular ranges from a spreadsheet and jump directly to a cell. Functional formulas: =A1*B1, =SUM(A1:A9), AVERAGE, MIN, MAX, COUNT, IF, arithmetic, powers and references. Circular references and division by zero report errors. CSV preserves formula text; .ezsheet preserves editable formulas. XLSX import remains unsupported.");
+  refreshSortOptions();render();
+  info("Export real .xlsx for Excel/LibreOffice, CSV, .ezsheet with formulas, or Print / Save PDF. Paste tabular ranges from a spreadsheet and jump directly to a cell. Functional formulas: =A1*B1, =SUM(A1:A9), AVERAGE, MIN, MAX, COUNT, IF, arithmetic, powers and references. Circular references and division by zero report errors. CSV preserves formula text; .ezsheet preserves editable formulas. Imports the first XLSX worksheet (numbers, shared strings, basic formulas). Filter and sort affect the view only; Save XLSX/CSV retains source order, while Export visible CSV writes evaluated visible values. Charts, merges, styling and other sheets are not imported.");
 });
 })();
