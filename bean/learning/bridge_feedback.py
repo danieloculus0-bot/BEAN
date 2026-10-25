@@ -14,7 +14,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from .bridge import audit_sources
+from .bridge import audit_sources, bridge_contract
 from .reasoning_service import NativeReasoningService
 
 
@@ -50,6 +50,8 @@ class BridgeReasoningLoop:
             raise TypeError("Actual BEAN-owned NativeReasoningService required")
         if not callable(getattr(verifier, "check", None)):
             raise TypeError("An actual host source verifier is required")
+        if not bridge_contract()["bridge_available"]:
+            raise RuntimeError("Actual BEAN AI Bridge checkout not available")
         self.service = service
         self.bridge_db = Path(bridge_db)
         self.verifier = verifier
@@ -66,16 +68,37 @@ class BridgeReasoningLoop:
             raise ValueError("Bounded Bridge concept required")
         if not isinstance(observations, (list, tuple)) or not 1 <= len(observations) <= 8:
             raise ValueError("Need 1..8 independently checkable observations")
+        # Inbox JSON can carry source dictionaries, not Python class instances.
+        # Construct actual Bridge typed observations, which enforce their own
+        # bounded source schema. Never accept a client-supplied "verified" flag.
+        from ezbean.learning_loop import SourceObservation
+        typed = []
+        for item in observations:
+            if isinstance(item, SourceObservation):
+                typed.append(item)
+            elif isinstance(item, dict) and set(item) == {"ref", "origin", "value"}:
+                typed.append(SourceObservation(**item))
+            else:
+                raise TypeError("Bridge source requires exact ref/origin/value fields")
         # A selected BEAN policy must already exist. Provider errors are
         # journaled by NativeReasoningService and are never called successes.
         inference = self.service.reason(
             domain=domain, task_ref=task_ref, query=query)
         bridge = audit_sources(
             db_path=self.bridge_db, concept=concept.strip(), as_of=as_of,
-            observations=observations, verifier=self.verifier,
+            observations=typed, verifier=self.verifier,
             provider=_CapturedReasoningProposal(inference["answer"]))
         outcome = bridge["outcome"]
         status = outcome["investigation_status"]
+        # Only credit the source observations checked during THIS specific
+        # cycle, never a stale definition's previously saved references.
+        fresh = [row for row in bridge["cycle_observations"]
+                 if row.get("verified") is True
+                 and row.get("value") == outcome.get("system_answer")
+                 and isinstance(row.get("ref"), str)
+                 and isinstance(row.get("origin"), str)]
+        refs = [row["ref"] for row in fresh]
+        origins = {row["origin"] for row in fresh}
         new_evidence = (
             outcome["result_status"] == "answerable"
             and isinstance(outcome.get("system_answer"), str)
@@ -83,7 +106,7 @@ class BridgeReasoningLoop:
             and status in ("committed_verified_revision", "corroborated_no_revision")
             and outcome["confirmed_sources"] >= 2
             and outcome["distinct_origins"] >= 2
-            and len(outcome.get("evidence_refs") or []) >= 2
+            and len(refs) >= 2 and len(origins) >= 2 and len(set(refs)) == len(refs)
             and bool(outcome.get("definition_id"))
         )
         result = {
@@ -94,7 +117,7 @@ class BridgeReasoningLoop:
             "bridge_concept": outcome["concept"],
             "bridge_status": status,
             "bridge_definition_id": outcome.get("definition_id"),
-            "source_refs": list(outcome["evidence_refs"]),
+            "source_refs": refs,
             "bridge_evidence_origin": "host_verifier_attested",
             "feedback_applied": False,
             "reasoning_answer": inference["answer"],
@@ -107,7 +130,7 @@ class BridgeReasoningLoop:
         # Stable source refs make repeating identical evidence idempotent.
         expected = outcome["system_answer"]
         sources = ["bridge_definition:" + outcome["definition_id"]]
-        sources.extend("bridge_source:" + ref for ref in outcome["evidence_refs"])
+        sources.extend("bridge_source:" + ref for ref in refs)
         if len(sources) > 15:
             raise ValueError("Exceeded the evidence source receipt budget")
         hypothesis = adjustment_hypothesis
