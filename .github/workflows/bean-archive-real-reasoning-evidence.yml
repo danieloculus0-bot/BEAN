@@ -1,0 +1,74 @@
+name: Archive verified BEAN real reasoning outcome
+on:
+  push:
+    branches:
+      - experiment/bean-task-matched-transfer-20261025
+    paths:
+      - '.github/workflows/bean-archive-real-reasoning-evidence.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: read
+
+jobs:
+  preserve:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - name: Fetch exact completed model output, not another provider request
+        uses: actions/download-artifact@v4
+        with:
+          run-id: 40206850819
+          name: bean-free-reasoning-transfer
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path: /tmp/original-verified-evidence
+      - name: Verify exact source identities, scores and nonduplicate archival
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import hashlib,json,shutil,sqlite3
+          root=Path('/tmp/original-verified-evidence')
+          target=Path('research/real_reasoning/run-40206850819')
+          if target.exists():raise FileExistsError('Do not replace original evidence')
+          p=root/'report.json'
+          db=root/'experience.sqlite3'
+          if not p.is_file() or not db.is_file():
+              raise ValueError('Missing original report or SQLite source ledger')
+          report=json.loads(p.read_text())
+          assert report['status']=='completed_real_provider_trial'
+          assert report['model_requested']==report['model_served']=='nvidia/nemotron-3-ultra-550b-a55b:free'
+          assert report['requests']==len(report['model_calls'])==18
+          assert report['selection_trial']['scores']=={'cold':0,'placebo':0,'reflection':2,'skill':2,'prompt':2}
+          assert report['holdout_trial']['scores']=={'cold':0,'placebo':0,'adaptive':2}
+          assert report['restart_selection_identical'] is True
+          cx=sqlite3.connect(db)
+          try:
+              assert cx.execute('PRAGMA integrity_check').fetchone()[0]=='ok'
+          finally:cx.close()
+          target.mkdir(parents=True)
+          shutil.copy2(p,target/'report.json')
+          shutil.copy2(db,target/'experience.sqlite3')
+          manifest={'schema':'bean.real_reasoning.archival_manifest.v1',
+                    'source_run_id':40206850819,
+                    'source_commit':'4128b5c1e0c51262efc749e8930a28b97fe287c9',
+                    'source_artifact_id':12604240520,
+                    'evidence':'actual_18_external_model_replies_on_synthetic_protocol',
+                    'independent_real_world_reasoning_proven':False,
+                    'files':{
+                      name: {'bytes':(target/name).stat().st_size,
+                             'sha256':hashlib.sha256((target/name).read_bytes()).hexdigest()}
+                      for name in ['report.json','experience.sqlite3']}}
+          (target/'manifest.json').write_text(json.dumps(manifest,indent=2,sort_keys=True)+'\n')
+          print(json.dumps(manifest,sort_keys=True))
+          PY
+      - name: Commit original immutable evidence, no real trading changes
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add research/real_reasoning/run-40206850819/
+          git commit -m 'research(bean): archive real reasoning replies, recovery ledger and source hashes'
+          git push origin HEAD:experiment/bean-task-matched-transfer-20261025
