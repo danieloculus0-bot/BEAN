@@ -392,7 +392,7 @@ class CompositionLearner:
                 "surviving_programs": len(survivors),
                 "programs_examined": considered,
                 "guided_deprioritized": guided_deprioritized,
-                "first_supported_program_rank": first_supported_program_rank,
+            "first_supported_program_rank": first_supported_program_rank,
                 "rule_retained": False, "model_invoked": False,
             }
         first, second, operator = survivors[0]
@@ -406,7 +406,7 @@ class CompositionLearner:
             "development_examples": len(cases),
             "programs_examined": considered,
             "guided_deprioritized": guided_deprioritized,
-                "first_supported_program_rank": first_supported_program_rank,
+            "first_supported_program_rank": first_supported_program_rank,
             "uniquely_supported_by_development": True,
             "evidence_refs": refs,
             "independent_validation": False,
@@ -426,7 +426,7 @@ class CompositionLearner:
             "rule_id": record["rule_id"], "parent_rule_ids": record["parent_rule_ids"],
             "join": operator, "programs_examined": considered,
             "guided_deprioritized": guided_deprioritized,
-                "first_supported_program_rank": first_supported_program_rank,
+            "first_supported_program_rank": first_supported_program_rank,
             "journal_tip": tip, "rule_retained": True,
             "independent_validation": False, "model_invoked": False,
         }
