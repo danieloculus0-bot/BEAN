@@ -55,6 +55,17 @@ jobs:
           name: bean-nemotron-self-derived-receipts
           github-token: ${{ secrets.GITHUB_TOKEN }}
           path: /tmp/source-40212952629
+      - name: Show downloaded artifact byte hashes before any SQLite access
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import hashlib
+          root=Path('/tmp/source-40212952629')
+          for filename in ('report.json','experience.sqlite3','provider_calls.jsonl'):
+              p=root/filename
+              print(filename, 'exists=',p.exists(), 'bytes=',p.stat().st_size if p.exists() else None,
+                    'sha256=',hashlib.sha256(p.read_bytes()).hexdigest() if p.exists() else None)
+          PY
       - name: Run three isolated real Nemotron batches on four NEW held-out tasks
         id: actual
         run: python -m bean.evaluation.nemotron_batched_recovery --source /tmp/source-40212952629 --output /tmp/resumed-orchid
