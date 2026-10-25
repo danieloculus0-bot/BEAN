@@ -41,8 +41,8 @@ class FakeInbox:
     def register(self, name, fn):
         self.handlers[name] = fn
 
-    def call(self, name, **args):
-        return self.handlers[name](SimpleNamespace(args=args), "session-fixture")
+    def call(self, command, **args):
+        return self.handlers[command](SimpleNamespace(args=args), "session-fixture")
 
 
 class HTTPResponse:
