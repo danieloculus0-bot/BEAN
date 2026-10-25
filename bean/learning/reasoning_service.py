@@ -96,6 +96,12 @@ class NativeReasoningService:
         return self.local.learn(domain=domain, task_ref=task_ref,
                                 examples=examples, evidence_refs=evidence_refs)
 
+    def compare_compositions(self, *, domain, task_ref, examples, evidence_refs):
+        """Evaluate matched alternatives and retain reason-coded outcomes."""
+        return self.compositions.compare(
+            domain=domain, task_ref=task_ref,
+            examples=examples, evidence_refs=evidence_refs)
+
     def propose_compositions(self, *, domain, task_ref, query):
         """Discover candidate combinations without assuming or retaining an answer."""
         return self.compositions.propose(
@@ -456,6 +462,8 @@ class NativeReasoningService:
                 "stored_lessons": sum(x["kind"] == "lesson" for x in events),
                 "native_symbolic_rules": sum(x["kind"] == "local_rule" for x in events),
                 "native_composed_rules": sum(x["kind"] == "composed_rule" for x in events),
+                "composition_comparisons": sum(
+                    x["kind"] == "composition_comparison" for x in events),
                 "native_symbolic_inferences": sum(
                     x["kind"] == "inference" and x["data"].get("provider_kind") == "native_local"
                     for x in events),
@@ -484,6 +492,7 @@ def register_native_reasoning_handlers(inbox, service):
     """Install BEAN-owned local commands in the *existing* runtime inbox."""
     inbox.register("reasoning_status", lambda m, _: service.status())
     inbox.register("reasoning_learn_local", lambda m, _: service.learn_local(**m.args))
+    inbox.register("reasoning_compare_compositions", lambda m, _: service.compare_compositions(**m.args))
     inbox.register("reasoning_propose_compositions", lambda m, _: service.propose_compositions(**m.args))
     inbox.register("reasoning_learn_composition", lambda m, _: service.learn_composition(**m.args))
     inbox.register("reasoning_composed", lambda m, _: service.reason_composed(**m.args))
