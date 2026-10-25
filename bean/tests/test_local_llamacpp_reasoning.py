@@ -151,7 +151,7 @@ class LocalQwenIntegrationTests(unittest.TestCase):
             {"task_id": t, "arm": arm, "replicate": 0,
              "passed": arm == "reflection", "evidence_ref": f"{t}:{arm}"}
             for t in ("dev-a", "dev-b")
-            for arm in ("cold", "placebo", "reflection", "skill", "prompt")]
+            for arm in ("cold", "placebo", "reflection", "skill", "prompt")
         ]
         chosen = self.bean.choose_from_outcomes(
             domain="inspection", rows=rows, evaluator_id="fixture",
