@@ -46,3 +46,12 @@ The output includes model response IDs, served model ID, every raw public-task a
 **Crucial limitation:** This is a *real reasoning model performing controlled, invented tasks with evaluator-supplied feedback*, not proof of spontaneously discovered rules or transfer to real engineering/financial problems. A correct BEAN-memory answer tests experience retrieval and application to different instances of one task family. Real generalization to unseen domains would require independent external tasks and separately sourced reward observations, not this synthetic-domain test alone. If the baseline already answers correctly, the experiment is inconclusive and deliberately refuses to manufacture a development mistake.
 
 Verification: `python -m unittest bean.tests.test_live_reasoning_transfer -v` (offline structural fixture, not live evidence), then inspect the actual `BEAN real reasoning model learning transfer` GitHub Actions run and `bean-real-reasoning-matched-trial` artifact at the exact tested commit.
+
+
+## Actual provider status and free reasoning comparison
+
+At [GitHub run 40206569071](https://github.com/danieloculus0-bot/BEAN/actions/runs/40206569071), the GPT-6.1 Sol research harness passed its Ubuntu and Windows **offline contracts**, but the actual-provider job failed with `blocked_no_api_key` because `OPENAI_API_KEY` was empty. **Zero GPT-6.1 Sol requests occurred.** Do not count this as a reasoning-model experiment, and do not say the BEAN experiment passed.
+
+A separate [pinned zero-token-price NVIDIA Nemotron 3 Ultra model](https://openrouter.ai/nvidia/nemotron-3-ultra-550b-a55b%3Afree) was selected as the available fallback. A prior [October 11 OpenRouter trial](https://github.com/danieloculus0-bot/BEAN/actions/runs/38152611734) had a credential and attempted one request, but was rate limited with HTTP 429 and never returned a model candidate. The new [`BEAN free pinned reasoning model transfer` workflow](https://github.com/danieloculus0-bot/BEAN/actions/workflows/bean-free-reasoning-transfer.yml) uses `OPENROUTER_API_KEY` only for synthetic public tasks, pins the `nvidia/nemotron-3-ultra-550b-a55b:free` model, hard-caps at 18 requests and captures independent real responses or an explicit blocker. There is no paid-provider fallback.
+
+The free model is an alternate real reasoning provider, **not GPT-6.1 Sol**. Its scores must remain separately identified by model and run. An HTTP/rate-limit failure or missing response is not an evaluated task, and cannot establish learning.
