@@ -53,15 +53,16 @@ class FullResearchFeedbackTests(unittest.TestCase):
             observed="sun", expected="moon",
             adjustment_hypothesis="Unrelated astronomy explanation",
             evidence_refs=["fixture:unrelated-domain"])
-        results = [
-            {"task_id": task, "arm": arm, "replicate": 0,
-             "passed": arm == "reflection", "evidence_ref": task + ":" + arm}
-            for task in ("train-1", "train-2")
-            for arm in ("cold", "placebo", "reflection", "skill", "prompt")]
-        winner = self.core.choose_from_outcomes(
-            domain="inspection", rows=results,
-            evaluator_id="fixture-judge", dataset_id="fixture-development")
-        self.assertEqual(winner["arm"], "reflection")
+        development = [
+            TrialCase("selection-1", "inspection",
+                      "APPROVAL sample A", "PASS"),
+            TrialCase("selection-2", "inspection",
+                      "APPROVAL sample B", "PASS"),
+        ]
+        assessed = self.core.evaluate_and_select(
+            domain="inspection", cases=development, model=self.core.model,
+            judge=lambda expected, answer: expected == answer)
+        self.assertEqual(assessed["selection"]["arm"], "reflection")
 
     @staticmethod
     def observations(suffix=""):
