@@ -23,7 +23,7 @@ from .nemotron_self_derived_transfer import (
 ORIGINAL_RUN = 40212952629
 ORIGINAL_SHA256 = {
     "report.json": "9ec544a6df5b2e0671e30513b7510056d1c0442f281e48ed068c67b9423ed6ab",
-    "experience.sqlite3": "f5f24ddbba9a1d6362327f099f77cadb47ea9013b5c33ffc4af95e997a",
+    "experience.sqlite3": "f5f24ddbba9a1d6362327f099f77eeeb77cadb47ea9013b5c33ffc4af95e997a",
     "provider_calls.jsonl": "4661425fc7afacbf03b9c4996857628cc8d64be06d7b957eadb6299c11d35ab1",
 }
 
