@@ -40,10 +40,14 @@ def audit_sources(*, db_path, concept, as_of, observations, verifier, provider):
         runner = EvidenceLearningLoop(library, investigator=Investigator(),
                                       verifier=verifier)
         outcome = runner.process(provider, concept, as_of, refresh=True)
+        history = runner.history()
+        if not history or history[-1].get("cycle_id") != outcome.cycle_id:
+            raise ValueError("Bridge history does not contain the just-checked cycle")
         return {
             "schema": "bean.adaptive_bridge_lab026.v1",
             "outcome": asdict(outcome),
-            "history_count": len(runner.history()),
+            "history_count": len(history),
+            "cycle_observations": history[-1]["observations"],
             "evidence_summary": runner.compile_evidence(),
             "independent_fact_authentication": False,
         }
