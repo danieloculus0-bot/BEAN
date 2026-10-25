@@ -15,6 +15,7 @@ from bean.evaluation.abstract_nonlinear_transfer import (
     shop_utility, ecosystem_utility, ideas_utility,
     rollout, compare, means,
     learn_principle, recover_principle, run_experiment,
+    adapt_principle, recover_adapted_principle, run_adaptation_experiment,
 )
 
 
@@ -164,6 +165,58 @@ class PhilosophyOnlyTransferTests(unittest.TestCase):
             run_experiment(self.database,
                            source_seeds=range(800,816),
                            blind_seeds=[10]*48)
+        self.assertFalse(self.database.exists())
+
+    def test_target_feedback_revision_is_retained_before_new_blind_split(self):
+        report = run_adaptation_experiment(
+            self.database,
+            source_seeds=range(800,816),
+            dev_seeds=range(51000,51016),
+            blind_seeds=range(62000,62048))
+        self.assertEqual(report["source_cases"], 16)
+        self.assertEqual(report["development_cases"], 16)
+        self.assertEqual(report["blind_cases"], 48)
+        self.assertIn(report["source_prior_policy"], POLICIES)
+        self.assertIn(report["adapted_policy"], POLICIES)
+        self.assertTrue(report["source_and_adaptation_recovered_after_restart"])
+        self.assertFalse(report["blind_rewards_available_at_selection"])
+        self.assertEqual(
+            sum(report[k] for k in (
+                "blind_wins_vs_source", "blind_losses_vs_source",
+                "blind_ties_vs_source")), 48)
+        self.assertNotEqual(report["pre_blind_ledger_tip"],
+                            report["post_blind_ledger_tip"])
+        bank = ExperienceBank(self.database)
+        try:
+            rows = [e["data"] for e in bank.journal.events()]
+            self.assertEqual(
+                [r["phase"] for r in rows],
+                ["source_selection", "target_adaptation",
+                 "post_adaptation_blind_report"])
+            self.assertEqual(rows[1]["target_dev_sha256"],
+                             report["target_dev_sha256"])
+            self.assertEqual(rows[1]["adapted_policy"],
+                             report["adapted_policy"])
+            self.assertEqual(recover_adapted_principle(bank),
+                             report["adapted_policy"])
+            self.assertEqual(rows[2]["pre_blind_tip"],
+                             report["pre_blind_ledger_tip"])
+        finally:
+            bank.close()
+
+    def test_target_adaptation_cannot_reuse_source_or_blind_examples(self):
+        with self.assertRaisesRegex(ValueError, "disjoint"):
+            run_adaptation_experiment(
+                self.database,
+                source_seeds=range(800,816),
+                dev_seeds=range(800,816),
+                blind_seeds=range(62000,62048))
+        with self.assertRaisesRegex(ValueError, "Distinct"):
+            run_adaptation_experiment(
+                self.database,
+                source_seeds=range(800,816),
+                dev_seeds=[51000]*16,
+                blind_seeds=range(62000,62048))
         self.assertFalse(self.database.exists())
 
     def test_holdout_scores_are_deterministic_and_comparable(self):
