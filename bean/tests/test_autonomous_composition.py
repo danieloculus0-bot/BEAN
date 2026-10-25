@@ -314,6 +314,116 @@ class CompositionTests(unittest.TestCase):
         self.assertEqual(other["status"], "abstain")
         self.assertEqual(self.core.status()["native_composed_rules"], 1)
 
+    def test_compare_retains_success_failure_reasons_and_guides_next_search(self):
+        self.seed_parents()
+        examples = [{"question": question(t, g), "answer": target(t, g)}
+                    for t, g in DEV]
+        before = self.core.propose_compositions(
+            domain="mixed-transfer", task_ref="initial-search",
+            query=question(*DEV[0]))
+        self.assertFalse(before["search_guided_by_retained_comparison"])
+        report = self.core.compare_compositions(
+            domain="mixed-transfer", task_ref="development-comparison",
+            examples=examples, evidence_refs=["source:matched-development"])
+        self.assertEqual(report["status"], "comparison_recorded")
+        self.assertGreater(report["programs_compared"], 1)
+        self.assertEqual(report["leaderboard"][0]["join"], "rank_second_in_first")
+        self.assertEqual(report["leaderboard"][0]["correct"], 4)
+        self.assertEqual(report["leaderboard"][0]["wrong"], 0)
+        self.assertEqual(
+            report["leaderboard"][0]["reason_counts"]["development_answer_match"], 4)
+        records = [e["data"] for e in self.core.bank.journal.events()
+                   if e["kind"] == "composition_comparison"]
+        self.assertEqual(len(records), 1)
+        self.assertEqual(records[0]["comparison_id"], report["comparison_id"])
+        self.assertTrue(any(
+            r["reason_counts"].get("output_disagrees_with_development_answer", 0) == 4
+            for r in records[0]["results"]))
+        guided = self.core.propose_compositions(
+            domain="mixed-transfer", task_ref="guided-search",
+            query=question(*DEV[1]))
+        self.assertTrue(guided["search_guided_by_retained_comparison"])
+        self.assertGreater(guided["pruned_from_prior_development_failures"], 0)
+        self.assertEqual(guided["hypotheses"][0]["join"], "rank_second_in_first")
+        self.assertEqual(guided["hypotheses"][0]["search_priority"],
+                         "supported_on_development")
+        self.assertEqual(guided["hypotheses"][0]["prior_development_cases"], 4)
+        self.assertEqual(self.core.status()["composition_comparisons"], 1)
+        self.assertEqual(self.core.status()["native_composed_rules"], 0)
+        learned = self.train()
+        self.assertEqual(learned["join"], "rank_second_in_first")
+        self.assertGreater(learned["guided_pruned"], 0)
+        self.core.close()
+        revived = NativeReasoningService(self.db, model=None)
+        try:
+            persisted = revived.propose_compositions(
+                domain="mixed-transfer", task_ref="post-restart-guidance",
+                query=question(*DEV[2]))
+            self.assertEqual(persisted["hypotheses"][0]["search_priority"],
+                             "supported_on_development")
+            self.assertEqual(revived.status()["composition_comparisons"], 1)
+            self.assertEqual(revived.status()["native_composed_rules"], 1)
+        finally:
+            revived.close()
+
+    def test_repeated_comparison_examples_cannot_fake_new_learning(self):
+        self.seed_parents()
+        examples = [{"question": question(t, g), "answer": target(t, g)}
+                    for t, g in DEV]
+        first = self.core.compare_compositions(
+            domain="mixed-transfer", task_ref="comparison-1", examples=examples,
+            evidence_refs=["source:first-development"])
+        tip = first["journal_tip"]
+        with self.assertRaisesRegex(ValueError, "Repeated questions"):
+            self.core.compare_compositions(
+                domain="mixed-transfer", task_ref="comparison-renamed",
+                examples=examples, evidence_refs=["source:duplicate-evidence"])
+        self.assertEqual(self.core.bank.journal.export()["tip"], tip)
+        other = self.core.compare_compositions(
+            domain="different-domain", task_ref="control-scope",
+            examples=examples, evidence_refs=["source:independent-domain"])
+        self.assertEqual(other["status"], "comparison_recorded")
+        self.assertFalse(self.core.propose_compositions(
+            domain="unrelated", task_ref="unscored",
+            query=question(*DEV[0]))["search_guided_by_retained_comparison"])
+
+    def test_guide_away_from_failed_join_and_discover_new_strategy(self):
+        self.seed_parents()
+        def concat(t, g):
+            return "".join(k for k, _ in sorted(t, key=lambda i: -i[1])) + (
+                "|" + sorted(g, key=lambda i: i[1])[1][0])
+        initial = self.core.compare_compositions(
+            domain="mixed-transfer", task_ref="discover-second-strategy",
+            examples=[{"question": question(t, g), "answer": concat(t, g)}
+                      for t, g in DEV],
+            evidence_refs=["source:alternate-target"])
+        self.assertEqual(initial["leaderboard"][0]["join"], "first_then_second")
+        self.assertEqual(initial["leaderboard"][0]["correct"], 4)
+        later = [
+            ([("P", 9), ("Q", 3), ("R", 6)],
+             [("P", 16), ("Q", 7), ("R", 25)]),
+            ([("S", 2), ("T", 7), ("V", 4)],
+             [("S", 21), ("T", 18), ("V", 5)]),
+            ([("N", 3), ("L", 8), ("K", 5)],
+             [("N", 9), ("L", 2), ("K", 6)]),
+            ([("X", 5), ("Y", 4), ("Z", 7)],
+             [("X", 11), ("Y", 20), ("Z", 18)]),
+        ]
+        learned = self.core.learn_composition(
+            domain="mixed-transfer", task_ref="new-composition-development",
+            examples=[{"question": question(t, g), "answer": concat(t, g)}
+                      for t, g in later],
+            evidence_refs=["source:other-development-set"])
+        self.assertEqual(learned["status"], "learned_composition")
+        self.assertEqual(learned["join"], "first_then_second")
+        self.assertGreater(learned["guided_pruned"], 0)
+        answer = self.core.reason_auto(
+            domain="mixed-transfer", task_ref="new-transfer",
+            query=question([("A", 7), ("B", 2), ("C", 9)],
+                           [("A", 7), ("B", 16), ("C", 23)]))
+        self.assertEqual(answer["answer"], "CAB|B")
+        self.assertEqual(answer["status"], "locally_solved")
+
     def test_registered_in_native_runtime_and_never_calls_model(self):
         self.seed_parents()
         self.train()
@@ -325,6 +435,7 @@ class CompositionTests(unittest.TestCase):
         box = Inbox()
         register_native_reasoning_handlers(box, self.core)
         self.assertIn("reasoning_propose_compositions", box.handlers)
+        self.assertIn("reasoning_compare_compositions", box.handlers)
         self.assertIn("reasoning_learn_composition", box.handlers)
         self.assertIn("reasoning_composed", box.handlers)
         self.assertIn("reasoning_auto", box.handlers)
