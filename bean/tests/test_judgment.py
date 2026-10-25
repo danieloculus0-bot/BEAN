@@ -64,6 +64,17 @@ class JudgmentTests(unittest.TestCase):
         self.assertEqual(self.service.status()["inference_receipts"], 0)
         self.assertEqual(self.service.status()["judgment_receipts"], 1)
 
+    def test_medium_confidence_adequate_standard_precedes_self_high(self):
+        # An adequate conventional approach need not outperform novelty.
+        result = self.decide([
+            candidate("self", "Experiment", "self:new", confidence="high"),
+            candidate("established", "Known workable method", "qms:approved",
+                      confidence="medium"),
+        ])
+        self.assertEqual(result["decision"], "adopt")
+        self.assertEqual(result["source_kind"], "established")
+        self.assertEqual(result["answer"], "Known workable method")
+
     def test_qualified_expert_can_be_deferred_to_when_supported(self):
         result = self.decide([
             candidate("self", "My guess", "self:guess",
