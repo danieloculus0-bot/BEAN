@@ -220,6 +220,25 @@ class CompositionLearner:
                  and e["data"]["domain"] == domain]
         if not plans:
             return self._abstain("no_retained_composition_in_domain")
+        # Do not keep repeating a refuted program as if feedback never
+        # happened. Host feedback is evidence requiring review, not proof:
+        # quarantine conservatively rather than deleting or retraining it.
+        inferences = {e["data"]["receipt_id"]: e["data"]
+                      for e in events if e["kind"] == "inference"
+                      and e["data"].get("purpose") == "local_composition_applied"
+                      and isinstance(e["data"].get("receipt_id"), str)}
+        refuted = {
+            rid for e in events if e["kind"] == "feedback"
+            and e["data"].get("matched") is False
+            for rid in (e["data"].get("receipt_id"),)
+        }
+        quarantined = {
+            composed_id
+            for rid in refuted if rid in inferences
+            for composed_id in inferences[rid].get("composed_rule_ids", [])
+        }
+        if any(plan["rule_id"] in quarantined for plan in plans):
+            return self._abstain("composition_has_refuted_host_feedback")
         predictions = []
         for plan in plans:
             a, b = plan["parent_rule_ids"]
