@@ -15,7 +15,15 @@ from bean.learning import NativeReasoningService, TrialCase
 from bean.learning.bridge_feedback import (
     BridgeReasoningLoop, register_bridge_feedback_handler)
 from bean.learning.experimental import material_for
-from ezbean.learning_loop import SourceObservation
+# Bridge is an optional checkout in the Core-only CI matrix. When it is
+# installed, execute these tests normally; otherwise record an explicit skip
+# instead of failing unrelated Core test collection on an absent dependency.
+try:
+    from ezbean.learning_loop import SourceObservation
+except ModuleNotFoundError as exc:
+    if exc.name != "ezbean":
+        raise
+    raise unittest.SkipTest("BEAN-AI-Bridge optional package ezbean not installed") from exc
 
 
 class ExperimentalModel:
