@@ -140,26 +140,37 @@ class BEANReasoningSkills:
         return {"trial": receipt, "selection": selection}
 
     def evaluate_holdout(self, *, domain, cases, model, judge, replicates=1):
-        """Evaluate frozen chosen strategy on disjoint IDs, without reselection.
+        """Evaluate frozen choice on disjoint IDs and public questions; no reselection.
 
         This does NOT certify that source questions were truly hidden.
         Do not use this outcome to change the already selected strategy.
         """
-        from .experimental import run_paired_trial
+        from .experimental import run_paired_trial, question_fingerprint
         domain = _text(domain, "domain", 100).casefold()
         cases = list(cases)
         if len(cases) < 2 or any(case.domain != domain for case in cases):
             raise ValueError("Need >=2 same-domain holdout tasks")
+        candidate_questions = [question_fingerprint(case.public_question)
+                               for case in cases]
+        if len(set(candidate_questions)) != len(candidate_questions):
+            raise ValueError("Holdout contains repeated public questions")
         # Ensure a measured selection already exists.
         self.bank.selected_arm(domain)
-        tested = {
-            row.get("task_id")
-            for event in self.bank.journal.events()
+        seen_rows = [
+            row for event in self.bank.journal.events()
             if event.get("kind") == "trial"
             for row in event["data"].get("records", [])
-        }
+        ]
+        tested = {row.get("task_id") for row in seen_rows}
         if any(case.task_id in tested for case in cases):
             raise ValueError("Holdout task IDs overlap previous measured trials")
+        # An older trial without question hashes cannot establish unseen
+        # identity, so fail closed rather than relabel it as a blind holdout.
+        if any(not row.get("question_sha256") for row in seen_rows):
+            raise ValueError("Earlier trial lacks question fingerprints; no verified holdout")
+        earlier_questions = {row["question_sha256"] for row in seen_rows}
+        if earlier_questions.intersection(candidate_questions):
+            raise ValueError("Holdout question previously tested under another task ID")
         receipt = run_paired_trial(
             bank=self.bank, cases=cases, model=model, judge=judge,
             arms=("cold", "placebo", "adaptive"), replicates=replicates,
