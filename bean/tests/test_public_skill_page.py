@@ -136,7 +136,7 @@ class PublicSkillsPageTests(unittest.TestCase):
         self.assertIn("research-only", self.page)
         self.assertIn("now on Core main through PR #153", self.page)
         self.assertIn("id=\"judgment\"", self.page)
-        self.assertIn("Adequate", self.page)
+        self.assertIn("adequate existing answer", self.page)
         self.assertIn("four-platform Core regression passed", self.page)
         self.assertIn("38257867402", self.page)
 
