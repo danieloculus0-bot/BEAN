@@ -164,7 +164,7 @@ def material_for(bank, arm, domain, *, query=None):
     uses. Legacy Lab026 experiments without query keep their existing scope.
     """
     if arm == "adaptive":
-        return material_for(bank, bank.selected_arm(domain), domain)
+        return material_for(bank, bank.selected_arm(domain), domain, query=query)
     if arm == "cold":
         return ""
     strategy = "reflection" if arm == "placebo" else {
