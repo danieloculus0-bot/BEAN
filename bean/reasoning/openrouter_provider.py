@@ -1,7 +1,7 @@
-"""Optional real OpenRouter provider; all learning policy remains BEAN-owned.
+"""Replaceable OpenRouter adapter; BEAN owns all reasoning memory/policy.
 
-Uses a pinned no-token-charge Nemotron model by default, with no paid fallback.
-The adapter returns actual model text + served identity (not synthetic output).
+Default is a free model. An inexpensive paid model is separately allowlisted,
+disabled by default, bounded per instance, and NEVER an automatic fallback.
 """
 from __future__ import annotations
 
@@ -19,8 +19,17 @@ class OpenRouterProvider(LLMAdapterBase):
     def __init__(self, model_name=None, api_key=None, requester=urlopen):
         self.model_name = model_name or os.environ.get(
             "BEAN_OPENROUTER_MODEL", "nvidia/nemotron-3-ultra-550b-a55b:free")
-        if not isinstance(self.model_name, str) or not self.model_name.endswith(":free"):
-            raise ValueError("BEAN research provider requires an explicitly free model")
+        self.low_cost_paid = self.model_name == "qwen/qwen3.5-flash-02-23"
+        if self.low_cost_paid:
+            if os.environ.get("BEAN_OPENROUTER_PAID_ENABLED") != "1":
+                raise ValueError("Paid provider disabled; explicit opt-in required")
+            limit = os.environ.get("BEAN_OPENROUTER_PAID_CALL_LIMIT", "0")
+            if not limit.isdecimal() or not 1 <= int(limit) <= 100:
+                raise ValueError("Paid model needs 1..100 explicit per-instance calls")
+            self.paid_call_limit = int(limit)
+        elif not isinstance(self.model_name, str) or not self.model_name.endswith(":free"):
+            raise ValueError("Only free providers or the pinned cheap model are allowed")
+        self.paid_calls_attempted = 0
         self.api_key = api_key or os.environ.get("OPENROUTER_API_KEY")
         self._requester = requester
         self.endpoint = "https://openrouter.ai/api/v1/chat/completions"
@@ -72,9 +81,19 @@ class OpenRouterProvider(LLMAdapterBase):
             user = prompt
         if len(user) > 33000:
             raise ValueError("Reasoning context exceeds supported size")
+        if self.low_cost_paid:
+            # This is a per-Python-instance ceiling, not a cross-process
+            # account-wide spending guarantee. Set a cap on the provider key.
+            if self.paid_calls_attempted >= self.paid_call_limit:
+                self.last_failure_kind = "paid_call_budget_exhausted"
+                return {"ok": False, "error": "Explicit paid request cap reached",
+                        "adapter_name": self.adapter_name, "model_name": self.model_name}
+            if len(user) > 10000:
+                raise ValueError("Paid prompt exceeds bounded 10K-char budget")
+            self.paid_calls_attempted += 1
         payload = {
             "model": self.model_name,
-            "max_tokens": 1536,
+            "max_tokens": 512 if self.low_cost_paid else 1536,
             "messages": [
                 {"role": "system", "content":
                  "Reason carefully using only supplied task evidence. "
@@ -114,7 +133,21 @@ class OpenRouterProvider(LLMAdapterBase):
             self.last_failure_kind = "empty_provider_answer"
             return {"ok": False, "error": "Empty provider response",
                     "adapter_name": self.adapter_name, "model_name": self.model_name}
+        usage = data.get("usage") or {}
+        if not isinstance(usage, dict):
+            usage = {}
+        prompt_tokens = usage.get("prompt_tokens")
+        completion_tokens = usage.get("completion_tokens")
+        # OpenRouter published Qwen Flash rates as of October 2026.
+        # These are estimates, not billing reconciliation or a price lock.
+        estimated_usd = None
+        if (self.low_cost_paid and type(prompt_tokens) is int
+                and type(completion_tokens) is int
+                and prompt_tokens >= 0 and completion_tokens >= 0):
+            estimated_usd = round(
+                (prompt_tokens * 0.065 + completion_tokens * 0.26) / 1000000, 9)
         return {"ok": True, "raw_text": answer.strip(),
                 "adapter_name": self.adapter_name, "model_name": served,
                 "provider_response_id": data.get("id"),
+                "estimated_provider_cost_usd": estimated_usd,
                 "verified_outcome": False}
