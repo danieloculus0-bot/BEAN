@@ -67,7 +67,7 @@ The integration passed [Windows/Ubuntu learning CI](https://github.com/danielocu
 - **[Lab027 reinforcement-learning evaluation (draft PR #149)](https://github.com/danieloculus0-bot/BEAN/pull/149)**: real original SpongeTD Q-learning on 3,000 synthetic training puzzles, a separate 180-map tuning set, and **240 untouched holdout layouts**. Trained Q-learning with the same loop-avoidance controller solved 237/240 maps versus 232/240 for cold Q; mean moves were 21.7 versus 69.0. Exact Q-values survived checkpoint/restart.
 - **[Verified Lab027 GitHub CI run](https://github.com/danieloculus0-bot/BEAN/actions/runs/39550106061)**: both Windows and Ubuntu succeeded on evaluated code revision `4d969b0e`, with inspectable compressed event-ledger artifacts.
 
-These experiments demonstrate task-family learning and reusable mechanisms, **not** general intelligence, production deployment, external action authority or neural training. Lab026 and the broader Lab027 research PRs remain separate experiments; the source-identical tabular learner and its held-out tests were promoted to Python Core through PR #153. The newest changes on other draft branches may be newer than their listed successful CI revisions.
+These experiments demonstrate task-family learning and reusable mechanisms, **not** general intelligence, production deployment, external action authority or neural training. The useful Lab026 reasoning components and the Lab027 tabular learner were promoted to Python Core through PRs #170 and #153 respectively; original research branches and their limitations remain recorded. The newest changes on other draft branches may be newer than their listed successful CI revisions.
 
 ## Before any BEAN engineering work
 
