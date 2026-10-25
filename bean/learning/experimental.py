@@ -11,6 +11,7 @@ from importlib.util import find_spec
 from pathlib import Path
 import json
 import re
+from unicodedata import normalize
 
 from bean.optimization.autodev import Journal, canonical
 
@@ -157,6 +158,19 @@ def task_lesson_matches(bank, *, strategy, domain, query, limit=3):
     return [(score, item) for score, _, item in matches[:limit]]
 
 
+def question_fingerprint(question):
+    """Question identity for contamination checks, excluding hidden answers.
+
+    Normalize Unicode compatibility forms, case and spacing so a changed task
+    ID or superficial text variation cannot turn a previously seen question
+    into a purported unseen evaluation.
+    """
+    if not isinstance(question, str) or not question.strip():
+        raise ValueError("Question must be nonempty text")
+    normalized = " ".join(normalize("NFKC", question).casefold().split())
+    return sha256(normalized.encode("utf-8")).hexdigest()
+
+
 def material_for(bank, arm, domain, *, query=None):
     """Context-only adaptation; unrelated-domain lessons form placebo.
 
@@ -196,6 +210,11 @@ def run_paired_trial(*, bank, cases, model, judge, arms=ARMS,
         raise ValueError("Model fingerprint and true provider type required")
     if len({c.task_id for c in cases}) != len(cases):
         raise ValueError("Task identifiers must be distinct")
+    # Public question hashes are part of the audit receipt, never expected
+    # answers. Duplicate tasks with renamed IDs are not fresh evidence.
+    question_hashes = [question_fingerprint(case.public_question) for case in cases]
+    if task_aware and len(set(question_hashes)) != len(question_hashes):
+        raise ValueError("Task-aware trial contains duplicate public questions")
     records = []
     for repetition in range(replicates):
         for i, case in enumerate(cases):
@@ -216,6 +235,7 @@ def run_paired_trial(*, bank, cases, model, judge, arms=ARMS,
                     raise TypeError("Evaluator must return actual Boolean verdict")
                 records.append({
                     "task_id": case.task_id, "arm": arm, "replicate": repetition,
+                    "question_sha256": question_hashes[i],
                     "context_sha256": sha256(context.encode()).hexdigest(),
                     "answer_sha256": sha256(answer.encode()).hexdigest(),
                     "passed": passed,
@@ -226,6 +246,7 @@ def run_paired_trial(*, bank, cases, model, judge, arms=ARMS,
         "model_id": model.model_id, "arms": list(arms),
         "cases": len(cases), "replicates": replicates,
         "context_chars": context_chars, "scores": counts,
+        "question_fingerprint": "NFKC_casefold_whitespace_sha256_v1",
         "context_policy": ("same_task_lexical_retrieval_as_decide_v1"
                            if task_aware else "legacy_domain_first_three"),
         "records": records, "model_weights_modified": False,
