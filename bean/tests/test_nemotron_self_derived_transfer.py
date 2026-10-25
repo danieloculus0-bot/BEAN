@@ -45,6 +45,22 @@ class SimulatedModel:
         })
         return ans
 
+    def complete_batch(self, items):
+        if len(self.calls) >= MAX_CALLS:
+            raise LiveProviderError("Fixture batch budget exceeded")
+        if len({x["task_id"] for x in items}) != len(items):
+            raise ValueError("Duplicate task identity in batch")
+        answers = {
+            x["task_id"]: self._answer(x["question"], x["context"])
+            for x in items
+        }
+        self.calls.append({
+            "model_served": MODEL,
+            "kind": "synthetic_fixture_batch",
+            "answers": answers, "response_id": str(len(self.calls)),
+        })
+        return answers
+
     def infer_rule(self, domain, examples):
         if "orchid" in domain:
             rule = "For ORCHID-7 order tag letters from highest digit to lowest."
@@ -86,7 +102,7 @@ class ModelAuthoredReasoningTests(unittest.TestCase):
             r = run(Path(temp)/"fixture", api_key="unit-test",
                     model_factory=SimulatedModel)
             self.assertEqual(r["status"], "completed_all_families")
-            self.assertEqual(r["requests"], MAX_CALLS)
+            self.assertEqual(r["requests"], 22)  # 11 isolated calls x 2 domains
             self.assertEqual(len(r["domains"]), 2)
             for d in r["domains"]:
                 self.assertEqual(d["status"], "evaluated_with_synthetic_fixture")
@@ -96,6 +112,10 @@ class ModelAuthoredReasoningTests(unittest.TestCase):
                 self.assertEqual(d["holdout"]["trial"]["scores"]["cold"], 0)
                 self.assertEqual(d["holdout"]["trial"]["scores"]["placebo"], 0)
                 self.assertEqual(d["holdout"]["trial"]["scores"]["adaptive"], 4)
+                self.assertEqual(d["holdout"]["trial"]["batching_policy"],
+                                 "one_isolated_request_per_arm_v1")
+                self.assertEqual(d["holdout"]["trial"]["provider_requests"], 3)
+                self.assertEqual(d["selection"]["trial"]["provider_requests"], 5)
                 self.assertEqual(d["selected_strategy"], "reflection")
                 self.assertEqual(d["restored_decision"]["selected_strategy"],
                                  "reflection")
