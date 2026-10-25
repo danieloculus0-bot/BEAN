@@ -112,14 +112,15 @@ class NativeReasoningService:
             raise ValueError("Development evidence references required")
         refs = tuple(_required(ref, "development evidence reference", 500)
                      for ref in evidence_refs)
+        selected_model = self._model(model)
         try:
             answer, model_id, provider_kind, provider_id = _model_response(
-                self._model(model), request, "")
+                selected_model, request, "")
         except Exception as exc:
             self._record_failure(
                 purpose="model_authored_unverified_hypothesis",
                 domain=domain, task_ref=task_ref, query=request,
-                model=model, exc=exc)
+                model=selected_model, exc=exc)
             raise
         receipt = {
             "schema": "bean.native.reasoning.inference.v1",
@@ -247,14 +248,15 @@ class NativeReasoningService:
         packet = self.decide(domain=domain, task_ref=task_ref, query=query)
         context = material_for(self.bank, packet["selected_strategy"],
                                packet["domain"], query=query)
+        selected_model = self._model(model)
         try:
             answer, model_id, provider_kind, provider_id = _model_response(
-                self._model(model), query, context)
+                selected_model, query, context)
         except Exception as exc:
             self._record_failure(
                 purpose="selected_strategy_applied",
                 domain=packet["domain"], task_ref=packet["task_ref"],
-                query=query, model=model, exc=exc)
+                query=query, model=selected_model, exc=exc)
             raise
         record = {
             "schema": "bean.native.reasoning.inference.v1",
