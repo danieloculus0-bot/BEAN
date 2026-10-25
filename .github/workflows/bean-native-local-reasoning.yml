@@ -1,0 +1,36 @@
+name: BEAN local reasoning and low-cost provider gates
+on:
+  push:
+    branches: [integrate/bean-local-reasoning-cheap-inference-20261025]
+    paths:
+      - 'bean/learning/local_reasoner.py'
+      - 'bean/learning/reasoning_service.py'
+      - 'bean/learning/experimental.py'
+      - 'bean/reasoning/openrouter_provider.py'
+      - 'bean/tests/test_native_local_reasoner.py'
+      - '.github/workflows/bean-native-local-reasoning.yml'
+  pull_request:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  local-core:
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, windows-2025]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install pytest psutil
+      - run: python -m compileall -q bean
+      - name: CPU rules, restart persistence, local-first/paid-opt-in
+        run: python -m unittest bean.tests.test_native_local_reasoner -v
+      - name: Existing BEAN Core and web/Bridge regressions
+        run: python -m pytest bean/tests -q -ra --tb=short
