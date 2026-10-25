@@ -99,6 +99,10 @@ class CompositionTests(unittest.TestCase):
             pairs = list(zip(labels, rng.sample(range(1, 10), 3)))
             gauges = list(zip(labels, rng.sample(range(-90, 90), 3)))
             q = question(pairs, gauges)
+            baseline = self.core.local.reason(
+                domain="mixed-transfer", task_ref="baseline-" + str(i),
+                question=q)
+            self.assertEqual(baseline["status"], "abstain")
             result = self.core.reason_auto(
                 domain="mixed-transfer", task_ref="blind-" + str(i), query=q)
             self.assertEqual(result["status"], "locally_solved")
@@ -133,6 +137,28 @@ class CompositionTests(unittest.TestCase):
             self.assertEqual(feedback["outcome_origin"], "host_reported")
         finally:
             reopened.close()
+
+    def test_autonomous_proposals_are_unverified_until_demonstrations(self):
+        self.seed_parents()
+        q = question(*DEV[0])
+        before = self.core.bank.journal.export()["tip"]
+        proposals = self.core.propose_compositions(
+            domain="mixed-transfer", task_ref="novel-hypotheses", query=q)
+        self.assertEqual(proposals["status"], "hypotheses_only")
+        self.assertTrue(proposals["proposal_only"])
+        self.assertFalse(proposals["rule_retained"])
+        self.assertFalse(proposals["verified_outcome"])
+        self.assertGreater(proposals["candidate_count"], 1)
+        self.assertTrue(any(p["join"] == "rank_second_in_first"
+                            and p["hypothetical_output"] == "3"
+                            for p in proposals["hypotheses"]))
+        self.assertEqual(self.core.status()["native_composed_rules"], 0)
+        self.assertEqual(self.core.bank.journal.export()["tip"], before)
+        # No selected composition means the normal reasoner must still abstain.
+        blind = self.core.reason_auto(
+            domain="mixed-transfer", task_ref="before-development", query=q)
+        self.assertEqual(blind["status"], "abstain")
+        self.assertIsNone(blind["answer"])
 
     def test_cannot_synthesize_without_retained_independent_parents(self):
         result = self.train()
@@ -209,6 +235,7 @@ class CompositionTests(unittest.TestCase):
                 self.handlers[name] = handler
         box = Inbox()
         register_native_reasoning_handlers(box, self.core)
+        self.assertIn("reasoning_propose_compositions", box.handlers)
         self.assertIn("reasoning_learn_composition", box.handlers)
         self.assertIn("reasoning_composed", box.handlers)
         self.assertIn("reasoning_auto", box.handlers)
