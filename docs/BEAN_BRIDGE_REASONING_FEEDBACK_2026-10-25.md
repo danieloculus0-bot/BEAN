@@ -4,6 +4,8 @@ This integration reuses **BEAN Python Core** `NativeReasoningService` (one SHA-l
 
 **Connected path:** Core chooses a measured strategy → invokes the configured model once → records the actual answer and inference receipt → Bridge assesses that answer against newly submitted source observations using a caller-supplied verifier → only two agreeing, independently named and currently checked source origins produce a Core feedback event → the same Core ledger retains a correction when its answer was wrong → the same Core retrieval path can use that correction next time.
 
+Bridge feedback also carries an explicit `bridge_concept:` scope in the same BEAN evidence references. Task-time retrieval rejects that correction for differently named concepts, even when they share common vocabulary. This prevents a correction about one sensor from being silently reused as an alleged fact about another. General reusable procedures without a Bridge concept scope remain eligible for broader task matching.
+
 The verifier's source checks are **host-attested**; distinct labels do not guarantee truly independent real-world organizations or facts. A self-authored answer, historical definition without *new* corroborating sources, single source, conflict, rate limit or failed verification never earns positive feedback. Bridge saves unresolved evidence too.
 
 ## Local Python use
