@@ -206,6 +206,29 @@ class WebResearchTests(unittest.TestCase):
             finally:
                 core.close()
 
+    def test_real_adapter_runtime_error_is_classified_without_secret_leak(self):
+        from bean.reasoning.openrouter_provider import OpenRouterProvider
+
+        def outage(req, timeout=90):
+            raise RuntimeError("SENSITIVE_PROXY_PRIVATE_TOKEN")
+
+        provider = OpenRouterProvider(
+            api_key="fixture-api-secret", requester=outage)
+        response = provider.complete("What is element W?", "")
+        self.assertFalse(response["ok"])
+        self.assertEqual(provider.last_failure_kind, "transport_RuntimeError")
+        self.assertNotIn("SENSITIVE_PROXY_PRIVATE_TOKEN",
+                         json.dumps(response))
+
+        def bad_shape(req, timeout=90):
+            return FakeHTTPResponse("[]", "application/json")
+
+        provider = OpenRouterProvider(
+            api_key="fixture-api-secret", requester=bad_shape)
+        response = provider.complete("What is element W?", "")
+        self.assertFalse(response["ok"])
+        self.assertEqual(provider.last_failure_kind, "invalid_response_structure")
+
     def test_evidence_only_without_model_never_fakes_inference(self):
         core = NativeReasoningService(Path(self.temp.name)/"no-model.sqlite")
         try:
