@@ -111,7 +111,8 @@ class WebResearchService:
                 "network_requests": 0, "source_count": 0}
 
     def investigate(self, *, domain, task_ref, question,
-                    provider="auto", max_pages=3, answer_with_model=True):
+                    provider="auto", max_pages=3, answer_with_model=True,
+                    search_query=None):
         """BEAN decides to search and retains the results; model use is optional.
 
         No claims about source agreement, factual truth, or performance are
@@ -121,13 +122,15 @@ class WebResearchService:
         domain = _bounded(domain, "domain", 100).casefold()
         task_ref = _bounded(task_ref, "task_ref", 200)
         question = _bounded(question, "question")
+        search_query = (question if search_query is None
+                        else _bounded(search_query, "public search query"))
         if (type(max_pages) is not int or not 1 <= max_pages <= MAX_READS
                 or type(answer_with_model) is not bool):
             raise ValueError("1..3 pages and Boolean model option required")
         if answer_with_model and self.core.model is None:
             raise ValueError("Configure a real reasoning model or use evidence-only mode")
         planned = self.research_needed(domain=domain, question=question)
-        found = self.sources.search(question, engine=provider, limit=max_pages + 1)
+        found = self.sources.search(search_query, engine=provider, limit=max_pages + 1)
         # De-duplicate origin where possible for independent source coverage.
         # Domains are NOT automatically independent owners; provenance only.
         gathered, failures, visited_hosts = [], [], set()
@@ -160,6 +163,7 @@ class WebResearchService:
         source_packet = {
             "schema": "bean.native.web_research.v1",
             "domain": domain, "task_ref": task_ref, "question": question,
+            "search_query": search_query,
             "search_provider": provider if provider != "auto" else (
                 "brave_web" if self.sources.brave_key else "wikipedia"),
             "sources": gathered,
@@ -219,13 +223,22 @@ class WebResearchService:
             answer, model_id, kind, provider_id = _model_response(
                 self.core.model, task, extra[:1000])
         except Exception as exc:
-            # Use the original BEAN journal for a failed *actual* model request.
+            # Persist both the failed model attempt and a bounded diagnostic
+            # classification. Never record the provider's raw exception text.
+            failure_kind = getattr(self.core.model, "last_failure_kind", None)
+            if failure_kind is None:
+                failure_kind = getattr(exc, "failure_kind", None)
+            if failure_kind is None:
+                failure_kind = "unclassified_" + type(exc).__name__
+            # Only an identifier, never free-form error/provider content.
+            failure_kind = str(failure_kind)[:96]
             self.core._record_failure(
                 purpose="research_answer",
                 domain=domain, task_ref=task_ref, query=question,
                 model=self.core.model, exc=exc)
             result["answer_status"] = "provider_failed"
             result["error_class"] = type(exc).__name__
+            result["provider_failure_kind"] = failure_kind
             return result
         record = {
             "schema": "bean.native.reasoning.inference.v1",
