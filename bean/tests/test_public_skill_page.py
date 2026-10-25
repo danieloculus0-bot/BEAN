@@ -64,7 +64,7 @@ class PublicSkillsPageTests(unittest.TestCase):
         self.assertIn("height:auto;object-fit:contain", self.page)
 
     def test_identity_theme_and_home_links(self):
-        for phrase in ("Evidence-based AI.", "Measured progress.",
+        for phrase in ("Memory. Evidence.", "Judgment.",
                        "Published results link to code and test evidence.",
                        "--accent:#79DE4B", "237 / 240"):
             self.assertIn(phrase, self.page)
@@ -134,7 +134,9 @@ class PublicSkillsPageTests(unittest.TestCase):
             self.assertTrue(any(link.endswith(suffix) for link in self.markup.links),
                             suffix)
         self.assertIn("research-only", self.page)
-        self.assertIn("not merged into Core Main", self.page)
+        self.assertIn("now on Core main through PR #153", self.page)
+        self.assertIn("id=\"judgment\"", self.page)
+        self.assertIn("Adequate", self.page)
         self.assertIn("four-platform Core regression passed", self.page)
         self.assertIn("38257867402", self.page)
 
