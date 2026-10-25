@@ -84,8 +84,13 @@ class ExperienceBank:
         self.lessons()
 
     def _append(self, kind, data):
+        # Journal.append() verifies the entire SHA chain before writing.
+        # Asking journal.events() for the length first redundantly verifies
+        # every historical event a second time on *every* new observation.
+        count = self.journal.db.execute(
+            "SELECT COUNT(*) FROM attempts").fetchone()[0]
         event = {"schema": SCHEMA, "kind": kind, "data": data,
-                 "objective": "lab026", "iteration": len(self.journal.events()) + 1}
+                 "objective": "lab026", "iteration": int(count) + 1}
         return self.journal.append(event)
 
     def lessons(self, strategy=None, domain=None):
