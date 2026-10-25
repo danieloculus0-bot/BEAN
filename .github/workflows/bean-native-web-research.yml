@@ -5,6 +5,7 @@ on:
     branches: [main, integrate/bean-native-web-research-mainline-20261025]
     paths:
       - 'bean/research/**'
+      - 'bean/reasoning/openrouter_provider.py'
       - 'bean/learning/experimental.py'
       - 'bean/learning/reasoning_service.py'
       - 'bean/learning/bridge_feedback.py'

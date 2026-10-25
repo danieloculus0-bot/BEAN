@@ -15,7 +15,7 @@ import ipaddress
 import json
 import os
 import socket
-from urllib.parse import quote, urlencode, urlsplit
+from urllib.parse import quote, unquote, urlencode, urlsplit
 from urllib.request import Request, build_opener, HTTPRedirectHandler
 
 WIKI_SEARCH = "https://en.wikipedia.org/w/api.php"
@@ -191,6 +191,42 @@ class PublicWebSources:
 
     def read(self, url):
         origin = _valid_host(url, resolver=self.resolver)
+        # Full Wikipedia HTML for major topics often exceeds the global
+        # response cap. Read the bounded public article introduction through
+        # MediaWiki's own API, preserving the canonical page URL as provenance.
+        parts = urlsplit(url)
+        if (origin == "en.wikipedia.org" and
+                parts.path.startswith("/wiki/") and not parts.query):
+            title = unquote(parts.path[len("/wiki/"):]).replace("_", " ")
+            if not title or len(title) > 180 or any(x in title for x in ("\\x00", "\\r", "\\n")):
+                raise ValueError("Invalid encyclopedia article title")
+            parameters = urlencode({
+                "action": "query", "prop": "extracts", "exintro": 1,
+                "explaintext": 1, "exchars": 1200, "titles": title,
+                "format": "json", "formatversion": 2,
+            })
+            endpoint = WIKI_SEARCH + "?" + parameters
+            request = Request(endpoint, headers={
+                "Accept": "application/json", "User-Agent": USER_AGENT})
+            self.call_count += 1
+            raw, mime = _load(request, request_fn=self.request_fn)
+            if mime != "application/json":
+                raise ResearchTransportError("Encyclopedia extract not JSON")
+            try:
+                data = json.loads(raw)
+                pages = (data.get("query") or {}).get("pages") or []
+                text = _plain(pages[0].get("extract", "")) if pages else ""
+            except (TypeError, KeyError, AttributeError, ValueError) as exc:
+                raise ResearchTransportError("Encyclopedia article extract invalid") from exc
+            if not text:
+                raise ResearchTransportError("Encyclopedia article extract missing")
+            return {
+                "url": url, "origin": origin, "text": text,
+                "text_sha256": sha256(text.encode("utf-8")).hexdigest(),
+                "fetched_at_utc": datetime.now(timezone.utc).isoformat(),
+                "mime": "text/plain", "verified_fact": False,
+                "source_access": "wikipedia_api_intro",
+            }
         request = Request(url, headers={
             "Accept": "text/html, text/plain;q=0.9",
             "User-Agent": USER_AGENT})

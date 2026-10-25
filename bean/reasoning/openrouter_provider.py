@@ -26,6 +26,36 @@ class OpenRouterProvider(LLMAdapterBase):
         self.endpoint = "https://openrouter.ai/api/v1/chat/completions"
         self.last_failure_kind = None
 
+    def free_request_budget(self):
+        """Read free-model daily quota without spending an inference request.
+
+        Only numeric usage is exposed. Never return API key labels, balances,
+        account identifiers, raw provider error bodies, or headers.
+        """
+        if not self.api_key:
+            return {"status": "missing_key"}
+        req = Request("https://openrouter.ai/api/v1/key",
+                      method="GET", headers={
+                          "Authorization": "Bearer " + self.api_key,
+                          "Accept": "application/json"})
+        try:
+            with self._requester(req, timeout=8) as result:
+                payload = json.loads(result.read(16001).decode("utf-8"))
+            usage = (payload.get("data") or {}).get("free_model_daily_requests")
+            if not isinstance(usage, dict):
+                return {"status": "quota_not_reported"}
+            fields = {key: usage.get(key) for key in ("used", "limit", "remaining")}
+            if not all(type(value) is int and value >= 0
+                       for value in fields.values()):
+                return {"status": "quota_not_reported"}
+            return {"status": "available", **fields}
+        except HTTPError as exc:
+            return {"status": "quota_check_failed", "http_status": int(exc.code)}
+        except (URLError, TimeoutError, OSError, ValueError, RuntimeError,
+                TypeError, AttributeError) as exc:
+            return {"status": "quota_check_failed",
+                    "error_class": type(exc).__name__}
+
     def complete(self, prompt, context=None):
         self.last_failure_kind = None
         if not self.api_key:
@@ -64,9 +94,13 @@ class OpenRouterProvider(LLMAdapterBase):
             self.last_failure_kind = "http_" + str(exc.code)
             return {"ok": False, "error": "OpenRouter HTTP " + str(exc.code),
                     "adapter_name": self.adapter_name, "model_name": self.model_name}
-        except (URLError, TimeoutError, OSError, ValueError) as exc:
+        except (URLError, TimeoutError, OSError, ValueError, RuntimeError) as exc:
             self.last_failure_kind = "transport_" + type(exc).__name__
             return {"ok": False, "error": "OpenRouter transport " + type(exc).__name__,
+                    "adapter_name": self.adapter_name, "model_name": self.model_name}
+        if not isinstance(data, dict):
+            self.last_failure_kind = "invalid_response_structure"
+            return {"ok": False, "error": "OpenRouter returned malformed response",
                     "adapter_name": self.adapter_name, "model_name": self.model_name}
         choices = data.get("choices") or []
         answer = (choices[0].get("message", {}).get("content")
