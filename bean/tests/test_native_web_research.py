@@ -184,7 +184,7 @@ class WebResearchTests(unittest.TestCase):
         inbox = FakeInbox()
         register_web_research_handlers(inbox, self.research)
         self.assertEqual(set(inbox.commands),
-                         {"research_investigate", "research_needed"})
+                         {"research_investigate", "research_needed", "research_pending_goal"})
         from types import SimpleNamespace
         msg = SimpleNamespace(args={
             "domain": "lab", "task_ref": "t1", "question": "target inspection",
@@ -192,6 +192,37 @@ class WebResearchTests(unittest.TestCase):
         result = inbox.commands["research_investigate"](msg, "session")
         self.assertEqual(result["source_count"], 1)
         self.assertEqual(result["answer"], None)
+
+    def test_bean_selects_an_open_cognitive_goal_only_when_host_opts_in(self):
+        from unittest.mock import Mock, patch
+        import os
+        store = Mock()
+        store.fetchall.return_value = [{
+            "proposal_id": "open-question-120",
+            "priority": 3,
+            "action_detail": json.dumps({
+                "capability": "powder coating",
+                "inputs": {"private_design": "DO_NOT_UPLOAD_SECRET_PROJECT"},
+                "expected_output": {"private_quantity": 9000},
+            }),
+        }]
+        before = len(self.internet.calls)
+        with patch("bean.memory.store.get_store", return_value=store):
+            denied = self.research.investigate_pending_goal(
+                session_uuid="local-session", allow_external=True,
+                answer_with_model=False)
+            self.assertEqual(denied["status"], "external_goal_research_disabled")
+            self.assertEqual(len(self.internet.calls), before)
+            with patch.dict(os.environ, {"BEAN_ALLOW_WEB_GOAL_RESEARCH": "1"}):
+                found = self.research.investigate_pending_goal(
+                    session_uuid="local-session", allow_external=True,
+                    answer_with_model=False, provider="brave")
+                self.assertEqual(found["originating_goal"], "open-question-120")
+                self.assertEqual(found["source_count"], 2)
+                self.assertEqual(found["goal_planning"], "BEAN_pending_cognition_goal")
+        self.assertNotIn("DO_NOT_UPLOAD_SECRET_PROJECT", json.dumps(self.internet.calls))
+        self.assertNotIn("private_quantity", json.dumps(self.internet.calls))
+        self.assertEqual(self.core.status()["research_evidence_packets"], 1)
 
     def test_public_url_validation_rejects_ssrf_and_unsafe_schemes(self):
         for url in (
