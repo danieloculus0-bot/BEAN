@@ -302,6 +302,10 @@ def main():
                 reasoning_db, model=model)
             register_native_reasoning_handlers(inbox, native_reasoning_service)
             ctx["native_reasoning_service"] = native_reasoning_service
+        # Recover the original Bridge thinking blocks as native Core commands.
+        # cognition_reason delegates to the ONE selected Core reasoning service.
+        from bean.modules.builtin import register_core_cognition_handlers
+        register_core_cognition_handlers(inbox, ctx)
         loop.run()
     except KeyboardInterrupt:
         pass
