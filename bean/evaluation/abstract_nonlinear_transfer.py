@@ -73,6 +73,77 @@ def make_ecosystem(seed):
     }
 
 
+def make_ideas(seed):
+    """Portfolio with global innovation milestones, not a dependency graph."""
+    rng = random.Random(seed)
+    n = 9
+    return {
+        "laboratory": "research-portfolio",
+        "experiments": [{
+            "readiness": rng.uniform(.16, .79),
+            "potential": rng.uniform(.45, 1.35),
+            "funding": rng.uniform(.26, .89),
+            "failure_rate": rng.uniform(.06, .43),
+            "discipline": i % 3,
+        } for i in range(n)],
+        "funding_climate": [rng.uniform(-.10, .045)
+                            for _ in range(HORIZON)],
+        "milestone": rng.uniform(.55, .68),
+    }
+
+
+def ideas_features(world):
+    projects = world["experiments"]
+    milestone = world["milestone"]
+    maxima = [max(x["readiness"] for x in projects
+                  if x["discipline"] == field) for field in range(3)]
+    result = []
+    for i, project in enumerate(projects):
+        current = project["readiness"]
+        gap = 1-current
+        discipline = project["discipline"]
+        shortfall = max(0, milestone-maxima[discipline])
+        # Abstract portfolio leverage arises from a coverage shortfall in a
+        # unique knowledge discipline, not network causality.
+        other_covered = sum(maxima[j] >= milestone for j in range(3)
+                            if j != discipline)
+        result.append({
+            "id": i,
+            "need": clip(gap*project["potential"]),
+            "leverage": clip(gap*(shortfall+.15)*(1+.25*other_covered)*1.25),
+            "cost": clip(project["funding"]),
+            "uncertainty": clip(project["failure_rate"]),
+            "near_tip": clip(1-abs(current-milestone)*1.7),
+        })
+    return result
+
+
+def ideas_utility(world):
+    projects = world["experiments"]
+    base = sum(x["potential"]*x["readiness"]**1.8 for x in projects)
+    best = [max(x["readiness"] for x in projects if
+                x["discipline"] == field) for field in range(3)]
+    # Reward emerges nonlinearly from *portfolio-level* combination of
+    # independent disciplines, including a sharp threshold.
+    synergy = 18*math.prod(best)**2
+    breakthrough = 10 if all(x >= world["milestone"] for x in best) else 0
+    return 3*base + synergy + breakthrough
+
+
+def ideas_step(world, action, stage):
+    projects = world["experiments"]
+    project = projects[action]
+    project["readiness"] = clip(
+        project["readiness"] + .36*(1-project["readiness"]))
+    fee = project["funding"]*1.2
+    climate = world["funding_climate"][stage]
+    for p in projects:
+        p["readiness"] = clip(p["readiness"]
+                               - .012*p["failure_rate"]
+                               + climate*p["failure_rate"]*.18)
+    return fee
+
+
 def shop_features(world):
     stations = world["stations"]
     score = []
@@ -195,16 +266,26 @@ def ecosystem_step(world, action, stage):
 
 
 def rollout(kind, seed, arm):
-    world = make_shop(seed) if kind == "shop" else make_ecosystem(seed)
+    factories = {"shop": make_shop, "ecosystem": make_ecosystem,
+                 "ideas": make_ideas}
+    if kind not in factories:
+        raise ValueError("Unknown transfer task")
+    world = factories[kind](seed)
     total = 0.
     chosen = []
     rng = random.Random(seed ^ 0x5A17)
     for stage in range(HORIZON):
-        frames = shop_features(world) if kind == "shop" else ecosystem_features(world)
+        frames = (shop_features(world) if kind == "shop" else
+                  ecosystem_features(world) if kind == "ecosystem"
+                  else ideas_features(world))
         action = rng.choice(frames)["id"] if arm == "random" else choose(arm, frames)
         chosen.append(action)
-        fee = shop_step(world, action) if kind == "shop" else ecosystem_step(world, action, stage)
-        utility = shop_utility(world) if kind == "shop" else ecosystem_utility(world)
+        fee = (shop_step(world, action) if kind == "shop" else
+               ecosystem_step(world, action, stage) if kind == "ecosystem"
+               else ideas_step(world, action, stage))
+        utility = (shop_utility(world) if kind == "shop" else
+                   ecosystem_utility(world) if kind == "ecosystem"
+                   else ideas_utility(world))
         total += utility / HORIZON - fee
     return {"utility": round(total, 8), "actions": chosen}
 
@@ -268,8 +349,11 @@ def recover_principle(bank, source_dataset_id="shop-training-v1"):
     return data["measured_selected_policy"]
 
 
-def run_experiment(database, *, source_seeds=TRAIN_SEEDS, blind_seeds=BLIND_SEEDS):
+def run_experiment(database, *, source_seeds=TRAIN_SEEDS,
+                   blind_seeds=BLIND_SEEDS, target_kind="ecosystem"):
     """Experiment order prevents hidden target information entering selection."""
+    if target_kind not in ("ecosystem", "ideas"):
+        raise ValueError("Expected a separately defined nonlinear target")
     if set(source_seeds) & set(blind_seeds):
         raise ValueError("Source and target seed IDs must be disjoint")
     if len(set(blind_seeds)) != len(blind_seeds) or len(blind_seeds) < 32:
@@ -288,7 +372,7 @@ def run_experiment(database, *, source_seeds=TRAIN_SEEDS, blind_seeds=BLIND_SEED
         initial = recovered.journal.export()
     finally:
         recovered.close()
-    target = compare("ecosystem", blind_seeds)
+    target = compare(target_kind, blind_seeds)
     control = means(target)
     target_arm = [row["rewards"][winner] for row in target]
     baseline = [row["rewards"]["urgent"] for row in target]
@@ -296,7 +380,7 @@ def run_experiment(database, *, source_seeds=TRAIN_SEEDS, blind_seeds=BLIND_SEED
     differences = [round(x-y, 8) for x,y in zip(target_arm,baseline)]
     report = {
         "schema": SCHEMA, "source_dataset": "shop-training-v1",
-        "target_dataset": "ecosystem-blind-v1",
+        "target_dataset": target_kind + "-blind-v1",
         "source_cases": len(source), "target_cases": len(target),
         "selected_source_policy": winner,
         "source_means": selection["source_mean_utility"],
@@ -321,7 +405,7 @@ def run_experiment(database, *, source_seeds=TRAIN_SEEDS, blind_seeds=BLIND_SEED
         recovered.record_trial({
             "schema": "bean.adaptive_lab026.v1",
             "experiment": SCHEMA, "phase": "blind_target_report",
-            "target_dataset_id": "ecosystem-blind-v1",
+            "target_dataset_id": target_kind + "-blind-v1",
             "report_sha256": report["report_sha256"],
             "reported_outcome": "heldout_simulation_only",
             "target_feedback_used_in_selection": False,
@@ -336,8 +420,10 @@ def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--database", type=Path, required=True)
     parser.add_argument("--output", type=Path)
+    parser.add_argument("--target-kind", choices=("ecosystem", "ideas"),
+                        default="ecosystem")
     opt = parser.parse_args(argv)
-    report = run_experiment(opt.database)
+    report = run_experiment(opt.database, target_kind=opt.target_kind)
     raw = json.dumps(report, sort_keys=True, indent=2) + "\n"
     if opt.output:
         opt.output.parent.mkdir(parents=True, exist_ok=True)
