@@ -47,7 +47,7 @@ def _model_response(model, query, context):
         raise ValueError("Provider returned empty or oversized inference")
     if not isinstance(model_id, str) or not model_id:
         raise ValueError("Unidentified model cannot earn a reasoning receipt")
-    if provider_kind not in ("openai", "ollama", "openrouter", "real_model", "synthetic_fixture"):
+    if provider_kind not in ("openai", "ollama", "openrouter", "local_llamacpp", "real_model", "synthetic_fixture"):
         raise ValueError("Unknown provider identity cannot earn evidence")
     return answer.strip(), model_id, provider_kind, provider_id
 
@@ -110,6 +110,25 @@ class NativeReasoningService:
         local = self.reason_local(domain=domain, task_ref=task_ref, query=query)
         if local["status"] == "locally_solved":
             return local
+        selected_model = model if model is not None else self.model
+        # A locally hosted llama.cpp engine has NO API token charges and NO
+        # remote provider fallback. Use it after BEAN's symbolic learning
+        # abstains, even when paid/cloud provider use is not authorized.
+        if getattr(selected_model, "adapter_name", None) == "local_llamacpp":
+            try:
+                result = self.reason(
+                    domain=domain, task_ref=task_ref, query=query,
+                    model=selected_model)
+            except RuntimeError:
+                return {**local, "status": "local_model_unavailable",
+                        "local_model_invoked": True,
+                        "failed_inference_attempt_logged": True,
+                        "external_provider_skipped": True,
+                        "external_cost_usd": 0}
+            return {**result, "local_attempt": local["reason"],
+                    "local_model_invoked": True,
+                    "external_provider_skipped": True,
+                    "external_cost_usd": 0}
         if not allow_provider:
             return {**local, "external_provider_skipped": True}
         result = self.reason(
@@ -192,7 +211,7 @@ class NativeReasoningService:
         matched = [x["data"] for x in self.bank.journal.events()
                    if x["kind"] == "inference"
                    and x["data"].get("receipt_id") == receipt_id
-                   and x["data"].get("purpose") in ("selected_strategy_applied", "research_answer", "local_rule_applied")]
+                   and x["data"].get("purpose") in ("selected_strategy_applied", "research_answer", "local_rule_applied", "local_cold_inference")]
         if len(matched) != 1:
             raise ValueError("Exactly one completed BEAN reasoning receipt required")
         original = matched[0]
@@ -303,22 +322,42 @@ class NativeReasoningService:
                     "model_invoked": False, "verified_outcome": False,
                     "provider_kind": "none", "receipt_id": judgment["receipt_id"],
                 }
-        packet = self.decide(domain=domain, task_ref=task_ref, query=query)
+        selected_model = self._model(model)
+        try:
+            packet = self.decide(domain=domain, task_ref=task_ref, query=query)
+        except ValueError:
+            if getattr(selected_model, "adapter_name", None) != "local_llamacpp":
+                raise
+            # A new BEAN domain has no measured strategy yet. Local language
+            # inference may supply a *cold, unselected baseline* for later
+            # assessment, but must never impersonate a measured winning arm.
+            packet = {
+                "schema": "bean.native.reasoning.local_cold_start.v1",
+                "domain": _required(domain, "domain", 100).casefold(),
+                "task_ref": _required(task_ref, "task_ref", 200),
+                "selected_strategy": "cold", "lessons": [],
+                "selection_trial_hash": None,
+                "decision_source": "unselected_local_model_baseline",
+                "model_invoked": False,
+            }
         context = material_for(self.bank, packet["selected_strategy"],
                                packet["domain"], query=query)
-        selected_model = self._model(model)
         try:
             answer, model_id, provider_kind, provider_id = _model_response(
                 selected_model, query, context)
         except Exception as exc:
             self._record_failure(
-                purpose="selected_strategy_applied",
+                purpose=("local_cold_inference" if
+                         packet["decision_source"] == "unselected_local_model_baseline"
+                         else "selected_strategy_applied"),
                 domain=packet["domain"], task_ref=packet["task_ref"],
                 query=query, model=selected_model, exc=exc)
             raise
         record = {
             "schema": "bean.native.reasoning.inference.v1",
-            "purpose": "selected_strategy_applied",
+            "purpose": ("local_cold_inference" if
+                        packet["decision_source"] == "unselected_local_model_baseline"
+                        else "selected_strategy_applied"),
             "domain": packet["domain"], "task_ref": packet["task_ref"],
             "query": query, "answer": answer, "model_id": model_id,
             "provider_kind": provider_kind,

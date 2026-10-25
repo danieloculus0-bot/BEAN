@@ -204,7 +204,7 @@ class ExperienceBank:
         known = [row["data"] for row in self.journal.events()
                  if row.get("kind") == "inference"
                  and row["data"].get("receipt_id") == event["receipt_id"]
-                 and row["data"].get("purpose") in ("selected_strategy_applied", "research_answer", "local_rule_applied")]
+                 and row["data"].get("purpose") in ("selected_strategy_applied", "research_answer", "local_rule_applied", "local_cold_inference")]
         if len(known) != 1:
             raise ValueError("Feedback source inference not found")
         return self._append("feedback", event)
