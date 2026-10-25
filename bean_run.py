@@ -105,6 +105,7 @@ def main():
     session_uuid = ctx["session_uuid"]
 
     learning_service = None
+    native_reasoning_service = None
     try:
         initialize_optional_brain_layers(session_uuid)
 
@@ -270,6 +271,31 @@ def main():
                 learning_db, actions=learning_actions)
             register_learning_handlers(inbox, learning_service)
             ctx["learning_service"] = learning_service
+
+        # BEAN Core's owned reasoning path: generation, reflection, source-
+        # linked memory, measured comparison and selected future decisions.
+        # Separate SQLite from the Q learner; no automatic mock inference.
+        reasoning_db = os.environ.get("BEAN_REASONING_LESSONS_DB")
+        if reasoning_db:
+            from bean.learning.reasoning_service import (
+                NativeReasoningService, register_native_reasoning_handlers)
+            provider = os.environ.get("BEAN_REASONING_PROVIDER", "").strip().lower()
+            model = None
+            if provider == "openrouter":
+                from bean.reasoning.openrouter_provider import OpenRouterProvider
+                model = OpenRouterProvider()
+            elif provider == "openai":
+                from bean.reasoning.openai_provider import OpenAIProvider
+                model = OpenAIProvider()
+            elif provider == "ollama":
+                from bean.reasoning.ollama_provider import OllamaProvider
+                model = OllamaProvider()
+            elif provider:
+                raise ValueError("Unknown BEAN reasoning provider: " + provider)
+            native_reasoning_service = NativeReasoningService(
+                reasoning_db, model=model)
+            register_native_reasoning_handlers(inbox, native_reasoning_service)
+            ctx["native_reasoning_service"] = native_reasoning_service
         loop.run()
     except KeyboardInterrupt:
         pass
@@ -280,6 +306,8 @@ def main():
     finally:
         if learning_service is not None:
             learning_service.close()
+        if native_reasoning_service is not None:
+            native_reasoning_service.close()
         shutdown_bean(ctx, reason="clean")
 
 
