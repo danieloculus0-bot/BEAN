@@ -96,7 +96,7 @@ class ExperienceBank:
     def lessons(self, strategy=None, domain=None):
         found = []
         for record in self.journal.events():
-            if record.get("schema") != SCHEMA or record.get("kind") not in ("lesson", "trial", "selection", "inference", "feedback"):
+            if record.get("schema") != SCHEMA or record.get("kind") not in ("lesson", "trial", "selection", "inference", "feedback", "judgment", "judgment_feedback"):
                 raise ValueError("Invalid adaptive journal event type")
             if record["kind"] == "lesson":
                 raw = dict(record["data"])
@@ -113,6 +113,30 @@ class ExperienceBank:
         if lesson.lesson_id in {x.lesson_id for x in self.lessons()}:
             raise ValueError("Duplicate lesson identity")
         return self._append("lesson", asdict(lesson))
+
+    def record_judgment(self, receipt):
+        """Persist host-attested advice selection without authenticating truth."""
+        if (not isinstance(receipt, dict)
+                or receipt.get("schema") != "bean.judgment.v1"
+                or receipt.get("decision") not in ("adopt", "defer", "explore")
+                or receipt.get("source_metadata_origin") !=
+                   "host_attested_not_independently_authenticated"
+                or receipt.get("external_truth_verified") is not False
+                or not isinstance(receipt.get("receipt_id"), str)
+                or len(receipt["receipt_id"]) != 64):
+            raise ValueError("Invalid judgment receipt")
+        return self._append("judgment", receipt)
+
+    def record_judgment_feedback(self, event):
+        """Retain source-linked host outcomes, including negative feedback."""
+        if (not isinstance(event, dict)
+                or event.get("schema") != "bean.judgment.feedback.v1"
+                or event.get("outcome") not in
+                   ("supported", "refuted", "inconclusive")
+                or event.get("outcome_origin") != "host_reported"
+                or not event.get("evidence_refs")):
+            raise ValueError("Invalid judgment outcome")
+        return self._append("judgment_feedback", event)
 
     def record_trial(self, receipt):
         if receipt.get("schema") != SCHEMA:
