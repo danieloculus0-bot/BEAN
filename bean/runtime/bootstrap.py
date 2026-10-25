@@ -94,7 +94,7 @@ def _signal_handler(signum, frame):
 def _print_boot_summary(ctx):
     c = ctx["continuity"]
     identity = ctx["identity"]
-    sep = "─" * 60
+    sep = "-" * 60  # Safe on ordinary Windows cp1252 desktop consoles
     print(sep)
     print(f"  BEAN  |  {identity['developmental_stage']}  |  v{identity['version']}")
     print(sep)
