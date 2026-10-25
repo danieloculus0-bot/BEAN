@@ -112,7 +112,7 @@ class CompositionTests(unittest.TestCase):
         self.assertEqual(self.core.status()["native_symbolic_inferences"], 48)
         self.assertEqual(self.core.status()["inference_receipts"], 48)
 
-        before = self.core.bank.journal.events()[-1]["hash"]
+        before = self.core.bank.journal.export()["tip"]
         self.core.close()
         reopened = NativeReasoningService(self.db, model=None)
         try:
