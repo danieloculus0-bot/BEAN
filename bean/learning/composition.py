@@ -94,6 +94,46 @@ class CompositionLearner:
             raise ValueError("Composition search needs a scoped inventory (max 12 rules)")
         return rules
 
+    def propose(self, *, domain, task_ref, query):
+        """Search plausible programs BEFORE teaching; do not treat a guess as truth."""
+        domain = _text(domain, "domain", 100).casefold()
+        task_ref = _text(task_ref, "task_ref", 200)
+        try:
+            parsed = _parts(query)
+        except ValueError:
+            return {"schema": SCHEMA, "status": "unsupported_question",
+                    "hypotheses": [], "model_invoked": False,
+                    "verified_outcome": False}
+        programs = []
+        parents = self._parents()
+        for a in parents:
+            for b in parents:
+                if a["rule_id"] == b["rule_id"] or a["domain"] == b["domain"]:
+                    continue
+                for join in JOINS:
+                    prediction = _predict(parsed, a, b, join)
+                    if prediction is None or not prediction:
+                        continue
+                    proposal = {
+                        "parent_rule_ids": [a["rule_id"], b["rule_id"]],
+                        "parent_domains": [a["domain"], b["domain"]],
+                        "join": join, "hypothetical_output": prediction,
+                    }
+                    proposal["proposal_id"] = sha256(canonical(proposal)).hexdigest()
+                    programs.append(proposal)
+        programs.sort(key=lambda item: (item["parent_rule_ids"], item["join"]))
+        return {
+            "schema": SCHEMA, "status": ("hypotheses_only" if programs else "abstain"),
+            "domain": domain, "task_ref": task_ref,
+            "question_sha256": question_fingerprint(query),
+            "candidate_count": len(programs),
+            "hypotheses": programs[:48],
+            "truncated": len(programs) > 48,
+            "proposal_only": True, "rule_retained": False,
+            "independent_validation": False, "verified_outcome": False,
+            "model_invoked": False, "actions_authorized": False,
+        }
+
     def learn(self, *, domain, task_ref, examples, evidence_refs):
         domain = _text(domain, "domain", 100).casefold()
         task_ref = _text(task_ref, "task_ref", 200)
