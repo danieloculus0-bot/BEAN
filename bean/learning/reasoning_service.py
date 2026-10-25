@@ -139,21 +139,23 @@ class NativeReasoningService:
                 "candidate": lesson, "rule": answer,
                 "model_id": model_id, "unverified": True}
 
-    def feedback(self, *, receipt_id, expected, adjustment_hypothesis, evidence_refs):
-        """Link host-observed outcome to the specific prior BEAN model answer.
+    def feedback(self, *, receipt_id, expected, evidence_refs,
+                 adjustment_hypothesis=None):
+        """Persist success or error and a source-linked correction when needed.
 
-        Unlike an unrelated reflection, this joins the exact inference receipt
-        and its selected strategy to a correction retained in the SAME journal.
-        It never claims the evaluator's expected value was authenticated.
+        Every scored outcome is host reported, never self-certified as truth.
+        Identical repeated feedback is idempotent, while conflicting evidence
+        can be recorded separately without altering historical reports.
         """
         receipt_id = _required(receipt_id, "receipt_id", 64)
         if len(receipt_id) != 64 or any(x not in "0123456789abcdef" for x in receipt_id):
             raise ValueError("A full SHA-256 inference receipt ID is required")
         expected = _required(expected, "expected")
-        adjustment_hypothesis = _required(adjustment_hypothesis, "adjustment_hypothesis")
-        if not isinstance(evidence_refs, (tuple, list)) or not evidence_refs:
-            raise ValueError("Host feedback source references are required")
-        refs = tuple(_required(x, "evidence reference", 500) for x in evidence_refs)
+        if (not isinstance(evidence_refs, (tuple, list))
+                or not 1 <= len(evidence_refs) <= 15):
+            raise ValueError("1..15 feedback source references are required")
+        refs = tuple(_required(x, "feedback evidence reference", 500)
+                     for x in evidence_refs)
         matched = [x["data"] for x in self.bank.journal.events()
                    if x["kind"] == "inference"
                    and x["data"].get("receipt_id") == receipt_id
@@ -162,19 +164,40 @@ class NativeReasoningService:
             raise ValueError("Exactly one completed BEAN reasoning receipt required")
         original = matched[0]
         actual = original["answer"]
-        if actual == expected:
-            return {"schema": "bean.native.reasoning.feedback.v1",
-                    "receipt_id": receipt_id, "matched": True,
-                    "correction_added": False, "outcome_origin": "host_reported"}
-        saved = self.skills.reflect(
-            domain=original["domain"], task_id=original["task_ref"],
-            observed=actual, expected=expected,
-            adjustment_hypothesis=adjustment_hypothesis,
-            evidence_refs=refs + ("inference:" + receipt_id,))
-        return {"schema": "bean.native.reasoning.feedback.v1",
-                "receipt_id": receipt_id, "matched": False,
-                "correction_added": saved["new"],
-                "lesson_id": saved["lesson_id"],
+        correct = actual == expected
+        hypothesis = None if correct else _required(
+            adjustment_hypothesis, "adjustment_hypothesis")
+        event = {
+            "schema": "bean.native.reasoning.feedback.v1",
+            "receipt_id": receipt_id,
+            "domain": original["domain"],
+            "task_ref": original["task_ref"],
+            "selected_strategy": original["selected_strategy"],
+            "matched": correct, "observed": actual, "expected": expected,
+            "adjustment_hypothesis": hypothesis,
+            "source_refs": list(refs),
+            "outcome_origin": "host_reported",
+            "independently_authenticated": False,
+        }
+        same = [e["data"] for e in self.bank.journal.events()
+                if e["kind"] == "feedback" and e["data"] == event]
+        if same:
+            return {"schema": event["schema"], "receipt_id": receipt_id,
+                    "matched": correct, "new_feedback": False,
+                    "correction_added": False}
+        saved = None
+        if not correct:
+            saved = self.skills.reflect(
+                domain=original["domain"], task_id=original["task_ref"],
+                observed=actual, expected=expected,
+                adjustment_hypothesis=hypothesis,
+                evidence_refs=refs + ("inference:" + receipt_id,))
+        event_tip = self.bank.record_feedback(event)
+        return {"schema": event["schema"], "receipt_id": receipt_id,
+                "matched": correct, "new_feedback": True,
+                "journal_tip": event_tip,
+                "correction_added": bool(saved and saved["new"]),
+                "lesson_id": saved["lesson_id"] if saved else None,
                 "outcome_origin": "host_reported",
                 "selected_strategy": original["selected_strategy"]}
 
@@ -267,6 +290,7 @@ class NativeReasoningService:
                 "failed_inference_attempts": sum(
                     x["kind"] == "inference" and
                     x["data"].get("status") == "failed" for x in events),
+                "feedback_receipts": sum(x["kind"] == "feedback" for x in events),
                 "model_configured": self.model is not None,
                 "host_truth_authenticated": False,
                 "autonomous_general_learning_proven": False,
