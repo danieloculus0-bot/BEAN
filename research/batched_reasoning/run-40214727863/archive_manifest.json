@@ -1,0 +1,21 @@
+{
+  "current_run_id": "40214727863",
+  "files": {
+    "experience.sqlite3": {
+      "sha256": "f5f24ddbba9a1d6362327f099f77eeeb77cadb47ea9013b5c33ffc4af95e997a",
+      "size_bytes": 20480
+    },
+    "result.json": {
+      "sha256": "6e72c6bc320e38042cea90f71309b7009860bcf500ac3f16efa3a310406a6106",
+      "size_bytes": 1816
+    },
+    "source_manifest.json": {
+      "sha256": "9e8fcb6414226569cdbf74113925c1b6f279870006218aeb5a878a5f6b427e1a",
+      "size_bytes": 701
+    }
+  },
+  "model": "nvidia/nemotron-3-ultra-550b-a55b:free",
+  "schema": "bean.batched_recovery.archive.v1",
+  "source_artifact_id": 12606531457,
+  "source_run_id": 40212952629
+}
