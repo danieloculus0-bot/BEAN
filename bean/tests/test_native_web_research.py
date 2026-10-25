@@ -53,7 +53,7 @@ class FakeInternet:
             if "prop=extracts" in url:
                 return FakeHTTPResponse(json.dumps({
                     "query": {"pages": [{"title": "Tungsten",
-                                        "extract": "Tungsten is chemical element W, atomic 74."}]}
+                                        "extract": "Tungsten is chemical element W, Atomic 74."}]}
                 }))
             return FakeHTTPResponse(json.dumps({
                 "query": {"search": [
@@ -175,7 +175,7 @@ class WebResearchTests(unittest.TestCase):
         self.assertEqual(doc["source_access"], "wikipedia_api_intro")
         self.assertEqual(doc["url"], entries[0]["url"])
         self.assertEqual(doc["origin"], "en.wikipedia.org")
-        self.assertEqual(doc["text"], "Tungsten is chemical element W, atomic 74.")
+        self.assertEqual(doc["text"], "Tungsten is chemical element W, Atomic 74.")
         self.assertEqual(self.source.call_count, before + 1)
         self.assertTrue(any("prop=extracts" in url for url in self.internet.calls))
 
