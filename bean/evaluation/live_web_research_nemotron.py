@@ -50,8 +50,8 @@ def execute(output):
         try:
             answer = tool.investigate(
                 domain="chemistry", task_ref="fixed-public-smoke",
-                question=QUESTION, provider="wikipedia",
-                max_pages=2)
+                question=QUESTION, search_query="Tungsten",
+                provider="wikipedia", max_pages=2)
         except Exception as exc:
             report.update(status="failed_public_web_or_model",
                           error_class=type(exc).__name__,
@@ -63,6 +63,11 @@ def execute(output):
                 "web_http_requests": tool.sources.call_count,
                 "source_count": answer["source_count"],
                 "source_urls": [x["url"] for x in answer["sources"]],
+                "source_title_match": any(
+                    x["url"] == "https://en.wikipedia.org/wiki/Tungsten"
+                    for x in answer["sources"]),
+                "provider_failure_kind": answer.get("provider_failure_kind")
+                    or provider.last_failure_kind,
                 "real_model_id": answer.get("model_id"),
                 "answer": answer.get("answer"),
                 "inference_receipt": answer.get("inference_receipt"),
