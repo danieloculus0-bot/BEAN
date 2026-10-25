@@ -189,6 +189,18 @@ def task_lesson_matches(bank, *, strategy, domain, query, limit=3):
     terms = set(_TOKENS.findall(query.casefold()))
     matches = []
     for index, item in enumerate(bank.lessons(strategy=strategy, domain=domain)):
+        # A lesson learned from a specific Bridge evidence definition is
+        # scoped to that concept, not all tasks containing generic words like
+        # "sensor" or "inspection". Unscoped procedural lessons keep their
+        # existing domain/lexical behavior and can generalize normally.
+        scopes = [ref[len("bridge_concept:"):] for ref in item.evidence_refs
+                  if ref.startswith("bridge_concept:")]
+        if scopes and not any(
+            re.search(r"(?<![a-z0-9_])" + re.escape(scope) +
+                      r"(?![a-z0-9_])", query.casefold())
+            for scope in scopes
+        ):
+            continue
         overlap = len(terms & set(_TOKENS.findall(item.text.casefold())))
         if overlap:
             matches.append((overlap, index, item))
