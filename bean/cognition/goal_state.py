@@ -40,6 +40,7 @@ class ActionType(str, Enum):
     PRACTICE_SKILL = "practice_skill"
     REDUCE_LOAD = "reduce_load"
     NO_ACTION = "no_action"
+    RUN_EXPERIMENT = "run_experiment"
 
 
 class ApprovalRequired(str, Enum):
@@ -88,11 +89,56 @@ class GoalStateEngine:
             if proposal:
                 proposals.append(proposal)
         for q in open_questions or []:
-            proposals.append(GoalProposal("answer_open_question", ActionType.ASK_SUPERVISOR, f"Open question may need supervisor evidence: {q.get('question')}", 4, ApprovalRequired.SUPERVISOR, {"question_id": q.get("id")}, "curiosity"))
+            context = q.get("context")
+            try:
+                candidate = json.loads(context) if isinstance(context, str) else context
+            except (TypeError, ValueError):
+                candidate = None
+            if (isinstance(candidate, dict)
+                    and candidate.get("schema") == "bean.cognition.experiment.v1"
+                    and isinstance(candidate.get("capability"), str)
+                    and isinstance(candidate.get("inputs"), dict)
+                    and isinstance(candidate.get("expected_output"), dict)):
+                # A structured problem becomes a native investigation goal;
+                # a separate authorized host still owns experimental actions.
+                proposals.append(GoalProposal(
+                    "investigate_open_question", ActionType.RUN_EXPERIMENT,
+                    f"Find a tested method for: {q.get('question')}", 3,
+                    ApprovalRequired.NONE,
+                    {"question_id": q.get("id"), "capability": candidate["capability"],
+                     "inputs": candidate["inputs"],
+                     "expected_output": candidate["expected_output"]}, "curiosity"))
+            else:
+                proposals.append(GoalProposal(
+                    "answer_open_question", ActionType.ASK_SUPERVISOR,
+                    f"Open question may need supervisor evidence: {q.get('question')}",
+                    4, ApprovalRequired.SUPERVISOR, {"question_id": q.get("id")},
+                    "curiosity"))
+
+        # A running cognition loop sees the same question each tick. Never
+        # inflate the goal count or lose the original receipt on replay.
+        from ..memory.store import get_store
+        pending = get_store().fetchall(
+            "SELECT goal_state, action_type, action_detail, drive_source "
+            "FROM cognition_goal_proposals WHERE session_uuid=? AND status='pending'",
+            (session_uuid,))
+        existing = {
+            (row["goal_state"], row["action_type"],
+             json.dumps(json.loads(row["action_detail"] or "null"),
+                        sort_keys=True), row["drive_source"])
+            for row in pending}
+        fresh = []
         for proposal in proposals:
+            signature = (proposal.goal_state, proposal.action_type.value,
+                         json.dumps(proposal.action_detail, sort_keys=True),
+                         proposal.drive_source)
+            if signature in existing:
+                continue
+            existing.add(signature)
             self._persist(proposal, session_uuid)
-        self._log_proposals(proposals, session_uuid)
-        return proposals
+            fresh.append(proposal)
+        self._log_proposals(fresh, session_uuid)
+        return fresh
 
     def approve(self, proposal_id: str, supervisor_note: str = "") -> bool:
         return self._resolve(proposal_id, "approved", supervisor_note)
