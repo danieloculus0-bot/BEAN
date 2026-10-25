@@ -55,6 +55,61 @@ class WebResearchService:
             "web_evidence_is_verified": False,
         }
 
+    def investigate_pending_goal(self, *, session_uuid, allow_external=False,
+                                 provider="auto", answer_with_model=True):
+        """Let BEAN choose one unanswered, approved-for-read-only cognitive goal.
+
+        Caller must explicitly enable external goal queries. Do not upload
+        stored experiment inputs, expected outputs, source documents or other
+        private goal metadata. The host can call this bounded operation from
+        its existing task scheduler; no background crawler starts implicitly.
+        """
+        import os
+        from bean.memory.store import get_store
+        session_uuid = _bounded(session_uuid, "session UUID", 140)
+        if (allow_external is not True or
+                os.environ.get("BEAN_ALLOW_WEB_GOAL_RESEARCH") != "1"):
+            return {"status": "external_goal_research_disabled",
+                    "network_requests": 0, "source_count": 0}
+        try:
+            rows = get_store().fetchall(
+                "SELECT proposal_id,action_detail,priority "
+                "FROM cognition_goal_proposals "
+                "WHERE session_uuid=? AND status='pending' "
+                "AND goal_state='investigate_open_question' "
+                "AND action_type='run_experiment' AND approval_required='none' "
+                "ORDER BY priority,id LIMIT 12", (session_uuid,))
+        except Exception as exc:
+            # Table missing or store not initialized: no substitute action.
+            return {"status": "cognitive_goals_unavailable",
+                    "error_class": type(exc).__name__,
+                    "network_requests": 0, "source_count": 0}
+        for row in rows:
+            try:
+                detail = json.loads(row["action_detail"] or "{}")
+                capability = _bounded(detail.get("capability"), "capability", 70)
+            except (ValueError, TypeError, KeyError):
+                continue
+            # Only capability label is disclosed, never the proprietary
+            # structured input/expected-output from experiment metadata.
+            if not all(ch.isascii() and (ch.isalnum() or ch in " -_")
+                       for ch in capability):
+                continue
+            domain = "public-" + capability.casefold().replace(" ", "-")
+            question = "Find publicly documented general techniques for " + capability
+            if not self.research_needed(domain=domain, question=question)[
+                    "research_recommended"]:
+                continue
+            result = self.investigate(
+                domain=domain, task_ref=str(row["proposal_id"]),
+                question=question, provider=provider,
+                max_pages=2, answer_with_model=answer_with_model)
+            result["originating_goal"] = str(row["proposal_id"])
+            result["goal_planning"] = "BEAN_pending_cognition_goal"
+            return result
+        return {"status": "no_new_research_eligible_goals",
+                "network_requests": 0, "source_count": 0}
+
     def investigate(self, *, domain, task_ref, question,
                     provider="auto", max_pages=3, answer_with_model=True):
         """BEAN decides to search and retains the results; model use is optional.
@@ -201,4 +256,5 @@ def register_web_research_handlers(inbox, service):
         raise TypeError("Concrete BEAN-owned web research service required")
     inbox.register("research_needed", lambda m, _: service.research_needed(**m.args))
     inbox.register("research_investigate", lambda m, _: service.investigate(**m.args))
+    inbox.register("research_pending_goal", lambda m, _: service.investigate_pending_goal(**m.args))
     return inbox
