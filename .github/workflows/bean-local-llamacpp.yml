@@ -17,7 +17,7 @@ permissions:
   contents: read
 jobs:
   core-local-http:
-    runs-on: \${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
     timeout-minutes: 22
     strategy:
       fail-fast: false
