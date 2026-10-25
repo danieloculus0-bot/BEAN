@@ -22,8 +22,8 @@ ENDPOINT = "https://openrouter.ai/api/v1/chat/completions"
 
 class OpenRouterFreeReasoner(OpenAIReasoningModel):
     def complete(self, question, context):
-        if len(self.calls) >= 18:
-            raise LiveProviderError("Fixed 18-call real-model budget exhausted")
+        if len(self.calls) >= getattr(self, "call_limit", 18):
+            raise LiveProviderError("Fixed real-model request budget exhausted")
         if not isinstance(question, str) or not isinstance(context, str):
             raise TypeError("Question and recalled context must be text")
         instruction = (
