@@ -80,6 +80,66 @@ def _predict(parsed, first, second, operator):
     return _join(left, right, operator)
 
 
+def _signature(domain, parent_ids, join):
+    return (domain, tuple(parent_ids), join)
+
+
+def _historic_evidence(events, domain):
+    """Summarize comparison receipts; same examples may not count twice."""
+    summary = {}
+    seen = set()
+    for event in events:
+        if event["kind"] != "composition_comparison":
+            continue
+        receipt = event["data"]
+        if receipt["domain"] != domain:
+            continue
+        hashes = receipt["development_question_sha256"]
+        if set(hashes) & seen:
+            raise ValueError("Overlapping retained composition comparisons")
+        seen.update(hashes)
+        for result in receipt["results"]:
+            key = _signature(domain, result["parent_rule_ids"], result["join"])
+            stat = summary.setdefault(key, {
+                "correct": 0, "wrong": 0, "unavailable": 0,
+                "reason_counts": {},
+                "comparison_batches": 0,
+            })
+            stat["correct"] += result["correct"]
+            stat["wrong"] += result["wrong"]
+            stat["unavailable"] += result["unavailable"]
+            stat["comparison_batches"] += 1
+            for reason, count in result["reason_counts"].items():
+                stat["reason_counts"][reason] = (
+                    stat["reason_counts"].get(reason, 0) + count)
+    return summary, seen
+
+
+def _guidance(stat):
+    """Evidence-derived search priority, not an assumed confidence value."""
+    if stat is None:
+        return "untried", 0, 0
+    correct, wrong, unavailable = (
+        stat["correct"], stat["wrong"], stat["unavailable"])
+    tested = correct + wrong + unavailable
+    if tested >= 4 and correct == 0:
+        return "deprioritize", tested, 0
+    if tested >= 4 and correct == tested:
+        return "supported_on_development", tested, correct
+    return "mixed_or_insufficient", tested, correct
+
+
+def _comparison_result(parsed, first, second, join, expected):
+    if parsed[0][0] != first["grammar"] or parsed[1][0] != second["grammar"]:
+        return "unavailable", "parent_grammar_mismatch"
+    prediction = _predict(parsed, first, second, join)
+    if prediction is None:
+        return "unavailable", "join_not_applicable"
+    if prediction == expected:
+        return "correct", "development_answer_match"
+    return "wrong", "output_disagrees_with_development_answer"
+
+
 class CompositionLearner:
     def __init__(self, bank):
         self.bank = bank
@@ -123,6 +183,87 @@ class CompositionLearner:
                     ))
         return signatures
 
+    def compare(self, *, domain, task_ref, examples, evidence_refs):
+        """Execute matched alternatives and retain why they succeeded/failed.
+
+        Only caller-provided development labels are assessed. Evidence is
+        appended to BEAN's original SHA journal, never silently promoted.
+        """
+        domain = _text(domain, "domain", 100).casefold()
+        task_ref = _text(task_ref, "task_ref", 200)
+        if not isinstance(examples, list) or not 4 <= len(examples) <= 12:
+            raise ValueError("Need 4..12 distinct comparison examples")
+        if not isinstance(evidence_refs, (list, tuple)) or not 1 <= len(evidence_refs) <= 12:
+            raise ValueError("Comparison needs development evidence references")
+        refs = [_text(ref, "development evidence", 500) for ref in evidence_refs]
+        items = []
+        for item in examples:
+            if not isinstance(item, dict) or set(item) != {"question", "answer"}:
+                raise ValueError("Comparison requires question and answer for each case")
+            question = _text(item["question"], "question")
+            expected = _text(item["answer"], "answer", 100)
+            items.append((question_fingerprint(question), _parts(question), expected))
+        hashes = [h for h, _, _ in items]
+        if len(set(hashes)) != len(hashes):
+            raise ValueError("Repeated comparison questions cannot earn new evidence")
+
+        events = self.bank.journal.events()
+        _, seen = _historic_evidence(events, domain)
+        if seen.intersection(hashes):
+            raise ValueError("Repeated questions cannot earn duplicate comparison credit")
+        parents = self._parents()
+        refuted = self._refuted_program_signatures(events)
+        results = []
+        for a in parents:
+            for b in parents:
+                if a["rule_id"] == b["rule_id"] or a["domain"] == b["domain"]:
+                    continue
+                for join in JOINS:
+                    signature = _signature(domain, (a["rule_id"], b["rule_id"]), join)
+                    if signature in refuted:
+                        continue
+                    scores = {"correct": 0, "wrong": 0, "unavailable": 0}
+                    reasons = {}
+                    for _, parsed, expected in items:
+                        outcome, reason = _comparison_result(
+                            parsed, a, b, join, expected)
+                        scores[outcome] += 1
+                        reasons[reason] = reasons.get(reason, 0) + 1
+                    results.append({
+                        "parent_rule_ids": [a["rule_id"], b["rule_id"]],
+                        "join": join, **scores, "reason_counts": reasons,
+                    })
+        if not results:
+            return {"schema": SCHEMA, "status": "no_comparable_programs",
+                    "comparison_retained": False, "model_invoked": False}
+        results.sort(key=lambda x: (
+            -x["correct"], x["wrong"] + x["unavailable"],
+            x["parent_rule_ids"], x["join"]))
+        receipt = {
+            "schema": "bean.native.composition.comparison.v1",
+            "domain": domain, "task_ref": task_ref,
+            "development_question_sha256": hashes,
+            "development_cases": len(items),
+            "evidence_refs": refs,
+            "results": results,
+            "matched_control": "all_candidate_programs_same_development_examples",
+            "evaluation_origin": "host_supplied_development_answers",
+            "independent_validation": False,
+            "actions_authorized": False,
+            "model_invoked": False,
+        }
+        receipt["comparison_id"] = sha256(canonical(receipt)).hexdigest()
+        tip = self.bank.record_composition_comparison(receipt)
+        return {"schema": SCHEMA, "status": "comparison_recorded",
+                "comparison_id": receipt["comparison_id"],
+                "journal_tip": tip,
+                "programs_compared": len(results),
+                "development_cases": len(items),
+                "leaderboard": results[:8],
+                "comparison_retained": True,
+                "model_invoked": False,
+                "independent_validation": False}
+
     def propose(self, *, domain, task_ref, query):
         """Search plausible programs BEFORE teaching; do not treat a guess as truth."""
         domain = _text(domain, "domain", 100).casefold()
@@ -134,14 +275,24 @@ class CompositionLearner:
                     "hypotheses": [], "model_invoked": False,
                     "verified_outcome": False}
         programs = []
-        refuted = self._refuted_program_signatures(self.bank.journal.events())
+        events = self.bank.journal.events()
+        refuted = self._refuted_program_signatures(events)
+        evidence, _ = _historic_evidence(events, domain)
         parents = self._parents()
+        pruned_by_evidence = 0
         for a in parents:
             for b in parents:
                 if a["rule_id"] == b["rule_id"] or a["domain"] == b["domain"]:
                     continue
                 for join in JOINS:
-                    if (domain, (a["rule_id"], b["rule_id"]), join) in refuted:
+                    signature = _signature(domain, (a["rule_id"], b["rule_id"]), join)
+                    if signature in refuted:
+                        continue
+                    priority, tested, correct = _guidance(evidence.get(signature))
+                    # A repeated zero-success result is a concrete reason to
+                    # skip evaluation; retain the negative ledger evidence.
+                    if priority == "deprioritize":
+                        pruned_by_evidence += 1
                         continue
                     prediction = _predict(parsed, a, b, join)
                     if prediction is None or not prediction:
@@ -150,10 +301,17 @@ class CompositionLearner:
                         "parent_rule_ids": [a["rule_id"], b["rule_id"]],
                         "parent_domains": [a["domain"], b["domain"]],
                         "join": join, "hypothetical_output": prediction,
+                        "search_priority": priority,
+                        "prior_development_cases": tested,
+                        "prior_development_matches": correct,
                     }
                     proposal["proposal_id"] = sha256(canonical(proposal)).hexdigest()
                     programs.append(proposal)
-        programs.sort(key=lambda item: (item["parent_rule_ids"], item["join"]))
+        programs.sort(key=lambda item: (
+            {"supported_on_development": 0,
+             "mixed_or_insufficient": 1, "untried": 2}[item["search_priority"]],
+            -item["prior_development_matches"],
+            item["parent_rule_ids"], item["join"]))
         return {
             "schema": SCHEMA, "status": ("hypotheses_only" if programs else "abstain"),
             "domain": domain, "task_ref": task_ref,
@@ -161,6 +319,8 @@ class CompositionLearner:
             "candidate_count": len(programs),
             "hypotheses": programs[:48],
             "truncated": len(programs) > 48,
+            "pruned_from_prior_development_failures": pruned_by_evidence,
+            "search_guided_by_retained_comparison": bool(evidence),
             "proposal_only": True, "rule_retained": False,
             "independent_validation": False, "verified_outcome": False,
             "model_invoked": False, "actions_authorized": False,
@@ -186,8 +346,11 @@ class CompositionLearner:
             raise ValueError("Development examples must have different question fingerprints")
 
         parents = self._parents()
-        refuted = self._refuted_program_signatures(self.bank.journal.events())
+        events = self.bank.journal.events()
+        refuted = self._refuted_program_signatures(events)
+        evidence, _ = _historic_evidence(events, domain)
         survivors = []
+        guided_pruned = 0
         considered = 0
         for first in parents:
             for second in parents:
@@ -196,7 +359,12 @@ class CompositionLearner:
                     continue  # Independently learned domains are required.
                 for operator in JOINS:
                     considered += 1
-                    if (domain, (first["rule_id"], second["rule_id"]), operator) in refuted:
+                    signature = _signature(
+                        domain, (first["rule_id"], second["rule_id"]), operator)
+                    if signature in refuted:
+                        continue
+                    if _guidance(evidence.get(signature))[0] == "deprioritize":
+                        guided_pruned += 1
                         continue
                     if all(_predict(parsed, first, second, operator) == answer
                            for _, parsed, answer in cases):
@@ -207,6 +375,7 @@ class CompositionLearner:
                 "reason": "ambiguous_composition" if survivors else "no_supported_composition",
                 "surviving_programs": len(survivors),
                 "programs_examined": considered,
+                "guided_pruned": guided_pruned,
                 "rule_retained": False, "model_invoked": False,
             }
         first, second, operator = survivors[0]
@@ -219,6 +388,7 @@ class CompositionLearner:
             "development_question_sha256": hashes,
             "development_examples": len(cases),
             "programs_examined": considered,
+            "guided_pruned": guided_pruned,
             "uniquely_supported_by_development": True,
             "evidence_refs": refs,
             "independent_validation": False,
@@ -237,6 +407,7 @@ class CompositionLearner:
             "schema": SCHEMA, "status": "learned_composition",
             "rule_id": record["rule_id"], "parent_rule_ids": record["parent_rule_ids"],
             "join": operator, "programs_examined": considered,
+            "guided_pruned": guided_pruned,
             "journal_tip": tip, "rule_retained": True,
             "independent_validation": False, "model_invoked": False,
         }
