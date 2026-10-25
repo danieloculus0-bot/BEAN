@@ -229,12 +229,73 @@ class CompositionTests(unittest.TestCase):
         self.assertEqual(blocked["status"], "abstain")
         self.assertEqual(blocked["reason"], "composition_has_refuted_host_feedback")
         self.assertEqual(self.core.status()["inference_receipts"], before)
+        # A new receipt or the same development labels cannot sneak an
+        # identical rejected program back into the validated ledger.
+        retry = self.core.learn_composition(
+            domain="mixed-transfer", task_ref="laundered-dev-retry",
+            examples=[{"question": question(t, g), "answer": target(t, g)}
+                      for t, g in DEV],
+            evidence_refs=["development:retry-after-failure"])
+        self.assertEqual(retry["status"], "abstain")
+        self.assertEqual(retry["reason"], "no_supported_composition")
+        proposed = self.core.propose_compositions(
+            domain="mixed-transfer", task_ref="new-request-after-failure", query=q)
+        self.assertFalse(any(
+            h["join"] == "rank_second_in_first"
+            for h in proposed["hypotheses"]))
+        self.assertEqual(self.core.status()["native_composed_rules"], 1)
         self.core.close()
         reopened = NativeReasoningService(self.db, model=None)
         try:
             again = reopened.reason_auto(
                 domain="mixed-transfer", task_ref="after-restart", query=q)
             self.assertEqual(again["reason"], "composition_has_refuted_host_feedback")
+        finally:
+            reopened.close()
+
+    def test_refuted_plan_does_not_block_newly_validated_alternative(self):
+        self.seed_parents()
+        self.assertEqual(self.train()["status"], "learned_composition")
+        q = question([("A", 5), ("B", 8), ("C", 2)],
+                     [("A", 14), ("B", 7), ("C", 19)])
+        first = self.core.reason_auto(
+            domain="mixed-transfer", task_ref="rejected-case", query=q)
+        self.core.feedback(
+            receipt_id=first["receipt_id"], expected="corrected-host-label",
+            adjustment_hypothesis="Review join and parent decision",
+            evidence_refs=["host:refuted-first-join"])
+        self.assertEqual(
+            self.core.reason_auto(
+                domain="mixed-transfer", task_ref="after-error", query=q)["status"],
+            "abstain")
+
+        # Independent new *development* examples support a different
+        # executable composition, with unchanged source rules.
+        alternative = self.core.learn_composition(
+            domain="mixed-transfer", task_ref="next-development-set",
+            examples=[{
+                "question": question(t, g),
+                "answer": "".join(k for k, _ in
+                                  sorted(t, key=lambda item: -item[1])) + "|" +
+                          sorted(g, key=lambda item: item[1])[1][0],
+            } for t, g in DEV],
+            evidence_refs=["development:replacement-join"])
+        self.assertEqual(alternative["status"], "learned_composition")
+        self.assertEqual(alternative["join"], "first_then_second")
+        new_output = self.core.reason_auto(
+            domain="mixed-transfer", task_ref="new-strategy", query=q)
+        self.assertEqual(new_output["status"], "locally_solved")
+        self.assertEqual(new_output["answer"], "BAC|A")
+        self.assertEqual(new_output["trace"][-1], "apply:first_then_second")
+        self.assertEqual(self.core.status()["native_composed_rules"], 2)
+
+        self.core.close()
+        reopened = NativeReasoningService(self.db, model=None)
+        try:
+            again = reopened.reason_auto(
+                domain="mixed-transfer", task_ref="continued-after-restart", query=q)
+            self.assertEqual(again["answer"], "BAC|A")
+            self.assertEqual(again["status"], "locally_solved")
         finally:
             reopened.close()
 
