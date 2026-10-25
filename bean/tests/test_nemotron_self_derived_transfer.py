@@ -12,6 +12,7 @@ from bean.evaluation.live_reasoning_transfer import LiveProviderError
 
 
 class SimulatedModel:
+    provider_kind = "synthetic_fixture"
     """Controlled fixture, NEVER passed off as a real external reasoning model."""
     def __init__(self, key, *, model, output):
         self.model_id = model
@@ -68,7 +69,7 @@ class ModelAuthoredReasoningTests(unittest.TestCase):
     def test_two_diverse_disjoint_rule_families(self):
         questions = task_fingerprints()
         self.assertEqual(len(DOMAINS), 2)
-        self.assertEqual(len(questions), 22)
+        self.assertEqual(len(questions), 20)
         self.assertEqual(len({q.task_id for q in questions}), len(questions))
         self.assertTrue(all(len(d.holdout) == 4 for d in DOMAINS))
         self.assertNotEqual(DOMAINS[0].name, DOMAINS[1].name)
@@ -88,7 +89,7 @@ class ModelAuthoredReasoningTests(unittest.TestCase):
             self.assertEqual(r["requests"], MAX_CALLS)
             self.assertEqual(len(r["domains"]), 2)
             for d in r["domains"]:
-                self.assertEqual(d["status"], "evaluated_with_real_model")
+                self.assertEqual(d["status"], "evaluated_with_synthetic_fixture")
                 self.assertTrue(d["validation"]["passed"])
                 self.assertEqual(d["selection"]["trial"]["scores"]["cold"], 0)
                 self.assertEqual(d["selection"]["trial"]["scores"]["placebo"], 0)
