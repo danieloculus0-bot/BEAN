@@ -1,0 +1,18 @@
+{
+  "evidence": "actual_18_external_model_replies_on_synthetic_protocol",
+  "files": {
+    "experience.sqlite3": {
+      "bytes": 28672,
+      "sha256": "73e2abcdd95974e68e078434fb211cb410dffc390b62689477cbc769ed041290"
+    },
+    "report.json": {
+      "bytes": 19528,
+      "sha256": "854df13813392168a253492e699697e788cef7d65af1d1098b638641165cd1bb"
+    }
+  },
+  "independent_real_world_reasoning_proven": false,
+  "schema": "bean.real_reasoning.archival_manifest.v1",
+  "source_artifact_id": 12604240520,
+  "source_commit": "4128b5c1e0c51262efc749e8930a28b97fe287c9",
+  "source_run_id": 40206850819
+}
