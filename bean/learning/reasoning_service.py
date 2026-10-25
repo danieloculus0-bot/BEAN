@@ -108,11 +108,19 @@ class NativeReasoningService:
                    "Respond with a concise general rule, not example answers. "
                    "Do not assume this rule is verified:\n" +
                    json.dumps(bounded, separators=(",", ":"), ensure_ascii=False))
-        answer, model_id, provider_kind, provider_id = _model_response(
-            self._model(model), request, "")
-        refs = tuple(evidence_refs)
-        if not refs:
+        if not isinstance(evidence_refs, (tuple, list)) or not evidence_refs:
             raise ValueError("Development evidence references required")
+        refs = tuple(_required(ref, "development evidence reference", 500)
+                     for ref in evidence_refs)
+        try:
+            answer, model_id, provider_kind, provider_id = _model_response(
+                self._model(model), request, "")
+        except Exception as exc:
+            self._record_failure(
+                purpose="model_authored_unverified_hypothesis",
+                domain=domain, task_ref=task_ref, query=request,
+                model=model, exc=exc)
+            raise
         receipt = {
             "schema": "bean.native.reasoning.inference.v1",
             "purpose": "model_authored_unverified_hypothesis",
@@ -130,6 +138,63 @@ class NativeReasoningService:
         return {"receipt_id": receipt_id, "journal_tip": tip,
                 "candidate": lesson, "rule": answer,
                 "model_id": model_id, "unverified": True}
+
+    def feedback(self, *, receipt_id, expected, adjustment_hypothesis, evidence_refs):
+        """Link host-observed outcome to the specific prior BEAN model answer.
+
+        Unlike an unrelated reflection, this joins the exact inference receipt
+        and its selected strategy to a correction retained in the SAME journal.
+        It never claims the evaluator's expected value was authenticated.
+        """
+        receipt_id = _required(receipt_id, "receipt_id", 64)
+        if len(receipt_id) != 64 or any(x not in "0123456789abcdef" for x in receipt_id):
+            raise ValueError("A full SHA-256 inference receipt ID is required")
+        expected = _required(expected, "expected")
+        adjustment_hypothesis = _required(adjustment_hypothesis, "adjustment_hypothesis")
+        if not isinstance(evidence_refs, (tuple, list)) or not evidence_refs:
+            raise ValueError("Host feedback source references are required")
+        refs = tuple(_required(x, "evidence reference", 500) for x in evidence_refs)
+        matched = [x["data"] for x in self.bank.journal.events()
+                   if x["kind"] == "inference"
+                   and x["data"].get("receipt_id") == receipt_id
+                   and x["data"].get("purpose") == "selected_strategy_applied"]
+        if len(matched) != 1:
+            raise ValueError("Exactly one completed BEAN reasoning receipt required")
+        original = matched[0]
+        actual = original["answer"]
+        if actual == expected:
+            return {"schema": "bean.native.reasoning.feedback.v1",
+                    "receipt_id": receipt_id, "matched": True,
+                    "correction_added": False, "outcome_origin": "host_reported"}
+        saved = self.skills.reflect(
+            domain=original["domain"], task_id=original["task_ref"],
+            observed=actual, expected=expected,
+            adjustment_hypothesis=adjustment_hypothesis,
+            evidence_refs=refs + ("inference:" + receipt_id,))
+        return {"schema": "bean.native.reasoning.feedback.v1",
+                "receipt_id": receipt_id, "matched": False,
+                "correction_added": saved["new"],
+                "lesson_id": saved["lesson_id"],
+                "outcome_origin": "host_reported",
+                "selected_strategy": original["selected_strategy"]}
+
+    def _record_failure(self, *, purpose, domain, task_ref, query, model, exc):
+        """Retain a model outage, with no fabricated answer or secret error text."""
+        configured = model or self.model
+        model_id = (getattr(configured, "model_id", None)
+                    or getattr(configured, "model_name", None)
+                    or "not_configured")
+        entry = {
+            "schema": "bean.native.reasoning.inference.v1",
+            "purpose": purpose, "status": "failed",
+            "domain": domain, "task_ref": task_ref,
+            "question_sha256": sha256(query.encode()).hexdigest(),
+            "answer": "", "model_id": str(model_id),
+            "exception_class": type(exc).__name__,
+            "verified_outcome": False,
+        }
+        entry["receipt_id"] = sha256(canonical(entry)).hexdigest()
+        self.bank.record_inference(entry)
 
     def choose_from_outcomes(self, *, domain, rows, evaluator_id, dataset_id,
                              minimum_gain=1):
@@ -159,8 +224,15 @@ class NativeReasoningService:
         packet = self.decide(domain=domain, task_ref=task_ref, query=query)
         context = material_for(self.bank, packet["selected_strategy"],
                                packet["domain"], query=query)
-        answer, model_id, provider_kind, provider_id = _model_response(
-            self._model(model), query, context)
+        try:
+            answer, model_id, provider_kind, provider_id = _model_response(
+                self._model(model), query, context)
+        except Exception as exc:
+            self._record_failure(
+                purpose="selected_strategy_applied",
+                domain=packet["domain"], task_ref=packet["task_ref"],
+                query=query, model=model, exc=exc)
+            raise
         record = {
             "schema": "bean.native.reasoning.inference.v1",
             "purpose": "selected_strategy_applied",
@@ -192,6 +264,9 @@ class NativeReasoningService:
                 "measured_trials": sum(x["kind"] == "trial" for x in events),
                 "selected_strategies": sum(x["kind"] == "selection" for x in events),
                 "inference_receipts": sum(x["kind"] == "inference" for x in events),
+                "failed_inference_attempts": sum(
+                    x["kind"] == "inference" and
+                    x["data"].get("status") == "failed" for x in events),
                 "model_configured": self.model is not None,
                 "host_truth_authenticated": False,
                 "autonomous_general_learning_proven": False,
@@ -214,4 +289,5 @@ def register_native_reasoning_handlers(inbox, service):
     inbox.register("reasoning_compare", lambda m, _: service.choose_from_outcomes(**m.args))
     inbox.register("reasoning_decide", lambda m, _: service.decide(**m.args))
     inbox.register("reasoning_reason", lambda m, _: service.reason(**m.args))
+    inbox.register("reasoning_feedback", lambda m, _: service.feedback(**m.args))
     return inbox
