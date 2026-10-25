@@ -20,17 +20,17 @@ class SimulatedModel:
         self.output = Path(output)
 
     def _answer(self, question, context):
-        has_rule = (
-            "highest digit" in context or "middle of the three" in context
-            or "Training examples" in context
-        )
-        if not has_rule:
-            return "UNKNOWN"
         if "ORCHID-7" in question:
+            if not ("highest digit" in context or
+                    "Training examples only: ORCHID-7" in context):
+                return "UNKNOWN"
             tokens = re.findall(r"\b([A-Z])([0-9])\b", question)
             return "".join(k for k, v in sorted(
                 tokens, key=lambda x: int(x[1]), reverse=True))
         if "HARBOR-4" in question:
+            if not ("middle of the three" in context or
+                    "Training examples only: HARBOR-4" in context):
+                return "UNKNOWN"
             tokens = re.findall(r"\b([A-Z])=(\d+)\b", question)
             return sorted(tokens, key=lambda x: int(x[1]))[1][0]
         return "UNKNOWN"
