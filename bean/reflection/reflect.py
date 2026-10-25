@@ -71,6 +71,21 @@ def run_reflection(
     summary = _build_summary(events)
     uncertainties = _identify_uncertainties(events)
     questions = _generate_questions(events, session_uuid)
+    # Do not recreate the same unresolved question on every reflection pass.
+    # Keep its original curiosity ID available for evidence-driven closure.
+    new_questions = []
+    seen = set()
+    for question in questions:
+        title = question["question"]
+        if title in seen:
+            continue
+        seen.add(title)
+        existing = store.fetchone(
+            "SELECT id FROM curiosity WHERE status='open' AND question=? LIMIT 1",
+            (title,))
+        if existing is None:
+            new_questions.append(question)
+    questions = new_questions
     anomalies = _detect_anomalies(events)
 
     reflection_uuid = str(uuid.uuid4())
