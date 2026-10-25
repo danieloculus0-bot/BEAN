@@ -64,9 +64,13 @@ class OpenRouterProvider(LLMAdapterBase):
             self.last_failure_kind = "http_" + str(exc.code)
             return {"ok": False, "error": "OpenRouter HTTP " + str(exc.code),
                     "adapter_name": self.adapter_name, "model_name": self.model_name}
-        except (URLError, TimeoutError, OSError, ValueError) as exc:
+        except (URLError, TimeoutError, OSError, ValueError, RuntimeError) as exc:
             self.last_failure_kind = "transport_" + type(exc).__name__
             return {"ok": False, "error": "OpenRouter transport " + type(exc).__name__,
+                    "adapter_name": self.adapter_name, "model_name": self.model_name}
+        if not isinstance(data, dict):
+            self.last_failure_kind = "invalid_response_structure"
+            return {"ok": False, "error": "OpenRouter returned malformed response",
                     "adapter_name": self.adapter_name, "model_name": self.model_name}
         choices = data.get("choices") or []
         answer = (choices[0].get("message", {}).get("content")
