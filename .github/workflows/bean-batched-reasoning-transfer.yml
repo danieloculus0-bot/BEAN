@@ -11,6 +11,10 @@ on:
       - 'docs/BEAN_BATCHED_REASONING_PIVOT_2026-10-25.md'
   workflow_dispatch:
 
+concurrency:
+  group: bean-batched-recovery-${{ github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: write
   actions: read
