@@ -129,6 +129,7 @@ class NativeReasoningService:
             "answer": answer, "model_id": model_id, "provider_kind": provider_kind,
             "provider_response_id": provider_id, "source_refs": list(refs),
             "verified_outcome": False,
+            "event_sequence": len(self.bank.journal.events()) + 1,
         }
         receipt_id = sha256(canonical(receipt)).hexdigest()
         receipt["receipt_id"] = receipt_id
@@ -216,6 +217,7 @@ class NativeReasoningService:
             "answer": "", "model_id": str(model_id),
             "exception_class": type(exc).__name__,
             "verified_outcome": False,
+            "event_sequence": len(self.bank.journal.events()) + 1,
         }
         entry["receipt_id"] = sha256(canonical(entry)).hexdigest()
         self.bank.record_inference(entry)
@@ -272,6 +274,7 @@ class NativeReasoningService:
             "selected_strategy": packet["selected_strategy"],
             "context_sha256": sha256(context.encode()).hexdigest(),
             "verified_outcome": False,
+            "event_sequence": len(self.bank.journal.events()) + 1,
         }
         record["receipt_id"] = sha256(canonical(record)).hexdigest()
         tip = self.bank.record_inference(record)

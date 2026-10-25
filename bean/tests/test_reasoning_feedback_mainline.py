@@ -110,6 +110,34 @@ class FeedbackLoopTests(unittest.TestCase):
         self.assertEqual(self.service.status()["feedback_receipts"], 1)
         self.assertEqual(self.service.status()["selected_strategies"], 1)
 
+    def test_repeated_identical_answers_get_unique_replayable_receipts(self):
+        self.seed()
+        first = self.service.reason(
+            domain="sorting", task_ref="same-task",
+            query="SORT_COMMAS sort new letters")
+        second = self.service.reason(
+            domain="sorting", task_ref="same-task",
+            query="SORT_COMMAS sort new letters")
+        self.assertEqual(first["answer"], second["answer"])
+        self.assertNotEqual(first["receipt_id"], second["receipt_id"])
+        for idx, reply in enumerate((first, second)):
+            observed = self.service.feedback(
+                receipt_id=reply["receipt_id"], expected="UNSORTED",
+                evidence_refs=["evaluator:case-" + str(idx)])
+            self.assertTrue(observed["new_feedback"])
+            self.assertTrue(observed["matched"])
+        self.assertEqual(self.service.status()["feedback_receipts"], 2)
+        self.service.close()
+        reopened = NativeReasoningService(self.path, model=self.provider)
+        try:
+            receipts = [x["data"]["receipt_id"]
+                        for x in reopened.bank.journal.events()
+                        if x["kind"] == "inference"]
+            self.assertEqual(len(receipts), len(set(receipts)))
+            self.assertEqual(reopened.status()["feedback_receipts"], 2)
+        finally:
+            reopened.close()
+
     def test_provider_error_is_recorded_without_secret_string_or_false_answer(self):
         self.seed()
         self.provider.available = False
