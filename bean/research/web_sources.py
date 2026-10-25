@@ -202,7 +202,8 @@ class PublicWebSources:
                 raise ValueError("Invalid encyclopedia article title")
             parameters = urlencode({
                 "action": "query", "prop": "extracts", "exintro": 1,
-                "explaintext": 1, "titles": title, "format": "json", "formatversion": 2,
+                "explaintext": 1, "exchars": 1200, "titles": title,
+                "format": "json", "formatversion": 2,
             })
             endpoint = WIKI_SEARCH + "?" + parameters
             request = Request(endpoint, headers={
