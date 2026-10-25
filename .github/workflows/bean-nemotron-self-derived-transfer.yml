@@ -1,0 +1,58 @@
+name: BEAN Nemotron model-derived lesson transfer
+on:
+  push:
+    branches:
+      - experiment/bean-nemotron-self-derived-transfer-20261025
+    paths:
+      - 'bean/evaluation/nemotron_self_derived_transfer.py'
+      - 'bean/evaluation/openrouter_reasoning_transfer.py'
+      - 'bean/tests/test_nemotron_self_derived_transfer.py'
+      - '.github/workflows/bean-nemotron-self-derived-transfer.yml'
+      - 'docs/BEAN_NEMOTRON_SELF_DERIVED_TRANSFER_2026-10-25.md'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  structural-contracts:
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 8
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, windows-2025]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Syntax and actual local journal/selector contracts
+        run: |
+          python -m compileall -q bean/evaluation bean/learning bean/tests/test_nemotron_self_derived_transfer.py
+          python -m unittest bean.tests.test_nemotron_self_derived_transfer bean.tests.test_native_reasoning_skills -v
+
+  real-nemotron-experiment:
+    needs: structural-contracts
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Actual model-derived rules / two families / maximum 50 calls
+        run: python -m bean.evaluation.nemotron_self_derived_transfer --output /tmp/bean-nemotron-self-derived
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: bean-nemotron-self-derived-receipts
+          path: /tmp/bean-nemotron-self-derived/
+          if-no-files-found: error
+          retention-days: 90
