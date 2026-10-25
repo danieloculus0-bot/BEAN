@@ -289,11 +289,10 @@ class CompositionLearner:
                     if signature in refuted:
                         continue
                     priority, tested, correct = _guidance(evidence.get(signature))
-                    # A repeated zero-success result is a concrete reason to
-                    # skip evaluation; retain the negative ledger evidence.
+                    # Negative results affect ordering but cannot veto
+                    # an otherwise useful procedure on a different task.
                     if priority == "deprioritize":
                         pruned_by_evidence += 1
-                        continue
                     prediction = _predict(parsed, a, b, join)
                     if prediction is None or not prediction:
                         continue
@@ -309,7 +308,8 @@ class CompositionLearner:
                     programs.append(proposal)
         programs.sort(key=lambda item: (
             {"supported_on_development": 0,
-             "mixed_or_insufficient": 1, "untried": 2}[item["search_priority"]],
+             "mixed_or_insufficient": 1, "untried": 2,
+             "deprioritize": 3}[item["search_priority"]],
             -item["prior_development_matches"],
             item["parent_rule_ids"], item["join"]))
         return {
@@ -319,7 +319,7 @@ class CompositionLearner:
             "candidate_count": len(programs),
             "hypotheses": programs[:48],
             "truncated": len(programs) > 48,
-            "pruned_from_prior_development_failures": pruned_by_evidence,
+            "deprioritized_from_prior_development_failures": pruned_by_evidence,
             "search_guided_by_retained_comparison": bool(evidence),
             "proposal_only": True, "rule_retained": False,
             "independent_validation": False, "verified_outcome": False,
@@ -349,33 +349,50 @@ class CompositionLearner:
         events = self.bank.journal.events()
         refuted = self._refuted_program_signatures(events)
         evidence, _ = _historic_evidence(events, domain)
-        survivors = []
-        guided_pruned = 0
+        candidates = []
         considered = 0
+        guided_deprioritized = 0
+        ranking = {"supported_on_development": 0,
+                   "mixed_or_insufficient": 1,
+                   "untried": 2, "deprioritize": 3}
         for first in parents:
             for second in parents:
                 if (first["rule_id"] == second["rule_id"]
                         or first["domain"] == second["domain"]):
-                    continue  # Independently learned domains are required.
+                    continue
                 for operator in JOINS:
                     considered += 1
                     signature = _signature(
                         domain, (first["rule_id"], second["rule_id"]), operator)
                     if signature in refuted:
                         continue
-                    if _guidance(evidence.get(signature))[0] == "deprioritize":
-                        guided_pruned += 1
-                        continue
-                    if all(_predict(parsed, first, second, operator) == answer
-                           for _, parsed, answer in cases):
-                        survivors.append((first, second, operator))
+                    priority, prior_cases, prior_correct = _guidance(
+                        evidence.get(signature))
+                    if priority == "deprioritize":
+                        guided_deprioritized += 1
+                    candidates.append((
+                        ranking[priority], -prior_correct,
+                        (first["rule_id"], second["rule_id"]), operator,
+                        first, second))
+        # Examine promising programs first, but check the entire admissible
+        # search space before claiming a uniquely supported composition.
+        candidates.sort(key=lambda row: row[:4])
+        survivors = []
+        first_supported_program_rank = None
+        for rank, (_, _, _, operator, first, second) in enumerate(candidates, 1):
+            if all(_predict(parsed, first, second, operator) == answer
+                   for _, parsed, answer in cases):
+                survivors.append((first, second, operator))
+                if first_supported_program_rank is None:
+                    first_supported_program_rank = rank
         if len(survivors) != 1:
             return {
                 "schema": SCHEMA, "status": "abstain",
                 "reason": "ambiguous_composition" if survivors else "no_supported_composition",
                 "surviving_programs": len(survivors),
                 "programs_examined": considered,
-                "guided_pruned": guided_pruned,
+                "guided_deprioritized": guided_deprioritized,
+                "first_supported_program_rank": first_supported_program_rank,
                 "rule_retained": False, "model_invoked": False,
             }
         first, second, operator = survivors[0]
@@ -388,7 +405,8 @@ class CompositionLearner:
             "development_question_sha256": hashes,
             "development_examples": len(cases),
             "programs_examined": considered,
-            "guided_pruned": guided_pruned,
+            "guided_deprioritized": guided_deprioritized,
+                "first_supported_program_rank": first_supported_program_rank,
             "uniquely_supported_by_development": True,
             "evidence_refs": refs,
             "independent_validation": False,
@@ -407,7 +425,8 @@ class CompositionLearner:
             "schema": SCHEMA, "status": "learned_composition",
             "rule_id": record["rule_id"], "parent_rule_ids": record["parent_rule_ids"],
             "join": operator, "programs_examined": considered,
-            "guided_pruned": guided_pruned,
+            "guided_deprioritized": guided_deprioritized,
+                "first_supported_program_rank": first_supported_program_rank,
             "journal_tip": tip, "rule_retained": True,
             "independent_validation": False, "model_invoked": False,
         }
