@@ -14,6 +14,14 @@ The previous `BEANReasoningSkills.decide` used same-domain **task-lexical retrie
 - Existing older generic Lab026 trials remain explicitly `legacy_domain_first_three`; task-aware trials are opt-in at the lower-level API and are used by the native BEAN decision and holdout interfaces.
 - Only the public question enters retrieval. The held-out target is consumed by the independent judge after the model returns; it is never passed to the retriever.
 
+## Holdout leakage correction (2026-10-25)
+
+A further code review found a genuine error: `BEANReasoningSkills.evaluate_holdout` was still invoking `run_paired_trial` without `task_aware=True`. Consequently the development selection and final held-out evaluation were **not actually using the same retrieval path**, despite the original task-time tests passing. This revision corrects the call and adds a direct held-out `context_sha256` equality assertion against actual adaptive decision material.
+
+Each evaluated public question now receives a stable SHA-256 fingerprint of NFKC-normalized, case-folded, whitespace-normalized text. The holdout rejects prompts repeated within the holdout or seen in any prior recorded trial, even if the task ID or letter case changes. Older trials without fingerprints cannot certify novelty and are rejected rather than quietly accepted. This guards against a common false positive; it does not prove that semantically paraphrased questions are independent, nor that a real model was never trained on these tasks.
+
+No expected answer enters the retrieval query or the normalized public-question fingerprint. Counterexamples and failures remain in the append-only BEAN journal.
+
 ## Acceptance tests
 
 Use `python -m unittest bean.tests.test_native_reasoning_skills -v`, followed by the existing Lab026 suite and all Core tests in the existing Windows/Ubuntu workflow.
