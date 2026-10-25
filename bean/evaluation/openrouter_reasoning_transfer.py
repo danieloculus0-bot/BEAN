@@ -71,8 +71,8 @@ class OpenRouterFreeReasoner(OpenAIReasoningModel):
         if not isinstance(answer, str) or not answer.strip():
             raise LiveProviderError("OpenRouter returned no answer")
         answer = answer.strip()
-        if len(answer) > 300:
-            raise LiveProviderError("OpenRouter answer excessive")
+        if len(answer) > getattr(self, "max_answer_chars", 300):
+            raise LiveProviderError("OpenRouter answer exceeds configured safety cap")
         usage = response.get("usage") or {}
         self.calls.append({
             "response_id": response["id"],
