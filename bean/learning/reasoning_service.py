@@ -45,7 +45,7 @@ def _model_response(model, query, context):
         raise ValueError("Provider returned empty or oversized inference")
     if not isinstance(model_id, str) or not model_id:
         raise ValueError("Unidentified model cannot earn a reasoning receipt")
-    if provider_kind not in ("openai", "ollama", "real_model", "synthetic_fixture"):
+    if provider_kind not in ("openai", "ollama", "openrouter", "real_model", "synthetic_fixture"):
         raise ValueError("Unknown provider identity cannot earn evidence")
     return answer.strip(), model_id, provider_kind, provider_id
 
