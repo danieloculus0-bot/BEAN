@@ -285,7 +285,7 @@ def main():
                 Path(ctx["db_path"]).with_name("bean_reasoning_lessons.sqlite3"))
             from bean.learning.reasoning_service import (
                 NativeReasoningService, register_native_reasoning_handlers)
-            provider = os.environ.get("BEAN_REASONING_PROVIDER", "").strip().lower()
+            provider = os.environ.get("BEAN_REASONING_PROVIDER", "local_llamacpp").strip().lower()
             model = None
             if provider == "openrouter":
                 from bean.reasoning.openrouter_provider import OpenRouterProvider
@@ -293,6 +293,9 @@ def main():
             elif provider == "openai":
                 from bean.reasoning.openai_provider import OpenAIProvider
                 model = OpenAIProvider()
+            elif provider in ("local_llamacpp", "llamacpp"):
+                from bean.reasoning.local_llamacpp_provider import LocalLlamaCppProvider
+                model = LocalLlamaCppProvider()
             elif provider == "ollama":
                 from bean.reasoning.ollama_provider import OllamaProvider
                 model = OllamaProvider()
