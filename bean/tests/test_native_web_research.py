@@ -78,6 +78,8 @@ class ReasoningFixture:
 
     def complete(self, question, context):
         self.calls.append((question, context))
+        if "APPROVAL" in question:
+            return "PASS" if "approved source" in context.lower() else "FAIL"
         if "GREEN" in context and "target" in question.lower():
             return "GREEN"
         if "SOURCE DATA:" in question:
