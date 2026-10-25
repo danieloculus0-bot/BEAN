@@ -94,6 +94,35 @@ class CompositionLearner:
             raise ValueError("Composition search needs a scoped inventory (max 12 rules)")
         return rules
 
+    @staticmethod
+    def _refuted_program_signatures(events):
+        """Persist the lesson from bad feedback across renamed/retrained plans.
+
+        Compare the actual composed procedure, not its training receipt:
+        a fresh task ID or new examples cannot launder a refuted combination.
+        """
+        plans = {e["data"]["rule_id"]: e["data"] for e in events
+                 if e["kind"] == "composed_rule"}
+        inferences = {e["data"]["receipt_id"]: e["data"] for e in events
+                      if e["kind"] == "inference"
+                      and e["data"].get("purpose") == "local_composition_applied"
+                      and isinstance(e["data"].get("receipt_id"), str)}
+        signatures = set()
+        for e in events:
+            if e["kind"] != "feedback" or e["data"].get("matched") is not False:
+                continue
+            inference = inferences.get(e["data"].get("receipt_id"))
+            if inference is None:
+                continue
+            for rule_id in inference.get("composed_rule_ids", []):
+                plan = plans.get(rule_id)
+                if plan is not None:
+                    signatures.add((
+                        plan["domain"], tuple(plan["parent_rule_ids"]),
+                        plan["join"],
+                    ))
+        return signatures
+
     def propose(self, *, domain, task_ref, query):
         """Search plausible programs BEFORE teaching; do not treat a guess as truth."""
         domain = _text(domain, "domain", 100).casefold()
@@ -105,12 +134,15 @@ class CompositionLearner:
                     "hypotheses": [], "model_invoked": False,
                     "verified_outcome": False}
         programs = []
+        refuted = self._refuted_program_signatures(self.bank.journal.events())
         parents = self._parents()
         for a in parents:
             for b in parents:
                 if a["rule_id"] == b["rule_id"] or a["domain"] == b["domain"]:
                     continue
                 for join in JOINS:
+                    if (domain, (a["rule_id"], b["rule_id"]), join) in refuted:
+                        continue
                     prediction = _predict(parsed, a, b, join)
                     if prediction is None or not prediction:
                         continue
@@ -154,6 +186,7 @@ class CompositionLearner:
             raise ValueError("Development examples must have different question fingerprints")
 
         parents = self._parents()
+        refuted = self._refuted_program_signatures(self.bank.journal.events())
         survivors = []
         considered = 0
         for first in parents:
@@ -163,6 +196,8 @@ class CompositionLearner:
                     continue  # Independently learned domains are required.
                 for operator in JOINS:
                     considered += 1
+                    if (domain, (first["rule_id"], second["rule_id"]), operator) in refuted:
+                        continue
                     if all(_predict(parsed, first, second, operator) == answer
                            for _, parsed, answer in cases):
                         survivors.append((first, second, operator))
@@ -220,27 +255,14 @@ class CompositionLearner:
                  and e["data"]["domain"] == domain]
         if not plans:
             return self._abstain("no_retained_composition_in_domain")
-        # Do not keep repeating a refuted program as if feedback never
-        # happened. Host feedback is evidence requiring review, not proof:
-        # quarantine conservatively rather than deleting or retraining it.
-        inferences = {e["data"]["receipt_id"]: e["data"]
-                      for e in events if e["kind"] == "inference"
-                      and e["data"].get("purpose") == "local_composition_applied"
-                      and isinstance(e["data"].get("receipt_id"), str)}
-        refuted = {
-            rid for e in events if e["kind"] == "feedback"
-            and e["data"].get("matched") is False
-            for rid in (e["data"].get("receipt_id"),)
-        }
-        quarantined = {
-            composed_id
-            for rid in refuted if rid in inferences
-            for composed_id in inferences[rid].get("composed_rule_ids", [])
-        }
-        if any(plan["rule_id"] in quarantined for plan in plans):
+        refuted = self._refuted_program_signatures(events)
+        active = [plan for plan in plans if
+                  (domain, tuple(plan["parent_rule_ids"]), plan["join"])
+                  not in refuted]
+        if not active:
             return self._abstain("composition_has_refuted_host_feedback")
         predictions = []
-        for plan in plans:
+        for plan in active:
             a, b = plan["parent_rule_ids"]
             if a not in parents or b not in parents:
                 raise ValueError("Composed rule missing immutable parent")
