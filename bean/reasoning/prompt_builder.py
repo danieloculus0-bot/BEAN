@@ -48,12 +48,38 @@ def build_ollama_prompt(context: dict, request_type: str = "reflection") -> str:
     events = context.get("recent_events") or []
     claims = context.get("active_world_claims") or []
     boundaries = context.get("active_boundaries") or []
+    # Normal recency alone evicts experimental errors and measured outcomes.
+    # Carry the latest few PLUS earlier experiment receipts in the context.
+    latest = events[:3]
+    measured = [
+        event for event in events
+        if event.get("subtype") in (
+            "cognitive_module_experiment", "cognitive_module_failure",
+            "experiment_result", "reasoning_experiment_result")
+        and event not in latest
+    ][:3]
+    selected = sorted(latest + measured,
+                      key=lambda event: event.get("id", 0), reverse=True)
+
+    def bounded_event_data(event):
+        raw = event.get("data")
+        if isinstance(raw, str):
+            try:
+                raw = json.loads(raw)
+            except (ValueError, TypeError):
+                pass
+        serialized = json.dumps(raw, ensure_ascii=False, default=str)
+        if len(serialized) > 700:
+            return {"truncated": True, "excerpt": serialized[:700]}
+        return raw
+
     compact = {
         "request_type": request_type,
         "source_event_id": (context.get("session") or {}).get("source_event_id"),
         "recent_events": [
             {"id": e.get("id"), "summary": str(e.get("summary", ""))[:220],
-             "source": e.get("source")} for e in events[:3]
+             "subtype": e.get("subtype"), "data": bounded_event_data(e),
+             "source": e.get("source")} for e in selected
         ],
         "world_claims": [
             {"claim_id": x.get("claim_id"), "content": str(x.get("content", ""))[:160],
