@@ -6,7 +6,7 @@ Host-reported observations are not automatically independently verified.
 from __future__ import annotations
 from hashlib import sha256
 import re
-from .experimental import ExperienceBank, Lesson
+from .experimental import ExperienceBank, Lesson, task_lesson_matches
 from .brain_port import choose_from_outcomes, brain_decision, connector_presentation_packet
 
 SKILLS = ("reflection", "skill", "prompt")
@@ -64,22 +64,21 @@ class BEANReasoningSkills:
             raise ValueError("Unknown strategy")
         if type(limit) is not int or not 1 <= limit <= 20:
             raise ValueError("Invalid recall limit")
-        wanted = _words(query)
+        strategies = (strategy,) if strategy else SKILLS
         ranked = []
-        for index, item in enumerate(self.bank.lessons(domain=domain)):
-            if strategy and item.strategy != strategy:
-                continue
-            overlap = len(wanted & _words(item.text))
-            if overlap:
-                ranked.append((overlap, index, item))
-        ranked.sort(key=lambda entry: (-entry[0], -entry[1], entry[2].lesson_id))
+        for arm in strategies:
+            ranked.extend(task_lesson_matches(
+                self.bank, strategy=arm, domain=domain, query=query, limit=limit))
+        # Deterministic tie resolution, retaining the same source-linked
+        # memory ranking whether BEAN or a matched trial consumes the lesson.
+        ranked.sort(key=lambda result: (-result[0], result[1].lesson_id))
         return [{
             "lesson_id": item.lesson_id, "strategy": item.strategy,
             "domain": item.domain, "text": item.text,
             "evidence_refs": list(item.evidence_refs),
             "observed_outcome": item.observed_outcome,
             "matched_terms": score, "ranking": "domain_lexical_not_semantic_proof",
-        } for score, _, item in ranked[:limit]]
+        } for score, item in ranked[:limit]]
 
     def reflect(self, *, domain, task_id, observed, expected,
                 adjustment_hypothesis, evidence_refs):
@@ -128,7 +127,7 @@ class BEANReasoningSkills:
             raise ValueError("Need >=2 selection tasks from the same domain")
         receipt = run_paired_trial(
             bank=self.bank, cases=cases, model=model, judge=judge,
-            replicates=replicates)
+            replicates=replicates, task_aware=True)
         selection = choose_strategy(
             self.bank, receipt, domain, minimum_gain=minimum_gain)
         return {"trial": receipt, "selection": selection}
