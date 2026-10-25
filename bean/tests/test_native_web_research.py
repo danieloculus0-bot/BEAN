@@ -50,6 +50,11 @@ class FakeInternet:
                      "description": "Third summary"}
                 ]}}))
         if "wikipedia.org/w/api.php" in url:
+            if "prop=extracts" in url:
+                return FakeHTTPResponse(json.dumps({
+                    "query": {"pages": [{"title": "Tungsten",
+                                        "extract": "Tungsten is chemical element W, atomic 74."}]}
+                }))
             return FakeHTTPResponse(json.dumps({
                 "query": {"search": [
                     {"title": "Tungsten", "snippet": "<span>Element 74</span>"},
@@ -161,6 +166,45 @@ class WebResearchTests(unittest.TestCase):
             self.assertFalse(logged[0]["web_facts_independently_verified"])
         finally:
             recovered.close()
+
+    def test_targeted_wikipedia_intro_stays_bounded_and_cites_original_url(self):
+        entries = self.source.search("Tungsten", engine="wikipedia", limit=1)
+        self.assertEqual(entries[0]["url"], "https://en.wikipedia.org/wiki/Tungsten")
+        before = self.source.call_count
+        doc = self.source.read(entries[0]["url"])
+        self.assertEqual(doc["source_access"], "wikipedia_api_intro")
+        self.assertEqual(doc["url"], entries[0]["url"])
+        self.assertEqual(doc["origin"], "en.wikipedia.org")
+        self.assertEqual(doc["text"], "Tungsten is chemical element W, atomic 74.")
+        self.assertEqual(self.source.call_count, before + 1)
+        self.assertTrue(any("prop=extracts" in url for url in self.internet.calls))
+
+    def test_failed_reasoning_provider_retains_safe_diagnostic_and_source(self):
+        class RejectedModel:
+            model_name = "nvidia/nemotron-3-ultra-550b-a55b:free"
+            adapter_name = "openrouter"
+            last_failure_kind = "http_429"
+            def complete(self, question, context):
+                return {"ok": False, "error": "sensitive remote response must not log"}
+        with tempfile.TemporaryDirectory() as directory:
+            core = NativeReasoningService(Path(directory) / "rejected.sqlite3",
+                                          model=RejectedModel())
+            try:
+                tool = WebResearchService(core, sources=PublicWebSources(
+                    request_fn=FakeInternet(), resolver=resolver,
+                    brave_key="fictional-test-key"))
+                result = tool.investigate(
+                    domain="chemistry", task_ref="rejected-1",
+                    question="symbol of tungsten", search_query="Tungsten",
+                    max_pages=1, provider="wikipedia")
+                self.assertEqual(result["provider_failure_kind"], "http_429")
+                self.assertEqual(result["answer_status"], "provider_failed")
+                self.assertEqual(core.status()["research_evidence_packets"], 1)
+                self.assertEqual(core.status()["failed_inference_attempts"], 1)
+                self.assertNotIn("sensitive remote", json.dumps(
+                    core.bank.journal.events()))
+            finally:
+                core.close()
 
     def test_evidence_only_without_model_never_fakes_inference(self):
         core = NativeReasoningService(Path(self.temp.name)/"no-model.sqlite")
