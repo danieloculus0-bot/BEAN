@@ -302,6 +302,13 @@ def main():
                 reasoning_db, model=model)
             register_native_reasoning_handlers(inbox, native_reasoning_service)
             ctx["native_reasoning_service"] = native_reasoning_service
+            # One native read-only research outlet. No network requests
+            # occur merely because the Python runtime starts.
+            from bean.research.research_service import (
+                WebResearchService, register_web_research_handlers)
+            web_research_service = WebResearchService(native_reasoning_service)
+            register_web_research_handlers(inbox, web_research_service)
+            ctx["web_research_service"] = web_research_service
         # Recover the original Bridge thinking blocks as native Core commands.
         # cognition_reason delegates to the ONE selected Core reasoning service.
         from bean.modules.builtin import register_core_cognition_handlers
