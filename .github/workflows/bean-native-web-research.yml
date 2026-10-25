@@ -55,7 +55,6 @@ jobs:
       - name: Whole Core regression
         run: python -m pytest bean/tests -q -ra --tb=short
   optional-live-nemotron-and-public-web:
-    needs: full-web-learning-contract
     runs-on: ubuntu-24.04
     timeout-minutes: 8
     env:
@@ -67,6 +66,8 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+      - name: Prove search and provenance adapter locally before making a real model request
+        run: python -m unittest bean.tests.test_native_web_research -q
       - name: One real Nemotron research query, only when secret is configured
         run: python -m bean.evaluation.live_web_research_nemotron --output /tmp/bean-public-web-live
       - uses: actions/upload-artifact@v4
