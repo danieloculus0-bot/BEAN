@@ -14,6 +14,7 @@ import json
 from .experimental import ExperienceBank, TrialCase, material_for
 from .native_skills import BEANReasoningSkills
 from .judgment import choose_counsel
+from .local_reasoner import LocalReasoner
 from bean.optimization.autodev import canonical
 
 
@@ -58,6 +59,7 @@ class NativeReasoningService:
         self.path = Path(path)
         self.bank = ExperienceBank(self.path)
         self.skills = BEANReasoningSkills(self.bank)
+        self.local = LocalReasoner(self.bank)
         self.model = model
         self.closed = False
 
@@ -86,6 +88,34 @@ class NativeReasoningService:
     def recall(self, *, domain, query, strategy=None, limit=3):
         return self.skills.recall(domain=domain, query=query,
                                   strategy=strategy, limit=limit)
+
+    def learn_local(self, *, domain, task_ref, examples, evidence_refs):
+        """Generate/test/retain a symbolic rule locally, without model tokens."""
+        return self.local.learn(domain=domain, task_ref=task_ref,
+                                examples=examples, evidence_refs=evidence_refs)
+
+    def reason_local(self, *, domain, task_ref, query):
+        """CPU-only inference with trace, source IDs and an explicit abstain."""
+        return self.local.reason(domain=domain, task_ref=task_ref, question=query)
+
+    def reason_auto(self, *, domain, task_ref, query,
+                    allow_provider=False, model=None):
+        """BEAN first. A provider is used ONLY when the caller opts in.
+
+        An unknown/ambiguous local result cannot secretly trigger cost.
+        The existing reasoning selection and judgment rules remain intact.
+        """
+        if type(allow_provider) is not bool:
+            raise ValueError("Explicit Boolean provider opt-in required")
+        local = self.reason_local(domain=domain, task_ref=task_ref, query=query)
+        if local["status"] == "locally_solved":
+            return local
+        if not allow_provider:
+            return {**local, "external_provider_skipped": True}
+        result = self.reason(
+            domain=domain, task_ref=task_ref, query=query, model=model)
+        return {**result, "local_attempt": local["reason"],
+                "external_provider_skipped": False}
 
     def generate(self, *, domain, task_ref, examples, evidence_refs, model=None):
         """Ask an actual reasoning model to formulate a candidate lesson.
@@ -162,7 +192,7 @@ class NativeReasoningService:
         matched = [x["data"] for x in self.bank.journal.events()
                    if x["kind"] == "inference"
                    and x["data"].get("receipt_id") == receipt_id
-                   and x["data"].get("purpose") in ("selected_strategy_applied", "research_answer")]
+                   and x["data"].get("purpose") in ("selected_strategy_applied", "research_answer", "local_rule_applied")]
         if len(matched) != 1:
             raise ValueError("Exactly one completed BEAN reasoning receipt required")
         original = matched[0]
@@ -362,6 +392,10 @@ class NativeReasoningService:
                 "engine": "BEANReasoningSkills",
                 "storage": "owned_sha256_chain_sqlite",
                 "stored_lessons": sum(x["kind"] == "lesson" for x in events),
+                "native_symbolic_rules": sum(x["kind"] == "local_rule" for x in events),
+                "native_symbolic_inferences": sum(
+                    x["kind"] == "inference" and x["data"].get("provider_kind") == "native_local"
+                    for x in events),
                 "measured_trials": sum(x["kind"] == "trial" for x in events),
                 "selected_strategies": sum(x["kind"] == "selection" for x in events),
                 "inference_receipts": sum(x["kind"] == "inference" for x in events),
@@ -386,6 +420,9 @@ class NativeReasoningService:
 def register_native_reasoning_handlers(inbox, service):
     """Install BEAN-owned local commands in the *existing* runtime inbox."""
     inbox.register("reasoning_status", lambda m, _: service.status())
+    inbox.register("reasoning_learn_local", lambda m, _: service.learn_local(**m.args))
+    inbox.register("reasoning_local", lambda m, _: service.reason_local(**m.args))
+    inbox.register("reasoning_auto", lambda m, _: service.reason_auto(**m.args))
     inbox.register("reasoning_recall", lambda m, _: service.recall(**m.args))
     inbox.register("reasoning_reflect", lambda m, _: service.reflect(**m.args))
     inbox.register("reasoning_skill", lambda m, _: service.retain_skill(**m.args))
