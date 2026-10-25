@@ -416,23 +416,179 @@ def run_experiment(database, *, source_seeds=TRAIN_SEEDS,
     return report
 
 
+ADAPT_DEV_SEEDS = tuple(range(51000, 51024))
+ADAPT_BLIND_SEEDS = tuple(range(62000, 62080))
+
+
+def adapt_principle(bank, development_rows, *, source_policy,
+                    target_dataset="ideas-development-v1"):
+    """Select on target development data; retain source failure as evidence."""
+    if (source_policy not in POLICIES
+            or len(development_rows) < 16
+            or len({r["case"] for r in development_rows}) != len(development_rows)
+            or any(set(r["rewards"]) != {*POLICIES, "random"}
+                   for r in development_rows)):
+        raise ValueError("Adaptation requires matched, distinct target observations")
+    prior = recover_principle(bank)
+    if source_policy != prior:
+        raise ValueError("Source prior is not the journal-recovered selection")
+    if any(e["kind"] == "trial"
+           and e["data"].get("experiment") == SCHEMA
+           and e["data"].get("phase") == "target_adaptation"
+           for e in bank.journal.events()):
+        raise ValueError("Only one predeclared target adaptation allowed per ledger")
+    stats = means(development_rows)
+    selected = max(POLICIES, key=lambda arm: (
+        stats[arm], arm == source_policy, -POLICIES.index(arm)))
+    outcome = ("retained_source_prior" if selected == source_policy
+               else "target_development_outperformed_source_prior")
+    record = {
+        "schema": "bean.adaptive_lab026.v1",
+        "experiment": SCHEMA, "phase": "target_adaptation",
+        "source_policy": source_policy, "adapted_policy": selected,
+        "reason": outcome,
+        "target_dev_dataset_id": target_dataset,
+        "target_development_cases": len(development_rows),
+        "target_dev_means": stats,
+        "target_dev_sha256": sha256(canonical(development_rows)).hexdigest(),
+        "measured_outcome_origin": "target_development_simulation",
+        "blind_target_rewards_available_at_choice": False,
+        "autonomous_policy_search": "finite_matched_evidence_based_revision",
+        "external_validation": False,
+        "action_authorization": False,
+    }
+    record["receipt_hash"] = sha256(canonical(record)).hexdigest()
+    bank.record_trial(record)
+    return record
+
+
+def recover_adapted_principle(bank):
+    records = [e["data"] for e in bank.journal.events()
+               if e["kind"] == "trial"
+               and e["data"].get("experiment") == SCHEMA
+               and e["data"].get("phase") == "target_adaptation"]
+    if len(records) != 1:
+        raise ValueError("Expected one retained target adaptation")
+    raw = dict(records[0])
+    h = raw.pop("receipt_hash")
+    if h != sha256(canonical(raw)).hexdigest():
+        raise ValueError("Retained adaptation integrity mismatch")
+    return records[0]["adapted_policy"]
+
+
+def run_adaptation_experiment(database, *,
+                              source_seeds=TRAIN_SEEDS,
+                              dev_seeds=ADAPT_DEV_SEEDS,
+                              blind_seeds=ADAPT_BLIND_SEEDS):
+    source = set(source_seeds)
+    development = set(dev_seeds)
+    target = set(blind_seeds)
+    if (len(source) != len(source_seeds)
+            or len(development) != len(dev_seeds)
+            or len(target) != len(blind_seeds)
+            or source & development or source & target or development & target
+            or len(source) < 16 or len(development) < 16 or len(target) < 32):
+        raise ValueError("Distinct, disjoint source, development, blind IDs required")
+    bank = ExperienceBank(database)
+    try:
+        source_record = learn_principle(bank, compare("shop", source_seeds))
+        prior = recover_principle(bank)
+        develop = compare("ideas", dev_seeds)
+        revised = adapt_principle(bank, develop, source_policy=prior)
+    finally:
+        bank.close()
+
+    # Stop/reopen after learning so the new blind test uses only persisted
+    # source + development evidence.
+    reopened = ExperienceBank(database)
+    try:
+        recovered_prior = recover_principle(reopened)
+        recovered_adapted = recover_adapted_principle(reopened)
+        pre_blind_tip = reopened.journal.export()["tip"]
+    finally:
+        reopened.close()
+    if recovered_prior != prior or recovered_adapted != revised["adapted_policy"]:
+        raise ValueError("Policy state changed across ledger restart")
+    unseen = compare("ideas", blind_seeds)
+    scores = means(unseen)
+    original = scores[prior]
+    improved = scores[recovered_adapted]
+    report = {
+        "schema": SCHEMA,
+        "mode": "prospective-style_target_adaptation",
+        "source_domain": "quality_maintenance",
+        "target_domain": "research_portfolio_without_dependency_graph",
+        "source_cases": len(source_seeds),
+        "development_cases": len(dev_seeds),
+        "blind_cases": len(blind_seeds),
+        "source_prior_policy": prior,
+        "adapted_policy": recovered_adapted,
+        "adaptation_reason": revised["reason"],
+        "source_training_scores": source_record["source_mean_utility"],
+        "target_development_scores": revised["target_dev_means"],
+        "blind_scores": scores,
+        "blind_delta_adapted_vs_source": round(improved-original, 6),
+        "blind_delta_adapted_vs_urgent": round(improved-scores["urgent"], 6),
+        "blind_delta_adapted_vs_random": round(improved-scores["random"], 6),
+        "blind_wins_vs_source": sum(
+            r["rewards"][recovered_adapted] > r["rewards"][prior] for r in unseen),
+        "blind_losses_vs_source": sum(
+            r["rewards"][recovered_adapted] < r["rewards"][prior] for r in unseen),
+        "blind_ties_vs_source": sum(
+            r["rewards"][recovered_adapted] == r["rewards"][prior] for r in unseen),
+        "target_dev_sha256": revised["target_dev_sha256"],
+        "blind_evidence_sha256": sha256(canonical(unseen)).hexdigest(),
+        "source_and_adaptation_recovered_after_restart": True,
+        "blind_rewards_available_at_selection": False,
+        "domain_adapter_mapping_provided": True,
+        "pre_blind_ledger_tip": pre_blind_tip,
+    }
+    report["report_sha256"] = sha256(canonical(report)).hexdigest()
+    reopened = ExperienceBank(database)
+    try:
+        reopened.record_trial({
+            "schema": "bean.adaptive_lab026.v1",
+            "experiment": SCHEMA, "phase": "post_adaptation_blind_report",
+            "report_sha256": report["report_sha256"],
+            "pre_blind_tip": pre_blind_tip,
+            "blind_rewards_available_at_selection": False,
+        })
+        report["post_blind_ledger_tip"] = reopened.journal.export()["tip"]
+    finally:
+        reopened.close()
+    return report
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--database", type=Path, required=True)
     parser.add_argument("--output", type=Path)
     parser.add_argument("--target-kind", choices=("ecosystem", "ideas"),
                         default="ecosystem")
+    parser.add_argument("--mode", choices=("transfer", "adapt"),
+                        default="transfer")
     opt = parser.parse_args(argv)
-    report = run_experiment(opt.database, target_kind=opt.target_kind)
+    report = (run_adaptation_experiment(opt.database)
+              if opt.mode == "adapt" else
+              run_experiment(opt.database, target_kind=opt.target_kind))
     raw = json.dumps(report, sort_keys=True, indent=2) + "\n"
     if opt.output:
         opt.output.parent.mkdir(parents=True, exist_ok=True)
         opt.output.write_text(raw, encoding="utf-8")
-    print("BEAN_ABSTRACT_NONLINEAR_TRANSFER " + json.dumps({
-        k:v for k,v in report.items() if k not in
-        ("target_case_deltas", "source_means", "target_means")
-    }, sort_keys=True))
-    print("TARGET_MEANS " + json.dumps(report["target_means"], sort_keys=True))
+    if opt.mode == "adapt":
+        print("BEAN_ABSTRACT_TARGET_ADAPTATION " + json.dumps({
+            k:v for k,v in report.items() if k not in
+            ("source_training_scores", "target_development_scores",
+             "blind_scores")
+        }, sort_keys=True))
+        print("ADAPTATION_BLIND_SCORES " + json.dumps(
+            report["blind_scores"], sort_keys=True))
+    else:
+        print("BEAN_ABSTRACT_NONLINEAR_TRANSFER " + json.dumps({
+            k:v for k,v in report.items() if k not in
+            ("target_case_deltas", "source_means", "target_means")
+        }, sort_keys=True))
+        print("TARGET_MEANS " + json.dumps(report["target_means"], sort_keys=True))
     return 0
 
 
