@@ -229,6 +229,34 @@ class WebResearchTests(unittest.TestCase):
         self.assertFalse(response["ok"])
         self.assertEqual(provider.last_failure_kind, "invalid_response_structure")
 
+    def test_openrouter_daily_quota_check_does_not_call_model_or_leak_key(self):
+        from bean.reasoning.openrouter_provider import OpenRouterProvider
+        requests = []
+
+        def fake_quota(req, timeout=8):
+            requests.append((req.full_url, req.get_method()))
+            if req.full_url != "https://openrouter.ai/api/v1/key":
+                raise AssertionError("Quota check unexpectedly invoked a model")
+            return FakeHTTPResponse(json.dumps({
+                "data": {
+                    "label": "SECRET_KEY_LABEL_DO_NOT_LOG",
+                    "free_model_daily_requests": {
+                        "used": 50, "limit": 50, "remaining": 0,
+                    },
+                }}), "application/json")
+
+        provider = OpenRouterProvider(
+            api_key="sample-test-secret", requester=fake_quota)
+        result = provider.free_request_budget()
+        self.assertEqual(result, {
+            "status": "available", "used": 50, "limit": 50, "remaining": 0,
+        })
+        self.assertEqual(requests, [
+            ("https://openrouter.ai/api/v1/key", "GET")])
+        self.assertNotIn("SECRET_KEY_LABEL_DO_NOT_LOG", json.dumps(result))
+        self.assertNotIn("sample-test-secret", json.dumps(result))
+        self.assertIsNone(provider.last_failure_kind)
+
     def test_evidence_only_without_model_never_fakes_inference(self):
         core = NativeReasoningService(Path(self.temp.name)/"no-model.sqlite")
         try:
