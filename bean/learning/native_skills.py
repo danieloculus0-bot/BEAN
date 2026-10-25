@@ -120,7 +120,7 @@ class BEANReasoningSkills:
                            "unevaluated_instruction_candidate")
 
     def evaluate_and_select(self, *, domain, cases, model, judge, replicates=1,
-                            minimum_gain=1):
+                            minimum_gain=1, batched=False):
         """Run actual paired model trials; reuse Lab026's independent selector.
 
         Synthetic providers remain synthetic. The judge owns the task answers;
@@ -132,14 +132,22 @@ class BEANReasoningSkills:
         cases = list(cases)
         if len(cases) < 2 or any(case.domain != domain for case in cases):
             raise ValueError("Need >=2 selection tasks from the same domain")
-        receipt = run_paired_trial(
-            bank=self.bank, cases=cases, model=model, judge=judge,
-            replicates=replicates, task_aware=True)
+        if batched:
+            if replicates != 1:
+                raise ValueError("Batched trials support one replicate per arm")
+            from .batched_trials import run_batched_paired_trial
+            receipt = run_batched_paired_trial(
+                bank=self.bank, cases=cases, model=model, judge=judge)
+        else:
+            receipt = run_paired_trial(
+                bank=self.bank, cases=cases, model=model, judge=judge,
+                replicates=replicates, task_aware=True)
         selection = choose_strategy(
             self.bank, receipt, domain, minimum_gain=minimum_gain)
         return {"trial": receipt, "selection": selection}
 
-    def evaluate_holdout(self, *, domain, cases, model, judge, replicates=1):
+    def evaluate_holdout(self, *, domain, cases, model, judge, replicates=1,
+                         batched=False):
         """Evaluate frozen choice on disjoint IDs and public questions; no reselection.
 
         This does NOT certify that source questions were truly hidden.
@@ -171,10 +179,18 @@ class BEANReasoningSkills:
         earlier_questions = {row["question_sha256"] for row in seen_rows}
         if earlier_questions.intersection(candidate_questions):
             raise ValueError("Holdout question previously tested under another task ID")
-        receipt = run_paired_trial(
-            bank=self.bank, cases=cases, model=model, judge=judge,
-            arms=("cold", "placebo", "adaptive"), replicates=replicates,
-            task_aware=True)
+        if batched:
+            if replicates != 1:
+                raise ValueError("Batched trials support one replicate per arm")
+            from .batched_trials import run_batched_paired_trial
+            receipt = run_batched_paired_trial(
+                bank=self.bank, cases=cases, model=model, judge=judge,
+                arms=("cold", "placebo", "adaptive"))
+        else:
+            receipt = run_paired_trial(
+                bank=self.bank, cases=cases, model=model, judge=judge,
+                arms=("cold", "placebo", "adaptive"), replicates=replicates,
+                task_aware=True)
         return {"trial": receipt, "scope": "post_selection_holdout_no_policy_change"}
 
     def select_strategy(self, *, domain, rows, evaluator_id, dataset_id,
