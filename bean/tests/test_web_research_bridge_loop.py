@@ -48,6 +48,11 @@ class FullResearchFeedbackTests(unittest.TestCase):
             domain="inspection", name="check manual",
             steps=["Use a documented manual"], passed=True,
             evidence_refs=["fixture:old-skill"])
+        self.core.reflect(
+            domain="unrelated-placeholder", task_id="placebo-dev",
+            observed="sun", expected="moon",
+            adjustment_hypothesis="Unrelated astronomy explanation",
+            evidence_refs=["fixture:unrelated-domain"])
         results = [
             {"task_id": task, "arm": arm, "replicate": 0,
              "passed": arm == "reflection", "evidence_ref": task + ":" + arm}
