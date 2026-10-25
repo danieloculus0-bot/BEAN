@@ -15,7 +15,7 @@ import ipaddress
 import json
 import os
 import socket
-from urllib.parse import urlencode, urlsplit, urlunsplit
+from urllib.parse import quote, urlencode, urlsplit
 from urllib.request import Request, build_opener, HTTPRedirectHandler
 
 WIKI_SEARCH = "https://en.wikipedia.org/w/api.php"
@@ -182,7 +182,7 @@ class PublicWebSources:
             records = [{
                 "title": str(x.get("title", ""))[:180],
                 "url": "https://en.wikipedia.org/wiki/" +
-                       str(x.get("title", "")).replace(" ", "_"),
+                       quote(str(x.get("title", "")).replace(" ", "_"), safe="()_-"),
                 "snippet": _plain(str(x.get("snippet", "")), html=True, maximum=600),
                 "source_index": provider
             } for x in items[:limit] if isinstance(x, dict)]
