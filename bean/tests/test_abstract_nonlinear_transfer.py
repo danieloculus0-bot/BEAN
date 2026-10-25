@@ -10,8 +10,10 @@ import unittest
 from bean.learning.experimental import ExperienceBank
 from bean.evaluation.abstract_nonlinear_transfer import (
     SCHEMA, POLICIES, BLIND_SEEDS, TRAIN_SEEDS, HORIZON,
-    make_shop, make_ecosystem, shop_features, ecosystem_features,
-    shop_utility, ecosystem_utility, rollout, compare, means,
+    make_shop, make_ecosystem, make_ideas,
+    shop_features, ecosystem_features, ideas_features,
+    shop_utility, ecosystem_utility, ideas_utility,
+    rollout, compare, means,
     learn_principle, recover_principle, run_experiment,
 )
 
@@ -53,6 +55,44 @@ class PhilosophyOnlyTransferTests(unittest.TestCase):
         e3 = ecosystem_utility(reserve)
         self.assertNotAlmostEqual(e2-e1, e3-e2, places=5)
         reserve["guilds"][0]["abundance"] = start
+
+    def test_second_target_is_nonlinear_non_network_portfolio(self):
+        target = make_ideas(18000)
+        self.assertEqual(set(target), {
+            "laboratory", "experiments", "funding_climate", "milestone"})
+        self.assertFalse(set(target) & set(make_shop(810)))
+        self.assertFalse(set(target) & set(make_ecosystem(11010)))
+        self.assertEqual(set(ideas_features(target)[0]), {
+            "id", "need", "leverage", "cost", "uncertainty", "near_tip"})
+        # Portfolio-level synergy is nonlinear, despite zero graph edges.
+        projects = target["experiments"]
+        original = projects[0]["readiness"]
+        projects[0]["readiness"] = .2
+        v1 = ideas_utility(target)
+        projects[0]["readiness"] = .4
+        v2 = ideas_utility(target)
+        projects[0]["readiness"] = .6
+        v3 = ideas_utility(target)
+        self.assertNotAlmostEqual(v2-v1, v3-v2, places=5)
+        projects[0]["readiness"] = original
+
+    def test_source_policy_retains_same_choice_for_unrelated_second_target(self):
+        primary = run_experiment(
+            self.database, source_seeds=range(800,816),
+            blind_seeds=range(26000,26048),
+            target_kind="ideas")
+        self.assertEqual(primary["target_dataset"], "ideas-blind-v1")
+        self.assertEqual(primary["source_cases"], 16)
+        self.assertEqual(primary["target_cases"], 48)
+        self.assertFalse(primary["target_feedback_used_in_selection"])
+        self.assertTrue(primary["learned_policy_recovered_from_owned_journal"])
+        self.assertEqual(len(primary["target_case_deltas"]), 48)
+        self.assertEqual(
+            sum(primary[k] for k in
+                ("target_wins_vs_urgent", "target_losses_vs_urgent",
+                 "target_ties_vs_urgent")), 48)
+        self.assertIn(primary["selected_source_policy"], POLICIES)
+        self.assertTrue(math.isfinite(primary["target_delta_vs_urgent"]))
 
     def test_identical_seeds_give_matched_policy_comparison(self):
         seeds = range(2010, 2020)
