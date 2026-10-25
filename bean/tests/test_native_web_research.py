@@ -50,6 +50,11 @@ class FakeInternet:
                      "description": "Third summary"}
                 ]}}))
         if "wikipedia.org/w/api.php" in url:
+            if "prop=extracts" in url:
+                return FakeHTTPResponse(json.dumps({
+                    "query": {"pages": [{"title": "Tungsten",
+                                        "extract": "Tungsten is chemical element W, Atomic 74."}]}
+                }))
             return FakeHTTPResponse(json.dumps({
                 "query": {"search": [
                     {"title": "Tungsten", "snippet": "<span>Element 74</span>"},
@@ -161,6 +166,96 @@ class WebResearchTests(unittest.TestCase):
             self.assertFalse(logged[0]["web_facts_independently_verified"])
         finally:
             recovered.close()
+
+    def test_targeted_wikipedia_intro_stays_bounded_and_cites_original_url(self):
+        entries = self.source.search("Tungsten", engine="wikipedia", limit=1)
+        self.assertEqual(entries[0]["url"], "https://en.wikipedia.org/wiki/Tungsten")
+        before = self.source.call_count
+        doc = self.source.read(entries[0]["url"])
+        self.assertEqual(doc["source_access"], "wikipedia_api_intro")
+        self.assertEqual(doc["url"], entries[0]["url"])
+        self.assertEqual(doc["origin"], "en.wikipedia.org")
+        self.assertEqual(doc["text"], "Tungsten is chemical element W, Atomic 74.")
+        self.assertEqual(self.source.call_count, before + 1)
+        self.assertTrue(any("prop=extracts" in url for url in self.internet.calls))
+
+    def test_failed_reasoning_provider_retains_safe_diagnostic_and_source(self):
+        class RejectedModel:
+            model_name = "nvidia/nemotron-3-ultra-550b-a55b:free"
+            adapter_name = "openrouter"
+            last_failure_kind = "http_429"
+            def complete(self, question, context):
+                return {"ok": False, "error": "sensitive remote response must not log"}
+        with tempfile.TemporaryDirectory() as directory:
+            core = NativeReasoningService(Path(directory) / "rejected.sqlite3",
+                                          model=RejectedModel())
+            try:
+                tool = WebResearchService(core, sources=PublicWebSources(
+                    request_fn=FakeInternet(), resolver=resolver,
+                    brave_key="fictional-test-key"))
+                result = tool.investigate(
+                    domain="chemistry", task_ref="rejected-1",
+                    question="symbol of tungsten", search_query="Tungsten",
+                    max_pages=1, provider="wikipedia")
+                self.assertEqual(result["provider_failure_kind"], "http_429")
+                self.assertEqual(result["answer_status"], "provider_failed")
+                self.assertEqual(core.status()["research_evidence_packets"], 1)
+                self.assertEqual(core.status()["failed_inference_attempts"], 1)
+                self.assertNotIn("sensitive remote", json.dumps(
+                    core.bank.journal.events()))
+            finally:
+                core.close()
+
+    def test_real_adapter_runtime_error_is_classified_without_secret_leak(self):
+        from bean.reasoning.openrouter_provider import OpenRouterProvider
+
+        def outage(req, timeout=90):
+            raise RuntimeError("SENSITIVE_PROXY_PRIVATE_TOKEN")
+
+        provider = OpenRouterProvider(
+            api_key="fixture-api-secret", requester=outage)
+        response = provider.complete("What is element W?", "")
+        self.assertFalse(response["ok"])
+        self.assertEqual(provider.last_failure_kind, "transport_RuntimeError")
+        self.assertNotIn("SENSITIVE_PROXY_PRIVATE_TOKEN",
+                         json.dumps(response))
+
+        def bad_shape(req, timeout=90):
+            return FakeHTTPResponse("[]", "application/json")
+
+        provider = OpenRouterProvider(
+            api_key="fixture-api-secret", requester=bad_shape)
+        response = provider.complete("What is element W?", "")
+        self.assertFalse(response["ok"])
+        self.assertEqual(provider.last_failure_kind, "invalid_response_structure")
+
+    def test_openrouter_daily_quota_check_does_not_call_model_or_leak_key(self):
+        from bean.reasoning.openrouter_provider import OpenRouterProvider
+        requests = []
+
+        def fake_quota(req, timeout=8):
+            requests.append((req.full_url, req.get_method()))
+            if req.full_url != "https://openrouter.ai/api/v1/key":
+                raise AssertionError("Quota check unexpectedly invoked a model")
+            return FakeHTTPResponse(json.dumps({
+                "data": {
+                    "label": "SECRET_KEY_LABEL_DO_NOT_LOG",
+                    "free_model_daily_requests": {
+                        "used": 50, "limit": 50, "remaining": 0,
+                    },
+                }}), "application/json")
+
+        provider = OpenRouterProvider(
+            api_key="sample-test-secret", requester=fake_quota)
+        result = provider.free_request_budget()
+        self.assertEqual(result, {
+            "status": "available", "used": 50, "limit": 50, "remaining": 0,
+        })
+        self.assertEqual(requests, [
+            ("https://openrouter.ai/api/v1/key", "GET")])
+        self.assertNotIn("SECRET_KEY_LABEL_DO_NOT_LOG", json.dumps(result))
+        self.assertNotIn("sample-test-secret", json.dumps(result))
+        self.assertIsNone(provider.last_failure_kind)
 
     def test_evidence_only_without_model_never_fakes_inference(self):
         core = NativeReasoningService(Path(self.temp.name)/"no-model.sqlite")
