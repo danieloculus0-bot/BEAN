@@ -131,6 +131,9 @@ class RecordingNemotron(OpenRouterFreeReasoner):
         self.output.mkdir(parents=True, exist_ok=True)
         self.progress_path = self.output / "provider_calls.jsonl"
         self.call_limit = MAX_CALLS
+        # Preserve verbose or wrong model answers as *failed answers*, rather
+        # than discarding the whole paired experiment at the old 300-char cap.
+        self.max_answer_chars = 12000
 
     def _record(self, entry):
         with self.progress_path.open("a", encoding="utf-8") as handle:
