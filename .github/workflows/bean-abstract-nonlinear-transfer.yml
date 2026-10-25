@@ -38,6 +38,13 @@ jobs:
           python -m bean.evaluation.abstract_nonlinear_transfer \
             --database "$RUNNER_TEMP/bean-cross-domain-transfer.sqlite3" \
             --output "$RUNNER_TEMP/bean-cross-domain-transfer.json"
+      - name: Test philosophy-level transfer into nonlinear research portfolio without a dependency graph
+        shell: bash
+        run: |
+          python -m bean.evaluation.abstract_nonlinear_transfer \
+            --target-kind ideas \
+            --database "$RUNNER_TEMP/bean-ideas-transfer.sqlite3" \
+            --output "$RUNNER_TEMP/bean-ideas-transfer.json"
       - name: Preserve scored results and hash-chained memory for inspection
         if: always()
         uses: actions/upload-artifact@v4
@@ -46,5 +53,7 @@ jobs:
           path: |
             ${{ runner.temp }}/bean-cross-domain-transfer.json
             ${{ runner.temp }}/bean-cross-domain-transfer.sqlite3
+            ${{ runner.temp }}/bean-ideas-transfer.json
+            ${{ runner.temp }}/bean-ideas-transfer.sqlite3
           retention-days: 30
           if-no-files-found: warn
