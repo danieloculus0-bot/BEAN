@@ -90,7 +90,9 @@ class SpongeTD:
     def choose(self, state, *, explore=True):
         if explore and self.rng.random() < self.epsilon:
             return self.rng.randrange(len(self.actions))
-        values = self.values(state)
+        # Choosing from a frozen policy must not insert unseen zero-valued
+        # states. Inference and learning have separate mutation semantics.
+        values = self.q.get(self.key(state), [0.0] * len(self.actions))
         return max(range(len(values)), key=lambda i: values[i])
 
     def learn(self, state, action, reward, next_state, done):
