@@ -91,7 +91,7 @@ class ExperienceBank:
     def lessons(self, strategy=None, domain=None):
         found = []
         for record in self.journal.events():
-            if record.get("schema") != SCHEMA or record.get("kind") not in ("lesson", "trial", "selection"):
+            if record.get("schema") != SCHEMA or record.get("kind") not in ("lesson", "trial", "selection", "inference"):
                 raise ValueError("Invalid adaptive journal event type")
             if record["kind"] == "lesson":
                 raw = dict(record["data"])
@@ -113,6 +113,16 @@ class ExperienceBank:
         if receipt.get("schema") != SCHEMA:
             raise ValueError("Incorrect experiment schema")
         return self._append("trial", receipt)
+
+    def record_inference(self, receipt):
+        """Append model input/answer with actual provider identity, not reward."""
+        if (not isinstance(receipt, dict) or receipt.get("schema") !=
+                "bean.native.reasoning.inference.v1"
+                or not isinstance(receipt.get("model_id"), str)
+                or not receipt["model_id"] or not isinstance(receipt.get("answer"), str)
+                or not receipt["answer"]):
+            raise ValueError("Invalid model inference evidence")
+        return self._append("inference", receipt)
 
     def record_selection(self, selection):
         """Persist the measured choice, linked to an earlier evaluation receipt."""
