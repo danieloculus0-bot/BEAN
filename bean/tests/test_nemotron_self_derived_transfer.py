@@ -141,6 +141,31 @@ class ModelAuthoredReasoningTests(unittest.TestCase):
             self.assertEqual(len(saved), 1)
             self.assertEqual(json.loads(saved[0])["kind"], "model_authored_rule")
 
+    def test_verbose_real_answer_is_recorded_and_scored_wrong(self):
+        from bean.evaluation.nemotron_self_derived_transfer import correct
+        expected = "PDK"
+        verbose = "I cannot confirm that ORCHID-7 has any meaningful rule. " * 16
+
+        def fake_send(req, timeout=90):
+            return FixtureResponse({
+                "id": "long-actual-reply", "model": MODEL,
+                "choices": [{"message": {"content": verbose}}],
+                "usage": {"prompt_tokens": 30, "completion_tokens": 190},
+            })
+
+        with tempfile.TemporaryDirectory() as temp:
+            provider = RecordingNemotron(
+                "unit-test", output=Path(temp), request_fn=fake_send)
+            response = provider.complete(
+                DOMAINS[0].demonstrations[0].public_question, "")
+            self.assertGreater(len(response), 300)
+            self.assertEqual(response, verbose.strip())
+            self.assertFalse(correct(expected, response))
+            log = (Path(temp) / "provider_calls.jsonl").read_text().splitlines()
+            self.assertEqual(len(log), 1)
+            self.assertEqual(json.loads(log[0])["answer"], response)
+            self.assertEqual(json.loads(log[0])["kind"], "scored_task")
+
     def test_budget_cap_and_no_overwrites(self):
         with tempfile.TemporaryDirectory() as temp:
             p=Path(temp)/"archive"
