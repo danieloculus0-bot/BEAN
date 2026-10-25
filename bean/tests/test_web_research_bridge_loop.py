@@ -55,9 +55,9 @@ class FullResearchFeedbackTests(unittest.TestCase):
             evidence_refs=["fixture:unrelated-domain"])
         development = [
             TrialCase("selection-1", "inspection",
-                      "APPROVAL sample A", "PASS"),
+                      "APPROVAL check approved source for inspection A", "PASS"),
             TrialCase("selection-2", "inspection",
-                      "APPROVAL sample B", "PASS"),
+                      "APPROVAL check approved source for inspection B", "PASS"),
         ]
         assessed = self.core.evaluate_and_select(
             domain="inspection", cases=development, model=self.core.model,
