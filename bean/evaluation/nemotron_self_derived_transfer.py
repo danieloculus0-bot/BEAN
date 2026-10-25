@@ -211,6 +211,97 @@ class RecordingNemotron(OpenRouterFreeReasoner):
         return lesson, entry["response_id"]
 
 
+    def complete_batch(self, items):
+        """One external request for independent questions from ONE arm.
+
+        Each item has its own BEAN lesson. Never send expected answers or
+        competing-arm lessons. Malformed output is retained and scored wrong.
+        """
+        if len(self.calls) >= self.call_limit:
+            raise LiveProviderError("Fixed real-model budget exhausted")
+        if (not isinstance(items, list) or not 1 <= len(items) <= 8
+                or any(set(x) != {"task_id", "question", "context"}
+                       or not all(isinstance(v, str) for v in x.values())
+                       for x in items)):
+            raise ValueError("Invalid same-arm batch")
+        ids = [x["task_id"] for x in items]
+        if len(set(ids)) != len(ids):
+            raise ValueError("Repeated batch task identity")
+        questions = [
+            {"id": x["task_id"], "q": x["question"], "memory": x["context"]}
+            for x in items
+        ]
+        system = (
+            "Each JSON entry is one independent fictional problem. Use ONLY its "
+            "own q and memory, not facts from other entries. If insufficient "
+            "information output UNKNOWN. Reply strictly as ONE compact JSON "
+            "object mapping each id to a short uppercase answer string. "
+            "No explanations, no markdown and no missing ids."
+        )
+        payload = {
+            "model": self.model_id,
+            "max_tokens": 1024,
+            "messages": [
+                {"role": "system", "content": system},
+                {"role": "user", "content": canonical(questions)},
+            ],
+        }
+        request = Request(
+            ENDPOINT, method="POST", data=canonical(payload).encode("utf-8"),
+            headers={"Authorization": "Bearer " + self._key,
+                     "Content-Type": "application/json",
+                     "X-Title": "BEAN Native Batched Reasoning"})
+        try:
+            with self._request_fn(request, timeout=90) as response:
+                doc = json.loads(response.read(500000).decode("utf-8"))
+        except HTTPError as exc:
+            raise LiveProviderError("OpenRouter batch HTTP " + str(exc.code)) from exc
+        except (URLError, TimeoutError, OSError, ValueError) as exc:
+            raise LiveProviderError("OpenRouter batch transport/JSON " +
+                                    type(exc).__name__) from exc
+        if not isinstance(doc.get("id"), str):
+            raise LiveProviderError("Batch provider response ID absent")
+        served = str(doc.get("model", ""))
+        if not served or (self.calls and served != self.calls[0]["model_served"]):
+            raise LiveProviderError("Batch provider changed model identity")
+        choice = (doc.get("choices") or [{}])[0]
+        raw = (choice.get("message") or {}).get("content", "")
+        raw = raw if isinstance(raw, str) else ""
+        candidate = raw.strip()
+        fence = chr(96) * 3
+        if candidate.startswith(fence):
+            candidate = re.sub(r"^" + fence + r"(?:json)?\s*", "", candidate, count=1)
+            candidate = re.sub(r"\s*" + fence + r"$", "", candidate, count=1)
+        answers, valid = {}, False
+        try:
+            parsed = json.loads(candidate)
+            if (isinstance(parsed, dict) and set(parsed) == set(ids)
+                    and all(isinstance(parsed[i], str)
+                            and len(parsed[i]) <= 300 for i in ids)):
+                answers = {i: parsed[i].strip() for i in ids}
+                valid = True
+        except (json.JSONDecodeError, ValueError, TypeError):
+            pass
+        if not valid:
+            answers = {i: "INVALID_BATCH_RESPONSE" for i in ids}
+        entry = {
+            "kind": "scored_batch",
+            "response_id": doc["id"],
+            "model_served": served,
+            "task_ids": ids,
+            "batch_sha256": sha256(canonical(questions).encode()).hexdigest(),
+            "answers": answers,
+            "valid_format": valid,
+            "raw_response": raw[:12000],
+            "usage": {k: (doc.get("usage") or {})[k] for k in
+                      ("prompt_tokens", "completion_tokens", "total_tokens")
+                      if type((doc.get("usage") or {}).get(k)) is int},
+        }
+        self.calls.append(entry)
+        self._record(entry)
+        return answers
+
+
 def run(output, *, api_key, model=MODEL, model_factory=RecordingNemotron):
     output = Path(output)
     output.mkdir(parents=True, exist_ok=True)
@@ -292,7 +383,7 @@ def run(output, *, api_key, model=MODEL, model_factory=RecordingNemotron):
                 evidence_refs=["control:unrelated:" + domain.name])
             selection = bean.evaluate_and_select(
                 domain=domain.name, cases=domain.selection, model=provider,
-                judge=correct, replicates=1)
+                judge=correct, replicates=1, batched=True)
             item["selection"] = selection
             item["selected_strategy"] = selection["selection"]["arm"]
             # Actual power-off-equivalent SQLite close + new object construction.
@@ -307,7 +398,7 @@ def run(output, *, api_key, model=MODEL, model_factory=RecordingNemotron):
             item["restored_decision"] = prior
             assessed = bean.evaluate_holdout(
                 domain=domain.name, cases=domain.holdout,
-                model=provider, judge=correct, replicates=1)
+                model=provider, judge=correct, replicates=1, batched=True)
             item["holdout"] = assessed
             scores = assessed["trial"]["scores"]
             item["delta_over_cold"] = scores["adaptive"] - scores["cold"]
