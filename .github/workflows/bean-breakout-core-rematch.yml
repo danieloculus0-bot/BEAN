@@ -2,7 +2,13 @@ name: BEAN current core Breakout rematch
 on:
   push:
     branches:
-      - rematch/bean-breakout-core-20261025
+      - main
+    paths:
+      - 'experiments/breakout_learning/**'
+      - '.github/workflows/bean-breakout-core-rematch.yml'
+  pull_request:
+    branches:
+      - main
     paths:
       - 'experiments/breakout_learning/**'
       - '.github/workflows/bean-breakout-core-rematch.yml'
