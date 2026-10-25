@@ -15,6 +15,7 @@ from .experimental import ExperienceBank, TrialCase, material_for
 from .native_skills import BEANReasoningSkills
 from .judgment import choose_counsel
 from .local_reasoner import LocalReasoner
+from .composition import CompositionLearner
 from bean.optimization.autodev import canonical
 
 
@@ -60,6 +61,7 @@ class NativeReasoningService:
         self.bank = ExperienceBank(self.path)
         self.skills = BEANReasoningSkills(self.bank)
         self.local = LocalReasoner(self.bank)
+        self.compositions = CompositionLearner(self.bank)
         self.model = model
         self.closed = False
 
@@ -94,9 +96,22 @@ class NativeReasoningService:
         return self.local.learn(domain=domain, task_ref=task_ref,
                                 examples=examples, evidence_refs=evidence_refs)
 
+    def learn_composition(self, *, domain, task_ref, examples, evidence_refs):
+        """Search combinations of retained rules and prove a unique development fit."""
+        return self.compositions.learn(domain=domain, task_ref=task_ref,
+                                       examples=examples, evidence_refs=evidence_refs)
+
+    def reason_composed(self, *, domain, task_ref, query):
+        """Apply a source-linked multi-rule program with bounded abstention."""
+        return self.compositions.reason(domain=domain, task_ref=task_ref, query=query)
+
     def reason_local(self, *, domain, task_ref, query):
-        """CPU-only inference with trace, source IDs and an explicit abstain."""
-        return self.local.reason(domain=domain, task_ref=task_ref, question=query)
+        """Local primitive first, then a discovered composition, no provider."""
+        primitive = self.local.reason(domain=domain, task_ref=task_ref, question=query)
+        if primitive["status"] == "locally_solved":
+            return primitive
+        composed = self.reason_composed(domain=domain, task_ref=task_ref, query=query)
+        return composed if composed["status"] == "locally_solved" else primitive
 
     def reason_auto(self, *, domain, task_ref, query,
                     allow_provider=False, model=None):
@@ -211,7 +226,7 @@ class NativeReasoningService:
         matched = [x["data"] for x in self.bank.journal.events()
                    if x["kind"] == "inference"
                    and x["data"].get("receipt_id") == receipt_id
-                   and x["data"].get("purpose") in ("selected_strategy_applied", "research_answer", "local_rule_applied", "local_cold_inference")]
+                   and x["data"].get("purpose") in ("selected_strategy_applied", "research_answer", "local_rule_applied", "local_cold_inference", "local_composition_applied")]
         if len(matched) != 1:
             raise ValueError("Exactly one completed BEAN reasoning receipt required")
         original = matched[0]
@@ -432,6 +447,7 @@ class NativeReasoningService:
                 "storage": "owned_sha256_chain_sqlite",
                 "stored_lessons": sum(x["kind"] == "lesson" for x in events),
                 "native_symbolic_rules": sum(x["kind"] == "local_rule" for x in events),
+                "native_composed_rules": sum(x["kind"] == "composed_rule" for x in events),
                 "native_symbolic_inferences": sum(
                     x["kind"] == "inference" and x["data"].get("provider_kind") == "native_local"
                     for x in events),
@@ -460,6 +476,8 @@ def register_native_reasoning_handlers(inbox, service):
     """Install BEAN-owned local commands in the *existing* runtime inbox."""
     inbox.register("reasoning_status", lambda m, _: service.status())
     inbox.register("reasoning_learn_local", lambda m, _: service.learn_local(**m.args))
+    inbox.register("reasoning_learn_composition", lambda m, _: service.learn_composition(**m.args))
+    inbox.register("reasoning_composed", lambda m, _: service.reason_composed(**m.args))
     inbox.register("reasoning_local", lambda m, _: service.reason_local(**m.args))
     inbox.register("reasoning_auto", lambda m, _: service.reason_auto(**m.args))
     inbox.register("reasoning_recall", lambda m, _: service.recall(**m.args))
