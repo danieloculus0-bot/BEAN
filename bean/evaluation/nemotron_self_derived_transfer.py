@@ -227,6 +227,7 @@ def run(output, *, api_key, model=MODEL, model_factory=RecordingNemotron):
         (output / "report.json").write_text(json.dumps(status, indent=2) + "\n")
         return status
     provider = model_factory(api_key, model=model, output=output)
+    status["provider_kind"] = provider.provider_kind
     bank = ExperienceBank(output / "experience.sqlite3")
     try:
         for domain in DOMAINS:
@@ -308,7 +309,7 @@ def run(output, *, api_key, model=MODEL, model_factory=RecordingNemotron):
             scores = assessed["trial"]["scores"]
             item["delta_over_cold"] = scores["adaptive"] - scores["cold"]
             item["delta_over_placebo"] = scores["adaptive"] - scores["placebo"]
-            item["status"] = "evaluated_with_real_model"
+            item["status"] = "evaluated_with_" + provider.provider_kind
             status["requests"] = len(provider.calls)
             status["model_served"] = provider.calls[0]["model_served"]
             (output / "progress.json").write_text(
