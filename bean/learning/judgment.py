@@ -88,8 +88,8 @@ def choose_counsel(*, domain, task_ref, query, candidates, stakes="normal",
 
     eligible = [item for item in normalized if suitable(item)]
     eligible.sort(key=lambda item: (
-        -CONFIDENCE.index(item["confidence"]),
-        KINDS.index(item["kind"]), item["source_ref"]))
+        KINDS.index(item["kind"]),
+        -CONFIDENCE.index(item["confidence"]), item["source_ref"]))
     chosen = eligible[0] if eligible else None
     reasons = []
     if conflicting_evidence:
