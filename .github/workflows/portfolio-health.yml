@@ -1,0 +1,38 @@
+name: Public portfolio evidence
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "20 12 * * 1"
+  push:
+    paths:
+      - scripts/portfolio_health.py
+      - tests/test_portfolio_health.py
+      - .github/workflows/portfolio-health.yml
+
+permissions:
+  contents: read
+  checks: read
+  pull-requests: read
+
+jobs:
+  public-portfolio-health:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Offline collector regression tests
+        run: python -m unittest discover -s tests -p 'test_portfolio_health.py' -v
+      - name: Capture actual public repository state
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: python scripts/portfolio_health.py --owner danieloculus0-bot --out portfolio-health
+      - name: Archive timestamped evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: portfolio-health
+          path: portfolio-health/
+          retention-days: 30
