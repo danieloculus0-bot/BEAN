@@ -96,7 +96,7 @@ class ExperienceBank:
     def lessons(self, strategy=None, domain=None):
         found = []
         for record in self.journal.events():
-            if record.get("schema") != SCHEMA or record.get("kind") not in ("lesson", "trial", "selection", "inference", "feedback", "judgment", "judgment_feedback"):
+            if record.get("schema") != SCHEMA or record.get("kind") not in ("lesson", "trial", "selection", "inference", "feedback", "judgment", "judgment_feedback", "research"):
                 raise ValueError("Invalid adaptive journal event type")
             if record["kind"] == "lesson":
                 raw = dict(record["data"])
@@ -143,6 +143,24 @@ class ExperienceBank:
             raise ValueError("Incorrect experiment schema")
         return self._append("trial", receipt)
 
+    def record_research(self, receipt):
+        """Keep bounded unverified web evidence in BEAN's original SHA journal."""
+        if (not isinstance(receipt, dict) or receipt.get("schema") !=
+                "bean.native.web_research.v1"
+                or not isinstance(receipt.get("domain"), str)
+                or not isinstance(receipt.get("question"), str)
+                or not isinstance(receipt.get("sources"), list)
+                or len(receipt["sources"]) > 3
+                or any(not isinstance(source, dict)
+                       or not isinstance(source.get("url"), str)
+                       or not isinstance(source.get("text_sha256"), str)
+                       or len(source["text_sha256"]) != 64
+                       for source in receipt["sources"])
+                or len(canonical(receipt)) > 20000
+                or receipt.get("web_facts_independently_verified") is not False):
+            raise ValueError("Invalid unverified web research receipt")
+        return self._append("research", receipt)
+
     def record_inference(self, receipt):
         """Append model input/answer with actual provider identity, not reward."""
         if (not isinstance(receipt, dict) or receipt.get("schema") !=
@@ -171,7 +189,7 @@ class ExperienceBank:
         known = [row["data"] for row in self.journal.events()
                  if row.get("kind") == "inference"
                  and row["data"].get("receipt_id") == event["receipt_id"]
-                 and row["data"].get("purpose") == "selected_strategy_applied"]
+                 and row["data"].get("purpose") in ("selected_strategy_applied", "research_answer")]
         if len(known) != 1:
             raise ValueError("Feedback source inference not found")
         return self._append("feedback", event)
