@@ -6,6 +6,7 @@ from .context_builder import build_reasoning_context
 from .mock_llm import MockLLMAdapter
 from .openai_provider import OpenAIProvider
 from .ollama_provider import OllamaProvider
+from .local_llamacpp_provider import LocalLlamaCppProvider
 from .openrouter_provider import OpenRouterProvider
 from .prompt_builder import build_prompt, build_ollama_prompt
 from .proposal_filter import all_passed, filter_proposal
@@ -19,6 +20,8 @@ def adapter_from_name(name: str | None):
         return OpenAIProvider()
     if name == "ollama":
         return OllamaProvider()
+    if name in ("local_llamacpp", "llamacpp"):
+        return LocalLlamaCppProvider()
     if name == "openrouter":
         return OpenRouterProvider()
     if name in (None, "mock"):
