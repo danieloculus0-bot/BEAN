@@ -119,8 +119,12 @@ class ExperienceBank:
         if (not isinstance(receipt, dict) or receipt.get("schema") !=
                 "bean.native.reasoning.inference.v1"
                 or not isinstance(receipt.get("model_id"), str)
-                or not receipt["model_id"] or not isinstance(receipt.get("answer"), str)
-                or not receipt["answer"]):
+                or not receipt["model_id"]
+                or not isinstance(receipt.get("answer"), str)
+                or (not receipt["answer"] and receipt.get("status") != "failed")
+                or (receipt.get("status") == "failed"
+                    and (not isinstance(receipt.get("exception_class"), str)
+                         or not receipt["exception_class"]))):
             raise ValueError("Invalid model inference evidence")
         return self._append("inference", receipt)
 
