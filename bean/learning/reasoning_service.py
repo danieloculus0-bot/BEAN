@@ -13,6 +13,7 @@ import json
 
 from .experimental import ExperienceBank, TrialCase, material_for
 from .native_skills import BEANReasoningSkills
+from .judgment import choose_counsel
 from bean.optimization.autodev import canonical
 
 
@@ -256,8 +257,22 @@ class NativeReasoningService:
         """Real BEAN-selected, source-linked lesson packet, without a model call."""
         return self.skills.decide(domain=domain, task_ref=task_ref, query=query)
 
-    def reason(self, *, domain, task_ref, query, model=None):
+    def reason(self, *, domain, task_ref, query, model=None, candidates=None,
+               stakes="normal", conflicting_evidence=False):
         """Use BEAN's *selected* memory then invoke exactly one actual model."""
+        judgment = None
+        if candidates is not None:
+            judgment = self.judge(
+                domain=domain, task_ref=task_ref, query=query,
+                candidates=candidates, stakes=stakes,
+                conflicting_evidence=conflicting_evidence)
+            if judgment["decision"] != "explore":
+                return {
+                    "schema": "bean.native.reasoning.counsel_result.v1",
+                    "answer": judgment["answer"], "decision": judgment,
+                    "model_invoked": False, "verified_outcome": False,
+                    "provider_kind": "none", "receipt_id": judgment["receipt_id"],
+                }
         packet = self.decide(domain=domain, task_ref=task_ref, query=query)
         context = material_for(self.bank, packet["selected_strategy"],
                                packet["domain"], query=query)
@@ -292,7 +307,54 @@ class NativeReasoningService:
         return {"schema": record["schema"], "answer": answer,
                 "model_id": model_id, "provider_kind": provider_kind,
                 "receipt_id": record["receipt_id"], "journal_tip": tip,
-                "decision": packet, "verified_outcome": False}
+                "decision": packet, "verified_outcome": False,
+                "judgment": judgment}
+
+    def judge(self, *, domain, task_ref, query, candidates, stakes="normal",
+              conflicting_evidence=False):
+        """Arbitrate established answers without a provider or duplicate memory."""
+        record = choose_counsel(
+            domain=domain, task_ref=task_ref, query=query,
+            candidates=candidates, stakes=stakes,
+            conflicting_evidence=conflicting_evidence)
+        record["event_sequence"] = len(self.bank.journal.events()) + 1
+        record["receipt_id"] = sha256(canonical(record)).hexdigest()
+        tip = self.bank.record_judgment(record)
+        return {**record, "journal_tip": tip}
+
+    def judgment_feedback(self, *, receipt_id, outcome, evidence_refs, note=None):
+        """Retain host-reported successes and failures for future calibration."""
+        receipt_id = _required(receipt_id, "receipt_id", 64)
+        if len(receipt_id) != 64 or any(c not in "0123456789abcdef" for c in receipt_id):
+            raise ValueError("A full judgment receipt hash is required")
+        if outcome not in ("supported", "refuted", "inconclusive"):
+            raise ValueError("Unsupported judgment outcome")
+        if not isinstance(evidence_refs, (list, tuple)) or not 1 <= len(evidence_refs) <= 12:
+            raise ValueError("Need 1..12 evidence reference identifiers")
+        refs = [_required(ref, "outcome evidence reference", 500)
+                for ref in evidence_refs]
+        if note is not None:
+            note = _required(note, "outcome note", 1800)
+        originals = [row["data"] for row in self.bank.journal.events()
+                     if row.get("kind") == "judgment"
+                     and row["data"].get("receipt_id") == receipt_id]
+        if len(originals) != 1:
+            raise ValueError("Judgment receipt not found")
+        original = originals[0]
+        event = {
+            "schema": "bean.judgment.feedback.v1",
+            "receipt_id": receipt_id, "domain": original["domain"],
+            "selected_source_ref": original["selected_source_ref"],
+            "decision": original["decision"], "outcome": outcome,
+            "evidence_refs": refs, "note": note,
+            "outcome_origin": "host_reported",
+            "independently_authenticated": False,
+        }
+        if any(row["kind"] == "judgment_feedback" and row["data"] == event
+               for row in self.bank.journal.events()):
+            return {**event, "new_feedback": False}
+        tip = self.bank.record_judgment_feedback(event)
+        return {**event, "new_feedback": True, "journal_tip": tip}
 
     def status(self):
         events = self.bank.journal.events()
@@ -307,6 +369,8 @@ class NativeReasoningService:
                     x["kind"] == "inference" and
                     x["data"].get("status") == "failed" for x in events),
                 "feedback_receipts": sum(x["kind"] == "feedback" for x in events),
+                "judgment_receipts": sum(x["kind"] == "judgment" for x in events),
+                "judgment_outcomes": sum(x["kind"] == "judgment_feedback" for x in events),
                 "model_configured": self.model is not None,
                 "host_truth_authenticated": False,
                 "autonomous_general_learning_proven": False,
@@ -330,4 +394,6 @@ def register_native_reasoning_handlers(inbox, service):
     inbox.register("reasoning_decide", lambda m, _: service.decide(**m.args))
     inbox.register("reasoning_reason", lambda m, _: service.reason(**m.args))
     inbox.register("reasoning_feedback", lambda m, _: service.feedback(**m.args))
+    inbox.register("reasoning_judge", lambda m, _: service.judge(**m.args))
+    inbox.register("reasoning_judgment_feedback", lambda m, _: service.judgment_feedback(**m.args))
     return inbox
