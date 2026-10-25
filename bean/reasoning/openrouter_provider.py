@@ -28,7 +28,7 @@ class OpenRouterProvider(LLMAdapterBase):
                 raise ValueError("Paid model needs 1..100 explicit per-instance calls")
             self.paid_call_limit = int(limit)
         elif not isinstance(self.model_name, str) or not self.model_name.endswith(":free"):
-            raise ValueError("Only free providers or the pinned cheap model are allowed")
+            raise ValueError("Provider must be explicitly free or the pinned cheap model")
         self.paid_calls_attempted = 0
         self.api_key = api_key or os.environ.get("OPENROUTER_API_KEY")
         self._requester = requester
