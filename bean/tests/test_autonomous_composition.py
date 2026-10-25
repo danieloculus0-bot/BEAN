@@ -504,6 +504,18 @@ class CompositionTests(unittest.TestCase):
                 solved_scores[name] += actual["answer"] == expected
                 self.assertFalse(actual["development_overlap"])
                 self.assertFalse(actual["model_invoked"])
+        print("BEAN_COMPOSITION_ABLATION " + json.dumps({
+            "evaluated_blind_cases": 48,
+            "unguided_top1_correct": proposal_scores["cold"],
+            "guided_top1_correct": proposal_scores["guided"],
+            "unguided_composed_correct": solved_scores["cold"],
+            "guided_composed_correct": solved_scores["guided"],
+            "first_supported_program_rank_unguided":
+                cold_training["first_supported_program_rank"],
+            "first_supported_program_rank_guided":
+                guided_training["first_supported_program_rank"],
+            "lesson_source": "host_supplied_development_labels",
+        }, sort_keys=True))
         self.assertEqual(solved_scores, {"cold": 48, "guided": 48})
         self.assertEqual(proposal_scores["guided"], 48)
         self.assertLess(proposal_scores["cold"], proposal_scores["guided"])
