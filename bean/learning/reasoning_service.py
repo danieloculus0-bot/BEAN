@@ -189,10 +189,21 @@ class NativeReasoningService:
                     "correction_added": False}
         saved = None
         if not correct:
+            # Store *which question* the correction belongs to. Otherwise
+            # task-time lexical retrieval sees only a generic explanation and
+            # can forget the newly learned lesson on a similar future prompt.
+            # Preserve the original full question in the inference receipt;
+            # carry only bounded context into the reusable lesson.
+            question = _required(original.get("query"), "source question")
+            if len(hypothesis) > 1800:
+                raise ValueError("Correction hypothesis exceeds memory budget")
+            contextual_hypothesis = (
+                "Original question: " + question[:500] +
+                "; proposed correction: " + hypothesis)
             saved = self.skills.reflect(
                 domain=original["domain"], task_id=original["task_ref"],
                 observed=actual, expected=expected,
-                adjustment_hypothesis=hypothesis,
+                adjustment_hypothesis=contextual_hypothesis,
                 evidence_refs=refs + ("inference:" + receipt_id,))
         event_tip = self.bank.record_feedback(event)
         return {"schema": event["schema"], "receipt_id": receipt_id,
