@@ -56,6 +56,9 @@ def run(root=Path("breakout-rematch-proof"), episodes=800):
                     learn_every=4,target_sync=300,lr=.0007,gamma=.99)
     new_untrained=eval_agent(agent,range(18000,18050))
     validation=[]
+    best_bricks=-1.0
+    best_state=None
+    best_episode=None
     for episode in range(1,episodes+1):
         env=Breakout(960000+episode)
         epsilon=.85*(1-episode/max(episodes,1))**1.1+.05
@@ -67,19 +70,36 @@ def run(root=Path("breakout-rematch-proof"), episodes=800):
         if episode%200==0 or episode==episodes:
             result=eval_agent(agent,range(18000,18100))
             validation.append({"episode":episode,**result,"frames_trained":agent.frames,"gradient_updates":agent.updates})
-    current=eval_agent(agent,holdout)
+            if result["bricks"]>best_bricks:
+                best_bricks=result["bricks"]
+                best_episode=episode
+                best_state=agent.training_state()
+    # Freeze choice based on development validation only.
+    fresh_holdout=range(24000,24200)
+    failed_last_fresh=eval_agent(agent,fresh_holdout)
+    total_gradient_updates=agent.updates
+    selected_agent=SpongeDQN.from_training_state(best_state)
+    selected_fresh=eval_agent(selected_agent,fresh_holdout)
+    original_fresh=eval_q(q,fresh_holdout)
+    cold_fresh=eval_q(np.zeros_like(q),fresh_holdout)
+    current=eval_agent(selected_agent,holdout)
     receipt=hashlib.sha256(json.dumps({"baseline":old_checkpoints[3000],
                                         "dqn_validation":validation,
                                         "data":"100 validation seeds disjoint from final 200 holdout seeds"},
                                         sort_keys=True).encode()).hexdigest()
     journal=Journal(root/"bean_dqn_rematch.sqlite")
-    saved=agent.checkpoint(journal,baseline=old_checkpoints[3000]["bricks"],
+    failed=agent.checkpoint(journal,baseline=old_checkpoints[500]["bricks"],
             candidate=validation[-1]["bricks"],samples=100,
             evaluation_sha256=receipt,episode=episodes,
-            metadata={"domain":"original_breakout_24_bricks","train_source":"current main SpongeDQN",
+            metadata={"role":"failed_late_policy","not_promoted":True,"reason":"development_validation_regression"})
+    saved=selected_agent.checkpoint(journal,baseline=old_checkpoints[500]["bricks"],
+            candidate=best_bricks,samples=100,
+            evaluation_sha256=receipt,episode=best_episode,
+            metadata={"role":"frozen_best_development_policy",
                       "source_revision":"c8eada4fe83b3744ffd24082987cacf003882e25",
                       "prior_breakout_lessons_loaded":False,
                       "holdout_seeds_used_for_selection":False})
+    agent=selected_agent
     journal.close()
     reopened=Journal(root/"bean_dqn_rematch.sqlite")
     recovered=SpongeDQN.recover_latest(reopened)
@@ -99,12 +119,21 @@ def run(root=Path("breakout-rematch-proof"), episodes=800):
       "modern_untrained_validation_50":new_untrained,
       "modern_unseen":current,
       "new_minus_original_bricks":round(current["bricks"]-old["bricks"],4),
+      "best_neural_checkpoint_episode":best_episode,
+      "best_neural_development_bricks":best_bricks,
+      "fresh_holdout_seeds":"24000 through 24199",
+      "fresh_holdout":{
+        "cold":cold_fresh,"original_3000":original_fresh,
+        "neural_last_800":failed_last_fresh,"neural_selected":selected_fresh},
+      "selected_minus_original_fresh_bricks":round(selected_fresh["bricks"]-original_fresh["bricks"],4),
+      "total_gradient_updates_before_selection":total_gradient_updates,
+      "failed_checkpoint_quality":failed["quality"],
       "new_minus_original_survival_pct_points":round(current["survival"]-old["survival"],2),
       "dqn_weights_digest":agent.weights_digest(),
       "journal_tip":tip,"memory_score":saved["quality"],
       "neural_gradient_updates":agent.updates,"checkpoint_recovered":True,
       "prior_lesson_transfer_demonstrated":False,
-      "limitation":"Re-training current BEAN learning engine from scratch on same environment tests algorithm, not transferred abstract lessons; no previously trained Breakout DQN weights were supplied.",
+      "limitation":"New neural BEAN trained from scratch, not proof of prior abstract lesson transfer. Old Q policy had 3000 episodes versus 800 neural. Frozen checkpoint chosen using development validation only; new final seeds 24000-24199 were independent.",
     }
     (root/"results.json").write_text(json.dumps(report,indent=2)+"\n")
     print(json.dumps(report,indent=2))
