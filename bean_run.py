@@ -275,8 +275,14 @@ def main():
         # BEAN Core's owned reasoning path: generation, reflection, source-
         # linked memory, measured comparison and selected future decisions.
         # Separate SQLite from the Q learner; no automatic mock inference.
-        reasoning_db = os.environ.get("BEAN_REASONING_LESSONS_DB")
-        if reasoning_db:
+        reasoning_enabled = os.environ.get(
+            "BEAN_REASONING_ENABLED", "1").strip().lower() not in (
+                "0", "false", "off", "no")
+        if reasoning_enabled:
+            # Default-on native cognition. Its journal is distinct from the
+            # canonical event database and next to it for portable backups.
+            reasoning_db = os.environ.get("BEAN_REASONING_LESSONS_DB") or str(
+                Path(ctx["db_path"]).with_name("bean_reasoning_lessons.sqlite3"))
             from bean.learning.reasoning_service import (
                 NativeReasoningService, register_native_reasoning_handlers)
             provider = os.environ.get("BEAN_REASONING_PROVIDER", "").strip().lower()
