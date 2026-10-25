@@ -343,7 +343,7 @@ class CompositionTests(unittest.TestCase):
             domain="mixed-transfer", task_ref="guided-search",
             query=question(*DEV[1]))
         self.assertTrue(guided["search_guided_by_retained_comparison"])
-        self.assertGreater(guided["pruned_from_prior_development_failures"], 0)
+        self.assertGreater(guided["deprioritized_from_prior_development_failures"], 0)
         self.assertEqual(guided["hypotheses"][0]["join"], "rank_second_in_first")
         self.assertEqual(guided["hypotheses"][0]["search_priority"],
                          "supported_on_development")
@@ -352,7 +352,7 @@ class CompositionTests(unittest.TestCase):
         self.assertEqual(self.core.status()["native_composed_rules"], 0)
         learned = self.train()
         self.assertEqual(learned["join"], "rank_second_in_first")
-        self.assertGreater(learned["guided_pruned"], 0)
+        self.assertGreater(learned["guided_deprioritized"], 0)
         self.core.close()
         revived = NativeReasoningService(self.db, model=None)
         try:
@@ -416,13 +416,140 @@ class CompositionTests(unittest.TestCase):
             evidence_refs=["source:other-development-set"])
         self.assertEqual(learned["status"], "learned_composition")
         self.assertEqual(learned["join"], "first_then_second")
-        self.assertGreater(learned["guided_pruned"], 0)
+        self.assertGreater(learned["guided_deprioritized"], 0)
         answer = self.core.reason_auto(
             domain="mixed-transfer", task_ref="new-transfer",
             query=question([("A", 7), ("B", 2), ("C", 9)],
                            [("A", 7), ("B", 16), ("C", 23)]))
         self.assertEqual(answer["answer"], "CAB|B")
         self.assertEqual(answer["status"], "locally_solved")
+
+    def test_matched_guided_search_improves_next_proposal_on_unseen_cases(self):
+        # Matched controls: both learners receive the same primitives,
+        # identical later teaching and same blind cases. Only one receives
+        # the earlier reason-coded comparison evidence.
+        def outcome(t, g):
+            ordered = "".join(k for k, _ in sorted(t, key=lambda v: -v[1]))
+            median = sorted(g, key=lambda v: v[1])[1][0]
+            return median + "|" + ordered
+
+        early = [{"question": question(t, g), "answer": outcome(t, g)}
+                 for t, g in DEV]
+        next_dev = [
+            ([("P", 9), ("Q", 3), ("R", 6)],
+             [("P", 16), ("Q", 7), ("R", 25)]),
+            ([("S", 2), ("T", 7), ("V", 4)],
+             [("S", 21), ("T", 18), ("V", 5)]),
+            ([("N", 3), ("L", 8), ("K", 5)],
+             [("N", 9), ("L", 2), ("K", 6)]),
+            ([("X", 5), ("Y", 4), ("Z", 7)],
+             [("X", 11), ("Y", 20), ("Z", 18)]),
+        ]
+        later = [{"question": question(t, g), "answer": outcome(t, g)}
+                 for t, g in next_dev]
+
+        cold = NativeReasoningService(self.db.parent / "control.sqlite3")
+        guided = NativeReasoningService(self.db.parent / "guided.sqlite3")
+        self.addCleanup(cold.close)
+        self.addCleanup(guided.close)
+        for service in (cold, guided):
+            service.learn_local(
+                domain="tag-sorting", task_ref="primitive-a",
+                examples=TAG_TRAIN, evidence_refs=["development:tags"])
+            service.learn_local(
+                domain="gauge-median", task_ref="primitive-b",
+                examples=GAUGE_TRAIN, evidence_refs=["development:gauges"])
+
+        observed = guided.compare_compositions(
+            domain="transfer-comparison", task_ref="early-development",
+            examples=early, evidence_refs=["development:early-comparison"])
+        self.assertEqual(observed["status"], "comparison_recorded")
+        self.assertEqual(observed["leaderboard"][0]["join"], "second_then_first")
+        cold_training = cold.learn_composition(
+            domain="transfer-comparison", task_ref="later-teaching",
+            examples=later, evidence_refs=["development:next-independent"])
+        guided_training = guided.learn_composition(
+            domain="transfer-comparison", task_ref="later-teaching",
+            examples=later, evidence_refs=["development:next-independent"])
+        for training in (cold_training, guided_training):
+            self.assertEqual(training["status"], "learned_composition")
+            self.assertEqual(training["join"], "second_then_first")
+        self.assertEqual(guided_training["first_supported_program_rank"], 1)
+        self.assertGreater(cold_training["first_supported_program_rank"], 1)
+        self.assertGreater(guided_training["guided_deprioritized"], 0)
+
+        rng = random.Random(20261025)
+        proposal_scores = {"cold": 0, "guided": 0}
+        solved_scores = {"cold": 0, "guided": 0}
+        for i in range(48):
+            labels = rng.sample("ABCEFGHJKLMNPRSTVWXYZ", 3)
+            tags = list(zip(labels, rng.sample(range(1, 10), 3)))
+            gauges = list(zip(labels, rng.sample(range(-90, 90), 3)))
+            q = question(tags, gauges)
+            expected = outcome(tags, gauges)
+            for name, service in (("cold", cold), ("guided", guided)):
+                # Top-ranked next idea is the measure of policy improvement.
+                hypothesis = service.propose_compositions(
+                    domain="transfer-comparison", task_ref="novel-" + str(i),
+                    query=q)
+                self.assertEqual(hypothesis["status"], "hypotheses_only")
+                proposal_scores[name] += (
+                    hypothesis["hypotheses"][0]["hypothetical_output"] == expected)
+                # Retained composed skills are evaluated separately from
+                # ranking, so prediction accuracy isn't falsely attributed
+                # to the comparison policy.
+                actual = service.reason_auto(
+                    domain="transfer-comparison", task_ref="heldout-" + str(i),
+                    query=q)
+                solved_scores[name] += actual["answer"] == expected
+                self.assertFalse(actual["development_overlap"])
+                self.assertFalse(actual["model_invoked"])
+        self.assertEqual(solved_scores, {"cold": 48, "guided": 48})
+        self.assertEqual(proposal_scores["guided"], 48)
+        self.assertLess(proposal_scores["cold"], proposal_scores["guided"])
+        self.assertEqual(guided.status()["composition_comparisons"], 1)
+        self.assertEqual(cold.status()["composition_comparisons"], 0)
+
+    def test_old_comparison_cannot_hide_a_new_supported_strategy(self):
+        self.seed_parents()
+        report = self.core.compare_compositions(
+            domain="changed-goal", task_ref="original-target",
+            examples=[{"question": question(t, g), "answer": target(t, g)}
+                      for t, g in DEV],
+            evidence_refs=["development:original-goal"])
+        self.assertEqual(report["status"], "comparison_recorded")
+        changed = [
+            ([("P", 9), ("Q", 3), ("R", 6)],
+             [("P", 16), ("Q", 7), ("R", 25)]),
+            ([("S", 2), ("T", 7), ("V", 4)],
+             [("S", 21), ("T", 18), ("V", 5)]),
+            ([("N", 3), ("L", 8), ("K", 5)],
+             [("N", 9), ("L", 2), ("K", 6)]),
+            ([("X", 5), ("Y", 4), ("Z", 7)],
+             [("X", 11), ("Y", 20), ("Z", 18)]),
+        ]
+        def alternate(t, g):
+            ordered = "".join(k for k, _ in sorted(t, key=lambda v: -v[1]))
+            med = sorted(g, key=lambda v: v[1])[1][0]
+            return ordered + "|" + med
+        second = self.core.learn_composition(
+            domain="changed-goal", task_ref="novel-target",
+            examples=[{"question": question(t, g), "answer": alternate(t, g)}
+                      for t, g in changed],
+            evidence_refs=["development:independent-changed-target"])
+        self.assertEqual(second["status"], "learned_composition")
+        self.assertEqual(second["join"], "first_then_second")
+        self.assertGreater(second["guided_deprioritized"], 0)
+        self.assertGreater(second["first_supported_program_rank"], 1)
+        # A truly unique program must remain unique across the entire
+        # admissible search, including candidates whose old history was poor.
+        novel = question([("A", 7), ("B", 3), ("C", 8)],
+                         [("A", 2), ("B", 8), ("C", 5)])
+        result = self.core.reason_auto(
+            domain="changed-goal", task_ref="new-goal-heldout", query=novel)
+        self.assertEqual(result["answer"], alternate(
+            [("A", 7), ("B", 3), ("C", 8)],
+            [("A", 2), ("B", 8), ("C", 5)]))
 
     def test_registered_in_native_runtime_and_never_calls_model(self):
         self.seed_parents()
