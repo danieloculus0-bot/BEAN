@@ -64,14 +64,21 @@ class BEANReasoningSkills:
             raise ValueError("Unknown strategy")
         if type(limit) is not int or not 1 <= limit <= 20:
             raise ValueError("Invalid recall limit")
-        strategies = (strategy,) if strategy else SKILLS
-        ranked = []
-        for arm in strategies:
-            ranked.extend(task_lesson_matches(
-                self.bank, strategy=arm, domain=domain, query=query, limit=limit))
-        # Deterministic tie resolution, retaining the same source-linked
-        # memory ranking whether BEAN or a matched trial consumes the lesson.
-        ranked.sort(key=lambda result: (-result[0], result[1].lesson_id))
+        if strategy is not None:
+            # Decisions always pass a selected strategy. Preserve the exact
+            # within-arm ordering used during paired evaluation.
+            ranked = task_lesson_matches(
+                self.bank, strategy=strategy, domain=domain, query=query,
+                limit=limit)
+        else:
+            wanted = _words(query)
+            matches = []
+            for index, item in enumerate(self.bank.lessons(domain=domain)):
+                overlap = len(wanted & _words(item.text))
+                if overlap:
+                    matches.append((overlap, index, item))
+            matches.sort(key=lambda row: (-row[0], -row[1], row[2].lesson_id))
+            ranked = [(score, item) for score, _, item in matches[:limit]]
         return [{
             "lesson_id": item.lesson_id, "strategy": item.strategy,
             "domain": item.domain, "text": item.text,
