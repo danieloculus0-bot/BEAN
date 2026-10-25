@@ -96,7 +96,7 @@ class ExperienceBank:
     def lessons(self, strategy=None, domain=None):
         found = []
         for record in self.journal.events():
-            if record.get("schema") != SCHEMA or record.get("kind") not in ("lesson", "trial", "selection", "inference", "feedback", "judgment", "judgment_feedback", "research", "local_rule", "composed_rule"):
+            if record.get("schema") != SCHEMA or record.get("kind") not in ("lesson", "trial", "selection", "inference", "feedback", "judgment", "judgment_feedback", "research", "local_rule", "composed_rule", "composition_comparison"):
                 raise ValueError("Invalid adaptive journal event type")
             if record["kind"] == "lesson":
                 raw = dict(record["data"])
@@ -196,6 +196,73 @@ class ExperienceBank:
         if sha256(canonical(check)).hexdigest() != rule_id:
             raise ValueError("Composed rule identity does not match content")
         return self._append("composed_rule", receipt)
+
+    def record_composition_comparison(self, receipt):
+        """Append reason-coded, matched developmental program outcomes."""
+        if (not isinstance(receipt, dict)
+                or receipt.get("schema") != "bean.native.composition.comparison.v1"
+                or not isinstance(receipt.get("domain"), str)
+                or not receipt["domain"]
+                or not isinstance(receipt.get("task_ref"), str)
+                or not receipt["task_ref"]
+                or not isinstance(receipt.get("development_question_sha256"), list)
+                or not 4 <= len(receipt["development_question_sha256"]) <= 12
+                or len(set(receipt["development_question_sha256"]))
+                   != len(receipt["development_question_sha256"])
+                or not all(isinstance(h, str) and len(h) == 64
+                           for h in receipt["development_question_sha256"])
+                or receipt.get("development_cases") != len(
+                    receipt["development_question_sha256"])
+                or not isinstance(receipt.get("evidence_refs"), list)
+                or not receipt["evidence_refs"]
+                or not isinstance(receipt.get("results"), list)
+                or not 1 <= len(receipt["results"]) <= 792
+                or receipt.get("matched_control") !=
+                   "all_candidate_programs_same_development_examples"
+                or receipt.get("evaluation_origin") != "host_supplied_development_answers"
+                or receipt.get("independent_validation") is not False
+                or receipt.get("model_invoked") is not False
+                or receipt.get("actions_authorized") is not False
+                or len(canonical(receipt)) > 250000):
+            raise ValueError("Invalid composition comparison")
+        from .composition import JOINS
+        candidates = set()
+        parents = {e["data"]["rule_id"] for e in self.journal.events()
+                   if e["kind"] == "local_rule"}
+        for result in receipt["results"]:
+            if (not isinstance(result, dict)
+                    or not isinstance(result.get("parent_rule_ids"), list)
+                    or len(result["parent_rule_ids"]) != 2
+                    or any(r not in parents for r in result["parent_rule_ids"])
+                    or result.get("join") not in JOINS
+                    or any(type(result.get(k)) is not int or result[k] < 0
+                           for k in ("correct", "wrong", "unavailable"))
+                    or sum(result[k] for k in ("correct", "wrong", "unavailable"))
+                       != receipt["development_cases"]
+                    or not isinstance(result.get("reason_counts"), dict)
+                    or sum(result["reason_counts"].values())
+                       != receipt["development_cases"]
+                    or any(v < 0 or type(v) is not int
+                           for v in result["reason_counts"].values())):
+                raise ValueError("Invalid matched program score")
+            key = (tuple(result["parent_rule_ids"]), result["join"])
+            if key in candidates:
+                raise ValueError("Duplicate program in comparison")
+            candidates.add(key)
+        check = dict(receipt)
+        comparison_id = check.pop("comparison_id", None)
+        if not isinstance(comparison_id, str) or len(comparison_id) != 64 or (
+                sha256(canonical(check)).hexdigest() != comparison_id):
+            raise ValueError("Composition comparison hash mismatch")
+        seen = {
+            h for event in self.journal.events()
+            if event["kind"] == "composition_comparison"
+            and event["data"]["domain"] == receipt["domain"]
+            for h in event["data"]["development_question_sha256"]
+        }
+        if seen.intersection(receipt["development_question_sha256"]):
+            raise ValueError("A comparison cannot credit repeated development questions")
+        return self._append("composition_comparison", receipt)
 
     def record_research(self, receipt):
         """Keep bounded unverified web evidence in BEAN's original SHA journal."""
