@@ -33,3 +33,16 @@ The new deterministic **synthetic** contract constructs an irrelevant same-domai
 ## Evidence boundary
 
 This is context-selection parity and synthetic task-family transfer, **not** general semantic understanding, neural weight improvement, self-directed learning or independently demonstrated out-of-distribution intelligence. Preserve all failures and exact CI commit SHA. Do not promote this PR directly to Core main without reconciling the parent research branch and validating current Core regressions.
+
+
+## Bounded actual reasoning-model trial (2026-10-25)
+
+The new research-only `bean.evaluation.live_reasoning_transfer` targets **`gpt-6.1-sol`, medium reasoning effort**, via the Responses API, with an upper budget of 18 provider calls (no automatic retries, tool execution, funds access, or trading). The API credential is read exclusively from `OPENAI_API_KEY` on the GitHub Actions runner; neither the token nor raw HTTP failure body is logged. A missing credential produces `blocked_no_api_key` and a failing live-job gate, **not** a simulated pass.
+
+The same fixed model is evaluated on an artificial ASTER-7 dispatch-key protocol. A development cold answer is measured first; BEAN only writes a reflection if the answer fails. A separate actual development response must correctly follow the documented general rule before BEAN may retain it as a successful reusable skill. Then BEAN's existing selection chooses among real-model cold, irrelevant-placebo, reflection, skill, and instruction arms on development cases. The SQLite ExperienceBank is closed and reopened before evaluating fresh task IDs and different token instances using the frozen winner. Expected answers are supplied only to a strict deterministic judge; none enter the provider's input.
+
+The output includes model response IDs, served model ID, every raw public-task answer, pass/fail records, complete selection and held-out scores, full source-linked state and the append-only experiment journal. Both real-provider and transport/credential failure statuses are preserved in workflow artifacts. Old evaluations with different prompts may not be credited as independent new samples.
+
+**Crucial limitation:** This is a *real reasoning model performing controlled, invented tasks with evaluator-supplied feedback*, not proof of spontaneously discovered rules or transfer to real engineering/financial problems. A correct BEAN-memory answer tests experience retrieval and application to different instances of one task family. Real generalization to unseen domains would require independent external tasks and separately sourced reward observations, not this synthetic-domain test alone. If the baseline already answers correctly, the experiment is inconclusive and deliberately refuses to manufacture a development mistake.
+
+Verification: `python -m unittest bean.tests.test_live_reasoning_transfer -v` (offline structural fixture, not live evidence), then inspect the actual `BEAN real reasoning model learning transfer` GitHub Actions run and `bean-real-reasoning-matched-trial` artifact at the exact tested commit.
