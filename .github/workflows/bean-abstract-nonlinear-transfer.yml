@@ -45,6 +45,13 @@ jobs:
             --target-kind ideas \
             --database "$RUNNER_TEMP/bean-ideas-transfer.sqlite3" \
             --output "$RUNNER_TEMP/bean-ideas-transfer.json"
+      - name: Detect failed transfer from 24 development cases then test adapted BEAN on 80 new blind cases
+        shell: bash
+        run: |
+          python -m bean.evaluation.abstract_nonlinear_transfer \
+            --mode adapt \
+            --database "$RUNNER_TEMP/bean-adaptive-transfer.sqlite3" \
+            --output "$RUNNER_TEMP/bean-adaptive-transfer.json"
       - name: Preserve scored results and hash-chained memory for inspection
         if: always()
         uses: actions/upload-artifact@v4
@@ -55,5 +62,7 @@ jobs:
             ${{ runner.temp }}/bean-cross-domain-transfer.sqlite3
             ${{ runner.temp }}/bean-ideas-transfer.json
             ${{ runner.temp }}/bean-ideas-transfer.sqlite3
+            ${{ runner.temp }}/bean-adaptive-transfer.json
+            ${{ runner.temp }}/bean-adaptive-transfer.sqlite3
           retention-days: 30
           if-no-files-found: warn
