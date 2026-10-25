@@ -13,6 +13,15 @@ from bean.learning import NativeReasoningService, TrialCase
 from bean.learning.bridge_feedback import BridgeReasoningLoop
 from bean.research import PublicWebSources, WebResearchService
 from bean.tests.test_native_web_research import FakeInternet, ReasoningFixture, resolver
+# Native Core does not install the separate Bridge checkout by default.
+# The dedicated integration workflow does: run all Bridge tests there.
+try:
+    import ezbean.learning_loop
+except ModuleNotFoundError as exc:
+    if exc.name != "ezbean":
+        raise
+    raise unittest.SkipTest(
+        "BEAN-AI-Bridge optional package ezbean not installed") from exc
 
 
 class HostVerifierFixture:
