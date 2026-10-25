@@ -2,7 +2,7 @@ name: BEAN native web research, Bridge learning and Nemotron smoke
 
 on:
   push:
-    branches: [integrate/bean-native-web-research-mainline-20261025]
+    branches: [main, integrate/bean-native-web-research-mainline-20261025]
     paths:
       - 'bean/research/**'
       - 'bean/learning/experimental.py'
