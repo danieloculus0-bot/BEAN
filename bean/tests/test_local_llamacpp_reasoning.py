@@ -159,7 +159,7 @@ class LocalQwenIntegrationTests(unittest.TestCase):
         self.assertEqual(chosen["arm"], "reflection")
         reply = self.bean.reason_auto(
             domain="inspection", task_ref="unseen",
-            query="SOURCE RULE use reference on a new sample")
+            query="Please compare this reference reading on an unfamiliar new sample")
         self.assertEqual(reply["answer"], "LOCAL_RULE_APPLIED")
         self.assertEqual(reply["decision"]["selected_strategy"], "reflection")
         self.assertEqual(reply["provider_kind"], "local_llamacpp")
