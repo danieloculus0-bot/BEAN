@@ -147,13 +147,13 @@ class NativeReasoningSkillsTests(unittest.TestCase):
         self.skills.reflect(
             domain="sorting", task_id="development",
             observed="unsorted tokens", expected="sorted tokens",
-            adjustment_hypothesis="SORT_ASC",
+            adjustment_hypothesis="SORT_ASC sort input tokens",
             evidence_refs=["fixture:development"])
         self.skills.retain_skill(
-            domain="sorting", name="sorting rule", steps=["SORT_ASC"],
+            domain="sorting", name="sort rule", steps=["SORT_ASC"],
             passed=True, evidence_refs=["fixture:skill"])
         self.skills.propose_instruction(
-            domain="sorting", instruction="SORT_ASC",
+            domain="sorting", instruction="SORT_ASC sort input tokens",
             evidence_refs=["fixture:instruction"])
         self.skills.reflect(
             domain="welding", task_id="unrelated",
@@ -200,6 +200,103 @@ class NativeReasoningSkillsTests(unittest.TestCase):
                     TrialCase("selection-1", "sorting", "sort c,a", "a,c"),
                     TrialCase("holdout-3", "sorting", "sort d,c", "c,d")],
                 model=model, judge=lambda expected, observed: expected == observed)
+
+    def test_transfer_receipt_uses_same_task_context_as_beans_decision(self):
+        """A passing trial must use the actual task-matched BEAN context."""
+        from hashlib import sha256
+        from bean.learning.experimental import material_for
+        self.skills.reflect(
+            domain="sorting", task_id="noise-before-training",
+            observed="irrelevant observation", expected="another observation",
+            adjustment_hypothesis="DECOY_ONLY",
+            evidence_refs=["fixture:decoy"])
+        self.skills.reflect(
+            domain="sorting", task_id="observed-failure",
+            observed="tokens not ordered", expected="tokens sorted",
+            adjustment_hypothesis="SORT_ASC sort input tokens",
+            evidence_refs=["fixture:real-lesson"])
+        self.skills.retain_skill(
+            domain="sorting", name="sort rule", steps=["SORT_ASC"],
+            passed=True, evidence_refs=["fixture:skill"])
+        self.skills.propose_instruction(
+            domain="sorting", instruction="SORT_ASC sort input tokens",
+            evidence_refs=["fixture:prompt"])
+        self.skills.reflect(
+            domain="welding", task_id="control",
+            observed="rough bead", expected="uniform bead",
+            adjustment_hypothesis="UNRELATED_ONLY",
+            evidence_refs=["fixture:placebo"])
+
+        class DeterministicContextModel:
+            provider_kind = "synthetic_fixture"
+            model_id = "task-matched-retrieval-fixture"
+            def complete(self, question, context):
+                if question.startswith("sort ") and "SORT_ASC" in context:
+                    return ",".join(sorted(question[5:].split(",")))
+                return "unknown"
+
+        model = DeterministicContextModel()
+        selection = self.skills.evaluate_and_select(
+            domain="sorting",
+            cases=[TrialCase("select-a", "sorting", "sort c,a", "a,c"),
+                   TrialCase("select-b", "sorting", "sort z,d", "d,z")],
+            model=model, judge=lambda expected, actual: expected == actual)
+        trial = selection["trial"]
+        self.assertEqual(selection["selection"]["arm"], "reflection")
+        self.assertEqual(trial["context_policy"], "same_task_lexical_retrieval_as_decide_v1")
+        self.assertEqual(trial["scores"]["reflection"], 2)
+        self.assertEqual(trial["scores"]["cold"], 0)
+        selected_context = material_for(
+            self.bank, "reflection", "sorting", query="sort b,a")
+        decision = self.skills.decide(
+            domain="sorting", task_ref="new-task", query="sort b,a")
+        self.assertEqual(selected_context,
+                         "\n".join(x["text"] for x in decision["lessons"]))
+        self.assertEqual(len(decision["lessons"]), 1)
+        self.assertEqual(decision["lessons"][0]["evidence_refs"],
+                         ["fixture:real-lesson"])
+        self.assertNotIn("DECOY_ONLY", selected_context)
+        self.assertEqual(model.complete("sort b,a", selected_context), "a,b")
+        test_context = material_for(
+            self.bank, "reflection", "sorting", query="sort c,a").ljust(800)
+        observed_hash = next(
+            row["context_sha256"] for row in trial["records"]
+            if row["task_id"] == "select-a" and row["arm"] == "reflection")
+        self.assertEqual(observed_hash, sha256(test_context.encode()).hexdigest())
+        before_events = len(self.bank.journal.events())
+        holdout = self.skills.evaluate_holdout(
+            domain="sorting",
+            cases=[TrialCase("unseen-a", "sorting", "sort t,b", "b,t"),
+                   TrialCase("unseen-b", "sorting", "sort q,m", "m,q")],
+            model=model, judge=lambda expected, actual: expected == actual)
+        self.assertEqual(holdout["trial"]["scores"],
+                         {"cold": 0, "placebo": 0, "adaptive": 2})
+        self.assertGreater(len(self.bank.journal.events()), before_events)
+        self.bank.close()
+        reopened = ExperienceBank(self.path)
+        try:
+            decision_after_restart = BEANReasoningSkills(reopened).decide(
+                domain="sorting", task_ref="after-restart", query="sort b,a")
+            self.assertEqual(decision_after_restart["lessons"], decision["lessons"])
+            self.assertEqual(decision_after_restart["selection_trial_hash"],
+                             decision["selection_trial_hash"])
+        finally:
+            reopened.close()
+
+    def test_task_aware_retrieval_does_not_leak_unmatched_lessons(self):
+        from bean.learning.experimental import material_for
+        self.skills.reflect(
+            domain="sorting", task_id="unrelated",
+            observed="red color", expected="blue color",
+            adjustment_hypothesis="COLOR_SWAP",
+            evidence_refs=["fixture:color"])
+        context = material_for(self.bank, "reflection", "sorting",
+                               query="sort z,a")
+        self.assertEqual(context, "")
+        # Legacy Lab026 domain-first retrieval remains available explicitly,
+        # but it is no longer mistaken for task-aware evidence.
+        self.assertIn("COLOR_SWAP", material_for(
+            self.bank, "reflection", "sorting"))
 
     def test_no_decision_before_measured_selection(self):
         self.seed()
