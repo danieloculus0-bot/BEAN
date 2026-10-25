@@ -96,7 +96,7 @@ class ExperienceBank:
     def lessons(self, strategy=None, domain=None):
         found = []
         for record in self.journal.events():
-            if record.get("schema") != SCHEMA or record.get("kind") not in ("lesson", "trial", "selection", "inference", "feedback", "judgment", "judgment_feedback", "research"):
+            if record.get("schema") != SCHEMA or record.get("kind") not in ("lesson", "trial", "selection", "inference", "feedback", "judgment", "judgment_feedback", "research", "local_rule"):
                 raise ValueError("Invalid adaptive journal event type")
             if record["kind"] == "lesson":
                 raw = dict(record["data"])
@@ -142,6 +142,21 @@ class ExperienceBank:
         if receipt.get("schema") != SCHEMA:
             raise ValueError("Incorrect experiment schema")
         return self._append("trial", receipt)
+
+    def record_local_rule(self, receipt):
+        """Retain a uniquely induced CPU-only procedural hypothesis in BEAN."""
+        if (not isinstance(receipt, dict)
+                or receipt.get("schema") != "bean.native.symbolic.v1"
+                or receipt.get("grammar") not in ("tags", "gauge")
+                or not isinstance(receipt.get("domain"), str)
+                or not isinstance(receipt.get("rule_id"), str)
+                or len(receipt["rule_id"]) != 64
+                or not isinstance(receipt.get("examples"), list)
+                or len(receipt["examples"]) < 3
+                or receipt.get("external_model_used") is not False
+                or len(canonical(receipt)) > 18000):
+            raise ValueError("Invalid native local reasoning evidence")
+        return self._append("local_rule", receipt)
 
     def record_research(self, receipt):
         """Keep bounded unverified web evidence in BEAN's original SHA journal."""
