@@ -111,7 +111,10 @@ class NativeReasoningService:
         if primitive["status"] == "locally_solved":
             return primitive
         composed = self.reason_composed(domain=domain, task_ref=task_ref, query=query)
-        return composed if composed["status"] == "locally_solved" else primitive
+        if composed["status"] == "locally_solved" or (
+                composed["reason"] != "unsupported_composite_question"):
+            return composed
+        return primitive
 
     def reason_auto(self, *, domain, task_ref, query,
                     allow_provider=False, model=None):
