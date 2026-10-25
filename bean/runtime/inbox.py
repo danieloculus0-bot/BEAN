@@ -93,13 +93,13 @@ class CommandInbox:
             if not isinstance(raw, dict):
                 raise ValueError("Inbox command must be a JSON object")
         except (OSError, ValueError, UnicodeError) as e:
-            log_event(session_uuid, EventType.ERROR, f"Inbox parse error for {path.name}: {e}", Source.SYSTEM, subtype="inbox_parse_error", severity=Severity.ERROR, data={"path": str(path), "error": str(e)})
+            log_event(session_uuid, EventType.ERROR, f"Inbox parse error for {path.name}: {type(e).__name__}", Source.SYSTEM, subtype="inbox_parse_error", severity=Severity.ERROR, data={"path": str(path), "error_class": type(e).__name__})
             self._move(path, self.failed_dir)
             return {"status": "parse_error", "path": str(path), "error": str(e)}
 
         command = raw.get("command")
         if not isinstance(command, str) or not command.strip() or len(command) > 128:
-            log_event(session_uuid, EventType.WARNING, f"Inbox file has no command: {path.name}", Source.SYSTEM, subtype="inbox_no_command", severity=Severity.WARN, data=raw)
+            log_event(session_uuid, EventType.WARNING, f"Inbox file has no command: {path.name}", Source.SYSTEM, subtype="inbox_no_command", severity=Severity.WARN, data={"path": str(path), "invalid_command": True})
             self._move(path, self.failed_dir)
             return {"status": "no_command", "path": str(path)}
 
