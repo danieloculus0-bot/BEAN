@@ -298,6 +298,77 @@ class NativeReasoningSkillsTests(unittest.TestCase):
         self.assertIn("COLOR_SWAP", material_for(
             self.bank, "reflection", "sorting"))
 
+    def test_holdout_rejects_renamed_and_normalized_repeat_questions(self):
+        """Changing a task ID or whitespace cannot mint unseen-learning credit."""
+        from bean.learning.experimental import question_fingerprint
+        class Fixture:
+            provider_kind = "synthetic_fixture"
+            model_id = "blindness-check-v1"
+            def complete(self, question, context):
+                return ",".join(sorted(question[5:].split(","))) if (
+                    question.startswith("sort ") and "SORT_ASC" in context) else "unknown"
+
+        self.skills.reflect(
+            domain="sorting", task_id="dev", observed="unsorted tokens",
+            expected="sorted tokens",
+            adjustment_hypothesis="SORT_ASC sort input tokens",
+            evidence_refs=["fixture:dev"])
+        self.skills.retain_skill(
+            domain="sorting", name="sort", steps=["SORT_ASC"], passed=True,
+            evidence_refs=["fixture:skill"])
+        self.skills.propose_instruction(
+            domain="sorting", instruction="SORT_ASC sort input tokens",
+            evidence_refs=["fixture:prompt"])
+        self.skills.reflect(
+            domain="welding", task_id="other", observed="bad bead",
+            expected="good bead", adjustment_hypothesis="UNRELATED_ONLY",
+            evidence_refs=["fixture:placebo"])
+        selected = self.skills.evaluate_and_select(
+            domain="sorting", model=Fixture(),
+            cases=[TrialCase("dev-a", "sorting", "sort c,a", "a,c"),
+                   TrialCase("dev-b", "sorting", "sort z,x", "x,z")],
+            judge=lambda expected, answer: expected == answer)
+        self.assertEqual(selected["selection"]["arm"], "reflection")
+        saved_receipts = len(self.bank.journal.events())
+        self.assertEqual(question_fingerprint("sort c,a"),
+                         question_fingerprint("  SORT  c,a  "))
+        with self.assertRaisesRegex(ValueError, "question previously tested"):
+            self.skills.evaluate_holdout(
+                domain="sorting", model=Fixture(),
+                cases=[TrialCase("renamed-a", "sorting", "  SORT  c,a  ", "a,c"),
+                       TrialCase("new-b", "sorting", "sort m,b", "b,m")],
+                judge=lambda expected, answer: expected == answer)
+        with self.assertRaisesRegex(ValueError, "repeated public questions"):
+            self.skills.evaluate_holdout(
+                domain="sorting", model=Fixture(),
+                cases=[TrialCase("new-a", "sorting", "sort m,b", "b,m"),
+                       TrialCase("new-b", "sorting", " SORT  m,b ", "b,m")],
+                judge=lambda expected, answer: expected == answer)
+        self.assertEqual(len(self.bank.journal.events()), saved_receipts)
+        result = self.skills.evaluate_holdout(
+            domain="sorting", model=Fixture(),
+            cases=[TrialCase("test-a", "sorting", "sort m,b", "b,m"),
+                   TrialCase("test-b", "sorting", "sort p,k", "k,p")],
+            judge=lambda expected, answer: expected == answer)
+        self.assertEqual(result["trial"]["scores"],
+                         {"cold": 0, "placebo": 0, "adaptive": 2})
+        self.assertEqual(result["trial"]["context_policy"],
+                         "same_task_lexical_retrieval_as_decide_v1")
+        from bean.learning.experimental import material_for
+        context = material_for(
+            self.bank, "adaptive", "sorting", query="sort m,b").ljust(800)
+        actual_hash = next(
+            row["context_sha256"] for row in result["trial"]["records"]
+            if row["task_id"] == "test-a" and row["arm"] == "adaptive")
+        from hashlib import sha256
+        self.assertEqual(actual_hash, sha256(context.encode()).hexdigest())
+        with self.assertRaisesRegex(ValueError, "question previously tested"):
+            self.skills.evaluate_holdout(
+                domain="sorting", model=Fixture(),
+                cases=[TrialCase("second-a", "sorting", "SORT m,b", "b,m"),
+                       TrialCase("second-b", "sorting", "sort r,f", "f,r")],
+                judge=lambda expected, answer: expected == answer)
+
     def test_no_decision_before_measured_selection(self):
         self.seed()
         with self.assertRaises(ValueError):
