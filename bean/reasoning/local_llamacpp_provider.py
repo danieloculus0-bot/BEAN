@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 from urllib.error import HTTPError, URLError
 from urllib.parse import urlsplit
 from urllib.request import (
@@ -44,7 +45,7 @@ class LocalLlamaCppProvider(LLMAdapterBase):
     adapter_name = "local_llamacpp"
     provider_kind = "local_llamacpp"
 
-    def __init__(self, *, base_url=None, model_name=None, timeout_seconds=180,
+    def __init__(self, *, base_url=None, model_name=None, timeout_seconds=300,
                  requester=None, max_tokens=1536):
         self.endpoint = _endpoint(
             base_url or os.environ.get("BEAN_LOCAL_LLM_URL", "http://127.0.0.1:8080"))
@@ -109,6 +110,12 @@ class LocalLlamaCppProvider(LLMAdapterBase):
             choice = (decoded.get("choices") or [{}])[0]
             message = choice.get("message", {})
             final = message.get("content") if isinstance(message, dict) else None
+            # Qwen3 may embed a <think>...</think> segment in the text.
+            # Retain only the user-facing final answer as BEAN's observation.
+            if isinstance(final, str) and "<think>" in final:
+                final = re.sub(r"<think>.*?</think>", "", final, flags=re.DOTALL)
+                if "<think>" in final:
+                    raise ValueError("Incomplete reasoning-only response")
             served = decoded.get("model")
             if (not isinstance(final, str) or not final.strip()
                     or not isinstance(served, str) or served != self.model_name):
