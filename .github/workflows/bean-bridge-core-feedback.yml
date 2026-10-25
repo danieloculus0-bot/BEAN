@@ -2,11 +2,12 @@ name: BEAN Bridge-to-Core reasoning feedback regression
 
 on:
   push:
-    branches: [integrate/bridge-reasoning-feedback-loop-20261025]
+    branches: [integrate/bridge-reasoning-feedback-loop-20261025, fix/bean-bridge-memory-scope-20261025]
     paths:
       - 'bean/learning/bridge.py'
       - 'bean/learning/bridge_feedback.py'
       - 'bean/learning/reasoning_service.py'
+      - 'bean/learning/experimental.py'
       - 'bean/tests/test_bridge_reasoning_loop.py'
       - '.github/workflows/bean-bridge-core-feedback.yml'
   pull_request:
