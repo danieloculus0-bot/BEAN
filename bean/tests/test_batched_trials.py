@@ -117,6 +117,14 @@ class BatchingTests(unittest.TestCase):
                 judge=lambda a, b: a == b)
         self.assertEqual(len(self.bank.journal.events()), n)
 
+    def test_recovery_source_hashes_are_full_sha256_digests(self):
+        from bean.evaluation.nemotron_batched_recovery import ORIGINAL_SHA256
+        self.assertEqual(set(ORIGINAL_SHA256), {
+            "report.json", "experience.sqlite3", "provider_calls.jsonl"})
+        self.assertTrue(all(
+            len(value) == 64 and all(char in "0123456789abcdef" for char in value)
+            for value in ORIGINAL_SHA256.values()))
+
     def test_incompatible_batch_repeat_budget_fails_closed(self):
         with self.assertRaisesRegex(ValueError, "one replicate"):
             self.bean.evaluate_and_select(
