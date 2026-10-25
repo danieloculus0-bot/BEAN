@@ -1,0 +1,46 @@
+name: BEAN mainline Nemotron reasoning research checks
+
+on:
+  push:
+    branches: [integrate/bean-nemotron-research-mainline-20261025]
+    paths:
+      - 'bean/evaluation/live_reasoning_transfer.py'
+      - 'bean/evaluation/openrouter_reasoning_transfer.py'
+      - 'bean/evaluation/nemotron_self_derived_transfer.py'
+      - 'bean/tests/test_live_reasoning_transfer.py'
+      - 'bean/tests/test_openrouter_reasoning_transfer.py'
+      - 'bean/tests/test_nemotron_self_derived_transfer.py'
+      - '.github/workflows/bean-mainline-nemotron-research.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'bean/evaluation/live_reasoning_transfer.py'
+      - 'bean/evaluation/openrouter_reasoning_transfer.py'
+      - 'bean/evaluation/nemotron_self_derived_transfer.py'
+      - 'bean/tests/test_live_reasoning_transfer.py'
+      - 'bean/tests/test_openrouter_reasoning_transfer.py'
+      - 'bean/tests/test_nemotron_self_derived_transfer.py'
+      - '.github/workflows/bean-mainline-nemotron-research.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  desktop-python-compatibility:
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 8
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-2025, ubuntu-24.04]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Python module and existing BEAN research compatibility
+        run: |
+          python -m compileall -q bean/learning bean/evaluation
+          python -m unittest bean.tests.test_native_reasoning_skills bean.tests.test_batched_trials bean.tests.test_live_reasoning_transfer bean.tests.test_openrouter_reasoning_transfer bean.tests.test_nemotron_self_derived_transfer -v
