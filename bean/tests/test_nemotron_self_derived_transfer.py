@@ -186,6 +186,57 @@ class ModelAuthoredReasoningTests(unittest.TestCase):
             self.assertEqual(json.loads(log[0])["answer"], response)
             self.assertEqual(json.loads(log[0])["kind"], "scored_task")
 
+    def test_isolated_live_batch_compacts_questions_not_control_arms(self):
+        import json
+        batch = [
+            {"task_id": "a", "question": "ORCHID-7 for tags T7 A2 F9. Return key.",
+             "context": "ORCHID-7 order letters from highest digit to lowest"},
+            {"task_id": "b", "question": "ORCHID-7 for tags K2 B9 D3. Return key.",
+             "context": "ORCHID-7 order letters from highest digit to lowest"},
+        ]
+        observed = []
+
+        def request(req, timeout=90):
+            payload = json.loads(req.data.decode())
+            observed.append(payload)
+            self.assertEqual(payload["model"], MODEL)
+            self.assertNotIn("FTA", req.data.decode())
+            self.assertNotIn("BKD", req.data.decode())
+            self.assertEqual(len(payload["messages"]), 2)
+            self.assertEqual(len(json.loads(payload["messages"][1]["content"])), 2)
+            return FixtureResponse({
+                "id": "batch-fixture", "model": MODEL,
+                "choices": [{"message": {"content": '{"a":"FTA","b":"BDK"}'}}],
+                "usage": {"prompt_tokens": 120, "completion_tokens": 26}})
+        with tempfile.TemporaryDirectory() as temp:
+            p = RecordingNemotron("fake-token", output=Path(temp), request_fn=request)
+            answers = p.complete_batch(batch)
+            self.assertEqual(answers, {"a": "FTA", "b": "BDK"})
+            self.assertEqual(len(observed), 1)
+            self.assertEqual(p.calls[0]["kind"], "scored_batch")
+            self.assertTrue(p.calls[0]["valid_format"])
+            self.assertEqual(len((Path(temp)/"provider_calls.jsonl").read_text().splitlines()),1)
+
+    def test_invalid_batch_output_stays_recorded_and_scores_wrong(self):
+        batch = [
+            {"task_id": "a", "question": "ORCHID-7 for tags T7 A2 F9. Return key.",
+             "context": ""},
+            {"task_id": "b", "question": "ORCHID-7 for tags K2 B9 D3. Return key.",
+             "context": ""},
+        ]
+        def request(req, timeout=90):
+            return FixtureResponse({
+                "id": "invalid-fixture", "model": MODEL,
+                "choices": [{"message": {"content": "I think both are correct!"}}],
+            })
+        with tempfile.TemporaryDirectory() as temp:
+            p=RecordingNemotron("fake-token", output=Path(temp), request_fn=request)
+            answers=p.complete_batch(batch)
+            self.assertEqual(answers, {"a": "INVALID_BATCH_RESPONSE",
+                                       "b": "INVALID_BATCH_RESPONSE"})
+            self.assertFalse(p.calls[0]["valid_format"])
+            self.assertIn("I think both", p.calls[0]["raw_response"])
+
     def test_budget_cap_and_no_overwrites(self):
         with tempfile.TemporaryDirectory() as temp:
             p=Path(temp)/"archive"
