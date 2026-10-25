@@ -179,3 +179,30 @@ BLOCKS = [
 def register_builtin(runtime) -> None:
     for block in BLOCKS:
         runtime.register(block)
+
+
+def register_core_cognition_handlers(inbox, ctx) -> None:
+    """Connect old Bridge-style thinking blocks to actual Core command inbox.
+
+    No second runtime, second learning database, or provider mock. The
+    reasoning command calls the existing selected NativeReasoningService.
+    """
+    def call(fn):
+        return lambda message, session: fn(message.args, {"session_uuid": session})
+
+    inbox.register("cognition_observe_experiment", call(observe_experiment))
+    inbox.register("cognition_memory_recall", call(memory_recall))
+    inbox.register("cognition_numeric_context", call(numeric_context))
+    inbox.register("cognition_drive_status", call(evaluate_drives))
+
+    def native_reasoning(message, session):
+        service = ctx.get("native_reasoning_service")
+        if service is None:
+            raise RuntimeError("BEAN native reasoning service not enabled")
+        data = message.args
+        if not isinstance(data, dict):
+            raise ValueError("Expected native reasoning request object")
+        return service.reason(domain=data["domain"], task_ref=data["task_ref"],
+                              query=data["query"])
+
+    inbox.register("cognition_reason", native_reasoning)
