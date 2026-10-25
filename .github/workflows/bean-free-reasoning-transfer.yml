@@ -1,0 +1,45 @@
+name: BEAN free pinned reasoning model transfer
+on:
+  push:
+    branches: [experiment/bean-task-matched-transfer-20261025]
+    paths:
+      - 'bean/evaluation/openrouter_reasoning_transfer.py'
+      - 'bean/tests/test_openrouter_reasoning_transfer.py'
+      - '.github/workflows/bean-free-reasoning-transfer.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  offline-contract:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m unittest bean.tests.test_openrouter_reasoning_transfer -v
+
+  actual-free-reasoning-provider:
+    needs: offline-contract
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Actual no-charge NVIDIA Nemotron 3 Ultra reasoner or explicit blocker
+        run: python -m bean.evaluation.openrouter_reasoning_transfer --output /tmp/bean-free-reasoning
+      - name: Archive evidence or provider status, including losses and failures
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bean-free-reasoning-transfer
+          path: /tmp/bean-free-reasoning/
+          if-no-files-found: warn
+          retention-days: 90
