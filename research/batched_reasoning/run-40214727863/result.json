@@ -1,0 +1,48 @@
+{
+  "error": "LiveProviderError: OpenRouter batch HTTP 429",
+  "fresh_questions": [
+    "new-20261025-orchid-a",
+    "new-20261025-orchid-b",
+    "new-20261025-orchid-c",
+    "new-20261025-orchid-d"
+  ],
+  "journal_events_before": 6,
+  "model": "nvidia/nemotron-3-ultra-550b-a55b:free",
+  "new_calls": 0,
+  "new_holdout_scores": null,
+  "old_provider_calls": 13,
+  "original_run": 40212952629,
+  "restored_decision": {
+    "decision_source": "BEAN_journaled_outcome_selection",
+    "domain": "orchid-routing",
+    "host_action_executed": false,
+    "lessons": [
+      {
+        "evidence_refs": [
+          "verified_dev:gen-1792946596-AUemQ71J5IwYfafkrnCL"
+        ],
+        "lesson_id": "bean.lesson.51dff03d0030b8a3c5c661f38b4d5dcc",
+        "strategy": "prompt",
+        "text": "Instruction candidate: Training examples only: ORCHID-7 for tags K2 P8 D5. Return key. => PDK / ORCHID-7 for tags R4 M9 J1. Return key. => MRJ / ORCHID-7 for tags B3 W6 H8. Return key. => HWB"
+      }
+    ],
+    "model_invoked": false,
+    "native_skills": {
+      "holdout_learning_proven": false,
+      "independently_verified": false,
+      "query_sha256": "c0536ad9c84aa81195d9894a4c6ecd33df2c057f5a3820719f8801809dffa02f",
+      "retrieval": "same_domain_lexical",
+      "schema": "bean.native_reasoning_skills.v1",
+      "selected_lessons": 1
+    },
+    "outcomes_independently_authenticated": false,
+    "schema": "bean.lab026.brain_decision.v1",
+    "selected_strategy": "prompt",
+    "selection_trial_hash": "a3bf644cc8d2e0deeca0581e9f00d91969f23bac082f4dd05533af479a00055f",
+    "task_ref": "frozen-recovery-before-holdout"
+  },
+  "schema": "bean.nemotron.batched_recovery.v1",
+  "source_policy": "prompt_selected_from_original_real_provider_development_trial",
+  "status": "partial_failed",
+  "weight_training": false
+}
