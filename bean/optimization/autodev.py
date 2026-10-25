@@ -66,7 +66,13 @@ class Journal:
             payload TEXT NOT NULL, entry_digest TEXT NOT NULL,
             UNIQUE(objective, iteration))""")
         self.db.commit()
-        self.verify()
+        try:
+            self.verify()
+        except Exception:
+            # A corrupted chain must be rejected, but its SQLite handle
+            # cannot remain open (Windows then refuses to remove test DBs).
+            self.db.close()
+            raise
 
     def verify(self):
         prior = "GENESIS"
