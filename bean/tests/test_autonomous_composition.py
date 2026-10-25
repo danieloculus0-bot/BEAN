@@ -210,6 +210,34 @@ class CompositionTests(unittest.TestCase):
         self.assertEqual(result["reason"], "conflicting_or_inapplicable_compositions")
         self.assertIsNone(result["answer"])
 
+    def test_refuted_composed_program_is_quarantined_after_feedback(self):
+        self.seed_parents()
+        self.assertEqual(self.train()["status"], "learned_composition")
+        q = question([("A", 5), ("B", 8), ("C", 2)],
+                     [("A", 14), ("B", 7), ("C", 19)])
+        used = self.core.reason_auto(
+            domain="mixed-transfer", task_ref="new-but-wrong", query=q)
+        self.assertEqual(used["status"], "locally_solved")
+        report = self.core.feedback(
+            receipt_id=used["receipt_id"], expected="host-refuted-answer",
+            adjustment_hypothesis="Review component rule or join with independent evidence",
+            evidence_refs=["host:challenged-composition"])
+        self.assertFalse(report["matched"])
+        before = self.core.status()["inference_receipts"]
+        blocked = self.core.reason_auto(
+            domain="mixed-transfer", task_ref="do-not-repeat", query=q)
+        self.assertEqual(blocked["status"], "abstain")
+        self.assertEqual(blocked["reason"], "composition_has_refuted_host_feedback")
+        self.assertEqual(self.core.status()["inference_receipts"], before)
+        self.core.close()
+        reopened = NativeReasoningService(self.db, model=None)
+        try:
+            again = reopened.reason_auto(
+                domain="mixed-transfer", task_ref="after-restart", query=q)
+            self.assertEqual(again["reason"], "composition_has_refuted_host_feedback")
+        finally:
+            reopened.close()
+
     def test_wrong_structure_and_missing_join_match_fail_closed(self):
         self.seed_parents()
         self.assertEqual(self.train()["status"], "learned_composition")
