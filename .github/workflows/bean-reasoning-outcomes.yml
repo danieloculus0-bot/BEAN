@@ -1,0 +1,30 @@
+name: BEAN real inference feedback and request audits
+on:
+  push:
+    branches: [integrate/bean-inference-feedback-ledger-20261025]
+    paths:
+      - 'bean/learning/**'
+      - 'bean/runtime/inbox.py'
+      - 'bean/tests/test_reasoning_feedback_mainline.py'
+      - '.github/workflows/bean-reasoning-outcomes.yml'
+  pull_request:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  feedback-loop:
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 16
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, windows-2025]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install pytest psutil
+      - run: python -m compileall -q bean
+      - run: python -m unittest bean.tests.test_reasoning_feedback_mainline -v
+      - run: python -m pytest bean/tests -q -ra --tb=short

@@ -91,7 +91,7 @@ class ExperienceBank:
     def lessons(self, strategy=None, domain=None):
         found = []
         for record in self.journal.events():
-            if record.get("schema") != SCHEMA or record.get("kind") not in ("lesson", "trial", "selection", "inference"):
+            if record.get("schema") != SCHEMA or record.get("kind") not in ("lesson", "trial", "selection", "inference", "feedback"):
                 raise ValueError("Invalid adaptive journal event type")
             if record["kind"] == "lesson":
                 raw = dict(record["data"])
@@ -119,10 +119,33 @@ class ExperienceBank:
         if (not isinstance(receipt, dict) or receipt.get("schema") !=
                 "bean.native.reasoning.inference.v1"
                 or not isinstance(receipt.get("model_id"), str)
-                or not receipt["model_id"] or not isinstance(receipt.get("answer"), str)
-                or not receipt["answer"]):
+                or not receipt["model_id"]
+                or not isinstance(receipt.get("answer"), str)
+                or (not receipt["answer"] and receipt.get("status") != "failed")
+                or (receipt.get("status") == "failed"
+                    and (not isinstance(receipt.get("exception_class"), str)
+                         or not receipt["exception_class"]))):
             raise ValueError("Invalid model inference evidence")
         return self._append("inference", receipt)
+
+    def record_feedback(self, event):
+        """Durably retain both successful and failed host-observed outcomes."""
+        if (not isinstance(event, dict)
+                or event.get("schema") != "bean.native.reasoning.feedback.v1"
+                or event.get("outcome_origin") != "host_reported"
+                or not isinstance(event.get("source_refs"), list)
+                or not event["source_refs"]
+                or not isinstance(event.get("receipt_id"), str)
+                or len(event["receipt_id"]) != 64
+                or type(event.get("matched")) is not bool):
+            raise ValueError("Invalid host feedback evidence")
+        known = [row["data"] for row in self.journal.events()
+                 if row.get("kind") == "inference"
+                 and row["data"].get("receipt_id") == event["receipt_id"]
+                 and row["data"].get("purpose") == "selected_strategy_applied"]
+        if len(known) != 1:
+            raise ValueError("Feedback source inference not found")
+        return self._append("feedback", event)
 
     def record_selection(self, selection):
         """Persist the measured choice, linked to an earlier evaluation receipt."""
