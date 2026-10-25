@@ -1,0 +1,59 @@
+name: BEAN Python desktop-equivalent cognition smoke
+on:
+  push:
+    branches: [integrate/bean-cognition-salvage-20261025]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  python-runtime:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, windows-2025]
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install pytest psutil
+      - name: Run actual BEAN Python entry point with default-on reasoning memory
+        shell: bash
+        run: |
+          python - <<'PY'
+          import os, pathlib, subprocess, sys, tempfile
+          with tempfile.TemporaryDirectory(prefix='bean-cognition-smoke-') as root:
+              memory=pathlib.Path(root)/'bean.db'
+              env=os.environ.copy()
+              env['BEAN_REASONING_ENABLED']='1'
+              env.pop('BEAN_REASONING_LESSONS_DB',None)
+              env.pop('BEAN_REASONING_PROVIDER',None)
+              result=subprocess.run(
+                  [sys.executable,'bean_run.py','--ticks','1','--hz','5',
+                   '--no-seed','--db',str(memory)],
+                  env=env,text=True,capture_output=True,
+                  encoding='utf-8',errors='replace',timeout=55)
+              print('BEAN desktop-equivalent exit:',result.returncode)
+              print('BEAN stdout tail:',result.stdout[-1800:])
+              if result.returncode:
+                  print('BEAN stderr tail:',result.stderr[-2400:])
+              assert result.returncode==0,'Actual Python runtime did not boot'
+              journal=memory.with_name('bean_reasoning_lessons.sqlite3')
+              assert journal.is_file(),'Reasoning journal not initialized by default'
+              from bean.learning import NativeReasoningService
+              service=NativeReasoningService(journal)
+              try:
+                  status=service.status()
+                  assert status['storage']=='owned_sha256_chain_sqlite'
+                  assert status['model_configured'] is False
+                  print('BEAN native reasoning Core:',status)
+              finally:service.close()
+          PY
+      - name: Check recovered Core cognition and context contracts
+        run: python -m unittest bean.tests.test_cognition_salvage_integration bean.tests.test_core_reasoning_integration -v
