@@ -96,7 +96,7 @@ class ExperienceBank:
     def lessons(self, strategy=None, domain=None):
         found = []
         for record in self.journal.events():
-            if record.get("schema") != SCHEMA or record.get("kind") not in ("lesson", "trial", "selection", "inference", "feedback", "judgment", "judgment_feedback", "research", "local_rule"):
+            if record.get("schema") != SCHEMA or record.get("kind") not in ("lesson", "trial", "selection", "inference", "feedback", "judgment", "judgment_feedback", "research", "local_rule", "composed_rule"):
                 raise ValueError("Invalid adaptive journal event type")
             if record["kind"] == "lesson":
                 raw = dict(record["data"])
@@ -158,6 +158,45 @@ class ExperienceBank:
             raise ValueError("Invalid native local reasoning evidence")
         return self._append("local_rule", receipt)
 
+    def record_composed_rule(self, receipt):
+        """Retain a typed composition referencing two *existing* local rules."""
+        if (not isinstance(receipt, dict)
+                or receipt.get("schema") != "bean.native.composition.v1"
+                or not isinstance(receipt.get("domain"), str)
+                or not receipt["domain"].strip()
+                or not isinstance(receipt.get("parent_rule_ids"), list)
+                or len(receipt["parent_rule_ids"]) != 2
+                or len(set(receipt["parent_rule_ids"])) != 2
+                or not isinstance(receipt.get("development_question_sha256"), list)
+                or not 4 <= len(receipt["development_question_sha256"]) <= 12
+                or len(set(receipt["development_question_sha256"]))
+                   != len(receipt["development_question_sha256"])
+                or not receipt.get("uniquely_supported_by_development") is True
+                or receipt.get("independent_validation") is not False
+                or receipt.get("model_invoked") is not False
+                or receipt.get("actions_authorized") is not False
+                or not isinstance(receipt.get("evidence_refs"), list)
+                or not receipt["evidence_refs"]
+                or not isinstance(receipt.get("rule_id"), str)
+                or len(receipt["rule_id"]) != 64
+                or len(canonical(receipt)) > 20000):
+            raise ValueError("Invalid composed reasoning evidence")
+        from .composition import JOINS
+        if receipt.get("join") not in JOINS:
+            raise ValueError("Unknown symbolic composition join")
+        rules = {row["data"]["rule_id"]: row["data"]
+                 for row in self.journal.events() if row["kind"] == "local_rule"}
+        if any(r not in rules for r in receipt["parent_rule_ids"]):
+            raise ValueError("Cannot compose nonexistent or unretained rule")
+        if (rules[receipt["parent_rule_ids"][0]]["domain"]
+                == rules[receipt["parent_rule_ids"][1]]["domain"]):
+            raise ValueError("Composition requires different source domains")
+        check = dict(receipt)
+        rule_id = check.pop("rule_id")
+        if sha256(canonical(check)).hexdigest() != rule_id:
+            raise ValueError("Composed rule identity does not match content")
+        return self._append("composed_rule", receipt)
+
     def record_research(self, receipt):
         """Keep bounded unverified web evidence in BEAN's original SHA journal."""
         if (not isinstance(receipt, dict) or receipt.get("schema") !=
@@ -204,7 +243,7 @@ class ExperienceBank:
         known = [row["data"] for row in self.journal.events()
                  if row.get("kind") == "inference"
                  and row["data"].get("receipt_id") == event["receipt_id"]
-                 and row["data"].get("purpose") in ("selected_strategy_applied", "research_answer", "local_rule_applied", "local_cold_inference")]
+                 and row["data"].get("purpose") in ("selected_strategy_applied", "research_answer", "local_rule_applied", "local_cold_inference", "local_composition_applied")]
         if len(known) != 1:
             raise ValueError("Feedback source inference not found")
         return self._append("feedback", event)
