@@ -44,7 +44,7 @@ def make_handlers(
         loop_status = loop.status() if loop is not None else {}
         model_snapshot = model_updater.full_snapshot() if model_updater is not None else None
         possibility_snapshot = state_manager.snapshot() if state_manager is not None else None
-        return {"status": "running", "loop": loop_status, "hardware": reading, "models": model_snapshot, "possibility_states": possibility_snapshot, "watcher": ctx.get("watcher").snapshot() if ctx.get("watcher") else None}
+        return {"status": "running", "loop": loop_status, "hardware": reading, "models": model_snapshot, "possibility_states": possibility_snapshot, "watcher": ctx.get("watcher").snapshot() if ctx.get("watcher") else None, "native_reasoning": ctx["native_reasoning_service"].status() if ctx.get("native_reasoning_service") else None}
 
     def watcher_status(msg: InboxMessage, session_uuid: str) -> dict:
         watcher = ctx.get("watcher")
