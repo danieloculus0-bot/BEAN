@@ -162,7 +162,8 @@ class BEANReasoningSkills:
             raise ValueError("Holdout task IDs overlap previous measured trials")
         receipt = run_paired_trial(
             bank=self.bank, cases=cases, model=model, judge=judge,
-            arms=("cold", "placebo", "adaptive"), replicates=replicates)
+            arms=("cold", "placebo", "adaptive"), replicates=replicates,
+            task_aware=True)
         return {"trial": receipt, "scope": "post_selection_holdout_no_policy_change"}
 
     def select_strategy(self, *, domain, rows, evaluator_id, dataset_id,
