@@ -57,7 +57,8 @@ class BridgeReasoningLoop:
         self.verifier = verifier
 
     def attempt(self, *, domain, task_ref, query, concept, as_of,
-                observations, adjustment_hypothesis=None):
+                observations, adjustment_hypothesis=None,
+                existing_receipt=None):
         """Use a real model, then evaluate its *actual answer* against Bridge.
 
         The observations are ezbean SourceObservation instances. Bridge itself
@@ -82,8 +83,28 @@ class BridgeReasoningLoop:
                 raise TypeError("Bridge source requires exact ref/origin/value fields")
         # A selected BEAN policy must already exist. Provider errors are
         # journaled by NativeReasoningService and are never called successes.
-        inference = self.service.reason(
-            domain=domain, task_ref=task_ref, query=query)
+        if existing_receipt is None:
+            inference = self.service.reason(
+                domain=domain, task_ref=task_ref, query=query)
+        else:
+            # Reuse the exact previously journaled web-backed BEAN answer.
+            # Bridge cannot silently rerun the model after reading evidence.
+            if (not isinstance(existing_receipt, str)
+                    or len(existing_receipt) != 64
+                    or any(ch not in "0123456789abcdef" for ch in existing_receipt)):
+                raise ValueError("Valid SHA-256 research inference receipt required")
+            matched = [e["data"] for e in self.service.bank.journal.events()
+                       if e["kind"] == "inference"
+                       and e["data"].get("receipt_id") == existing_receipt
+                       and e["data"].get("purpose") == "research_answer"]
+            if (len(matched) != 1 or matched[0]["domain"] != domain.casefold()
+                    or matched[0]["task_ref"] != task_ref
+                    or matched[0]["query"] != query):
+                raise ValueError("Research receipt does not match Bridge task")
+            original = matched[0]
+            inference = {
+                "receipt_id": existing_receipt, "answer": original["answer"],
+                "model_id": original["model_id"]}
         bridge = audit_sources(
             db_path=self.bridge_db, concept=concept.strip(), as_of=as_of,
             observations=typed, verifier=self.verifier,
