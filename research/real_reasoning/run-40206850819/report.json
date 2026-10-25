@@ -1,0 +1,488 @@
+{
+  "holdout_increment_over_cold": 2,
+  "holdout_increment_over_placebo": 2,
+  "holdout_trial": {
+    "arms": [
+      "cold",
+      "placebo",
+      "adaptive"
+    ],
+    "cases": 2,
+    "context_chars": 800,
+    "context_policy": "same_task_lexical_retrieval_as_decide_v1",
+    "independent_evaluation_authenticated": false,
+    "journal_tip": "978dcdeb34e269e2679c329d59ae61f680e475f4fb8588ffe4efabe0cde746ba",
+    "model_id": "nvidia/nemotron-3-ultra-550b-a55b:free",
+    "model_weights_modified": false,
+    "promotion": "none",
+    "provider_kind": "real_model",
+    "question_fingerprint": "NFKC_casefold_whitespace_sha256_v1",
+    "receipt_hash": "5b136695351a15cc342372e12623947e3043b01b47c58d6303bf7190e5d48d81",
+    "records": [
+      {
+        "answer_sha256": "23759997b3c59884dc4c0ff5320d6301b0e7f63bf0f6483a7b54d7d43bc5ccd1",
+        "arm": "cold",
+        "context_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "passed": false,
+        "question_sha256": "1f5b0b6c42dd35a2dff0ab844543fb16bd51f1597df565d2abb1d29df797bbbc",
+        "replicate": 0,
+        "task_id": "holdout-1"
+      },
+      {
+        "answer_sha256": "23759997b3c59884dc4c0ff5320d6301b0e7f63bf0f6483a7b54d7d43bc5ccd1",
+        "arm": "placebo",
+        "context_sha256": "e6569b7e27db8e370b08801e9a4132f7ccf797aebe959858abcca30f8a54bca1",
+        "passed": false,
+        "question_sha256": "1f5b0b6c42dd35a2dff0ab844543fb16bd51f1597df565d2abb1d29df797bbbc",
+        "replicate": 0,
+        "task_id": "holdout-1"
+      },
+      {
+        "answer_sha256": "8b117112408940146bfacae34bcd0718fd71c0f0532c21089353beb6ff75f892",
+        "arm": "adaptive",
+        "context_sha256": "99dceb38cea13ee36f8e789100016b35771f5b1945072b492a763b0c5c2586d8",
+        "passed": true,
+        "question_sha256": "1f5b0b6c42dd35a2dff0ab844543fb16bd51f1597df565d2abb1d29df797bbbc",
+        "replicate": 0,
+        "task_id": "holdout-1"
+      },
+      {
+        "answer_sha256": "23759997b3c59884dc4c0ff5320d6301b0e7f63bf0f6483a7b54d7d43bc5ccd1",
+        "arm": "placebo",
+        "context_sha256": "e6569b7e27db8e370b08801e9a4132f7ccf797aebe959858abcca30f8a54bca1",
+        "passed": false,
+        "question_sha256": "d72ac5d3308c271a1be139e5b57de9fc29d731b85438098ab265c5377d1866d7",
+        "replicate": 0,
+        "task_id": "holdout-2"
+      },
+      {
+        "answer_sha256": "db2aee1f4cec95cdaac4cc3928874d03647064fd2e8d957c36c2029c2deb1e93",
+        "arm": "adaptive",
+        "context_sha256": "99dceb38cea13ee36f8e789100016b35771f5b1945072b492a763b0c5c2586d8",
+        "passed": true,
+        "question_sha256": "d72ac5d3308c271a1be139e5b57de9fc29d731b85438098ab265c5377d1866d7",
+        "replicate": 0,
+        "task_id": "holdout-2"
+      },
+      {
+        "answer_sha256": "23759997b3c59884dc4c0ff5320d6301b0e7f63bf0f6483a7b54d7d43bc5ccd1",
+        "arm": "cold",
+        "context_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "passed": false,
+        "question_sha256": "d72ac5d3308c271a1be139e5b57de9fc29d731b85438098ab265c5377d1866d7",
+        "replicate": 0,
+        "task_id": "holdout-2"
+      }
+    ],
+    "replicates": 1,
+    "schema": "bean.adaptive_lab026.v1",
+    "scores": {
+      "adaptive": 2,
+      "cold": 0,
+      "placebo": 0
+    },
+    "verdict": "needs_external_blind_replication"
+  },
+  "independent_blindness_authenticated": false,
+  "interpretation": "Same real reasoning model + BEAN source-linked, retained context. Synthetic invented task family and evaluator-authored feedback; does not prove independent real-world reasoning, neural weight change, causal understanding or trading profit.",
+  "model_calls": [
+    {
+      "answer": "UNKNOWN",
+      "context_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "model_served": "nvidia/nemotron-3-ultra-550b-a55b:free",
+      "question_sha256": "5305541e5678ac3dfb6b57805c0dd3cce4eae9712a6e01366a88cb66e63185e7",
+      "response_id": "gen-1792941935-r2sSiX3UyB4ZEw18Z198",
+      "usage": {
+        "completion_tokens": 192,
+        "prompt_tokens": 106,
+        "total_tokens": 298
+      }
+    },
+    {
+      "answer": "CYN",
+      "context_sha256": "9faf40cc2ea078e21553aea5991cde545d6fb35aa28425a8b345b1d46b1d6992",
+      "model_served": "nvidia/nemotron-3-ultra-550b-a55b:free",
+      "question_sha256": "5305541e5678ac3dfb6b57805c0dd3cce4eae9712a6e01366a88cb66e63185e7",
+      "response_id": "gen-1792941937-yTyzDh1IEz8rzA6tQxM1",
+      "usage": {
+        "completion_tokens": 229,
+        "prompt_tokens": 154,
+        "total_tokens": 383
+      }
+    },
+    {
+      "answer": "UNKNOWN",
+      "context_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "model_served": "nvidia/nemotron-3-ultra-550b-a55b:free",
+      "question_sha256": "aa60d694fd2ffbb7a7901eecfd0de47d6beb65fdf2bf07d8e0378f7bb8d6ad15",
+      "response_id": "gen-1792941941-okHvpqNUgLw3nWhl9GdX",
+      "usage": {
+        "completion_tokens": 306,
+        "prompt_tokens": 106,
+        "total_tokens": 412
+      }
+    },
+    {
+      "answer": "DTP",
+      "context_sha256": "99dceb38cea13ee36f8e789100016b35771f5b1945072b492a763b0c5c2586d8",
+      "model_served": "nvidia/nemotron-3-ultra-550b-a55b:free",
+      "question_sha256": "aa60d694fd2ffbb7a7901eecfd0de47d6beb65fdf2bf07d8e0378f7bb8d6ad15",
+      "response_id": "gen-1792941948-xpUnNFrevRZsEHSFjc4c",
+      "usage": {
+        "completion_tokens": 316,
+        "prompt_tokens": 172,
+        "total_tokens": 488
+      }
+    },
+    {
+      "answer": "DTP",
+      "context_sha256": "2db0195464ce58b55162d1823c967049910488132aef1f8c3cc235a6e3b68ddc",
+      "model_served": "nvidia/nemotron-3-ultra-550b-a55b:free",
+      "question_sha256": "aa60d694fd2ffbb7a7901eecfd0de47d6beb65fdf2bf07d8e0378f7bb8d6ad15",
+      "response_id": "gen-1792941957-Kz0IdZOiMXw1XnCZ95eW",
+      "usage": {
+        "completion_tokens": 252,
+        "prompt_tokens": 163,
+        "total_tokens": 415
+      }
+    },
+    {
+      "answer": "DTP",
+      "context_sha256": "2e4e0cdc1627f4ae801f7c04129b14c026dc7843b03dc88e94dc98c9eb1e7828",
+      "model_served": "nvidia/nemotron-3-ultra-550b-a55b:free",
+      "question_sha256": "aa60d694fd2ffbb7a7901eecfd0de47d6beb65fdf2bf07d8e0378f7bb8d6ad15",
+      "response_id": "gen-1792941960-Qdy7fcMFVno2wSefvykU",
+      "usage": {
+        "completion_tokens": 176,
+        "prompt_tokens": 157,
+        "total_tokens": 333
+      }
+    },
+    {
+      "answer": "UNKNOWN",
+      "context_sha256": "e6569b7e27db8e370b08801e9a4132f7ccf797aebe959858abcca30f8a54bca1",
+      "model_served": "nvidia/nemotron-3-ultra-550b-a55b:free",
+      "question_sha256": "aa60d694fd2ffbb7a7901eecfd0de47d6beb65fdf2bf07d8e0378f7bb8d6ad15",
+      "response_id": "gen-1792941963-Wutpx83wa2SlawBQyGw4",
+      "usage": {
+        "completion_tokens": 204,
+        "prompt_tokens": 125,
+        "total_tokens": 329
+      }
+    },
+    {
+      "answer": "VLS",
+      "context_sha256": "99dceb38cea13ee36f8e789100016b35771f5b1945072b492a763b0c5c2586d8",
+      "model_served": "nvidia/nemotron-3-ultra-550b-a55b:free",
+      "question_sha256": "5abfaa63f445e0554cff406d35edca0db32059177662ae652ed56712df025aa3",
+      "response_id": "gen-1792941966-C5PYfsLaGxgj0zi6ImdM",
+      "usage": {
+        "completion_tokens": 221,
+        "prompt_tokens": 172,
+        "total_tokens": 393
+      }
+    },
+    {
+      "answer": "VLS",
+      "context_sha256": "2db0195464ce58b55162d1823c967049910488132aef1f8c3cc235a6e3b68ddc",
+      "model_served": "nvidia/nemotron-3-ultra-550b-a55b:free",
+      "question_sha256": "5abfaa63f445e0554cff406d35edca0db32059177662ae652ed56712df025aa3",
+      "response_id": "gen-1792941984-0UxdyS6xQ0m32mnkFtVO",
+      "usage": {
+        "completion_tokens": 188,
+        "prompt_tokens": 163,
+        "total_tokens": 351
+      }
+    },
+    {
+      "answer": "VLS",
+      "context_sha256": "2e4e0cdc1627f4ae801f7c04129b14c026dc7843b03dc88e94dc98c9eb1e7828",
+      "model_served": "nvidia/nemotron-3-ultra-550b-a55b:free",
+      "question_sha256": "5abfaa63f445e0554cff406d35edca0db32059177662ae652ed56712df025aa3",
+      "response_id": "gen-1792941986-hDlL3IAhIAXFR7psQfdL",
+      "usage": {
+        "completion_tokens": 208,
+        "prompt_tokens": 157,
+        "total_tokens": 365
+      }
+    },
+    {
+      "answer": "UNKNOWN",
+      "context_sha256": "e6569b7e27db8e370b08801e9a4132f7ccf797aebe959858abcca30f8a54bca1",
+      "model_served": "nvidia/nemotron-3-ultra-550b-a55b:free",
+      "question_sha256": "5abfaa63f445e0554cff406d35edca0db32059177662ae652ed56712df025aa3",
+      "response_id": "gen-1792941989-WYwLefTcdjCSZAViisFf",
+      "usage": {
+        "completion_tokens": 325,
+        "prompt_tokens": 125,
+        "total_tokens": 450
+      }
+    },
+    {
+      "answer": "UNKNOWN",
+      "context_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "model_served": "nvidia/nemotron-3-ultra-550b-a55b:free",
+      "question_sha256": "5abfaa63f445e0554cff406d35edca0db32059177662ae652ed56712df025aa3",
+      "response_id": "gen-1792941995-3P8Qxp0JbOgGX5hELlhl",
+      "usage": {
+        "completion_tokens": 282,
+        "prompt_tokens": 106,
+        "total_tokens": 388
+      }
+    },
+    {
+      "answer": "UNKNOWN",
+      "context_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "model_served": "nvidia/nemotron-3-ultra-550b-a55b:free",
+      "question_sha256": "6444328da3def0cff3e69f5c9d692e8b8f3a717d9c4aea727994ec3dc4871409",
+      "response_id": "gen-1792942013-RqLmqEML5ppfO7pbKKDt",
+      "usage": {
+        "completion_tokens": 301,
+        "prompt_tokens": 106,
+        "total_tokens": 407
+      }
+    },
+    {
+      "answer": "UNKNOWN",
+      "context_sha256": "e6569b7e27db8e370b08801e9a4132f7ccf797aebe959858abcca30f8a54bca1",
+      "model_served": "nvidia/nemotron-3-ultra-550b-a55b:free",
+      "question_sha256": "6444328da3def0cff3e69f5c9d692e8b8f3a717d9c4aea727994ec3dc4871409",
+      "response_id": "gen-1792942017-57DjSismUA06yHT2yqih",
+      "usage": {
+        "completion_tokens": 373,
+        "prompt_tokens": 125,
+        "total_tokens": 498
+      }
+    },
+    {
+      "answer": "QBW",
+      "context_sha256": "99dceb38cea13ee36f8e789100016b35771f5b1945072b492a763b0c5c2586d8",
+      "model_served": "nvidia/nemotron-3-ultra-550b-a55b:free",
+      "question_sha256": "6444328da3def0cff3e69f5c9d692e8b8f3a717d9c4aea727994ec3dc4871409",
+      "response_id": "gen-1792942023-nXOsd2dUlu6VYAD9KS3w",
+      "usage": {
+        "completion_tokens": 388,
+        "prompt_tokens": 172,
+        "total_tokens": 560
+      }
+    },
+    {
+      "answer": "UNKNOWN",
+      "context_sha256": "e6569b7e27db8e370b08801e9a4132f7ccf797aebe959858abcca30f8a54bca1",
+      "model_served": "nvidia/nemotron-3-ultra-550b-a55b:free",
+      "question_sha256": "9a5dd2c271f9f9615f7f7d2c379355496d42783f066b2a010fd0c253133b9bbe",
+      "response_id": "gen-1792942029-wMVqTrWTR3DaEBKWvlxm",
+      "usage": {
+        "completion_tokens": 249,
+        "prompt_tokens": 125,
+        "total_tokens": 374
+      }
+    },
+    {
+      "answer": "XGA",
+      "context_sha256": "99dceb38cea13ee36f8e789100016b35771f5b1945072b492a763b0c5c2586d8",
+      "model_served": "nvidia/nemotron-3-ultra-550b-a55b:free",
+      "question_sha256": "9a5dd2c271f9f9615f7f7d2c379355496d42783f066b2a010fd0c253133b9bbe",
+      "response_id": "gen-1792942036-HnxX8POTNBQbNyT3i0mq",
+      "usage": {
+        "completion_tokens": 345,
+        "prompt_tokens": 172,
+        "total_tokens": 517
+      }
+    },
+    {
+      "answer": "UNKNOWN",
+      "context_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "model_served": "nvidia/nemotron-3-ultra-550b-a55b:free",
+      "question_sha256": "9a5dd2c271f9f9615f7f7d2c379355496d42783f066b2a010fd0c253133b9bbe",
+      "response_id": "gen-1792942043-t7kLYmvDtch4dyclh1Ce",
+      "usage": {
+        "completion_tokens": 278,
+        "prompt_tokens": 106,
+        "total_tokens": 384
+      }
+    }
+  ],
+  "model_requested": "nvidia/nemotron-3-ultra-550b-a55b:free",
+  "model_served": "nvidia/nemotron-3-ultra-550b-a55b:free",
+  "persisted_decision": {
+    "decision_source": "BEAN_journaled_outcome_selection",
+    "domain": "aster-routing",
+    "host_action_executed": false,
+    "lessons": [
+      {
+        "evidence_refs": [
+          "development:46998ca8e9e6229185ce637b2d46eb2ec198f75c3e98474df8614d703c862ec1"
+        ],
+        "lesson_id": "bean.lesson.cefdcc43da7f0718621d5f347c0afb42",
+        "strategy": "reflection",
+        "text": "Task development-origin; observed: UNKNOWN; expected: CYN; unverified adjustment hypothesis: ASTER-7 dispatch key procedure: read each capital-letter and single-digit tag pair, order the tag pairs by their numeric digits ASCENDING, then join their capital letters WITHOUT spaces or separators. Return only that key."
+      }
+    ],
+    "model_invoked": false,
+    "native_skills": {
+      "holdout_learning_proven": false,
+      "independently_verified": false,
+      "query_sha256": "6444328da3def0cff3e69f5c9d692e8b8f3a717d9c4aea727994ec3dc4871409",
+      "retrieval": "same_domain_lexical",
+      "schema": "bean.native_reasoning_skills.v1",
+      "selected_lessons": 1
+    },
+    "outcomes_independently_authenticated": false,
+    "schema": "bean.lab026.brain_decision.v1",
+    "selected_strategy": "reflection",
+    "selection_trial_hash": "03ecb149c978f89aaca732bcb9d8aa9f4ce1f1d51a08c2ab809daf5d7980b880",
+    "task_ref": "restart-check"
+  },
+  "provider_kind": "real_model",
+  "requests": 18,
+  "restart_selection_identical": true,
+  "schema": "bean.native.real_reasoning_transfer.v1",
+  "selection": {
+    "arm": "reflection",
+    "cases": 2,
+    "control_improvement_observed": true,
+    "domain": "aster-routing",
+    "independent_learning_proof": false,
+    "journal_tip": "bedf0eae864175a551bc19a5144da58e8f6e22a82b20ef61089410a510cb4630",
+    "model_id": "nvidia/nemotron-3-ultra-550b-a55b:free",
+    "model_weights_modified": false,
+    "provider_kind": "real_model",
+    "replicates": 1,
+    "schema": "bean.lab026.strategy_choice.v1",
+    "scope": "selection_trial_only_not_holdout",
+    "scores": {
+      "cold": 0,
+      "placebo": 0,
+      "prompt": 2,
+      "reflection": 2,
+      "skill": 2
+    },
+    "source_trial_hash": "03ecb149c978f89aaca732bcb9d8aa9f4ce1f1d51a08c2ab809daf5d7980b880"
+  },
+  "selection_trial": {
+    "arms": [
+      "cold",
+      "reflection",
+      "skill",
+      "prompt",
+      "placebo"
+    ],
+    "cases": 2,
+    "context_chars": 800,
+    "context_policy": "same_task_lexical_retrieval_as_decide_v1",
+    "independent_evaluation_authenticated": false,
+    "journal_tip": "734e771739d554bdb4f6ff1383ea6dc2f99e59609911698fb23f26d5401e497d",
+    "model_id": "nvidia/nemotron-3-ultra-550b-a55b:free",
+    "model_weights_modified": false,
+    "promotion": "none",
+    "provider_kind": "real_model",
+    "question_fingerprint": "NFKC_casefold_whitespace_sha256_v1",
+    "receipt_hash": "03ecb149c978f89aaca732bcb9d8aa9f4ce1f1d51a08c2ab809daf5d7980b880",
+    "records": [
+      {
+        "answer_sha256": "23759997b3c59884dc4c0ff5320d6301b0e7f63bf0f6483a7b54d7d43bc5ccd1",
+        "arm": "cold",
+        "context_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "passed": false,
+        "question_sha256": "baa57223723c88e235f039059548fdec55f8e3a46a6fea2b55fecfbe591d7dee",
+        "replicate": 0,
+        "task_id": "selection-1"
+      },
+      {
+        "answer_sha256": "f408308ece443b2c8d87abff29f8700f626766cf4b5545729ce57d1fde3374e9",
+        "arm": "reflection",
+        "context_sha256": "99dceb38cea13ee36f8e789100016b35771f5b1945072b492a763b0c5c2586d8",
+        "passed": true,
+        "question_sha256": "baa57223723c88e235f039059548fdec55f8e3a46a6fea2b55fecfbe591d7dee",
+        "replicate": 0,
+        "task_id": "selection-1"
+      },
+      {
+        "answer_sha256": "f408308ece443b2c8d87abff29f8700f626766cf4b5545729ce57d1fde3374e9",
+        "arm": "skill",
+        "context_sha256": "2db0195464ce58b55162d1823c967049910488132aef1f8c3cc235a6e3b68ddc",
+        "passed": true,
+        "question_sha256": "baa57223723c88e235f039059548fdec55f8e3a46a6fea2b55fecfbe591d7dee",
+        "replicate": 0,
+        "task_id": "selection-1"
+      },
+      {
+        "answer_sha256": "f408308ece443b2c8d87abff29f8700f626766cf4b5545729ce57d1fde3374e9",
+        "arm": "prompt",
+        "context_sha256": "2e4e0cdc1627f4ae801f7c04129b14c026dc7843b03dc88e94dc98c9eb1e7828",
+        "passed": true,
+        "question_sha256": "baa57223723c88e235f039059548fdec55f8e3a46a6fea2b55fecfbe591d7dee",
+        "replicate": 0,
+        "task_id": "selection-1"
+      },
+      {
+        "answer_sha256": "23759997b3c59884dc4c0ff5320d6301b0e7f63bf0f6483a7b54d7d43bc5ccd1",
+        "arm": "placebo",
+        "context_sha256": "e6569b7e27db8e370b08801e9a4132f7ccf797aebe959858abcca30f8a54bca1",
+        "passed": false,
+        "question_sha256": "baa57223723c88e235f039059548fdec55f8e3a46a6fea2b55fecfbe591d7dee",
+        "replicate": 0,
+        "task_id": "selection-1"
+      },
+      {
+        "answer_sha256": "46893066449dc80971b8d71790499a6f71d092e5691d041188239875ac54c89a",
+        "arm": "reflection",
+        "context_sha256": "99dceb38cea13ee36f8e789100016b35771f5b1945072b492a763b0c5c2586d8",
+        "passed": true,
+        "question_sha256": "6695f6b5ed54fbcecb580aca9ec35965287960cf014acb0491d7eb4787677d2e",
+        "replicate": 0,
+        "task_id": "selection-2"
+      },
+      {
+        "answer_sha256": "46893066449dc80971b8d71790499a6f71d092e5691d041188239875ac54c89a",
+        "arm": "skill",
+        "context_sha256": "2db0195464ce58b55162d1823c967049910488132aef1f8c3cc235a6e3b68ddc",
+        "passed": true,
+        "question_sha256": "6695f6b5ed54fbcecb580aca9ec35965287960cf014acb0491d7eb4787677d2e",
+        "replicate": 0,
+        "task_id": "selection-2"
+      },
+      {
+        "answer_sha256": "46893066449dc80971b8d71790499a6f71d092e5691d041188239875ac54c89a",
+        "arm": "prompt",
+        "context_sha256": "2e4e0cdc1627f4ae801f7c04129b14c026dc7843b03dc88e94dc98c9eb1e7828",
+        "passed": true,
+        "question_sha256": "6695f6b5ed54fbcecb580aca9ec35965287960cf014acb0491d7eb4787677d2e",
+        "replicate": 0,
+        "task_id": "selection-2"
+      },
+      {
+        "answer_sha256": "23759997b3c59884dc4c0ff5320d6301b0e7f63bf0f6483a7b54d7d43bc5ccd1",
+        "arm": "placebo",
+        "context_sha256": "e6569b7e27db8e370b08801e9a4132f7ccf797aebe959858abcca30f8a54bca1",
+        "passed": false,
+        "question_sha256": "6695f6b5ed54fbcecb580aca9ec35965287960cf014acb0491d7eb4787677d2e",
+        "replicate": 0,
+        "task_id": "selection-2"
+      },
+      {
+        "answer_sha256": "23759997b3c59884dc4c0ff5320d6301b0e7f63bf0f6483a7b54d7d43bc5ccd1",
+        "arm": "cold",
+        "context_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "passed": false,
+        "question_sha256": "6695f6b5ed54fbcecb580aca9ec35965287960cf014acb0491d7eb4787677d2e",
+        "replicate": 0,
+        "task_id": "selection-2"
+      }
+    ],
+    "replicates": 1,
+    "schema": "bean.adaptive_lab026.v1",
+    "scores": {
+      "cold": 0,
+      "placebo": 0,
+      "prompt": 2,
+      "reflection": 2,
+      "skill": 2
+    },
+    "verdict": "needs_external_blind_replication"
+  },
+  "source_tip_record_kind": "selection",
+  "status": "completed_real_provider_trial",
+  "weight_learning": false
+}
