@@ -1,0 +1,120 @@
+name: BEAN on-device no-paid Qwen reasoning
+on:
+  push:
+    branches: [main, integrate/bean-local-llamacpp-reasoning-20261025]
+    paths:
+      - 'bean/reasoning/local_llamacpp_provider.py'
+      - 'bean/reasoning/reasoning_engine.py'
+      - 'bean/learning/reasoning_service.py'
+      - 'bean/learning/experimental.py'
+      - 'bean/tests/test_local_llamacpp_reasoning.py'
+      - 'bean_run.py'
+      - '.github/workflows/bean-local-llamacpp.yml'
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  core-local-http:
+    runs-on: \${{ matrix.os }}
+    timeout-minutes: 22
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, windows-2025]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install pytest psutil
+      - name: Compile Python Core
+        run: python -m compileall -q bean bean_run.py
+      - name: Local HTTP and BEAN symbolic/restart/feedback contracts
+        run: python -m unittest bean.tests.test_local_llamacpp_reasoning bean.tests.test_native_local_reasoner -v
+      - name: Whole BEAN Core regression
+        run: python -m pytest bean/tests -q -ra --tb=short
+
+  real-cpu-qwen-smoke:
+    needs: core-local-http
+    runs-on: ubuntu-24.04
+    timeout-minutes: 23
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Build pinned open-source llama.cpp CPU binary
+        shell: bash
+        run: |
+          git clone --depth 1 --branch v0.7.0 https://github.com/ggml-org/llama.cpp.git /tmp/bean-llama-cpp
+          cmake -S /tmp/bean-llama-cpp -B /tmp/bean-llama-cpp/build -DGGML_CUDA=OFF -DLLAMA_BUILD_TESTS=OFF -DLLAMA_CURL=ON -DCMAKE_BUILD_TYPE=Release
+          cmake --build /tmp/bean-llama-cpp/build --config Release --target llama-server -j 4
+      - name: Start actual local Qwen3-0.6B Q4 and test BEAN Core
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/bean-local-qwen-test
+          /tmp/bean-llama-cpp/build/bin/llama-server -hf Qwen/Qwen3-0.6B-GGUF:Q4_K_M --host 127.0.0.1 --port 18080 --alias bean-local -c 2048 -n 256 > /tmp/bean-local-qwen-test/llama.log 2>&1 &
+          SERVER_PID=$!
+          trap 'kill "$SERVER_PID" 2>/dev/null || true' EXIT
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          import time
+          from urllib.request import urlopen
+          from bean.learning import NativeReasoningService
+          from bean.reasoning.local_llamacpp_provider import LocalLlamaCppProvider
+          server = "http://127.0.0.1:18080"
+          for attempt in range(180):
+              try:
+                  with urlopen(server + "/health", timeout=2) as r:
+                      if r.status == 200:
+                          break
+              except Exception:
+                  pass
+              time.sleep(2)
+          else:
+              raise RuntimeError("Real llama.cpp model failed to become ready")
+          db = Path("/tmp/bean-local-qwen-test/experience.sqlite3")
+          model = LocalLlamaCppProvider(base_url=server, model_name="bean-local", max_tokens=256, timeout_seconds=240)
+          core = NativeReasoningService(db, model=model)
+          try:
+              result = core.reason_auto(domain="arithmetic", task_ref="first-real-cpu-model", query="/no_think\nWhat is two plus two? Answer with a single numeral.")
+              status = core.status()
+          finally:
+              core.close()
+          evidence = {
+              "model": "Qwen/Qwen3-0.6B-GGUF:Q4_K_M",
+              "engine": "llama.cpp v0.7.0 CPU",
+              "adapter": "local_llamacpp",
+              "status": result.get("status", "real_model_answer"),
+              "provider_kind": result.get("provider_kind"),
+              "answer": result.get("answer"),
+              "receipt_id": result.get("receipt_id"),
+              "journal_inferences": status["inference_receipts"],
+              "external_provider_skipped": result.get("external_provider_skipped"),
+              "external_cost_usd": result.get("external_cost_usd"),
+              "real_model_test": True,
+              "general_reasoning_proven": False,
+          }
+          Path("/tmp/bean-local-qwen-test/receipt.json").write_text(json.dumps(evidence, indent=2, sort_keys=True) + "\n")
+          print(json.dumps(evidence, sort_keys=True))
+          assert result.get("provider_kind") == "local_llamacpp", "No usable actual local inference"
+          assert result.get("answer"), "Model did not provide final answer"
+          assert status["inference_receipts"] == 1, "BEAN did not retain reply"
+          assert result.get("external_provider_skipped") is True
+          assert result.get("external_cost_usd") == 0
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: bean-real-local-qwen-cpu-smoke
+          path: /tmp/bean-local-qwen-test/
+          if-no-files-found: warn
+          retention-days: 30
