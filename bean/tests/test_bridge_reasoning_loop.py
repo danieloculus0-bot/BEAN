@@ -174,6 +174,21 @@ class BridgeFeedbackTests(unittest.TestCase):
         finally:
             reopened.close()
 
+    def test_case_specific_bridge_lessons_do_not_leak_into_other_sensors(self):
+        self.experiment(
+            concept="sensor_a", observations=self.evidence(),
+            task_ref="learn-sensor-a")
+        from bean.learning.experimental import material_for
+        same = material_for(self.service.bank, "adaptive", "calibrate",
+                            query="SENSOR CALIBRATE sensor_a new sample")
+        other = material_for(self.service.bank, "adaptive", "calibrate",
+                             query="SENSOR CALIBRATE sensor_b new sample")
+        near = material_for(self.service.bank, "adaptive", "calibrate",
+                            query="SENSOR CALIBRATE sensor_a1 new sample")
+        self.assertIn("GREEN", same)
+        self.assertNotIn("GREEN", other)
+        self.assertNotIn("GREEN", near)
+
     def test_single_origin_conflict_and_unchecked_sources_never_create_lessons(self):
         for kind in ("one", "same-origin", "contradiction", "unverified"):
             run = self.experiment(
