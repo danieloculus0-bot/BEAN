@@ -1,0 +1,102 @@
+name: BEAN batched real Nemotron recovery and controls
+on:
+  push:
+    branches:
+      - experiment/bean-batched-reasoning-transfer-20261025
+    paths:
+      - '.github/workflows/bean-batched-reasoning-transfer.yml'
+      - 'bean/learning/batched_trials.py'
+      - 'bean/tests/test_batched_trials.py'
+      - 'bean/evaluation/nemotron_batched_recovery.py'
+      - 'docs/BEAN_BATCHED_REASONING_PIVOT_2026-10-25.md'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: read
+
+jobs:
+  offline-contracts:
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, windows-2025]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Compile BEAN owned inference, journal, selector and recovery
+        run: python -m compileall -q bean/learning bean/evaluation/nemotron_self_derived_transfer.py bean/evaluation/nemotron_batched_recovery.py
+      - name: Repeat native and newly compressed evaluation gates
+        run: python -m unittest bean.tests.test_batched_trials bean.tests.test_nemotron_self_derived_transfer bean.tests.test_native_reasoning_skills -v
+
+  resume-frozen-real-policy:
+    needs: offline-contracts
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    env:
+      OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Retrieve source real model trial before rate limit; do not train again
+        uses: actions/download-artifact@v4
+        with:
+          run-id: 40212952629
+          name: bean-nemotron-self-derived-receipts
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path: /tmp/source-40212952629
+      - name: Run three isolated real Nemotron batches on four NEW held-out tasks
+        id: actual
+        run: python -m bean.evaluation.nemotron_batched_recovery --source /tmp/source-40212952629 --output /tmp/resumed-orchid
+      - name: Archive full source-linked evidence or provider block to research branch
+        if: always()
+        shell: bash
+        run: |
+          set -e
+          target="research/batched_reasoning/run-${{ github.run_id }}"
+          mkdir -p "$target"
+          if [ -d /tmp/resumed-orchid ]; then
+            cp -a /tmp/resumed-orchid/. "$target/"
+          else
+            printf '{"status":"never_started","claim":"No real provider evidence"}\n' > "$target/unstarted.json"
+          fi
+          python - "$target" <<'PY'
+          import hashlib,json,sys
+          from pathlib import Path
+          p=Path(sys.argv[1])
+          names=sorted(x.name for x in p.iterdir() if x.is_file())
+          record={
+              'schema':'bean.batched_recovery.archive.v1',
+              'source_run_id':40212952629,
+              'source_artifact_id':12606531457,
+              'current_run_id':'${{ github.run_id }}',
+              'model':'nvidia/nemotron-3-ultra-550b-a55b:free',
+              'files':{x:{
+                  'sha256':hashlib.sha256((p/x).read_bytes()).hexdigest(),
+                  'size_bytes':(p/x).stat().st_size
+              } for x in names},
+          }
+          (p/'archive_manifest.json').write_text(json.dumps(record,indent=2,sort_keys=True)+'\n')
+          PY
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add "$target"
+          git commit -m "research(bean): retain real three-batch holdout outcomes and immutable source hashes"
+          git push origin HEAD:experiment/bean-batched-reasoning-transfer-20261025
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: bean-batched-resumed-orchid-receipts
+          path: /tmp/resumed-orchid/
+          if-no-files-found: warn
+          retention-days: 90
