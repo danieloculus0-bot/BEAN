@@ -10,6 +10,7 @@ from hashlib import sha256
 from importlib.util import find_spec
 from pathlib import Path
 import json
+import re
 
 from bean.optimization.autodev import Journal, canonical
 
@@ -137,8 +138,31 @@ class ExperienceBank:
         self.journal.close()
 
 
-def material_for(bank, arm, domain):
-    """Context-only adaptation; unrelated-domain lessons form placebo."""
+_TOKENS = re.compile(r"[a-z0-9]+")
+
+
+def task_lesson_matches(bank, *, strategy, domain, query, limit=3):
+    """Rank prior lessons using only task text, without target answers.
+
+    The same deterministic retrieval is used by the BEAN decision packet and
+    the task-aware matched evaluator. Neither path gets expected labels.
+    """
+    terms = set(_TOKENS.findall(query.casefold()))
+    matches = []
+    for index, item in enumerate(bank.lessons(strategy=strategy, domain=domain)):
+        overlap = len(terms & set(_TOKENS.findall(item.text.casefold())))
+        if overlap:
+            matches.append((overlap, index, item))
+    matches.sort(key=lambda row: (-row[0], -row[1], row[2].lesson_id))
+    return [(score, item) for score, _, item in matches[:limit]]
+
+
+def material_for(bank, arm, domain, *, query=None):
+    """Context-only adaptation; unrelated-domain lessons form placebo.
+
+    A task-aware trial uses exactly the retrieval BEAN's decision interface
+    uses. Legacy Lab026 experiments without query keep their existing scope.
+    """
     if arm == "adaptive":
         return material_for(bank, bank.selected_arm(domain), domain)
     if arm == "cold":
@@ -150,17 +174,21 @@ def material_for(bank, arm, domain):
         relevant = [x for x in relevant if x.domain != domain]
     else:
         relevant = [x for x in relevant if x.domain == domain]
+        if query is not None:
+            relevant = [item for _, item in task_lesson_matches(
+                bank, strategy=strategy, domain=domain, query=query, limit=3)]
     return "\n".join(x.text for x in relevant[:3])
 
 
 def run_paired_trial(*, bank, cases, model, judge, arms=ARMS,
-                     context_chars=800, replicates=1):
+                     context_chars=800, replicates=1, task_aware=False):
     """Matched questions, single provider ID, held-out labels owned by judge.
 
     A model only receives public_question and context. The judge receives
     expected and model output. Independent provenance is NOT assumed.
     """
-    if (not cases or not 40 <= context_chars <= 12000 or
+    if (not cases or type(task_aware) is not bool
+            or not 40 <= context_chars <= 12000 or
             not 1 <= replicates <= 20 or len(set(arms)) != len(arms) or
             any(arm not in (*ARMS, "adaptive") for arm in arms)):
         raise ValueError("Invalid trial")
@@ -175,7 +203,9 @@ def run_paired_trial(*, bank, cases, model, judge, arms=ARMS,
             shift = (i + repetition) % len(order)
             order = order[shift:] + order[:shift]
             for arm in order:
-                context = material_for(bank, arm, case.domain)
+                context = material_for(
+                    bank, arm, case.domain,
+                    query=case.public_question if task_aware else None)
                 context = (context[:context_chars].ljust(context_chars)
                            if arm != "cold" else "")
                 answer = model.complete(case.public_question, context)
@@ -196,6 +226,8 @@ def run_paired_trial(*, bank, cases, model, judge, arms=ARMS,
         "model_id": model.model_id, "arms": list(arms),
         "cases": len(cases), "replicates": replicates,
         "context_chars": context_chars, "scores": counts,
+        "context_policy": ("same_task_lexical_retrieval_as_decide_v1"
+                           if task_aware else "legacy_domain_first_three"),
         "records": records, "model_weights_modified": False,
         "independent_evaluation_authenticated": False,
         "promotion": "none",
