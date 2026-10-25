@@ -28,7 +28,8 @@ def execute(output):
     report = {
         "schema": "bean.live_web_research_nemotron.v1",
         "real_model_requested": MODEL,
-        "provider_requests": 0,
+        "web_http_requests": 0,
+        "model_attempts": 0,
         "search_mode": "wikipedia",
         "status": "started",
         "genuine_learning_proven": False,
@@ -39,13 +40,13 @@ def execute(output):
         report["status"] = "blocked_no_openrouter_key"
         path.write_text(json.dumps(report, indent=2) + "\n")
         return report
-    service = NativeReasoningService(
-        out / "experience.sqlite3",
-        model=OpenRouterProvider(model_name=MODEL, api_key=key))
+    provider = OpenRouterProvider(model_name=MODEL, api_key=key)
+    service = NativeReasoningService(out / "experience.sqlite3", model=provider)
     try:
         tool = WebResearchService(
             service, sources=PublicWebSources(brave_key=""))
         tool.sources.brave_key = None  # fix index for comparable no-key control
+        report["model_attempts"] = 1
         try:
             answer = tool.investigate(
                 domain="chemistry", task_ref="fixed-public-smoke",
@@ -54,11 +55,12 @@ def execute(output):
         except Exception as exc:
             report.update(status="failed_public_web_or_model",
                           error_class=type(exc).__name__,
-                          provider_requests=tool.sources.call_count)
+                          web_http_requests=tool.sources.call_count,
+                          provider_failure_kind=provider.last_failure_kind or "unknown")
         else:
             report.update({
                 "status": answer["answer_status"],
-                "provider_requests": tool.sources.call_count,
+                "web_http_requests": tool.sources.call_count,
                 "source_count": answer["source_count"],
                 "source_urls": [x["url"] for x in answer["sources"]],
                 "real_model_id": answer.get("model_id"),
@@ -79,7 +81,9 @@ if __name__ == "__main__":
     answer = execute(args.output)
     print(json.dumps({"status":answer["status"],
                       "source_count":answer.get("source_count", 0),
-                      "provider_requests":answer["provider_requests"]},
+                      "web_http_requests":answer["web_http_requests"],
+                      "model_attempts":answer["model_attempts"],
+                      "provider_failure_kind":answer.get("provider_failure_kind")},
                      sort_keys=True))
     if answer["status"] != "unverified_model_answer":
         raise SystemExit(2)
