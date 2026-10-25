@@ -96,6 +96,11 @@ class NativeReasoningService:
         return self.local.learn(domain=domain, task_ref=task_ref,
                                 examples=examples, evidence_refs=evidence_refs)
 
+    def propose_compositions(self, *, domain, task_ref, query):
+        """Discover candidate combinations without assuming or retaining an answer."""
+        return self.compositions.propose(
+            domain=domain, task_ref=task_ref, query=query)
+
     def learn_composition(self, *, domain, task_ref, examples, evidence_refs):
         """Search combinations of retained rules and prove a unique development fit."""
         return self.compositions.learn(domain=domain, task_ref=task_ref,
@@ -479,6 +484,7 @@ def register_native_reasoning_handlers(inbox, service):
     """Install BEAN-owned local commands in the *existing* runtime inbox."""
     inbox.register("reasoning_status", lambda m, _: service.status())
     inbox.register("reasoning_learn_local", lambda m, _: service.learn_local(**m.args))
+    inbox.register("reasoning_propose_compositions", lambda m, _: service.propose_compositions(**m.args))
     inbox.register("reasoning_learn_composition", lambda m, _: service.learn_composition(**m.args))
     inbox.register("reasoning_composed", lambda m, _: service.reason_composed(**m.args))
     inbox.register("reasoning_local", lambda m, _: service.reason_local(**m.args))
