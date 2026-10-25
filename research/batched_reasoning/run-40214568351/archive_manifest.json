@@ -1,0 +1,8 @@
+{
+  "current_run_id": "40214568351",
+  "files": {},
+  "model": "nvidia/nemotron-3-ultra-550b-a55b:free",
+  "schema": "bean.batched_recovery.archive.v1",
+  "source_artifact_id": 12606531457,
+  "source_run_id": 40212952629
+}
