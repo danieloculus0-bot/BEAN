@@ -161,7 +161,7 @@ class NativeReasoningService:
         matched = [x["data"] for x in self.bank.journal.events()
                    if x["kind"] == "inference"
                    and x["data"].get("receipt_id") == receipt_id
-                   and x["data"].get("purpose") == "selected_strategy_applied"]
+                   and x["data"].get("purpose") in ("selected_strategy_applied", "research_answer")]
         if len(matched) != 1:
             raise ValueError("Exactly one completed BEAN reasoning receipt required")
         original = matched[0]
@@ -307,6 +307,7 @@ class NativeReasoningService:
                     x["kind"] == "inference" and
                     x["data"].get("status") == "failed" for x in events),
                 "feedback_receipts": sum(x["kind"] == "feedback" for x in events),
+                "research_evidence_packets": sum(x["kind"] == "research" for x in events),
                 "model_configured": self.model is not None,
                 "host_truth_authenticated": False,
                 "autonomous_general_learning_proven": False,
