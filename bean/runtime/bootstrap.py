@@ -71,7 +71,13 @@ def shutdown_bean(ctx, reason="clean", notes=None):
     if ctx.get("_shutdown_called"):
         return
     ctx["_shutdown_called"] = True
-    end_session(ctx["session_uuid"], reason=reason, notes=notes)
+    try:
+        end_session(ctx["session_uuid"], reason=reason, notes=notes)
+    finally:
+        # End the SQLite handle on this thread too. Otherwise a Windows
+        # Python process cannot close/reopen or remove its session database.
+        from ..memory.store import get_store
+        get_store().close()
     print(f"\n[BEAN] Session ended. reason={reason} session={ctx['session_uuid'][:8]}")
 
 
