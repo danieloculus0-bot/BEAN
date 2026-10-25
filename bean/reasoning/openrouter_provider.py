@@ -24,9 +24,12 @@ class OpenRouterProvider(LLMAdapterBase):
         self.api_key = api_key or os.environ.get("OPENROUTER_API_KEY")
         self._requester = requester
         self.endpoint = "https://openrouter.ai/api/v1/chat/completions"
+        self.last_failure_kind = None
 
     def complete(self, prompt, context=None):
+        self.last_failure_kind = None
         if not self.api_key:
+            self.last_failure_kind = "credentials_missing"
             return {"ok": False, "error": "OPENROUTER_API_KEY not set",
                     "adapter_name": self.adapter_name, "model_name": self.model_name}
         if not isinstance(prompt, str) or not prompt.strip() or len(prompt) > 25000:
@@ -58,9 +61,11 @@ class OpenRouterProvider(LLMAdapterBase):
             with self._requester(req, timeout=90) as r:
                 data = json.loads(r.read(500000).decode("utf-8"))
         except HTTPError as exc:
+            self.last_failure_kind = "http_" + str(exc.code)
             return {"ok": False, "error": "OpenRouter HTTP " + str(exc.code),
                     "adapter_name": self.adapter_name, "model_name": self.model_name}
         except (URLError, TimeoutError, OSError, ValueError) as exc:
+            self.last_failure_kind = "transport_" + type(exc).__name__
             return {"ok": False, "error": "OpenRouter transport " + type(exc).__name__,
                     "adapter_name": self.adapter_name, "model_name": self.model_name}
         choices = data.get("choices") or []
@@ -68,9 +73,11 @@ class OpenRouterProvider(LLMAdapterBase):
                   if choices and isinstance(choices[0], dict) else None)
         served = data.get("model")
         if not isinstance(served, str) or served != self.model_name:
+            self.last_failure_kind = "served_model_identity_mismatch"
             return {"ok": False, "error": "Served model identity mismatch",
                     "adapter_name": self.adapter_name, "model_name": self.model_name}
         if not isinstance(answer, str) or not answer.strip():
+            self.last_failure_kind = "empty_provider_answer"
             return {"ok": False, "error": "Empty provider response",
                     "adapter_name": self.adapter_name, "model_name": self.model_name}
         return {"ok": True, "raw_text": answer.strip(),
