@@ -4,6 +4,16 @@
 
 Persistent experimental reasoning and evidence system. BEAN Core maintains SQLite-backed observations, source-aware claims, revision history, recovery and repeatable research tests. It is not a production-grade autonomous software engineer.
 
+## Current Python Core status (October 25, 2026)
+
+**Implemented in Core:** one native reasoning service with BEAN-owned SQLite/SHA memory, source-linked error reflection, reusable procedures, measured contextual strategy choice, real-model provider adapters, Q-learning, neural checkpoint recovery, and host-reported positive/negative outcome receipts. Merged PRs #170–#179 recovered formerly isolated cognition and research. Software tests demonstrate interfaces, not general intelligence.
+
+**Judgment and counsel:** The [knowledge sufficiency policy](docs/BEAN_JUDGMENT_POLICY_2026-10-25.md) can prefer an adequate existing answer, select supported expert counsel, defer on insufficient evidence, or investigate when reliable guidance is unavailable. It reuses the current native reasoning inbox and SHA journal, not another brain. Source expertise and confidence are host-attested rather than independently authenticated; judgment feedback persists but does not yet retrain trust or model weights. This policy is a new Core integration with unit/CI acceptance, not independently validated expertise.
+
+**Still unproven or not automatically connected:** general intelligence, independent cross-domain transfer, real-world expert authentication, autonomous truth grading, production deployment, trading profitability, and full synchronization of the hosted connector, Bridge, AIscend and Axiom. GitHub source integration alone does not imply those applications invoke every Core capability.
+
+For reproducible evidence and boundaries see the [native reasoning contract](docs/BEAN_NATIVE_REASONING_CORE_2026-10-25.md), [mainline audit](docs/BEAN_MAINLINE_CONSOLIDATION_AUDIT_2026-10-25.md), and [judgment policy](docs/BEAN_JUDGMENT_POLICY_2026-10-25.md).
+
 ## Featured application: EZ-Office (October 22, 2026)
 
 **[Launch the EZ-Office suite in the Workshop](https://danieloculus0-bot.github.io/BEAN/portfolio/ez-office/)** · [Standalone source and automated tests](https://github.com/danieloculus0-bot/EZ-Office)
@@ -66,7 +76,7 @@ These experiments demonstrate task-family learning and reusable mechanisms, **no
 ## Already-built learning infrastructure
 
 - [**SpongeTD tabular Q-learning in Core main**](bean/optimization/sponge_td.py): real temporal-difference updates and scored, recoverable Q-value memory, with [reproducible held-out maze benchmark](bean/optimization/intuition_maze.py). The earlier [Breakout holdout ledger](https://github.com/danieloculus0-bot/BEAN/blob/experiment/bean-sponge-core-20261011/experiments/sponge_breakout/evidence/score_ledger.jsonl) remains on its research branch.
-- [**SpongeDQN neural Q-network**](https://github.com/danieloculus0-bot/BEAN/blob/experiment/bean-deep-q-learning-20261012/bean/optimization/sponge_dqn.py): experimental PyTorch 3→64→64→3 network with minibatch replay, target network, real gradient training and compressed neural checkpoint restoration. [Matched tabular/DQN/cold evaluation](https://github.com/danieloculus0-bot/BEAN/blob/experiment/bean-deep-q-learning-20261012/experiments/sponge_breakout/deep_trial.py) is game-specific, not general neural recall or production runtime.
+- [**SpongeDQN neural Q-network**](bean/optimization/sponge_dqn.py): experimental PyTorch 3→64→64→3 network with minibatch replay, target network, real gradient training and compressed neural checkpoint restoration. [Matched tabular/DQN/cold evaluation](https://github.com/danieloculus0-bot/BEAN/blob/experiment/bean-deep-q-learning-20261012/experiments/sponge_breakout/deep_trial.py) is game-specific, not general neural recall or production runtime.
 - [**Neural evolution**](https://github.com/danieloculus0-bot/BEAN/blob/experiment/bean-deep-q-learning-20261012/experiments/sponge_breakout/evolve.py): candidate inheritance and mutation; trials include important regressions, not a replicated overall gain.
 - [**Persistent compressed scoring ledger**](https://github.com/danieloculus0-bot/BEAN/tree/experiment/anticipatory-ledger-20261020/research/persistent_ledger): append-only historical evidence with small rebuildable scoring summaries.
 - [**BEAN tests BEAN**](https://github.com/danieloculus0-bot/BEAN/pull/140): research-only indexed JUnit test retrieval, comparing verified options through the existing Core selector; neural retrieval training is *not* implemented.
@@ -99,7 +109,7 @@ Start with [Getting Started](docs/GETTING_STARTED.md), the [offline verification
 
 ## Branch-specific research results
 
-Adaptive Bridge/Lab026 PR experiments are separate from the stable Core mainline. A recent experimental PR run failed during test collection because its new test imported `ezbean` without the BEAN AI Bridge dependency available in that CI job ([experimental failure](https://github.com/danieloculus0-bot/BEAN/actions/runs/39515571850)). This does **not** negate the successful Core `main` matrix. When the experiment is proposed for merge, its Bridge checkout/import and dedicated holdout tests must be included explicitly.
+Earlier Lab026/Bridge research ran on separate branches, including a historical `ezbean` import failure. Its useful reasoning, learning and Bridge adapter components were subsequently consolidated into Core `main` through PRs #170–#179. Original experiment archives and failures remain linked for provenance; real-world cross-application operation and general transfer remain open acceptance tasks.
 
 The public AIscend browser demo is a read-only simulation, not a live wallet/trading or private account connector. BEAN's public website and real local Ollama Core are different runtime surfaces.
 
@@ -111,7 +121,7 @@ The public AIscend browser demo is a read-only simulation, not a live wallet/tra
 
 ## Next engineering work
 
-Connect measured observations and reward sources from real BEAN modules, persist evidence for every feedback event, and separately integrate the hosted connector and Bridge. Reproduce gains on independent holdout tasks rather than assuming one synthetic puzzle family generalizes.
+Connect real host evidence and reviewer authentication to Core judgments, measure when existing counsel versus independent exploration actually helped, and calibrate source reliability on independently graded held-out tasks. Integrate Bridge, AIscend and hosted BEAN using authenticated Core adapters rather than parallel memories. Reproduce gains across unrelated domains before claiming generality.
 
 ## Documentation
 
