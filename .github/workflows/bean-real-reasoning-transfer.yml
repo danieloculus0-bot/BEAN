@@ -1,0 +1,52 @@
+name: BEAN real reasoning model learning transfer
+on:
+  push:
+    branches:
+      - experiment/bean-task-matched-transfer-20261025
+    paths:
+      - 'bean/evaluation/live_reasoning_transfer.py'
+      - 'bean/tests/test_live_reasoning_transfer.py'
+      - 'bean/learning/**'
+      - '.github/workflows/bean-real-reasoning-transfer.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  offline-contracts:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, windows-2025]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Verify provider boundary without network or synthetic success claims
+        run: python -m unittest bean.tests.test_live_reasoning_transfer bean.tests.test_native_reasoning_skills -v
+
+  actual-reasoning-provider:
+    needs: offline-contracts
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Real GPT-6.1 Sol, medium reasoning, 18 matched requests maximum
+        run: python -m bean.evaluation.live_reasoning_transfer --model gpt-6.1-sol --output /tmp/bean-real-reasoning
+      - name: Persist real outcome receipts including failures and blockers
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bean-real-reasoning-matched-trial
+          path: /tmp/bean-real-reasoning/
+          if-no-files-found: warn
+          retention-days: 90
