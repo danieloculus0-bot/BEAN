@@ -129,7 +129,8 @@ class BridgeReasoningLoop:
 
         # Stable source refs make repeating identical evidence idempotent.
         expected = outcome["system_answer"]
-        sources = ["bridge_definition:" + outcome["definition_id"]]
+        sources = ["bridge_definition:" + outcome["definition_id"],
+                   "bridge_concept:" + concept.strip().casefold()]
         sources.extend("bridge_source:" + ref for ref in refs)
         if len(sources) > 15:
             raise ValueError("Exceeded the evidence source receipt budget")
