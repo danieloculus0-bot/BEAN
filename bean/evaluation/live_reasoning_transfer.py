@@ -73,6 +73,8 @@ class OpenAIReasoningModel:
         self.calls = []
 
     def complete(self, question, context):
+        if len(self.calls) >= 18:
+            raise LiveProviderError("Fixed 18-call real-model budget exhausted")
         if not isinstance(question, str) or not isinstance(context, str):
             raise TypeError("Question and recalled context must be text")
         instruction = (
