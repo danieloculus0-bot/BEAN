@@ -1,7 +1,7 @@
 name: BEAN local reasoning and low-cost provider gates
 on:
   push:
-    branches: [integrate/bean-local-reasoning-cheap-inference-20261025]
+    branches: [main, integrate/bean-local-reasoning-cheap-inference-20261025]
     paths:
       - 'bean/learning/local_reasoner.py'
       - 'bean/learning/reasoning_service.py'
