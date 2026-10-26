@@ -3,55 +3,55 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="#101713">
-<meta name="description" content="Explore a read-only interactive demonstration of AIscend, the BEAN capital research console. No real wallet or private account data.">
-<meta property="og:title" content="BEAN AIscend | Public Interactive Demo">
+<meta name="theme-color" content="#050607">
+<meta name="description" content="AIscend: adaptive cryptocurrency strategy research, BEAN learning experiments, Coinbase market studies, evidence ledgers, and a read-only interactive dashboard demo.">
+<meta property="og:title" content="AIscend | Adaptive Crypto Research and Learning">
 <meta property="og:description" content="Explore AIscend research with illustrative data, strategy evaluations and links to application source code.">
 <link rel="icon" href="./bean-official.webp" type="image/webp">
 <link rel="canonical" href="https://danieloculus0-bot.github.io/BEAN/aiscend.html">
-<title>BEAN | AIscend Demo</title>
+<title>AIscend | Adaptive Trading Research, BEAN Learning and Live Market Demo</title>
 <style>
-:root{color-scheme:dark;--bg:#101713;--surface:#202b23;--surface2:#263629;--line:#3b5540;--text:#ecf5ed;--muted:#b2c5b5;--green:#91e274;--shadow:0 16px 40px #0005;font:15px/1.6 Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+:root{color-scheme:dark;--bg:#050607;--surface:#111417;--surface2:#181b1e;--line:#343a3d;--text:#ecf5ed;--muted:#b2c5b5;--green:#91e274;--shadow:0 16px 40px #0005;font:15px/1.6 Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 *{box-sizing:border-box}html{scroll-behavior:smooth;scroll-padding-top:78px}
-body{margin:0;color:var(--text);background:radial-gradient(ellipse at 8% 1%,#5aa84d26,transparent 34%),radial-gradient(ellipse at 98% 16%,#3f74421f,transparent 31%),linear-gradient(170deg,#131d16,#101713 49%,#141d17);min-width:0}
+body{margin:0;color:var(--text);background:#050607;min-width:0}
 a{color:#b0ef9a;text-decoration:none}a:hover{color:#ebffe2}button{font:inherit;cursor:pointer}
 :focus-visible{outline:2px solid var(--green);outline-offset:3px}
 .wrap{max-width:1180px;width:calc(100% - 36px);margin:auto}
-header{position:sticky;top:0;z-index:10;background:#0f1712ee;backdrop-filter:blur(14px);border-bottom:1px solid #679a6538}
+header{position:sticky;top:0;z-index:10;background:#050607f5;backdrop-filter:blur(14px);border-bottom:1px solid #737b8038}
 .nav{display:flex;align-items:center;justify-content:space-between;gap:18px;min-height:70px;flex-wrap:wrap}
 .brand{display:flex;align-items:center;gap:10px;font-weight:900;color:#ecf5ed;letter-spacing:.055em}
-.brand>span:first-child{display:grid;place-items:center;width:42px;height:42px;border:1px solid #3b5540;border-radius:13px;background:linear-gradient(145deg,#28382c,#1b2720)}
+.brand>span:first-child{display:grid;place-items:center;width:42px;height:42px;border:1px solid #343a3d;border-radius:13px;background:linear-gradient(145deg,#16191b,#101316)}
 .brand img{width:32px;height:32px;object-fit:contain}.slash{color:#759f77}.appname{color:#b6eb9f}
 .links{display:flex;gap:20px;flex-wrap:wrap;font-weight:700;font-size:13px}.links a{color:#c3d7c5}.links a:hover{color:#fff}
 .hero{padding:56px 0 38px;display:grid;grid-template-columns:minmax(0,1.45fr) minmax(225px,.55fr);align-items:center;gap:35px}
-.eyebrow,.status{display:inline-flex;align-items:center;gap:9px;border:1px solid #486a4c;border-radius:999px;padding:7px 12px;background:#26382b;color:#baf0a4;font-size:11px;font-weight:850;letter-spacing:.08em;text-transform:uppercase}
+.eyebrow,.status{display:inline-flex;align-items:center;gap:9px;border:1px solid #486a4c;border-radius:999px;padding:7px 12px;background:#151a1b;color:#baf0a4;font-size:11px;font-weight:850;letter-spacing:.08em;text-transform:uppercase}
 .dot{width:8px;height:8px;border-radius:50%;background:#a4ef89;box-shadow:0 0 0 3px #91e27420}
 h1{font-size:clamp(38px,5.2vw,65px);letter-spacing:-.055em;line-height:1.06;margin:19px 0}
 .hero p{color:#c5d8c5;max-width:700px;font-size:16px}.buttons{display:flex;gap:10px;flex-wrap:wrap;margin:20px 0 0}
-.btn{display:inline-flex;align-items:center;justify-content:center;border:1px solid #567756;background:#304434;color:#e8f8e3;padding:11px 16px;border-radius:12px;font-weight:800;font-size:13px}
-.btn:hover{background:#415b43}.btn.primary{background:linear-gradient(#a1ee7d,#7acf5c);color:#112417;border-color:#a2e687}.btn.primary:hover{background:#b4f5a1;color:#112417}
+.btn{display:inline-flex;align-items:center;justify-content:center;border:1px solid #567756;background:#1c2123;color:#e8f8e3;padding:11px 16px;border-radius:12px;font-weight:800;font-size:13px}
+.btn:hover{background:#262c2e}.btn.primary{background:linear-gradient(#a1ee7d,#7acf5c);color:#112417;border-color:#a2e687}.btn.primary:hover{background:#b4f5a1;color:#112417}
 
 
 .heading{display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:12px;margin:12px 0 15px}
 h2{letter-spacing:-.025em;line-height:1.2;margin:0 0 3px;font-size:clamp(24px,3vw,34px)}.muted{color:var(--muted)}
-.heading p{margin:0;font-size:14px;color:var(--muted)}.notice{padding:9px 12px;border:1px solid #547c50;border-radius:11px;background:#1d3523;color:#d2f4c9;font-size:11px;letter-spacing:.04em;font-weight:850}
-.console{background:linear-gradient(155deg,#17231b,#101811);border:1px solid #406147;border-radius:21px;box-shadow:0 24px 55px #0006;padding:18px}
+.heading p{margin:0;font-size:14px;color:var(--muted)}.notice{padding:9px 12px;border:1px solid #547c50;border-radius:11px;background:#14181a;color:#d2f4c9;font-size:11px;letter-spacing:.04em;font-weight:850}
+.console{background:linear-gradient(155deg,#101316,#080a0c);border:1px solid #406147;border-radius:21px;box-shadow:0 24px 55px #0006;padding:18px}
 .console-nav{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;border-bottom:1px solid #3c5740;padding-bottom:12px;margin-bottom:13px}
-.console-brand{display:flex;align-items:center;gap:9px;font-weight:900}.console-brand img{width:26px;height:26px}.console-state{border:1px solid #5c8c58;background:#2e5134;color:#d9ffce;border-radius:999px;padding:5px 10px;font-size:11px;font-weight:850}
+.console-brand{display:flex;align-items:center;gap:9px;font-weight:900}.console-brand img{width:26px;height:26px}.console-state{border:1px solid #5c8c58;background:#202629;color:#d9ffce;border-radius:999px;padding:5px 10px;font-size:11px;font-weight:850}
 .metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:13px}
-.metric,.panel{min-width:0;border:1px solid #3b5540;background:linear-gradient(160deg,#27382b,#1c2b20);border-radius:12px;padding:14px}
+.metric,.panel{min-width:0;border:1px solid #343a3d;background:linear-gradient(160deg,#181c20,#111417);border-radius:12px;padding:14px}
 .metric .value{font-size:clamp(17px,2vw,22px);font-weight:850;margin-top:4px;color:#effbea;font-variant-numeric:tabular-nums}
 .label{color:#b2c9b3;font-size:11px;font-weight:800;letter-spacing:.07em;text-transform:uppercase}
 .green{color:#a5ec90!important}
 
-.market-strip{border:1px solid #4b7050;background:#182a1c;border-radius:13px;padding:15px;margin-bottom:14px}
+.market-strip{border:1px solid #4b7050;background:#0e1215;border-radius:13px;padding:15px;margin-bottom:14px}
 .markets-header{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:12px}
 .markets-header h3{margin:0;color:#d0f6c2;font-size:12px;letter-spacing:.075em}
 .market-description{color:#b9d1b8;font-size:11px;margin-top:3px}
 .market-all{font-size:12px;font-weight:850;color:#b8eda4}
 .market-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
-.market-item{display:grid;gap:4px;border:1px solid #496d4c;border-radius:11px;padding:11px;background:#1b321f;color:#f0fae9}
-.market-item:hover{background:#29452d;color:#fff;border-color:#82ad73}
+.market-item{display:grid;gap:4px;border:1px solid #496d4c;border-radius:11px;padding:11px;background:#13171a;color:#f0fae9}
+.market-item:hover{background:#1d2326;color:#fff;border-color:#82ad73}
 .market-symbol{font-size:11px;font-weight:850;color:#bfdfba;letter-spacing:.045em}
 .market-item strong{font-variant-numeric:tabular-nums;font-size:clamp(14px,1.8vw,19px);white-space:nowrap}
 .market-link{font-size:11px;color:#a6d795}
@@ -63,38 +63,65 @@ h2{letter-spacing:-.025em;line-height:1.2;margin:0 0 3px;font-size:clamp(24px,3v
 
 
 
-.demo-button{display:flex;align-items:center;justify-content:space-between;width:100%;padding:10px 11px;margin:6px 0;border:1px solid #4f6c51;border-radius:9px;background:#203626;color:#d4eed0;text-align:left;font-weight:750;font-size:13px}
+.demo-button{display:flex;align-items:center;justify-content:space-between;width:100%;padding:10px 11px;margin:6px 0;border:1px solid #4f6c51;border-radius:9px;background:#191d20;color:#d4eed0;text-align:left;font-weight:750;font-size:13px}
 .demo-button[aria-pressed=true]{background:#a0e682;border-color:#b7f2a2;color:#152c17}.demo-button:hover{border-color:#a5df9c}
 .note{font-size:12px;color:#b9cfb7;line-height:1.55;margin:10px 0 0}
-.soft{border:1px solid #416348;background:#182a1d;border-radius:9px;padding:11px;color:#cadfc7;font-size:12px}
+.soft{border:1px solid #416348;background:#0f1215;border-radius:9px;padding:11px;color:#cadfc7;font-size:12px}
 .pair{display:grid;grid-template-columns:1fr 1fr;gap:12px}.pair strong{display:block;font-size:19px;line-height:1.25;margin-top:4px}
-.school-head{display:flex;align-items:center;justify-content:space-between;gap:9px;flex-wrap:wrap}.tag{border:1px solid #5f995f;border-radius:999px;background:#325a37;color:#d9f8cd;padding:4px 9px;font-size:10px;font-weight:850}
+.school-head{display:flex;align-items:center;justify-content:space-between;gap:9px;flex-wrap:wrap}.tag{border:1px solid #5f995f;border-radius:999px;background:#171d20;color:#d9f8cd;padding:4px 9px;font-size:10px;font-weight:850}
 .school-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:10px 0}
-.school-grid>div{padding:10px;border:1px solid #4c6d50;border-radius:9px;background:#172b1c}
+.school-grid>div{padding:10px;border:1px solid #4c6d50;border-radius:9px;background:#101519}
 .school-grid strong{display:block;font-size:18px;margin-top:3px}
-hr{border:0;border-top:1px solid #405a44;margin:14px 0}
-table{width:100%;border-collapse:collapse;font-size:12px}th,td{text-align:left;padding:9px 6px;border-bottom:1px solid #405a44;vertical-align:top}th{color:#bed4bb}
+hr{border:0;border-top:1px solid #33393d;margin:14px 0}
+table{width:100%;border-collapse:collapse;font-size:12px}th,td{text-align:left;padding:9px 6px;border-bottom:1px solid #33393d;vertical-align:top}th{color:#bed4bb}
 .detail{padding:61px 0 80px}.features{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px;margin:20px 0}
-.feature{border:1px solid #3b5540;background:linear-gradient(160deg,#28382c,#1b2720);border-radius:16px;padding:20px}
+.feature{border:1px solid #343a3d;background:linear-gradient(160deg,#16191b,#101316);border-radius:16px;padding:20px}
 .feature h3{margin:0 0 10px}.feature p{font-size:13px;line-height:1.65;color:var(--muted)}
 .feature a{font-size:13px;font-weight:800}
-.disclaimer{border:1px solid #4b754d;background:#192e1e;padding:16px 19px;border-radius:14px;color:#c7dfc4;font-size:13px}
-footer{border-top:1px solid #3b5540;padding:23px 0;color:var(--muted);font-size:13px}
+.disclaimer{border:1px solid #4b754d;background:#111518;padding:16px 19px;border-radius:14px;color:#c7dfc4;font-size:13px}
+footer{border-top:1px solid #343a3d;padding:23px 0;color:var(--muted);font-size:13px}
 .foot{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
 @media(max-width:900px){.hero{grid-template-columns:1fr}.dashboard{grid-template-columns:1fr}.column:first-child{grid-template-columns:200px 1fr}.features{grid-template-columns:1fr 1fr}}
 @media(max-width:600px){.wrap{width:calc(100% - 24px)}.nav{gap:6px;padding:10px 0}.links{gap:11px;font-size:12px}.hero{padding:29px 0 21px}.console{padding:10px}.metrics{grid-template-columns:1fr 1fr}.column:first-child{grid-template-columns:1fr}.school-grid{grid-template-columns:1fr 1fr}.features{grid-template-columns:1fr}.notice{font-size:10px}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
-.hero-brief{padding:27px;border:1px solid #55795a;border-radius:21px;background:linear-gradient(140deg,#1b3222,#121f17);display:flex;flex-direction:column;gap:15px}.hero-brief strong{font-size:1.5rem;letter-spacing:-.03em;color:#d6ffc0}.hero-brief p{margin:0;color:#c1d5c0}.hero-brief a{font-size:.9rem;font-weight:800}.statusbox{padding:22px 20px;background:linear-gradient(150deg,#1c3523,#111a15);border:1px solid #527653;border-radius:12px;min-height:128px}.statusbox strong{font-size:1rem;color:#d4f6c9}.statusbox p{font-size:.82rem;color:#bcd2b6;margin:13px 0 0}
+.hero-brief{padding:27px;border:1px solid #55795a;border-radius:21px;background:linear-gradient(140deg,#121619,#0b0f11);display:flex;flex-direction:column;gap:15px}.hero-brief strong{font-size:1.5rem;letter-spacing:-.03em;color:#d6ffc0}.hero-brief p{margin:0;color:#c1d5c0}.hero-brief a{font-size:.9rem;font-weight:800}.statusbox{padding:22px 20px;background:linear-gradient(150deg,#15191d,#090d10);border:1px solid #527653;border-radius:12px;min-height:128px}.statusbox strong{font-size:1rem;color:#d4f6c9}.statusbox p{font-size:.82rem;color:#bcd2b6;margin:13px 0 0}
+
+/* AIscend black-first design: green is reserved for signals, links and selected actions. */
+:root{--bg:#050607;--surface:#101315;--surface2:#181c1f;--line:#30373a;--text:#f1f5f2;--muted:#aeb9b5;--green:#9bef71}
+html{background:#050607}
+body{background:#050607;color:var(--text)}
+header{background:#050607f5;border-bottom:1px solid #31383a}
+.console{background:#090c0e;border-color:var(--line)}
+.console-nav{border-bottom-color:var(--line)}
+.metric,.panel,.feature{background:#121619;border-color:var(--line)}
+.market-strip,.market-item,.soft,.school-grid>div,.hero-brief,.statusbox,.disclaimer{background:#0e1215;border-color:var(--line)}
+.market-item:hover,.demo-button:hover{background:#1c2325}
+.demo-button,.tag,.console-state,.notice,.status{background:#151a1d;border-color:#394441}
+.btn{background:#171b1e;border-color:#394045;color:#edf4f0}
+.btn:hover{background:#22282b}
+.btn.primary,.demo-button[aria-pressed=true]{background:#9bef71;border-color:#9bef71;color:#091109}
+.btn.primary:hover{background:#c0ffa3;color:#091109}
+.research-update{padding:28px 0 55px}
+.research-update .heading{margin-bottom:20px}
+.research-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.research-card{min-width:0;background:#111519;border:1px solid #30373a;border-radius:16px;padding:19px}
+.research-kicker{font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#b2bbb7}
+.research-card strong{display:block;margin:12px 0;font-size:clamp(24px,2.8vw,35px);line-height:1.15;letter-spacing:-.03em;color:#a6f285;font-variant-numeric:tabular-nums}
+.research-card .research-unproven{color:#ffc3a3;font-size:clamp(19px,2.5vw,27px)}
+.research-card p{font-size:13px;color:var(--muted);margin:0}
+.research-links{display:flex;flex-wrap:wrap;gap:8px;margin-top:17px}
+@media(max-width:800px){.research-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:460px){.research-grid{grid-template-columns:1fr 1fr}.research-card{padding:13px}}
 </style>
 
 <style>
 
 /* BEAN main-site design system, shared visually with the laboratory homepage.
    Public demo remains disconnected from live private wallets and accounts. */
-:root{--bg:#0b1410;--surface:#14231a;--surface2:#1b3023;--line:#34503c;--text:#edf8ed;--muted:#b2c6b5;--green:#a5f47a;--shadow:0 16px 40px #0005}
-body{background:radial-gradient(ellipse 80% 440px at 76% 0%,#25422b 0%,transparent 82%),#0b1410;color:var(--text);font:16px/1.6 system-ui,-apple-system,"Segoe UI",sans-serif}
+:root{--bg:#050607;--surface:#111417;--surface2:#181b1e;--line:#343a3d;--text:#edf8ed;--muted:#b2c6b5;--green:#a5f47a;--shadow:0 16px 40px #0005}
+body{background:#050607;color:var(--text);font:16px/1.6 system-ui,-apple-system,"Segoe UI",sans-serif}
 .wrap{max-width:1160px}
-header{background:#0b1410ef;border-bottom:1px solid var(--line);backdrop-filter:blur(12px)}
+header{background:#050607ef;border-bottom:1px solid var(--line);backdrop-filter:blur(12px)}
 .nav{min-height:70px;justify-content:initial;gap:24px}
 .brand{font-size:1.15rem;letter-spacing:.07em;text-decoration:none}
 .brand>span:first-child{width:51px;height:60px;overflow:visible;background:transparent;border:0;flex-shrink:0}
@@ -115,12 +142,39 @@ h1{font-size:clamp(3.25rem,7.5vw,6.4rem);line-height:1;letter-spacing:-.055em;ma
 
 
 .heading h2{font-size:clamp(2rem,4vw,3.1rem);letter-spacing:-.035em}
-.console,.panel,.metric,.feature{border-color:var(--line);background:linear-gradient(145deg,#1a3022,#122117)}
+.console,.panel,.metric,.feature{border-color:var(--line);background:linear-gradient(145deg,#171b1d,#0c1012)}
 .console{border-radius:20px}
 .notice{border-color:var(--line);background:var(--surface);color:var(--green)}
 @media(max-width:900px){.hero{grid-template-columns:1fr;padding:45px 0}}
 @media(max-width:610px){.nav{flex-wrap:wrap;padding:12px 0;gap:10px}.links{width:100%;margin-left:0;overflow-x:auto;flex-wrap:nowrap;gap:17px;padding-bottom:5px}.links a{white-space:nowrap}.hero{padding:35px 0 25px}.hero h1{font-size:3.3rem}}
 
+
+/* AIscend black-first design: green is reserved for signals, links and selected actions. */
+:root{--bg:#050607;--surface:#101315;--surface2:#181c1f;--line:#30373a;--text:#f1f5f2;--muted:#aeb9b5;--green:#9bef71}
+html{background:#050607}
+body{background:#050607;color:var(--text)}
+header{background:#050607f5;border-bottom:1px solid #31383a}
+.console{background:#090c0e;border-color:var(--line)}
+.console-nav{border-bottom-color:var(--line)}
+.metric,.panel,.feature{background:#121619;border-color:var(--line)}
+.market-strip,.market-item,.soft,.school-grid>div,.hero-brief,.statusbox,.disclaimer{background:#0e1215;border-color:var(--line)}
+.market-item:hover,.demo-button:hover{background:#1c2325}
+.demo-button,.tag,.console-state,.notice,.status{background:#151a1d;border-color:#394441}
+.btn{background:#171b1e;border-color:#394045;color:#edf4f0}
+.btn:hover{background:#22282b}
+.btn.primary,.demo-button[aria-pressed=true]{background:#9bef71;border-color:#9bef71;color:#091109}
+.btn.primary:hover{background:#c0ffa3;color:#091109}
+.research-update{padding:28px 0 55px}
+.research-update .heading{margin-bottom:20px}
+.research-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.research-card{min-width:0;background:#111519;border:1px solid #30373a;border-radius:16px;padding:19px}
+.research-kicker{font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#b2bbb7}
+.research-card strong{display:block;margin:12px 0;font-size:clamp(24px,2.8vw,35px);line-height:1.15;letter-spacing:-.03em;color:#a6f285;font-variant-numeric:tabular-nums}
+.research-card .research-unproven{color:#ffc3a3;font-size:clamp(19px,2.5vw,27px)}
+.research-card p{font-size:13px;color:var(--muted);margin:0}
+.research-links{display:flex;flex-wrap:wrap;gap:8px;margin-top:17px}
+@media(max-width:800px){.research-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:460px){.research-grid{grid-template-columns:1fr 1fr}.research-card{padding:13px}}
 </style>
 </head>
 <body>
@@ -130,18 +184,28 @@ h1{font-size:clamp(3.25rem,7.5vw,6.4rem);line-height:1;letter-spacing:-.055em;ma
 </div></header>
 <main>
 <section class="wrap hero">
-<div><span class="eyebrow"><span class="dot" aria-hidden="true"></span> BEAN / AIscend · Public Interactive Demo</span>
-<h1>AIscend.<br><span style="color:var(--green)">Research meets the market.</span></h1>
-<p>AIscend brings BEAN-style memory, strategy experiments, market research and decision journaling together in one polished capital research console.</p>
+<div><span class="eyebrow"><span class="dot" aria-hidden="true"></span> AIscend · Public Interactive Demo</span>
+<h1>AIscend.<br><span style="color:var(--green)">Learning meets the market.</span></h1>
+<p>AIscend brings Coinbase trading infrastructure, cost-aware strategy research, persistent decision ledgers and experimental BEAN learning into one capital research platform.</p>
 <p>Explore a <strong>read-only sample account</strong> using fields and research capabilities present in the actual AIscend dashboard. The numbers are illustrative; this page cannot connect a private wallet or run the trading engine.</p>
 <div class="buttons"><a class="btn primary" href="#demo">Open the interactive console ↓</a><a class="btn" href="https://github.com/danieloculus0-bot/AIscend">Inspect the code ↗</a></div>
 </div>
 <aside class="hero-brief"><strong>Read-only research demonstration</strong><p>Explore research states, strategy experiments and example decision records.</p><p>Public quotes are informational. No wallet is connected and the demo cannot place trades.</p><a href="https://github.com/danieloculus0-bot/AIscend" target="_blank" rel="noopener noreferrer">Inspect the source code →</a></aside>
 </section>
+<section class="wrap research-update" id="research2026" aria-labelledby="researchTitle">
+<div class="heading"><div><span class="eyebrow">SOURCE-LINKED · OCTOBER 2026</span><h2 id="researchTitle">Real experiments. Real outcomes. No magic numbers.</h2><p>Recent BEAN-assisted AIscend research is substantially broader than the sample dashboard below. The tested research branches and application runtime are separate; figures below describe recorded studies, not production trading returns.</p></div></div>
+<div class="research-grid">
+<article class="research-card"><span class="research-kicker">Coinbase universe studied</span><strong>389</strong><p>Eligible USD products examined in a recorded wide-history experiment, not 389 funded positions.</p></article>
+<article class="research-card"><span class="research-kicker">Source market data</span><strong>392,099</strong><p>Daily OHLCV candles retained for historical study. Data provenance matters.</p></article>
+<article class="research-card"><span class="research-kicker">Teaching generation</span><strong>11.17×</strong><p>Measured component-level processing speedup with identical teaching rows in one study.</p></article>
+<article class="research-card"><span class="research-kicker">Profitable learned policy</span><strong class="research-unproven">Not proven</strong><p>Recorded learned-policy outcomes include losses. We preserve the failures and the baselines.</p></article>
+</div>
+<div class="research-links"><a class="btn primary" href="https://github.com/danieloculus0-bot/AIscend/blob/main/docs/BEAN_ADAPTIVE_LEARNING_PUBLICATION_2026-10-25.md" target="_blank" rel="noopener noreferrer">Read the actual experiment results ↗</a><a class="btn" href="https://github.com/danieloculus0-bot/AIscend/actions" target="_blank" rel="noopener noreferrer">Inspect automated checks ↗</a><a class="btn" href="https://github.com/danieloculus0-bot/AIscend" target="_blank" rel="noopener noreferrer">Inspect AIscend Core ↗</a></div>
+</section>
 <section class="wrap" id="demo" aria-labelledby="demoTitle">
 <div class="heading"><div><h2 id="demoTitle">Inside AIscend</h2><p>Try the interface states. Every interaction below is simulated.</p></div><div class="notice">● PUBLIC DEMO · SAMPLE DATA · NO WALLET CONNECTED</div></div>
 <div class="console" aria-label="Read-only AIscend demonstration">
-<div class="console-nav"><span class="console-brand"><img src="./bean-official.webp" alt="" width="26" height="26"> BEAN / AIscend</span><span id="stageTag" class="console-state">DEMO · MARKET OBSERVATION</span></div>
+<div class="console-nav"><span class="console-brand"><img src="./bean-official.webp" alt="" width="26" height="26"> AIscend / Research Lab</span><span id="stageTag" class="console-state">DEMO · MARKET OBSERVATION</span></div>
 <div class="metrics" aria-label="Sample account using the same four balance fields as the actual AIscend dashboard">
 <div class="metric"><div class="label">Net liquidation · sample</div><div class="value">$25.60</div></div>
 <div class="metric"><div class="label">Cash / USDC · sample</div><div class="value">$6.20</div></div>
