@@ -224,7 +224,7 @@ def run_experiment(database, *, source_seeds=TRAIN_SEEDS,
         for k in win_counts:
             win_counts[k] += primary > results[k][-1]
     averaged = {k: round(statistics.mean(v), 6) for k,v in results.items()}
-    source = averaged["BEAN_source_plus_discovered_mapping"]
+    source_reward = averaged["BEAN_source_plus_discovered_mapping"]
     report = {
         "schema": SCHEMA,
         "source_training_cases": len(source_seeds),
@@ -238,9 +238,9 @@ def run_experiment(database, *, source_seeds=TRAIN_SEEDS,
         "development_target_only_control": target_only,
         "blind_means": averaged,
         "blind_wins_vs_controls": win_counts,
-        "blind_delta_vs_identity": round(source-averaged["source_assumed_identity"], 6),
-        "blind_delta_vs_target_only": round(source-averaged["no_source_target_only"], 6),
-        "blind_delta_vs_random": round(source-averaged["random"], 6),
+        "blind_delta_vs_identity": round(source_reward-averaged["source_assumed_identity"], 6),
+        "blind_delta_vs_target_only": round(source_reward-averaged["no_source_target_only"], 6),
+        "blind_delta_vs_random": round(source_reward-averaged["random"], 6),
         "ledger_tip_before_blind": pinned_tip,
         "retained_record_sha256": saved["record_sha256"],
         "observation_wiring_exposed_to_learner": False,
