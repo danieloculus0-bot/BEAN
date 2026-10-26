@@ -82,6 +82,34 @@ def make_handlers(
         from ..engineering.jobsite import evaluate_request
         return evaluate_request(msg.args)
 
+    def engineering_fea_evidence_review(msg: InboxMessage, session_uuid: str) -> dict:
+        """Independently recalculate reference mechanics in supplied solver evidence.
+
+        Records a bounded observation with the original evidence digest. A
+        host-supplied solver report does not authenticate its own provenance
+        and does not earn an automatic Q-learning reward.
+        """
+        from ..engineering.fea_evidence import crosscheck_native_torsion
+        report = msg.args.get("report")
+        reviewed = crosscheck_native_torsion(report, source_ref=msg.args.get("source_ref"))
+        log_event(
+            session_uuid, EventType.OBSERVATION,
+            "Torsion reference report checked against BEAN independent equations.",
+            Source.SYSTEM, subtype="engineering_native_fea_reference",
+            data={
+                "scope": reviewed["scope"],
+                "source_step_sha256": reviewed["source_step_sha256"],
+                "source_report_sha256": reviewed["source_report_sha256"],
+                "source_ref": reviewed["source_ref"],
+                "reference_tip_twist_rad": reviewed["reference_tip_twist_rad"],
+                "grids": reviewed["grids"],
+                "source_authenticated": False,
+                "engineering_validation": "not_established",
+                "model_weight_training": False,
+            },
+        )
+        return reviewed
+
     def shutdown(msg: InboxMessage, session_uuid: str) -> dict:
         reason = str(msg.args.get("reason", "inbox_shutdown"))
         if loop is not None:
@@ -303,6 +331,7 @@ def make_handlers(
         "log_note": log_note,
         "fea_stress_reference": fea_stress_reference,
         "engineering_jobsite": engineering_jobsite,
+        "engineering_fea_evidence_review": engineering_fea_evidence_review,
         "shutdown": shutdown,
         "run_reflection": run_reflection,
         "replay_skill": replay_skill,
