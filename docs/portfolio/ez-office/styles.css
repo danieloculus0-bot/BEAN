@@ -325,3 +325,6 @@ nav{display:grid;gap:5px}.nav-item{text-align:left;border:1px solid transparent;
   .media-playback-state{font-size:13px}
 }
 @media print{.media-capabilities,.media-playback-state{display:none!important}}
+
+/* Black canvas portfolio standard · neutral surfaces; project accents preserved */
+:root{background:#050607;--panel:#111417;--border:#343a3d}html,body{background:#050607}.sidebar{background:#0b0d0f}button,input,textarea,select{background-color:#181c1f}button.primary{background:var(--accent)}
