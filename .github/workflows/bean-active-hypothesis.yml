@@ -1,0 +1,36 @@
+name: BEAN autonomous numeric hypothesis learning
+on:
+  push:
+    branches: [main, feat/bean-autonomous-probe-learning-20261026]
+    paths:
+      - 'bean/learning/active_hypothesis.py'
+      - 'bean/learning/reasoning_service.py'
+      - 'bean/evaluation/active_abstraction_benchmark.py'
+      - 'bean/tests/test_active_hypothesis.py'
+      - '.github/workflows/bean-active-hypothesis.yml'
+  pull_request:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  discover-and-falsify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Verify active experiments, invalid evidence and journal restart
+        run: python -m unittest bean.tests.test_active_hypothesis bean.tests.test_selective_transfer_gate -v
+      - name: Repeated blind worlds against equal-budget passive baseline
+        run: python -m bean.evaluation.active_abstraction_benchmark --worlds 35
+      - name: Retain unfiltered blind results including failures
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bean-active-abstraction-blind-results
+          path: active-abstraction-proof/results.json
+          if-no-files-found: warn
