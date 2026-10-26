@@ -15,6 +15,7 @@ from .experimental import ExperienceBank, TrialCase, material_for
 from .native_skills import BEANReasoningSkills
 from .judgment import choose_counsel
 from .local_reasoner import LocalReasoner
+from .transfer_gate import evaluate_transfer
 from .composition import CompositionLearner
 from bean.optimization.autodev import canonical
 
@@ -64,6 +65,36 @@ class NativeReasoningService:
         self.compositions = CompositionLearner(self.bank)
         self.model = model
         self.closed = False
+
+    def test_analogy(self, *, domain, task_ref, source_ref, retained,
+                     alternative, probe_ids, reward, margin=0.0):
+        """Use local paired interventions to accept or reject a proposed transfer.
+
+        Both candidates are caller-provided. Their outcomes are measured by
+        an actual environment callback, retained in Core's SHA evidence bank.
+        This does not generate abstractions or authenticate host feedback.
+        """
+        if self.closed:
+            raise ValueError("Reasoning memory is closed")
+        domain = _required(domain, "domain", 100).casefold()
+        task_ref = _required(task_ref, "task_ref", 200)
+        source_ref = _required(source_ref, "source_ref", 500)
+        decision = evaluate_transfer(
+            retained=retained, alternative=alternative,
+            probe_ids=probe_ids, reward=reward, margin=margin)
+        entry = {
+            "schema": "bean.adaptive_lab026.v1",
+            "experiment": "bean.native.selective_transfer.v1",
+            "domain": domain, "task_ref": task_ref,
+            "source_ref": source_ref,
+            "decision": decision, "outcome_origin": "host_measured",
+            "independent_verification": False,
+        }
+        receipt_id = sha256(canonical(entry)).hexdigest()
+        tip = self.bank.record_trial(entry)
+        return {**decision, "receipt_id": receipt_id,
+                "journal_tip": tip, "lesson_retained": True,
+                "model_invoked": False}
 
     def _model(self, model=None):
         selected = model if model is not None else self.model
