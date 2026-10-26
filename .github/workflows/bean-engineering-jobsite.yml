@@ -1,0 +1,48 @@
+name: BEAN Jobsite Engineering Rules
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "bean/engineering/**"
+      - "bean/tests/test_engineering_jobsite.py"
+      - "bean/tests/test_engineering_stress_solver.py"
+      - "bean/runtime/inbox_handlers.py"
+      - ".github/workflows/bean-engineering-jobsite.yml"
+  pull_request:
+    paths:
+      - "bean/engineering/**"
+      - "bean/tests/test_engineering_jobsite.py"
+      - "bean/tests/test_engineering_stress_solver.py"
+      - "bean/runtime/inbox_handlers.py"
+      - ".github/workflows/bean-engineering-jobsite.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  bounded-calculations:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Check mechanics equations, 2x4 takeoff, bounds and weak-beam ranking
+        run: |
+          python -m unittest bean.tests.test_engineering_stress_solver bean.tests.test_engineering_jobsite -v
+      - name: Smoke test actual BEAN CLI calculation
+        run: |
+          printf '1\n20\n16\nq\n' | python -m bean.engineering.jobsite > field_cli.txt
+          grep -q 'BASE COUNT: 16 full-height studs' field_cli.txt
+          cat field_cli.txt >> "$GITHUB_STEP_SUMMARY"
+      - name: Preserve field-cli sample output
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: BEAN-jobsite-engineering-evidence
+          path: field_cli.txt
+          retention-days: 30
+          if-no-files-found: warn
