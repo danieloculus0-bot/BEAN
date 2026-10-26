@@ -199,6 +199,12 @@ def evaluate_request(request):
             raise ValueError("Unknown wall takeoff fields")
         return count_studs(request.get("length_ft"), request.get("spacing_in"),
                            openings=request.get("openings", 0))
+    if operation == "wall_layout":
+        if set(request) - {"schema", "operation", "length_ft", "spacing_in", "openings"}:
+            raise ValueError("Unknown wall-layout fields")
+        from .framing import takeoff_wall
+        return takeoff_wall(request.get("length_ft"), request.get("spacing_in"),
+                            request.get("openings"))
     if operation == "beam_check":
         if set(request) - {"schema", "operation", "members", "project_defaults"}:
             raise ValueError("Unknown beam-check fields")
