@@ -1,0 +1,71 @@
+name: BEAN Reads Real EZ-FEA Native Torsion Evidence
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "bean/engineering/fea_evidence.py"
+      - "bean/tests/test_engineering_fea_evidence.py"
+      - ".github/workflows/bean-native-fea-evidence-bridge.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  real-solver-to-bean:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - name: Retrieve existing EZ-FEA mainline engineering solver
+        uses: actions/checkout@v4
+        with:
+          repository: danieloculus0-bot/EZ-FEA
+          ref: main
+          path: ezfea-source
+          persist-credentials: false
+      - name: Retain source revision as evidence
+        run: |
+          echo "EZFEA_SHA=$(git -C ezfea-source rev-parse HEAD)" >> "$GITHUB_ENV"
+          git -C ezfea-source rev-parse HEAD
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install actual Gmsh and CalculiX
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y calculix-ccx libglu1-mesa
+          python -m pip install -r ezfea-source/requirements.txt
+      - name: Run two genuine STEP/C3D10 torque simulations using EZ-FEA
+        env:
+          PYTHONPATH: ${{ github.workspace }}/ezfea-source
+        run: |
+          python -m ezfea.torsion_benchmarks --out real_ezfea_reference --meshes 6 4
+          cat real_ezfea_reference/TORSION_REPORT.md >> "$GITHUB_STEP_SUMMARY"
+      - name: Import the real native report through BEAN's independent physics checker
+        run: |
+          python -m bean.engineering.fea_evidence real_ezfea_reference/TORSION_EVIDENCE.json --out bean_crosschecked_torsion.json --source-ref "github:danieloculus0-bot/EZ-FEA@${EZFEA_SHA}"
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          record=json.loads(Path("bean_crosschecked_torsion.json").read_text())
+          assert record["observation"]=="reference_equations_and_report_internally_consistent"
+          assert len(record["grids"])==2
+          assert record["independently_recomputed_references"]
+          assert not record["replayed_native_solver"]
+          assert not record["learning_weights_updated"]
+          assert not record["design_approval"]
+          assert record["provenance_status"]=="host_attested_not_independently_authenticated"
+          print("BEAN independently checked actual CalculiX twist and reaction results")
+          PY
+      - name: Archive real solver source evidence and BEAN's analysis
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: BEAN-EZFEA-real-torsion-evidence-bridge
+          path: |
+            real_ezfea_reference/
+            bean_crosschecked_torsion.json
+          retention-days: 30
+          if-no-files-found: warn
