@@ -1,6 +1,6 @@
 {
   "schema": "bean.construction_rules.v1",
-  "edition": "2026-10-26",
+  "edition": "2026-10-26-jobsite-openings",
   "units": "US customary",
   "purpose": "Deterministic reference rules and bounds, not an adopted building code or preapproved design",
   "rules": {
@@ -44,6 +44,33 @@
         "notching/holes",
         "fire/wind/seismic",
         "engineered lumber and composite action"
+      ],
+      "code_approval": false
+    },
+    "explicit_opening_wall_takeoff": {
+      "rule_id": "quantity.explicit_opening_wall_takeoff.v1",
+      "method": "baseline centered stud grid minus studs strictly inside opening intervals plus explicitly specified additional full-length kings and short jacks",
+      "inputs": [
+        "wall length feet",
+        "stud spacing inches",
+        "each rough opening start/width from left end inches",
+        "additional full-length king studs per side",
+        "jack studs per side"
+      ],
+      "exclusions": [
+        "header members",
+        "cripples",
+        "top and bottom plates",
+        "corner/intersection details",
+        "waste",
+        "framing ties",
+        "structural adequacy of king/jack counts"
+      ],
+      "assumptions": [
+        "one straight wall segment, no edge-touching rough openings",
+        "opening intervals must be disjoint and non-touching",
+        "baseline grid stud exactly on an opening boundary stays counted; only additional kings are entered",
+        "shorter last bay ends with one stud"
       ],
       "code_approval": false
     }
