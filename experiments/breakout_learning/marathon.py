@@ -34,7 +34,7 @@ def teaching_action(state):
     return 0 if bucket < 7 else (2 if bucket > 7 else 1)
 
 
-def demonstrate(learner, updates=250):
+def demonstrate(learner, updates=600):
     """Real PyTorch supervised weight updates; no hardcoded inference actions."""
     if updates < 1:
         raise ValueError("Need at least one demonstration update")
@@ -121,7 +121,7 @@ def load_resume(root):
 
 
 def run(root=Path("breakout-marathon-state"), *, episode_budget=40,
-        demonstration_updates=250, validation_seeds=VALIDATION_SEEDS):
+        demonstration_updates=600, validation_seeds=VALIDATION_SEEDS):
     if episode_budget < 1:
         raise ValueError("episode_budget must be positive")
     torch.set_num_threads(1)
@@ -215,7 +215,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--root", type=Path, default=Path("breakout-marathon-state"))
     parser.add_argument("--episodes", type=int, default=40)
-    parser.add_argument("--demonstration-updates", type=int, default=250)
+    parser.add_argument("--demonstration-updates", type=int, default=600)
     args = parser.parse_args()
     run(args.root, episode_budget=args.episodes,
         demonstration_updates=args.demonstration_updates)
