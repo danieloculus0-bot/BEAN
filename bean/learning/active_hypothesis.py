@@ -68,7 +68,7 @@ def _entropy(actions):
 
 
 def discover(*, probe_ids, observe, reward, budget=12, method="disagreement",
-             seed=0, tolerance=0.4, min_gap=0.08):
+             seed=0, tolerance=0.12, min_gap=0.08):
     """Choose and execute bounded resettable paired-intervention experiments.
 
     observe(probe_id) exposes ONLY the sensor vector. reward(probe_id, action)
