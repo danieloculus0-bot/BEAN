@@ -1,0 +1,585 @@
+"""Actual BEAN Core composition experiments: no model, no trading, no claims of AGI.
+
+Independent source rules are learned in separate domains. A target task then
+requires combining BOTH outputs with a join chosen by the bounded BEAN search.
+Holdout answers are not supplied to learn_composition. Repeated probes are
+pure symbolic task evaluation on unseen input structures and values.
+"""
+from __future__ import annotations
+
+import json
+from pathlib import Path
+import random
+import tempfile
+import unittest
+
+from bean.learning.reasoning_service import (
+    NativeReasoningService, register_native_reasoning_handlers,
+)
+
+
+TAG_TRAIN = [
+    {"question": "ORCHID-7 tags A3 B9 C5", "answer": "BCA"},
+    {"question": "ORCHID-7 tags X7 Q1 D5", "answer": "XDQ"},
+    {"question": "ORCHID-7 tags K2 L8 M4", "answer": "LMK"},
+]
+GAUGE_TRAIN = [
+    {"question": "HARBOR-4 A=12 B=7 C=19", "answer": "A"},
+    {"question": "HARBOR-4 D=10 E=20 F=15", "answer": "F"},
+    {"question": "HARBOR-4 G=15 H=22 J=4", "answer": "G"},
+]
+
+
+def question(pairs, gauges):
+    return json.dumps({"parts": [
+        "TASK-1 tags " + " ".join(k + str(v) for k, v in pairs),
+        "TASK-2 " + " ".join(k + "=" + str(v) for k, v in gauges),
+    ]}, sort_keys=True)
+
+
+def target(pairs, gauges):
+    ranked = "".join(k for k, _ in sorted(pairs, key=lambda item: -item[1]))
+    med = sorted(gauges, key=lambda item: item[1])[1][0]
+    return str(ranked.index(med) + 1)
+
+
+DEV = [
+    ([("A", 3), ("B", 9), ("C", 5)],
+     [("A", 12), ("B", 7), ("C", 19)]),
+    ([("D", 7), ("E", 2), ("F", 9)],
+     [("D", 5), ("E", 7), ("F", 3)]),
+    ([("G", 8), ("H", 5), ("J", 2)],
+     [("G", 7), ("H", 10), ("J", 3)]),
+    ([("K", 2), ("L", 7), ("M", 5)],
+     [("K", 9), ("L", 4), ("M", 12)]),
+]
+
+
+class CompositionTests(unittest.TestCase):
+    def setUp(self):
+        temp = tempfile.TemporaryDirectory()
+        self.addCleanup(temp.cleanup)
+        self.db = Path(temp.name) / "bean-experience.sqlite3"
+        self.core = NativeReasoningService(self.db, model=None)
+        self.addCleanup(self.core.close)
+
+    def seed_parents(self):
+        a = self.core.learn_local(
+            domain="tag-sorting", task_ref="primitive-a",
+            examples=TAG_TRAIN, evidence_refs=["development:tags"])
+        b = self.core.learn_local(
+            domain="gauge-median", task_ref="primitive-b",
+            examples=GAUGE_TRAIN, evidence_refs=["development:gauges"])
+        self.assertEqual(a["operation"], "digit_desc")
+        self.assertEqual(b["operation"], "median")
+        return a, b
+
+    def train(self, cases=DEV, domain="mixed-transfer"):
+        return self.core.learn_composition(
+            domain=domain, task_ref="dev-composition-only",
+            examples=[{"question": question(t, g), "answer": target(t, g)}
+                      for t, g in cases],
+            evidence_refs=["development:paired-rule-examples"])
+
+    def test_discovers_unique_two_rule_program_and_reuses_after_restart(self):
+        parents = self.seed_parents()
+        candidate = self.train()
+        self.assertEqual(candidate["status"], "learned_composition")
+        self.assertEqual(candidate["join"], "rank_second_in_first")
+        self.assertEqual(set(candidate["parent_rule_ids"]),
+                         {a["rule_id"] for a in parents})
+        self.assertGreater(candidate["programs_examined"], 1)
+        self.assertFalse(candidate["independent_validation"])
+        self.assertEqual(self.core.status()["native_composed_rules"], 1)
+
+        rng = random.Random(20261025)
+        unseen_receipts = set()
+        for i in range(48):
+            labels = rng.sample("ABCEFGHJKLMNPRSTVWXYZ", 3)
+            pairs = list(zip(labels, rng.sample(range(1, 10), 3)))
+            gauges = list(zip(labels, rng.sample(range(-90, 90), 3)))
+            q = question(pairs, gauges)
+            baseline = self.core.local.reason(
+                domain="mixed-transfer", task_ref="baseline-" + str(i),
+                question=q)
+            self.assertEqual(baseline["status"], "abstain")
+            result = self.core.reason_auto(
+                domain="mixed-transfer", task_ref="blind-" + str(i), query=q)
+            self.assertEqual(result["status"], "locally_solved")
+            self.assertEqual(result["answer"], target(pairs, gauges))
+            self.assertFalse(result["model_invoked"])
+            self.assertFalse(result["development_overlap"])
+            self.assertEqual(len(result["rules_used"]), 2)
+            self.assertEqual(result["trace"][-1], "apply:rank_second_in_first")
+            unseen_receipts.add(result["receipt_id"])
+        self.assertEqual(len(unseen_receipts), 48)
+        self.assertEqual(self.core.status()["native_symbolic_inferences"], 48)
+        self.assertEqual(self.core.status()["inference_receipts"], 48)
+
+        before = self.core.bank.journal.export()["tip"]
+        self.core.close()
+        reopened = NativeReasoningService(self.db, model=None)
+        try:
+            self.assertEqual(reopened.status()["native_composed_rules"], 1)
+            q = question([("R", 2), ("S", 8), ("T", 5)],
+                         [("R", 6), ("S", 3), ("T", 10)])
+            saved = reopened.reason_auto(
+                domain="mixed-transfer", task_ref="recovered", query=q)
+            self.assertEqual(saved["answer"], target(
+                [("R", 2), ("S", 8), ("T", 5)],
+                [("R", 6), ("S", 3), ("T", 10)]))
+            self.assertNotEqual(before, saved["journal_tip"])
+            self.assertFalse(saved["model_invoked"])
+            feedback = reopened.feedback(
+                receipt_id=saved["receipt_id"], expected=saved["answer"],
+                evidence_refs=["host:heldout-manually-scored"])
+            self.assertTrue(feedback["matched"])
+            self.assertEqual(feedback["outcome_origin"], "host_reported")
+        finally:
+            reopened.close()
+
+    def test_autonomous_proposals_are_unverified_until_demonstrations(self):
+        self.seed_parents()
+        q = question(*DEV[0])
+        before = self.core.bank.journal.export()["tip"]
+        proposals = self.core.propose_compositions(
+            domain="mixed-transfer", task_ref="novel-hypotheses", query=q)
+        self.assertEqual(proposals["status"], "hypotheses_only")
+        self.assertTrue(proposals["proposal_only"])
+        self.assertFalse(proposals["rule_retained"])
+        self.assertFalse(proposals["verified_outcome"])
+        self.assertGreater(proposals["candidate_count"], 1)
+        self.assertTrue(any(p["join"] == "rank_second_in_first"
+                            and p["hypothetical_output"] == "3"
+                            for p in proposals["hypotheses"]))
+        self.assertEqual(self.core.status()["native_composed_rules"], 0)
+        self.assertEqual(self.core.bank.journal.export()["tip"], before)
+        # No selected composition means the normal reasoner must still abstain.
+        blind = self.core.reason_auto(
+            domain="mixed-transfer", task_ref="before-development", query=q)
+        self.assertEqual(blind["status"], "abstain")
+        self.assertIsNone(blind["answer"])
+
+    def test_cannot_synthesize_without_retained_independent_parents(self):
+        result = self.train()
+        self.assertEqual(result["status"], "abstain")
+        self.assertEqual(result["reason"], "no_supported_composition")
+        self.assertEqual(self.core.status()["native_composed_rules"], 0)
+        self.core.learn_local(
+            domain="only-one-skill", task_ref="first",
+            examples=TAG_TRAIN, evidence_refs=["development:tags"])
+        self.assertEqual(self.train()["status"], "abstain")
+        self.assertEqual(self.core.status()["native_composed_rules"], 0)
+
+    def test_conflicting_demonstrations_and_repeated_questions_are_not_learned(self):
+        self.seed_parents()
+        dev = [{"question": question(t, g), "answer": "UNSUPPORTED"}
+               for t, g in DEV]
+        refused = self.core.learn_composition(
+            domain="mixed-transfer", task_ref="bad-dev",
+            examples=dev, evidence_refs=["source:deliberate-error"])
+        self.assertEqual(refused["status"], "abstain")
+        self.assertEqual(refused["reason"], "no_supported_composition")
+        bad = [{"question": question(*DEV[0]), "answer": "3"}] * 4
+        with self.assertRaisesRegex(ValueError, "different question fingerprints"):
+            self.core.learn_composition(
+                domain="mixed-transfer", task_ref="copied-question",
+                examples=bad, evidence_refs=["source:duplicate"])
+        self.assertEqual(self.core.status()["native_composed_rules"], 0)
+
+    def test_two_supported_but_contradictory_plans_abstain(self):
+        self.seed_parents()
+        self.assertEqual(self.train()["status"], "learned_composition")
+        alternate = self.core.learn_composition(
+            domain="mixed-transfer", task_ref="dev-other-answer",
+            examples=[{
+                "question": question(t, g),
+                "answer": "".join(k for k, v in
+                                  sorted(t, key=lambda item: -item[1])) + "|" +
+                          sorted(g, key=lambda item: item[1])[1][0],
+            } for t, g in DEV],
+            evidence_refs=["development:competing-program"])
+        self.assertEqual(alternate["status"], "learned_composition")
+        self.assertEqual(alternate["join"], "first_then_second")
+        self.assertEqual(self.core.status()["native_composed_rules"], 2)
+        result = self.core.reason_auto(
+            domain="mixed-transfer", task_ref="new-conflict",
+            query=question([("R", 3), ("S", 5), ("T", 8)],
+                           [("R", 6), ("S", 2), ("T", 4)]))
+        self.assertEqual(result["status"], "abstain")
+        self.assertEqual(result["reason"], "conflicting_or_inapplicable_compositions")
+        self.assertIsNone(result["answer"])
+
+    def test_refuted_composed_program_is_quarantined_after_feedback(self):
+        self.seed_parents()
+        self.assertEqual(self.train()["status"], "learned_composition")
+        q = question([("A", 5), ("B", 8), ("C", 2)],
+                     [("A", 14), ("B", 7), ("C", 19)])
+        used = self.core.reason_auto(
+            domain="mixed-transfer", task_ref="new-but-wrong", query=q)
+        self.assertEqual(used["status"], "locally_solved")
+        report = self.core.feedback(
+            receipt_id=used["receipt_id"], expected="host-refuted-answer",
+            adjustment_hypothesis="Review component rule or join with independent evidence",
+            evidence_refs=["host:challenged-composition"])
+        self.assertFalse(report["matched"])
+        before = self.core.status()["inference_receipts"]
+        blocked = self.core.reason_auto(
+            domain="mixed-transfer", task_ref="do-not-repeat", query=q)
+        self.assertEqual(blocked["status"], "abstain")
+        self.assertEqual(blocked["reason"], "composition_has_refuted_host_feedback")
+        self.assertEqual(self.core.status()["inference_receipts"], before)
+        # A new receipt or the same development labels cannot sneak an
+        # identical rejected program back into the validated ledger.
+        retry = self.core.learn_composition(
+            domain="mixed-transfer", task_ref="laundered-dev-retry",
+            examples=[{"question": question(t, g), "answer": target(t, g)}
+                      for t, g in DEV],
+            evidence_refs=["development:retry-after-failure"])
+        self.assertEqual(retry["status"], "abstain")
+        self.assertEqual(retry["reason"], "no_supported_composition")
+        proposed = self.core.propose_compositions(
+            domain="mixed-transfer", task_ref="new-request-after-failure", query=q)
+        self.assertFalse(any(
+            h["join"] == "rank_second_in_first"
+            for h in proposed["hypotheses"]))
+        self.assertEqual(self.core.status()["native_composed_rules"], 1)
+        self.core.close()
+        reopened = NativeReasoningService(self.db, model=None)
+        try:
+            again = reopened.reason_auto(
+                domain="mixed-transfer", task_ref="after-restart", query=q)
+            self.assertEqual(again["reason"], "composition_has_refuted_host_feedback")
+        finally:
+            reopened.close()
+
+    def test_refuted_plan_does_not_block_newly_validated_alternative(self):
+        self.seed_parents()
+        self.assertEqual(self.train()["status"], "learned_composition")
+        q = question([("A", 5), ("B", 8), ("C", 2)],
+                     [("A", 14), ("B", 7), ("C", 19)])
+        first = self.core.reason_auto(
+            domain="mixed-transfer", task_ref="rejected-case", query=q)
+        self.core.feedback(
+            receipt_id=first["receipt_id"], expected="corrected-host-label",
+            adjustment_hypothesis="Review join and parent decision",
+            evidence_refs=["host:refuted-first-join"])
+        self.assertEqual(
+            self.core.reason_auto(
+                domain="mixed-transfer", task_ref="after-error", query=q)["status"],
+            "abstain")
+
+        # Independent new *development* examples support a different
+        # executable composition, with unchanged source rules.
+        alternative = self.core.learn_composition(
+            domain="mixed-transfer", task_ref="next-development-set",
+            examples=[{
+                "question": question(t, g),
+                "answer": "".join(k for k, _ in
+                                  sorted(t, key=lambda item: -item[1])) + "|" +
+                          sorted(g, key=lambda item: item[1])[1][0],
+            } for t, g in DEV],
+            evidence_refs=["development:replacement-join"])
+        self.assertEqual(alternative["status"], "learned_composition")
+        self.assertEqual(alternative["join"], "first_then_second")
+        new_output = self.core.reason_auto(
+            domain="mixed-transfer", task_ref="new-strategy", query=q)
+        self.assertEqual(new_output["status"], "locally_solved")
+        self.assertEqual(new_output["answer"], "BAC|A")
+        self.assertEqual(new_output["trace"][-1], "apply:first_then_second")
+        self.assertEqual(self.core.status()["native_composed_rules"], 2)
+
+        self.core.close()
+        reopened = NativeReasoningService(self.db, model=None)
+        try:
+            again = reopened.reason_auto(
+                domain="mixed-transfer", task_ref="continued-after-restart", query=q)
+            self.assertEqual(again["answer"], "BAC|A")
+            self.assertEqual(again["status"], "locally_solved")
+        finally:
+            reopened.close()
+
+    def test_wrong_structure_and_missing_join_match_fail_closed(self):
+        self.seed_parents()
+        self.assertEqual(self.train()["status"], "learned_composition")
+        q = question([("A", 3), ("B", 5), ("C", 8)],
+                     [("K", 4), ("L", 9), ("M", 6)])
+        result = self.core.reason_auto(
+            domain="mixed-transfer", task_ref="missing-label", query=q)
+        self.assertEqual(result["status"], "abstain")
+        self.assertEqual(result["reason"], "conflicting_or_inapplicable_compositions")
+        other = self.core.reason_auto(
+            domain="mixed-transfer", task_ref="wrong-format",
+            query='{"parts": ["tags A2 B9 C5", "unknown free text"]}')
+        self.assertEqual(other["status"], "abstain")
+        self.assertEqual(self.core.status()["native_composed_rules"], 1)
+
+    def test_compare_retains_success_failure_reasons_and_guides_next_search(self):
+        self.seed_parents()
+        examples = [{"question": question(t, g), "answer": target(t, g)}
+                    for t, g in DEV]
+        before = self.core.propose_compositions(
+            domain="mixed-transfer", task_ref="initial-search",
+            query=question(*DEV[0]))
+        self.assertFalse(before["search_guided_by_retained_comparison"])
+        report = self.core.compare_compositions(
+            domain="mixed-transfer", task_ref="development-comparison",
+            examples=examples, evidence_refs=["source:matched-development"])
+        self.assertEqual(report["status"], "comparison_recorded")
+        self.assertGreater(report["programs_compared"], 1)
+        self.assertEqual(report["leaderboard"][0]["join"], "rank_second_in_first")
+        self.assertEqual(report["leaderboard"][0]["correct"], 4)
+        self.assertEqual(report["leaderboard"][0]["wrong"], 0)
+        self.assertEqual(
+            report["leaderboard"][0]["reason_counts"]["development_answer_match"], 4)
+        records = [e["data"] for e in self.core.bank.journal.events()
+                   if e["kind"] == "composition_comparison"]
+        self.assertEqual(len(records), 1)
+        self.assertEqual(records[0]["comparison_id"], report["comparison_id"])
+        self.assertTrue(any(
+            r["reason_counts"].get("output_disagrees_with_development_answer", 0) == 4
+            for r in records[0]["results"]))
+        guided = self.core.propose_compositions(
+            domain="mixed-transfer", task_ref="guided-search",
+            query=question(*DEV[1]))
+        self.assertTrue(guided["search_guided_by_retained_comparison"])
+        self.assertGreater(guided["deprioritized_from_prior_development_failures"], 0)
+        self.assertEqual(guided["hypotheses"][0]["join"], "rank_second_in_first")
+        self.assertEqual(guided["hypotheses"][0]["search_priority"],
+                         "supported_on_development")
+        self.assertEqual(guided["hypotheses"][0]["prior_development_cases"], 4)
+        self.assertEqual(self.core.status()["composition_comparisons"], 1)
+        self.assertEqual(self.core.status()["native_composed_rules"], 0)
+        learned = self.train()
+        self.assertEqual(learned["join"], "rank_second_in_first")
+        self.assertGreater(learned["guided_deprioritized"], 0)
+        self.core.close()
+        revived = NativeReasoningService(self.db, model=None)
+        try:
+            persisted = revived.propose_compositions(
+                domain="mixed-transfer", task_ref="post-restart-guidance",
+                query=question(*DEV[2]))
+            self.assertEqual(persisted["hypotheses"][0]["search_priority"],
+                             "supported_on_development")
+            self.assertEqual(revived.status()["composition_comparisons"], 1)
+            self.assertEqual(revived.status()["native_composed_rules"], 1)
+        finally:
+            revived.close()
+
+    def test_repeated_comparison_examples_cannot_fake_new_learning(self):
+        self.seed_parents()
+        examples = [{"question": question(t, g), "answer": target(t, g)}
+                    for t, g in DEV]
+        first = self.core.compare_compositions(
+            domain="mixed-transfer", task_ref="comparison-1", examples=examples,
+            evidence_refs=["source:first-development"])
+        tip = first["journal_tip"]
+        with self.assertRaisesRegex(ValueError, "Repeated questions"):
+            self.core.compare_compositions(
+                domain="mixed-transfer", task_ref="comparison-renamed",
+                examples=examples, evidence_refs=["source:duplicate-evidence"])
+        self.assertEqual(self.core.bank.journal.export()["tip"], tip)
+        other = self.core.compare_compositions(
+            domain="different-domain", task_ref="control-scope",
+            examples=examples, evidence_refs=["source:independent-domain"])
+        self.assertEqual(other["status"], "comparison_recorded")
+        self.assertFalse(self.core.propose_compositions(
+            domain="unrelated", task_ref="unscored",
+            query=question(*DEV[0]))["search_guided_by_retained_comparison"])
+
+    def test_guide_away_from_failed_join_and_discover_new_strategy(self):
+        self.seed_parents()
+        def concat(t, g):
+            return "".join(k for k, _ in sorted(t, key=lambda i: -i[1])) + (
+                "|" + sorted(g, key=lambda i: i[1])[1][0])
+        initial = self.core.compare_compositions(
+            domain="mixed-transfer", task_ref="discover-second-strategy",
+            examples=[{"question": question(t, g), "answer": concat(t, g)}
+                      for t, g in DEV],
+            evidence_refs=["source:alternate-target"])
+        self.assertEqual(initial["leaderboard"][0]["join"], "first_then_second")
+        self.assertEqual(initial["leaderboard"][0]["correct"], 4)
+        later = [
+            ([("P", 9), ("Q", 3), ("R", 6)],
+             [("P", 16), ("Q", 7), ("R", 25)]),
+            ([("S", 2), ("T", 7), ("V", 4)],
+             [("S", 21), ("T", 18), ("V", 5)]),
+            ([("N", 3), ("L", 8), ("K", 5)],
+             [("N", 9), ("L", 2), ("K", 6)]),
+            ([("X", 5), ("Y", 4), ("Z", 7)],
+             [("X", 11), ("Y", 20), ("Z", 18)]),
+        ]
+        learned = self.core.learn_composition(
+            domain="mixed-transfer", task_ref="new-composition-development",
+            examples=[{"question": question(t, g), "answer": concat(t, g)}
+                      for t, g in later],
+            evidence_refs=["source:other-development-set"])
+        self.assertEqual(learned["status"], "learned_composition")
+        self.assertEqual(learned["join"], "first_then_second")
+        self.assertGreater(learned["guided_deprioritized"], 0)
+        answer = self.core.reason_auto(
+            domain="mixed-transfer", task_ref="new-transfer",
+            query=question([("A", 7), ("B", 2), ("C", 9)],
+                           [("A", 7), ("B", 16), ("C", 23)]))
+        self.assertEqual(answer["answer"], "CAB|B")
+        self.assertEqual(answer["status"], "locally_solved")
+
+    def test_matched_guided_search_improves_next_proposal_on_unseen_cases(self):
+        # Matched controls: both learners receive the same primitives,
+        # identical later teaching and same blind cases. Only one receives
+        # the earlier reason-coded comparison evidence.
+        def outcome(t, g):
+            ordered = "".join(k for k, _ in sorted(t, key=lambda v: -v[1]))
+            median = sorted(g, key=lambda v: v[1])[1][0]
+            return median + "|" + ordered
+
+        early = [{"question": question(t, g), "answer": outcome(t, g)}
+                 for t, g in DEV]
+        next_dev = [
+            ([("P", 9), ("Q", 3), ("R", 6)],
+             [("P", 16), ("Q", 7), ("R", 25)]),
+            ([("S", 2), ("T", 7), ("V", 4)],
+             [("S", 21), ("T", 18), ("V", 5)]),
+            ([("N", 3), ("L", 8), ("K", 5)],
+             [("N", 9), ("L", 2), ("K", 6)]),
+            ([("X", 5), ("Y", 4), ("Z", 7)],
+             [("X", 11), ("Y", 20), ("Z", 18)]),
+        ]
+        later = [{"question": question(t, g), "answer": outcome(t, g)}
+                 for t, g in next_dev]
+
+        cold = NativeReasoningService(self.db.parent / "control.sqlite3")
+        guided = NativeReasoningService(self.db.parent / "guided.sqlite3")
+        self.addCleanup(cold.close)
+        self.addCleanup(guided.close)
+        for service in (cold, guided):
+            service.learn_local(
+                domain="tag-sorting", task_ref="primitive-a",
+                examples=TAG_TRAIN, evidence_refs=["development:tags"])
+            service.learn_local(
+                domain="gauge-median", task_ref="primitive-b",
+                examples=GAUGE_TRAIN, evidence_refs=["development:gauges"])
+
+        observed = guided.compare_compositions(
+            domain="transfer-comparison", task_ref="early-development",
+            examples=early, evidence_refs=["development:early-comparison"])
+        self.assertEqual(observed["status"], "comparison_recorded")
+        self.assertEqual(observed["leaderboard"][0]["join"], "second_then_first")
+        cold_training = cold.learn_composition(
+            domain="transfer-comparison", task_ref="later-teaching",
+            examples=later, evidence_refs=["development:next-independent"])
+        guided_training = guided.learn_composition(
+            domain="transfer-comparison", task_ref="later-teaching",
+            examples=later, evidence_refs=["development:next-independent"])
+        for training in (cold_training, guided_training):
+            self.assertEqual(training["status"], "learned_composition")
+            self.assertEqual(training["join"], "second_then_first")
+        self.assertEqual(guided_training["first_supported_program_rank"], 1)
+        self.assertGreater(cold_training["first_supported_program_rank"], 1)
+        self.assertGreater(guided_training["guided_deprioritized"], 0)
+
+        rng = random.Random(20261025)
+        proposal_scores = {"cold": 0, "guided": 0}
+        solved_scores = {"cold": 0, "guided": 0}
+        for i in range(48):
+            labels = rng.sample("ABCEFGHJKLMNPRSTVWXYZ", 3)
+            tags = list(zip(labels, rng.sample(range(1, 10), 3)))
+            gauges = list(zip(labels, rng.sample(range(-90, 90), 3)))
+            q = question(tags, gauges)
+            expected = outcome(tags, gauges)
+            for name, service in (("cold", cold), ("guided", guided)):
+                # Top-ranked next idea is the measure of policy improvement.
+                hypothesis = service.propose_compositions(
+                    domain="transfer-comparison", task_ref="novel-" + str(i),
+                    query=q)
+                self.assertEqual(hypothesis["status"], "hypotheses_only")
+                proposal_scores[name] += (
+                    hypothesis["hypotheses"][0]["hypothetical_output"] == expected)
+                # Retained composed skills are evaluated separately from
+                # ranking, so prediction accuracy isn't falsely attributed
+                # to the comparison policy.
+                actual = service.reason_auto(
+                    domain="transfer-comparison", task_ref="heldout-" + str(i),
+                    query=q)
+                solved_scores[name] += actual["answer"] == expected
+                self.assertFalse(actual["development_overlap"])
+                self.assertFalse(actual["model_invoked"])
+        print("BEAN_COMPOSITION_ABLATION " + json.dumps({
+            "evaluated_blind_cases": 48,
+            "unguided_top1_correct": proposal_scores["cold"],
+            "guided_top1_correct": proposal_scores["guided"],
+            "unguided_composed_correct": solved_scores["cold"],
+            "guided_composed_correct": solved_scores["guided"],
+            "first_supported_program_rank_unguided":
+                cold_training["first_supported_program_rank"],
+            "first_supported_program_rank_guided":
+                guided_training["first_supported_program_rank"],
+            "lesson_source": "host_supplied_development_labels",
+        }, sort_keys=True))
+        self.assertEqual(solved_scores, {"cold": 48, "guided": 48})
+        self.assertEqual(proposal_scores["guided"], 48)
+        self.assertLess(proposal_scores["cold"], proposal_scores["guided"])
+        self.assertEqual(guided.status()["composition_comparisons"], 1)
+        self.assertEqual(cold.status()["composition_comparisons"], 0)
+
+    def test_old_comparison_cannot_hide_a_new_supported_strategy(self):
+        self.seed_parents()
+        report = self.core.compare_compositions(
+            domain="changed-goal", task_ref="original-target",
+            examples=[{"question": question(t, g), "answer": target(t, g)}
+                      for t, g in DEV],
+            evidence_refs=["development:original-goal"])
+        self.assertEqual(report["status"], "comparison_recorded")
+        changed = [
+            ([("P", 9), ("Q", 3), ("R", 6)],
+             [("P", 16), ("Q", 7), ("R", 25)]),
+            ([("S", 2), ("T", 7), ("V", 4)],
+             [("S", 21), ("T", 18), ("V", 5)]),
+            ([("N", 3), ("L", 8), ("K", 5)],
+             [("N", 9), ("L", 2), ("K", 6)]),
+            ([("X", 5), ("Y", 4), ("Z", 7)],
+             [("X", 11), ("Y", 20), ("Z", 18)]),
+        ]
+        def alternate(t, g):
+            ordered = "".join(k for k, _ in sorted(t, key=lambda v: -v[1]))
+            med = sorted(g, key=lambda v: v[1])[1][0]
+            return ordered + "|" + med
+        second = self.core.learn_composition(
+            domain="changed-goal", task_ref="novel-target",
+            examples=[{"question": question(t, g), "answer": alternate(t, g)}
+                      for t, g in changed],
+            evidence_refs=["development:independent-changed-target"])
+        self.assertEqual(second["status"], "learned_composition")
+        self.assertEqual(second["join"], "first_then_second")
+        self.assertGreater(second["guided_deprioritized"], 0)
+        self.assertGreater(second["first_supported_program_rank"], 1)
+        # A truly unique program must remain unique across the entire
+        # admissible search, including candidates whose old history was poor.
+        novel = question([("A", 7), ("B", 3), ("C", 8)],
+                         [("A", 2), ("B", 8), ("C", 5)])
+        result = self.core.reason_auto(
+            domain="changed-goal", task_ref="new-goal-heldout", query=novel)
+        self.assertEqual(result["answer"], alternate(
+            [("A", 7), ("B", 3), ("C", 8)],
+            [("A", 2), ("B", 8), ("C", 5)]))
+
+    def test_registered_in_native_runtime_and_never_calls_model(self):
+        self.seed_parents()
+        self.train()
+        class Inbox:
+            def __init__(self):
+                self.handlers = {}
+            def register(self, name, handler):
+                self.handlers[name] = handler
+        box = Inbox()
+        register_native_reasoning_handlers(box, self.core)
+        self.assertIn("reasoning_propose_compositions", box.handlers)
+        self.assertIn("reasoning_compare_compositions", box.handlers)
+        self.assertIn("reasoning_learn_composition", box.handlers)
+        self.assertIn("reasoning_composed", box.handlers)
+        self.assertIn("reasoning_auto", box.handlers)
+        self.assertFalse(self.core.status()["model_configured"])
+
+
+if __name__ == "__main__":
+    unittest.main()
