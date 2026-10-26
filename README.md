@@ -20,6 +20,14 @@ Persistent experimental reasoning and evidence system. BEAN Core maintains SQLit
 
 For reproducible evidence and boundaries see the [native reasoning contract](docs/BEAN_NATIVE_REASONING_CORE_2026-10-25.md), [mainline audit](docs/BEAN_MAINLINE_CONSOLIDATION_AUDIT_2026-10-25.md), and [judgment policy](docs/BEAN_JUDGMENT_POLICY_2026-10-25.md).
 
+## BEAN Jobsite: field engineering and learning (October 26, 2026)
+
+**[Jobsite setup, measured results and limits](docs/BEAN_JOBSITE_ENGINEERING.md)** | **[Verified field calculator tests](https://github.com/danieloculus0-bot/BEAN/actions/workflows/bean-engineering-jobsite.yml)** | **[Real SpongeTD engineering practice](https://github.com/danieloculus0-bot/BEAN/actions/workflows/bean-engineering-learning.yml)**
+
+BEAN now has a real local Python **construction rule catalog**, a simple high-contrast screen to count straight-wall 2×4 studs or identify the most heavily utilized rectangular beam, and deterministic axial/bending/shear/deflection calculations with traceable user-supplied engineering limits. It identifies an over-limit member and returns qualified mitigation *candidates*, not an approved structural design. Start `python -m bean.engineering.jobsite_web` and open `http://127.0.0.1:8765` on the same workstation. A reviewed material-limit profile can be entered once using `python -m bean.engineering.profile_setup`.
+
+The **actual existing BEAN SpongeTD** learner received 300 outcome updates from simulated mitigation choices and retained a scored checkpoint; 200 held-out artificial scenarios showed a 59.8% average utilization reduction versus 38.7% for the fixed baseline. This measures a small rule-based simulator and **is not trained/verified real 3D FEA**, adopted code compliance, a qualified building design, or a deployed mobile field service. [Full evidence, error boundaries and invocation](docs/BEAN_JOBSITE_ENGINEERING.md).
+
 ## Featured application: EZ-Office (October 22, 2026)
 
 **[Launch the EZ-Office suite in the Workshop](https://danieloculus0-bot.github.io/BEAN/portfolio/ez-office/)** · [Standalone source and automated tests](https://github.com/danieloculus0-bot/EZ-Office)
