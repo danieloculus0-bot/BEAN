@@ -1,0 +1,60 @@
+name: BEAN blind conceptual mapping discovery
+
+on:
+  pull_request:
+    branches:
+      - research/bean-nonlinear-cross-domain-transfer-20261025
+      - main
+    paths:
+      - 'bean/evaluation/opaque_analogy_transfer.py'
+      - 'bean/tests/test_opaque_analogy_transfer.py'
+      - '.github/workflows/bean-opaque-analogy.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  blind-concept-transfer:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, windows-2025]
+        python: ['3.10', '3.12']
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Compile all BEAN code and test latent mapping/search controls
+        run: |
+          python -m compileall -q bean
+          python -m unittest bean.tests.test_opaque_analogy_transfer -v
+      - name: Match source experience to unknown target observation channels
+        shell: bash
+        run: |
+          python -m bean.evaluation.opaque_analogy_transfer \
+            --database "$RUNNER_TEMP/bean-opaque-concepts-a.sqlite3" \
+            --output "$RUNNER_TEMP/bean-opaque-concepts-a.json" \
+            --wiring a
+      - name: Independent sensor permutation control and fresh evaluation
+        shell: bash
+        run: |
+          python -m bean.evaluation.opaque_analogy_transfer \
+            --database "$RUNNER_TEMP/bean-opaque-concepts-b.sqlite3" \
+            --output "$RUNNER_TEMP/bean-opaque-concepts-b.json" \
+            --wiring b
+      - name: Keep scored evidence and durable SHA-linked BEAN memory
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bean-blind-mapping-${{ matrix.os }}-${{ matrix.python }}
+          path: |
+            ${{ runner.temp }}/bean-opaque-concepts-a.sqlite3
+            ${{ runner.temp }}/bean-opaque-concepts-a.json
+            ${{ runner.temp }}/bean-opaque-concepts-b.sqlite3
+            ${{ runner.temp }}/bean-opaque-concepts-b.json
+          if-no-files-found: warn
+          retention-days: 30
