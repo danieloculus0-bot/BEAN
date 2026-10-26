@@ -3,7 +3,17 @@ import tempfile
 import unittest
 from pathlib import Path
 
-import torch
+# The all-Core regression is intentionally CPU-light and does not install
+# PyTorch. This neural-only suite runs in the dedicated Breakout marathon
+# workflow, which explicitly installs torch. Skip collection here rather than
+# failing unrelated Core reasoning tests during import.
+try:
+    import torch
+except ModuleNotFoundError as exc:
+    if exc.name != "torch":
+        raise
+    raise unittest.SkipTest(
+        "PyTorch-specific neural Breakout tests run in the dedicated marathon CI")
 
 from bean.optimization.sponge_dqn import SpongeDQN
 from experiments.breakout_learning.game import Breakout
