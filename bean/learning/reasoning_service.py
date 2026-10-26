@@ -16,6 +16,7 @@ from .native_skills import BEANReasoningSkills
 from .judgment import choose_counsel
 from .local_reasoner import LocalReasoner
 from .transfer_gate import evaluate_transfer
+from .active_hypothesis import discover, act
 from .composition import CompositionLearner
 from bean.optimization.autodev import canonical
 
@@ -65,6 +66,62 @@ class NativeReasoningService:
         self.compositions = CompositionLearner(self.bank)
         self.model = model
         self.closed = False
+
+    def discover_analogy(self, *, domain, task_ref, source_ref,
+                         probe_ids, observe, reward, budget=12,
+                         method="disagreement", seed=0):
+        """Generate numeric control hypotheses and seek distinguishing evidence.
+
+        No source policy or expert candidate is supplied. The callbacks are
+        actual resettable host environment interactions, not synthetic proof
+        of general reasoning. SHA-chained evidence persists, including failures.
+        """
+        if self.closed:
+            raise ValueError("Reasoning memory is closed")
+        domain = _required(domain, "domain", 100).casefold()
+        task_ref = _required(task_ref, "task_ref", 200)
+        source_ref = _required(source_ref, "source_ref", 500)
+        result = discover(
+            probe_ids=probe_ids, observe=observe, reward=reward,
+            budget=budget, method=method, seed=seed)
+        entry = {
+            "schema": "bean.adaptive_lab026.v1",
+            "experiment": "bean.native.active_hypothesis.v1",
+            "domain": domain, "task_ref": task_ref,
+            "source_ref": source_ref, "decision": result,
+            "outcome_origin": "host_observation_and_reward",
+            "independently_authenticated": False,
+        }
+        receipt_id = sha256(canonical(entry)).hexdigest()
+        tip = self.bank.record_trial(entry)
+        return {**result, "receipt_id": receipt_id,
+                "journal_tip": tip, "evidence_retained": True,
+                "external_model_invoked": False}
+
+    def use_discovered_analogy(self, *, receipt_id, sensors):
+        """Replay an empirically selected rule from the durable BEAN ledger."""
+        if self.closed:
+            raise ValueError("Reasoning memory is closed")
+        candidates = [e["data"] for e in self.bank.journal.events()
+                      if e["kind"] == "trial" and
+                      e["data"].get("experiment") == "bean.native.active_hypothesis.v1"]
+        for entry in reversed(candidates):
+            if sha256(canonical(entry)).hexdigest() != receipt_id:
+                continue
+            stored = entry["decision"]
+            if stored["status"] != "provisional_rule":
+                return {"status": "abstain", "reason": "no_accepted_hypothesis"}
+            from .active_hypothesis import _vector
+            numbers = _vector(sensors)
+            rule = stored["selected_rule"]
+            if (rule["lhs"] is not None and rule["lhs"] >= len(numbers)) or (
+                    rule["rhs"] is not None and rule["rhs"] >= len(numbers)):
+                raise ValueError("Incompatible sensor layout")
+            return {"status": "provisional_action",
+                    "action": act(rule, numbers),
+                    "hypothesis": rule, "receipt_id": receipt_id,
+                    "independent_validation": False}
+        raise ValueError("Unknown active hypothesis receipt")
 
     def test_analogy(self, *, domain, task_ref, source_ref, retained,
                      alternative, probe_ids, reward, margin=0.0):
