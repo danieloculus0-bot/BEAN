@@ -90,6 +90,7 @@ def audit_claim(
     return {
         "schema": "bean.plugin.claim_audit.v1",
         "heuristic_verdict": review.verdict.value,
+        "model_advice": ("revise_or_verify" if review.verdict.value != "approved" else "preliminary_only"),
         "flags": review.reasons,
         "suggested_reframe": review.repaired_content,
         "reported_source_count": len(refs) + (1 if source_ref else 0),
@@ -187,6 +188,8 @@ def screen_proposal(summary: str, steps: list[str], evidence_refs: list[str] | N
     return {
         "schema": "bean.plugin.proposal_screen.v1",
         "passed_basic_heuristics": all(row["passed"] for row in checked),
+        "risk_signals": sorted({reason for row in checked if row["filter_name"] == "action_risk" for reason in row["reasons"]}),
+        "model_advice": ("revise_plan_and_request_independent_review" if any(not row["passed"] for row in checked) else "request_independent_review"),
         "filter_results": checked,
         "requires_human_review": True,
         "execution_permission": "none",
