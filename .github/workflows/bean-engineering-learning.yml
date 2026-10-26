@@ -24,8 +24,8 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - name: Train BEAN on 100 synthetic structural scenarios and score 30 held-out cases
-        run: python -m bean.engineering.mitigation_training --out engineering_training --train 100 --holdout 30 --seed 11
+      - name: Train BEAN on 100 synthetic structural scenarios and score 200 held-out cases
+        run: python -m bean.engineering.mitigation_training --out engineering_training --train 100 --holdout 200 --seed 11
       - name: Check all 300 Q updates, checkpoint, immutable ledger and improvement reports
         run: |
           python - <<'PY'
@@ -36,7 +36,7 @@ jobs:
           assert data["trained_choices"]==300
           assert len(data["training_observations"])==300
           assert len((root/"engineering_training_ledger.jsonl").read_text().splitlines())==300
-          assert data["checkpoint"]["sample_count"]==30
+          assert data["checkpoint"]["sample_count"]==200
           assert data["checkpoint"]["receipt_sha256"]==data["evaluation_sha256"]
           assert not data["independent_real_fea_reference"]
           assert data["engineering_validation"]=="not_established"
