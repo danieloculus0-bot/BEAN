@@ -26,12 +26,12 @@ function showResult(result) {
     line("No openings. Add plates, corners, openings, bracing and waste separately.");
     line("Material takeoff only; no structural load check.","warning");
   }else if(result.schema === "bean.jobsite_wall_layout.v1"){
-    line(result.minimum_specified_2x4_pieces_before_other_framing + " specified 2×4 pieces","headline");
+    line(result.minimum_specified_2x4_pieces_before_other_framing + " specified framing segments","headline");
     line(result.baseline_full_height_studs_remaining + " remaining full-length grid studs");
     line(result.studs_removed_inside_rough_openings + " baseline grid studs replaced by rough openings");
     line(result.extra_full_height_king_studs_specified + " extra full-length kings and " +
          result.short_jack_studs_specified + " short jack pieces explicitly specified");
-    line("ADD headers, cripples, plates, corners, waste and bracing. Verify the opening layout and king/jack details.","warning");
+    line("This is NOT a count of full-length boards to buy. Add headers, cripples, plates, corners, waste and bracing; verify all opening framing.","warning");
   }else if(result.schema === "bean.jobsite_beam_screen.v1"){
     const ranked=result.ranking.map(id=>result.members.find(m=>m.id===id));
     const worst=ranked[0], over=worst.worst_utilization > 1;
