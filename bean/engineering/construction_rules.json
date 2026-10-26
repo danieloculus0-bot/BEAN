@@ -1,0 +1,65 @@
+{
+  "schema": "bean.construction_rules.v1",
+  "edition": "2026-10-26",
+  "units": "US customary",
+  "purpose": "Deterministic reference rules and bounds, not an adopted building code or preapproved design",
+  "rules": {
+    "straight_wall_takeoff": {
+      "rule_id": "quantity.straight_wall_studs.v1",
+      "method": "ceil(wall_length_in/spacing_in)+1",
+      "assumptions": [
+        "One straight wall, continuous full-length studs, no openings",
+        "Includes a single stud at each end; does not include plates, corners, blocking, headers, cripples, waste or doubled studs"
+      ],
+      "code_approval": false
+    },
+    "simply_supported_uniform_beam": {
+      "rule_id": "beam.uniform_simple_support.v1",
+      "method": "elastic_rectangular_beam",
+      "equations": {
+        "moment_lb_in": "(load_plf/12)*span_in^2/8",
+        "shear_lb": "(load_plf/12)*span_in/2",
+        "bending_stress_psi": "moment_lb_in/(width_in*depth_in^2/6)",
+        "shear_stress_psi": "1.5*shear_lb/(width_in*depth_in)",
+        "deflection_in": "5*(load_plf/12)*span_in^4/(384*modulus_psi*(width_in*depth_in^3/12))"
+      },
+      "requirements": [
+        "independent project-approved bending limit (psi)",
+        "independent project-approved shear limit (psi)",
+        "independent material elastic modulus (psi)",
+        "explicit deflection limit ratio L/n",
+        "actual cross-section dimensions and load accounting"
+      ],
+      "excluded": [
+        "point loads",
+        "continuous beams",
+        "cantilevers",
+        "axial load",
+        "combined bending directions",
+        "buckling",
+        "lateral torsional stability",
+        "connections and bearings",
+        "creep and duration factors",
+        "load combinations and live load reductions",
+        "notching/holes",
+        "fire/wind/seismic",
+        "engineered lumber and composite action"
+      ],
+      "code_approval": false
+    }
+  },
+  "nominal_size_reference": {
+    "2x4": {
+      "actual_width_in": 1.5,
+      "actual_depth_in": 3.5,
+      "note": "Typical dressed dimensions only; verify actual material and orientation"
+    }
+  },
+  "code_sources": [],
+  "code_status": "No jurisdiction-specific prescriptive span or fastening rules are bundled. Insert validated local rules only after identifying jurisdiction, adopted code edition and amendments.",
+  "output_policy": {
+    "fail_closed": "Missing safety-critical load and material values mean no pass/fail screening",
+    "review_required": true,
+    "autonomous_design_approval": false
+  }
+}
