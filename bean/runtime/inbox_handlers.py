@@ -73,6 +73,15 @@ def make_handlers(
         from ..engineering.stress_solver import solve_stress_reference
         return solve_stress_reference(msg.args)
 
+    def engineering_jobsite(msg: InboxMessage, session_uuid: str) -> dict:
+        """Bounded field calculation: lumber takeoff or weak-beam screening.
+
+        Explicit rules and project-supplied limits, no external actions or
+        building-code compliance claims.
+        """
+        from ..engineering.jobsite import evaluate_request
+        return evaluate_request(msg.args)
+
     def shutdown(msg: InboxMessage, session_uuid: str) -> dict:
         reason = str(msg.args.get("reason", "inbox_shutdown"))
         if loop is not None:
@@ -293,6 +302,7 @@ def make_handlers(
         "watcher_recheck": watcher_recheck,
         "log_note": log_note,
         "fea_stress_reference": fea_stress_reference,
+        "engineering_jobsite": engineering_jobsite,
         "shutdown": shutdown,
         "run_reflection": run_reflection,
         "replay_skill": replay_skill,
