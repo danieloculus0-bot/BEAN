@@ -39,6 +39,16 @@ For keyboard-only use:
 python -m bean.engineering.jobsite
 ```
 
+### Door and window layout takeoffs (new)
+
+The operator can expand **Add doors/windows** beneath the simple wall form. For each rough opening, BEAN needs its left-edge position and width in inches, the number of **additional** king studs per side, and the number of jack studs per side from the framing plan. It computes actual baseline stud-center locations, removes regular full-height stud centers inside rough openings, preserves boundary grid studs and adds only the expressly supplied king/jack counts. It rejects openings that overlap, touch, or extend to a wall edge without a separate detail.
+
+**Important:** the output is a count of framing *segments*, **not the number of full-length boards to buy**. It does not determine jack or king capacity and excludes header stock, cripple studs, plates, corners, bracing, lumber lengths, cuts and waste. See [`framing.py`](../bean/engineering/framing.py) and the explicit [rule catalog](../bean/engineering/construction_rules.json).
+
+### Multiple-beam comparison (new)
+
+The **Check a beam** screen now has **Add another beam**. Enter separate labels, actual cross sections, unsupported spans, and uniform line loads; BEAN shows the member closest to its reviewed limits and ranks all entered members. Project-defined material limits apply consistently to every entry, and the existing Python engine still performs all equations. This is a *screen*, not a substitute for design loads, lateral stability or connection engineering.
+
 ### Simple wall example
 
 **Straight wall, 20 ft, 16 in on center, without openings:** `ceil(20×12/16)+1=16` full-height studs. The estimate intentionally excludes bottom/top plates, intersections, doubled corner studs, headers, jack/cripple studs, lateral bracing, waste, and all structural load checks. Doors/windows trigger an error rather than a guessed estimate.
@@ -58,7 +68,7 @@ When a limit is exceeded, its mitigation list identifies higher section stiffnes
 ## How BEAN was taught
 
 - [Versioned construction rules](../bean/engineering/construction_rules.json) distinguish supported formulas, required inputs, exclusions and *no automatic code approval*. They contain no imaginary adopted-jurisdiction span tables.
-- [BEAN Jobsite math](../bean/engineering/jobsite.py) performs the real quantity and member calculations.
+- [BEAN Jobsite math](../bean/engineering/jobsite.py) performs the real quantity and member calculations; [explicit-opening framing](../bean/engineering/framing.py) handles measured rough-opening layouts without guessing construction-code details.
 - [BEAN circular-shaft stress reference](../bean/engineering/stress_solver.py) separately handles elementary axial, bending and Saint-Venant torsion stresses.
 - [Engineering mitigation learning](../bean/engineering/mitigation_training.py) invokes the existing **SpongeTD Q learner**, chooses constrained mitigation actions, measures each hypothetical result by rerunning the same beam equations, records reward, and checkpoints the existing BEAN SHA journal.
 - The training cases are **synthetic and bounded**. They are neither structural codes nor verified real CalculiX stress fields. The test harness compares a held-out set against a fixed intervention baseline. It archives raw cases, Q checkpoint, losses and measured results; a zero-gain experiment stays visible.
