@@ -64,6 +64,15 @@ def make_handlers(
         log_event(session_uuid, EventType.SUPERVISOR_NOTE, text or "Supervisor note received.", Source.HUMAN, subtype="runtime_note", data={"text": text, "from": msg.sender})
         return {"logged": True}
 
+    def fea_stress_reference(msg: InboxMessage, session_uuid: str) -> dict:
+        """BEAN's bounded, deterministic engineering reference calculation.
+
+        A separate numerical comparator, never an arbitrary-mesh stress solver.
+        This handler does not approve designs or update training weights.
+        """
+        from ..engineering.stress_solver import solve_stress_reference
+        return solve_stress_reference(msg.args)
+
     def shutdown(msg: InboxMessage, session_uuid: str) -> dict:
         reason = str(msg.args.get("reason", "inbox_shutdown"))
         if loop is not None:
@@ -283,6 +292,7 @@ def make_handlers(
         "watcher_status": watcher_status,
         "watcher_recheck": watcher_recheck,
         "log_note": log_note,
+        "fea_stress_reference": fea_stress_reference,
         "shutdown": shutdown,
         "run_reflection": run_reflection,
         "replay_skill": replay_skill,
