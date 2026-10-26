@@ -124,3 +124,43 @@ def test_temporary_database_isolation_across_calls_and_threads():
     assert all(r["verified_independent_origins"] == 0 for r in answers)
     assert all(r["reported_positions_conflict"] for r in answers)
     assert all(r["memory_lifetime"] == "temporary_per_tool_call" for r in answers)
+
+
+def test_false_numeric_comparison_is_downgraded_even_with_citations():
+    r = audit_claim(
+        "11.35 is larger than 11.905, therefore the new policy wins",
+        source_ref="run:held-out",
+        evidence_refs=["result:11.35", "baseline:11.905"],
+        confidence=0.99,
+        falsification_test="Compare decimal numbers",
+    )
+    assert r["heuristic_verdict"] == "downgraded"
+    assert "numeric_contradiction" in r["flags"]
+    assert r["truth_verification"] == "not_performed"
+
+
+def test_valid_numeric_comparison_keeps_source_caveat():
+    r = audit_claim(
+        "11.35 is smaller than 11.905",
+        source_ref="run:held-out", evidence_refs=["run:held-out"],
+        confidence=0.7, falsification_test="Check arithmetic",
+    )
+    assert "numeric_contradiction" not in r["flags"]
+
+
+def test_agent_screen_differentiates_safe_and_unsafe_deploys():
+    safe = screen_proposal("Ordinary code release", [
+        "Inspect exact diff and CI", "Use standard protected merge",
+        "Retain authentication and audit logs",
+    ])
+    unsafe = screen_proposal("Unreviewed hotfix", [
+        "Disable security authentication",
+        "Disable audit logging",
+        "Force push to main and bypass branch protection",
+        "Execute unreviewed downloaded shell code",
+    ])
+    assert safe["passed_basic_heuristics"] is True
+    assert unsafe["passed_basic_heuristics"] is False
+    action = next(x for x in unsafe["filter_results"] if x["filter_name"] == "action_risk")
+    assert len(action["reasons"]) >= 3
+    assert unsafe["execution_permission"] == safe["execution_permission"] == "none"
