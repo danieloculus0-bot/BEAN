@@ -21,6 +21,15 @@ button.submit{width:100%;margin-top:18px;font-size:1.13rem}
 #output{white-space:pre-line;min-height:60px;font-size:1.12rem;font-weight:560}
 #output .headline{font-size:1.7rem;color:var(--green);font-weight:840;margin-bottom:10px}
 #output .warning{color:#ffcf76}#profile-info{font-size:.95rem}
+details{border:1px solid var(--line);border-radius:12px;padding:13px;margin-top:18px}
+summary{cursor:pointer;font-weight:750;color:var(--green);padding:6px}
+.entry{border-top:1px solid var(--line);padding:12px 0;margin-top:12px}
+.entry strong{display:block;padding:4px 0}
+button.secondary{background:#202923;border-color:#47534a;margin-top:10px}
+#beam-members .beam-member{padding:12px 0;border-top:1px solid var(--line)}
+#beam-members .beam-member:first-child{border:0;padding-top:0}
+#output .member-results{border-top:1px solid var(--line);margin-top:12px;padding-top:9px;font-size:.96rem}
+
 [hidden]{display:none!important}footer{font-size:.85rem;color:var(--dim);padding-top:6px}
 </style>
 </head><body>
@@ -31,27 +40,48 @@ button.submit{width:100%;margin-top:18px;font-size:1.13rem}
 <button type="button" id="tab-beam" aria-pressed="false">Check a beam</button></nav>
 <section id="wall">
 <h2>How many studs?</h2>
-<p>One straight wall, no doors or windows.</p>
+<p>One straight wall. Add measured rough openings only if you have a framing layout.</p>
 <form id="wall-form">
 <div class="fields">
 <label>Wall length (feet)<input id="wall-length" type="number" step="any" min="0.001" value="20" required></label>
 <label>Spacing on center (inches)<input id="wall-spacing" type="number" step="any" min="0.001" value="16" required></label>
 </div>
+<details id="opening-details"><summary>Add doors/windows to this wall</summary>
+<p>Measurements are from the left end of the wall, in inches. Supply only additional king studs beyond grid locations.</p>
+<div id="opening-list"></div>
+<button type="button" id="add-opening" class="secondary">+ Add opening</button>
+<small>Do not guess framing requirements. Use the approved plan for king and jack counts; headers and cripple studs are separate.</small>
+</details>
 <button type="submit" class="submit">Count studs</button>
 </form>
-<small>Includes one stud at each end. Plates, corners, windows, doors, extra framing and waste are separate.</small>
+<small>Estimate only. Stud ends and remaining grid locations are counted; plates, corners, headers, waste, and bracing need a detailed takeoff.</small>
+<template id="opening-template"><div class="entry opening-entry">
+<strong class="entry-title">Opening</strong><div class="fields">
+<label>Start from left (in)<input type="number" class="open-start" step="any" min=".001" required></label>
+<label>Rough width (in)<input type="number" class="open-width" step="any" min=".001" required></label>
+<label>Extra full-length kings EACH side<input type="number" class="open-kings" step="1" min="0" max="20" value="0" required></label>
+<label>Short jack studs EACH side<input type="number" class="open-jacks" step="1" min="0" max="20" value="0" required></label>
+</div><button type="button" class="secondary remove-opening">Remove opening</button></div></template>
 </section>
 <section id="beam" hidden>
 <h2>Which beam needs work?</h2>
-<p>One rectangular beam, simply supported at both ends, with an even load along its length.</p>
+<p>Compare beams using their actual unsupported spans, dimensions and uniform line loads.</p>
 <form id="beam-form">
-<div class="fields">
-<label>Beam label<input id="beam-name" type="text" value="Beam A" maxlength="80" required></label>
-<label>Span (feet)<input id="beam-span" type="number" min=".001" step="any" required></label>
-<label>Actual width (inches)<input id="beam-width" type="number" min=".001" step="any" value="1.5" required></label>
-<label>Depth, vertical (inches)<input id="beam-depth" type="number" min=".001" step="any" value="3.5" required></label>
-<label>Load along beam (lb/ft)<input id="beam-load" type="number" min="0" step="any" required></label>
-</div>
+<div id="beam-members"><div class="fields beam-member">
+<label>Beam label<input id="beam-name" class="beam-name" type="text" value="Beam A" maxlength="80" required></label>
+<label>Span (feet)<input id="beam-span" class="beam-span" type="number" min=".001" step="any" required></label>
+<label>Actual width (inches)<input id="beam-width" class="beam-width" type="number" min=".001" step="any" value="1.5" required></label>
+<label>Depth, vertical (inches)<input id="beam-depth" class="beam-depth" type="number" min=".001" step="any" value="3.5" required></label>
+<label>Load along beam (lb/ft)<input id="beam-load" class="beam-load" type="number" min="0" step="any" required></label>
+</div></div>
+<button type="button" id="add-beam" class="secondary">+ Add another beam</button>
+<template id="beam-template"><div class="fields beam-member">
+<label>Beam label<input class="beam-name" type="text" value="" maxlength="80" required></label>
+<label>Span (feet)<input class="beam-span" type="number" min=".001" step="any" required></label>
+<label>Actual width (inches)<input class="beam-width" type="number" min=".001" step="any" value="1.5" required></label>
+<label>Depth, vertical (inches)<input class="beam-depth" type="number" min=".001" step="any" value="3.5" required></label>
+<label>Load along beam (lb/ft)<input class="beam-load" type="number" min="0" step="any" required></label>
+<button type="button" class="secondary remove-beam">Remove this beam</button></div></template>
 <div id="project-profile"><small id="profile-info">Checking for project material limits…</small></div>
 <div id="limits-fields">
 <h2 style="margin-top:22px">Engineering limits (from your project)</h2>
@@ -62,7 +92,7 @@ button.submit{width:100%;margin-top:18px;font-size:1.13rem}
 <label>Shear limit (psi)<input id="beam-fv" type="number" min=".001" step="any"></label>
 <label>Deflection limit L / …<input id="beam-ratio" type="number" min="1.001" step="any"></label>
 </div></div>
-<button type="submit" class="submit">Find weak point</button>
+<button type="submit" class="submit">Find the weakest beam</button>
 </form>
 <small>Checks bending, rectangular-section shear and deflection only. Real supports, connections and building code still require review.</small>
 </section>
