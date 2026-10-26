@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import json
 import re
+from decimal import Decimal
 import uuid
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
@@ -119,6 +120,29 @@ def ensure_epistemic_tables():
     store.commit()
 
 
+_COMPARISON = re.compile(
+    r"(?<![\\w.])(-?\\d+(?:\\.\\d+)?)\\s+(?:is\\s+)?"
+    r"(larger than|greater than|smaller than|less than|equal to|equals)\\s+"
+    r"(-?\\d+(?:\\.\\d+)?)(?![\\w.])", re.IGNORECASE
+)
+
+
+def numeric_contradictions(content: str) -> list[str]:
+    """Check explicit scalar comparisons, without claiming external truth verification."""
+    reasons = []
+    for match in _COMPARISON.finditer(content):
+        left, operator, right = match.groups()
+        a, b = Decimal(left), Decimal(right)
+        valid = {
+            "larger than": a > b, "greater than": a > b,
+            "smaller than": a < b, "less than": a < b,
+            "equal to": a == b, "equals": a == b,
+        }[operator.lower()]
+        if not valid:
+            reasons.append("numeric_contradiction")
+    return reasons
+
+
 class EpistemicGuard:
     def __init__(self):
         ensure_epistemic_tables()
@@ -146,6 +170,8 @@ class EpistemicGuard:
         if self._matches(lowered, CAPABILITY_INFLATION_PATTERNS):
             if self._capability_not_proven(candidate):
                 reasons.append("capability_inflation")
+
+        reasons.extend(numeric_contradictions(content))
 
         active_conflict = self._active_conflict(candidate)
         if active_conflict:
