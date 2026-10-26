@@ -121,9 +121,9 @@ def ensure_epistemic_tables():
 
 
 _COMPARISON = re.compile(
-    r"(?<![\\w.])(-?\\d+(?:\\.\\d+)?)\\s+(?:is\\s+)?"
-    r"(larger than|greater than|smaller than|less than|equal to|equals)\\s+"
-    r"(-?\\d+(?:\\.\\d+)?)(?![\\w.])", re.IGNORECASE
+    r"(?<![\w.])(-?\d+(?:\.\d+)?)\s+(?:is\s+)?"
+    r"(larger than|greater than|smaller than|less than|equal to|equals)\s+"
+    r"(-?\d+(?:\.\d+)?)(?![\w.])", re.IGNORECASE
 )
 
 
