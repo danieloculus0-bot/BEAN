@@ -1,0 +1,31 @@
+name: BEAN local selective transfer evidence
+on:
+  push:
+    branches: [main, feat/bean-local-selective-transfer-20261026]
+    paths:
+      - 'bean/learning/transfer_gate.py'
+      - 'bean/learning/reasoning_service.py'
+      - 'bean/tests/test_selective_transfer_gate.py'
+      - '.github/workflows/bean-selective-transfer.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'bean/learning/transfer_gate.py'
+      - 'bean/learning/reasoning_service.py'
+      - 'bean/tests/test_selective_transfer_gate.py'
+      - '.github/workflows/bean-selective-transfer.yml'
+permissions:
+  contents: read
+jobs:
+  local-evidence:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Paired intervention, rejection and persisted memory
+        run: python -m unittest bean.tests.test_selective_transfer_gate -v
