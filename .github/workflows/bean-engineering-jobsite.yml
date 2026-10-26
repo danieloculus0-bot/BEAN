@@ -10,6 +10,7 @@ on:
       - "bean/tests/test_engineering_stress_solver.py"
       - "bean/tests/test_engineering_jobsite_web.py"
       - "bean/tests/test_engineering_framing.py"
+      - "bean/tests/test_engineering_fea_evidence.py"
       - "bean/runtime/inbox_handlers.py"
       - ".github/workflows/bean-engineering-jobsite.yml"
   pull_request:
@@ -19,6 +20,7 @@ on:
       - "bean/tests/test_engineering_stress_solver.py"
       - "bean/tests/test_engineering_jobsite_web.py"
       - "bean/tests/test_engineering_framing.py"
+      - "bean/tests/test_engineering_fea_evidence.py"
       - "bean/runtime/inbox_handlers.py"
       - ".github/workflows/bean-engineering-jobsite.yml"
 
@@ -36,7 +38,7 @@ jobs:
           python-version: "3.12"
       - name: Check mechanics equations, 2x4 takeoff, bounds and weak-beam ranking
         run: |
-          python -m unittest bean.tests.test_engineering_stress_solver bean.tests.test_engineering_jobsite bean.tests.test_engineering_jobsite_web bean.tests.test_engineering_framing -v
+          python -m unittest bean.tests.test_engineering_stress_solver bean.tests.test_engineering_jobsite bean.tests.test_engineering_jobsite_web bean.tests.test_engineering_framing bean.tests.test_engineering_fea_evidence -v
       - name: Smoke test actual BEAN CLI calculation
         run: |
           printf '1\n20\n16\nq\n' | python -m bean.engineering.jobsite > field_cli.txt
