@@ -33,20 +33,46 @@ def beam_case(seed):
         "allowable_shear_psi": rng.choice([75., 120., 150.]),
         "deflection_limit_ratio": rng.choice([240., 360., 480.]),
     }
+    # These three synthetic site opportunities deliberately have different
+    # feasible amounts of change. They are NOT inferred from a real building.
+    # Equal depth/span percentage changes can be algebraically equivalent
+    # under ideal beam models and teach BEAN nothing about selection.
+    member["mitigation_context"] = rng.choice(
+        ("section_opportunity","support_opportunity","load_opportunity")
+    )
     return member
 
 
+# Dimensions are purely teaching scenarios, not purchased beam sizes,
+# true support locations, permission to add supports or verified costs.
+TRAINING_FACTORS = {
+    "section_opportunity": {
+        "increase_depth":1.50, "shorten_span":.95,"reduce_line_load":.95
+    },
+    "support_opportunity": {
+        "increase_depth":1.10,"shorten_span":.65,"reduce_line_load":.90
+    },
+    "load_opportunity": {
+        "increase_depth":1.10,"shorten_span":.95,"reduce_line_load":.50
+    },
+}
+
+
 def intervention(member, action):
-    """A proposed change for comparison, NEVER permission to construct it."""
+    """A synthetic comparison, NEVER permission to modify a building."""
     copy = dict(member)
+    context = copy.get("mitigation_context")
+    if context not in TRAINING_FACTORS:
+        raise ValueError("Missing bounded mitigation opportunity context")
+    if action not in TRAINING_FACTORS[context]:
+        raise ValueError("Unknown mitigation")
+    factor = TRAINING_FACTORS[context][action]
     if action == "increase_depth":
-        copy["depth_in"] *= 1.25
+        copy["depth_in"] *= factor
     elif action == "shorten_span":
-        copy["span_ft"] *= 0.8
+        copy["span_ft"] *= factor
     elif action == "reduce_line_load":
-        copy["load_plf"] *= 0.8
-    else:
-        raise ValueError("Unknown engineering mitigation action")
+        copy["load_plf"] *= factor
     return copy
 
 
@@ -70,7 +96,11 @@ def _state(member):
     original = analyze_beams([member])["members"][0]
     peak = original["worst_utilization"]
     severity = "over_limit" if peak > 1 else "within_supplied_limits"
+    context=member.get("mitigation_context")
+    if context not in TRAINING_FACTORS:
+        raise ValueError("Unknown mitigation scenario opportunity")
     return {"governing": original["governing"], "severity": severity,
+            "constraint_context": context,
             "geometry": "rectangular", "loading": "uniform_simple_support"}
 
 
@@ -140,7 +170,8 @@ def run_curriculum(root="runs/bean_jobsite_learning", *, train_cases=100,
         post=_compare_holdout(svc,holdout)
         payload={
             "schema":"bean.engineering_mitigation_training.v1",
-            "source":"local_deterministic_beam_simulator",
+            "source":"local_deterministic_beam_simulator_with_varying_synthetic_opportunities",
+            "synthetic_mitigation_factors":TRAINING_FACTORS,
             "reasoning_learner":"existing BEAN SpongeTD Q learning",
             "train_scenarios":train_cases,
             "trained_choices":updates,
