@@ -81,20 +81,24 @@ def evaluate_expression(expr, measurements, group_max):
     x, group, target = measurements
     first = x[i]
     if operator == "raw":
-        return first
-    if operator == "invert":
-        return 1-first
-    if operator == "goal_gap":
-        return max(0., target-first)
-    if operator == "group_gap":
-        return max(0., target-group_max[(group, i)])
-    if operator == "product":
-        return min(1., first*x[j])
-    if operator == "deficit_product":
-        return min(1., (1-first)*x[j])
-    if operator == "deficit_group":
-        return min(1., (1-first)*max(0., target-group_max[(group,j)]))
-    raise ValueError("Unknown learned feature program")
+        value = first
+    elif operator == "invert":
+        value = 1-first
+    elif operator == "goal_gap":
+        value = max(0., target-first)
+    elif operator == "group_gap":
+        value = max(0., target-group_max[(group, i)])
+    elif operator == "product":
+        value = first*x[j]
+    elif operator == "deficit_product":
+        value = (1-first)*x[j]
+    elif operator == "deficit_group":
+        value = (1-first)*max(0., target-group_max[(group,j)])
+    else:
+        raise ValueError("Unknown learned feature program")
+    # Raw portfolio potential can exceed 1.0. Normalize *all* generated
+    # expression outputs to the common bounded decision scale.
+    return max(0., min(1., value))
 
 
 def choice_from_raw(world, learned_program, wiring):
