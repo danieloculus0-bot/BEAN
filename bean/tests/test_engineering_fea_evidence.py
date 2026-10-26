@@ -2,6 +2,8 @@
 import math
 import unittest
 import copy
+from types import SimpleNamespace
+from unittest.mock import patch
 
 from bean.engineering.fea_evidence import crosscheck_native_torsion
 
@@ -57,6 +59,19 @@ class NativeFEAEvidenceTests(unittest.TestCase):
         self.assertEqual(len(result["grids"]),2)
         self.assertEqual(len(result["source_report_sha256"]),64)
         self.assertEqual(result["provenance_status"],"host_attested_not_independently_authenticated")
+
+    def test_existing_bean_command_inbox_records_the_verified_numerical_observation(self):
+        from bean.runtime.inbox_handlers import make_handlers
+        cmd=make_handlers()["engineering_fea_evidence_review"]
+        message=SimpleNamespace(args={"report":source_report(),"source_ref":"test-run"},
+                                sender="ezfea")
+        with patch("bean.runtime.inbox_handlers.log_event") as log:
+            accepted=cmd(message,"test-session")
+        self.assertTrue(accepted["independently_recomputed_references"])
+        self.assertFalse(accepted["learning_weights_updated"])
+        self.assertEqual(log.call_count,1)
+        self.assertEqual(log.call_args.kwargs["subtype"],"engineering_native_fea_reference")
+        self.assertFalse(log.call_args.kwargs["data"]["source_authenticated"])
 
     def test_tampered_reference_disallowed(self):
         data=source_report()
