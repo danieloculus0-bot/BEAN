@@ -1,0 +1,95 @@
+name: BEAN Breakout train until genuine win
+on:
+  push:
+    branches:
+      - main
+      - feat/bean-breakout-run-until-win-20261025
+    paths:
+      - 'experiments/breakout_learning/**'
+      - 'bean/tests/test_breakout_win_marathon.py'
+      - '.github/workflows/bean-breakout-win-marathon.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: write
+
+concurrency:
+  group: bean-breakout-24-brick-marathon
+  cancel-in-progress: false
+
+jobs:
+  learn-until-win:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install CPU neural training dependencies
+        run: |
+          python -m pip install numpy
+          python -m pip install torch==2.8.0 --index-url https://download.pytorch.org/whl/cpu
+
+      - name: Validate 24-brick win, neural ownership, and recovery
+        run: python -m unittest bean.tests.test_breakout_win_marathon -v
+
+      - name: Restore verified state from last successful main marathon
+        if: github.ref_name == 'main'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          mkdir -p breakout-marathon-state
+          gh run list --workflow bean-breakout-win-marathon.yml --branch main \
+            --limit 30 --json databaseId,status,conclusion \
+          | jq -r '.[] | select(.status=="completed" and .conclusion=="success") | .databaseId' \
+          | while read -r prior_id; do
+              if gh run download "$prior_id" --name bean-breakout-marathon-state \
+                   --dir breakout-marathon-state; then
+                echo "Recovered state from GitHub Actions run $prior_id"
+                break
+              fi
+            done
+
+      - name: Train BEAN then evaluate on fresh blind 24-brick games
+        shell: bash
+        run: |
+          if [ "${{ github.ref_name }}" = "main" ]; then
+            python -m experiments.breakout_learning.marathon --episodes 40
+          else
+            python -m experiments.breakout_learning.marathon --episodes 1
+          fi
+
+      - name: Preserve SHA journal and neural replay/optimizer checkpoint
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bean-breakout-marathon-state
+          path: |
+            breakout-marathon-state/results.json
+            breakout-marathon-state/resume.json.gz
+            breakout-marathon-state/resume.sha256
+            breakout-marathon-state/marathon-ledger.sqlite3
+          if-no-files-found: warn
+          retention-days: 90
+
+      - name: Re-run automatically unless BEAN actually won
+        if: success() && github.ref_name == 'main'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          outcome="$(python -c 'import json; print(json.load(open("breakout-marathon-state/results.json"))["status"])')"
+          if [ "$outcome" = "won" ]; then
+            echo "Full-board win on independent unseen seed confirmed. Stop."
+            exit 0
+          fi
+          if [ "$outcome" != "continue" ]; then
+            echo "Unexpected marathon status: $outcome"
+            exit 1
+          fi
+          echo "No blind win yet: preserving memory and launching next cycle."
+          gh workflow run bean-breakout-win-marathon.yml --ref main

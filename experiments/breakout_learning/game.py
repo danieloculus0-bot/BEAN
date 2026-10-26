@@ -5,7 +5,10 @@ import random
 import numpy as np
 W=320;PW=57
 class Breakout:
-    def __init__(self,seed):
+    def __init__(self,seed,max_steps=1000):
+        if not isinstance(max_steps,int) or isinstance(max_steps,bool) or max_steps<1:
+            raise ValueError("max_steps must be a positive integer")
+        self.max_steps=max_steps
         self.r=random.Random(seed);self.reset()
     def reset(self):
         self.px=W/2;self.x=self.r.uniform(65,W-65);self.y=190
@@ -37,12 +40,13 @@ class Breakout:
                 self.vx=max(-4.2,min(4.2,self.vx+(self.x-self.px)/18));reward+=12
             else:
                 self.miss=1;reward-=18;self.done=True
-        if not self.bricks or self.steps>=1000:self.done=True
+        if not self.bricks or self.steps>=self.max_steps:self.done=True
         return reward
     def play(self,policy):
         while not self.done:
             self.step(policy(self.state()))
-        return {"bricks":self.hit,"survived":int(not self.miss),"frames":self.steps}
+        return {"bricks":self.hit,"survived":int(not self.miss),"frames":self.steps,
+                "won":int(not self.bricks and not self.miss)}
 def eval_q(q,seeds):
     vals=[]
     for seed in seeds:
