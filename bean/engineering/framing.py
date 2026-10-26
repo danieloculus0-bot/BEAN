@@ -90,7 +90,11 @@ def takeoff_wall(length_ft, spacing_in, openings):
         "baseline_full_height_studs_remaining": remaining,
         "extra_full_height_king_studs_specified": kings,
         "short_jack_studs_specified": jacks,
+        # Each counted item is a separate framing SEGMENT, not a purchased
+        # full-length board. Stock-length optimization requires wall height,
+        # jack lengths, cuts, waste and the actual lumber supplier dimensions.
         "minimum_specified_2x4_pieces_before_other_framing": total,
+        "purchased_stock_board_count": None,
         "opening_count": len(details),
         "removed_center_positions_in": removed,
         "openings": [
@@ -107,6 +111,7 @@ def takeoff_wall(length_ft, spacing_in, openings):
             "Kings listed are EXTRA to the retained full-height grid positions; check elevation to avoid double counting",
             "Boundary grid studs are retained; this takeoff does not decide whether they are proper kings",
             "Jack/king quantities are caller-supplied, not code-derived",
+            "Number of framing segments is NOT the number of full-length lumber boards to purchase",
         ],
         "building_code_compliant": False,
         "load_capacity_checked": False,
