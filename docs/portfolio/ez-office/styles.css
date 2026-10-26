@@ -330,5 +330,4 @@ nav{display:grid;gap:5px}.nav-item{text-align:left;border:1px solid transparent;
 :root{background:#050607;--panel:#111417;--border:#212325}html,body{background:#050607}.sidebar{background:#0b0d0f}button,input,textarea,select{background-color:#101214}button.primary{background:var(--accent)}
 
 /* Portfolio-wide black canvas; preserve project accent colors and working widgets. */
-html{background:#050607}
-body{background:#050607}
+@media screen{html{background:#050607}body{background:#050607}}
