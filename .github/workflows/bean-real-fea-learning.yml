@@ -47,14 +47,24 @@ jobs:
         run: |
           python -m ezfea.native_learning_cases --out real_fea_corpus
           python - <<'PY'
+          import hashlib
           import json
           from pathlib import Path
-          data=json.loads(Path("real_fea_corpus/native_curriculum.json").read_text())
+          root=Path("real_fea_corpus")
+          data=json.loads((root/"native_curriculum.json").read_text())
           assert data["cases_executed"]==42 and data["failed_or_needs_review"]==0
           assert sum(x["split"]=="train" for x in data["cases"])==12
           assert sum(x["split"]=="holdout" for x in data["cases"])==30
           assert len({x["geometry_key"] for x in data["cases"]})==42
-          print("Real native specimen cases:",data["cases_executed"])
+          for row in data["cases"]:
+              case=root/row["case_id"]
+              source=case/("native_torsion/circular_shaft.step" if row["family"]=="torsion" else "source.step")
+              assert source.is_file(),f"Missing real CAD source: {source}"
+              assert hashlib.sha256(source.read_bytes()).hexdigest()==row["source_step_sha256"]
+              folder=root/row["native_case_path"]
+              native_dat=list(folder.glob("mesh_*/analysis.dat")) if row["family"]=="torsion" else [folder/"analysis.dat"]
+              assert native_dat and all(x.is_file() for x in native_dat),f"Missing native CalculiX results: {folder}"
+          print("Verified 42 actual source STEP SHA256 hashes and native .dat files")
           PY
       - name: Update BEAN's existing SpongeTD Q policy with only real training cases
         run: |
