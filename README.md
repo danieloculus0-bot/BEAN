@@ -20,6 +20,12 @@ Persistent experimental reasoning and evidence system. BEAN Core maintains SQLit
 
 For reproducible evidence and boundaries see the [native reasoning contract](docs/BEAN_NATIVE_REASONING_CORE_2026-10-25.md), [mainline audit](docs/BEAN_MAINLINE_CONSOLIDATION_AUDIT_2026-10-25.md), and [judgment policy](docs/BEAN_JUDGMENT_POLICY_2026-10-25.md).
 
+## BEAN real FEA learning (October 26, 2026)
+
+**[Actual native 42-case results and the no-gain checkpoint](docs/BEAN_REAL_NATIVE_FEA_TRAINING.md)** | **[Permanent experiment ledger](docs/experiments/NATIVE_FEA_2026-10-26.json)** | **[Working real-solver training workflow](https://github.com/danieloculus0-bot/BEAN/actions/workflows/bean-real-fea-learning.yml)**
+
+BEAN's actual SpongeTD Q policy now receives error feedback from **12 real Gmsh/CalculiX C3D10 training cases** covering axial, bending and pure torsion, then is tested on **30 physically different source STEP geometries**. All **42 actual native solves passed**, with original CAD hashes verified. A wrong-axis analytical bending reference was identified and corrected during the first run. After fixing the physics, the 30-case holdout averaged **0.152% error** for both the unmodified analytical reference and BEAN's learned choice. BEAN therefore **did not promote** the adaptive correction. Both runs, their failure lesson and checkpoint receipts are preserved; neither represents arbitrary assembly or physical structural failure validation.
+
 ## BEAN Jobsite: field engineering and learning (October 26, 2026)
 
 **[Jobsite setup, measured results and limits](docs/BEAN_JOBSITE_ENGINEERING.md)** | **[Verified field calculator tests](https://github.com/danieloculus0-bot/BEAN/actions/workflows/bean-engineering-jobsite.yml)** | **[Real SpongeTD engineering practice](https://github.com/danieloculus0-bot/BEAN/actions/workflows/bean-engineering-learning.yml)**
