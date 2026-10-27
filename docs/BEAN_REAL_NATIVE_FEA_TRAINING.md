@@ -20,6 +20,14 @@ All real labels are obtained from native `.dat`/FE result extraction; the code a
 
 The `train` and `holdout` groups have **disjoint geometry signatures**. Different loads on exactly the same CAD geometry **do not qualify** as unseen geometry. Held-out results never enter rewards. Three families are related by basic linear elasticity but have physically different stress/displacement mechanisms; the task is *bounded calibration*, not general autonomous engineering intelligence.
 
+## First-run lesson: an engineering-rule error, not just a learning error
+
+The first full [42-case native run](https://github.com/danieloculus0-bot/BEAN/actions/runs/40425518608) **did execute** all native specimens, persist 60 SpongeTD Q updates and score 30 unseen geometries. It measured 10.60% uncorrected reference error versus 8.76% BEAN correction error, with **checkpoint promotable = false**. Crucially, bending alone was badly mispredicted.
+
+Investigation identified a **wrong-axis cross-section inertia** in the original nonsquare bending reference. Each CAD bar is long in X, has width `b` in Y and height `h` in Z; a transverse **Y** load bends about **Z**, so the correct second moment is **`I_z=h*b^3/12`**, not `I_y=b*h^3/12`. This produces a major artificial error on nonsquare cross sections, especially if `b/h` differs substantially from one. [The corrected source](https://github.com/danieloculus0-bot/EZ-FEA/blob/main/ezfea/native_learning_cases.py) and a 4×-difference regression test now explicitly enforce the physical axis.
+
+**Do not promote or reuse the earlier Q checkpoint as an engineering correction.** It was trained in part against an incorrectly selected analytical axis. Instead regenerate all 42 real source cases, train a fresh policy, compare again on the same prespecified unseen CAD geometries and retain both outcomes. This is a concrete lesson in preferring corrected first-principles physics to learned compensation for a bad equation.
+
 ## What BEAN actually learns
 
 BEAN's **existing** `LearningRuntime` / SpongeTD Q policy receives five candidate analytical corrections: the unadjusted reference, ±2%, ±6%. Each of the 12 **real** training measurements is compared with all five candidates, producing **60 genuine measured-error Q updates** (as opposed to a reward from a toy beam simulator). Each action is recorded with the CAD source SHA, observed actual FEA result, reference formula output, relative error, and reward.
