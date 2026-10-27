@@ -28,6 +28,22 @@ Investigation identified a **wrong-axis cross-section inertia** in the original 
 
 **Do not promote or reuse the earlier Q checkpoint as an engineering correction.** It was trained in part against an incorrectly selected analytical axis. Instead regenerate all 42 real source cases, train a fresh policy, compare again on the same prespecified unseen CAD geometries and retain both outcomes. This is a concrete lesson in preferring corrected first-principles physics to learned compensation for a bad equation.
 
+## Corrected native rerun: validated evidence, no gain over correct physics
+
+The corrected [**actual 42-case Gmsh/CalculiX → BEAN run**](https://github.com/danieloculus0-bot/BEAN/actions/runs/40426288352) passed all native computations, verified **42 STEP SHA256 hashes and corresponding actual solver `.dat` files**, completed 60 BEAN Q updates, independently held out 30 different geometries and restored its SHA-journal checkpoint.
+
+| Actual unseen geometry results | Correct classical reference | BEAN learned correction |
+|---|---:|---:|
+| Overall mean relative error | **0.15245%** | **0.15245%** |
+| Axial mean relative error | 0.00000898% | 0.00000898% |
+| Bending mean relative error | 0.4528% | 0.4528% |
+| Torsion mean relative error | 0.00452% | 0.00452% |
+| Agreement on illustrative numeric limit flags | 100% | 100% |
+
+**Conclusion:** on the bounded training task, the *correct* mechanics equations were already excellent. The learned policy correctly favored the unmodified formula and did **not** improve on it. BEAN's scored checkpoint was retained for evidence (`score=43.0`, 30 independent held-out cases), **`promotable=false`**, and is not deployed as a production correction.
+
+The first checkpoint with a spurious improvement is preserved but explicitly **superseded**. The [permanent, machine-readable experiment history](experiments/NATIVE_FEA_2026-10-26.json) retains both runs, their scores, and the wrong-axis root cause. Complete solver traces and the restored Q journal are available in GitHub Actions artifacts for the provider's retention window.
+
 ## What BEAN actually learns
 
 BEAN's **existing** `LearningRuntime` / SpongeTD Q policy receives five candidate analytical corrections: the unadjusted reference, ±2%, ±6%. Each of the 12 **real** training measurements is compared with all five candidates, producing **60 genuine measured-error Q updates** (as opposed to a reward from a toy beam simulator). Each action is recorded with the CAD source SHA, observed actual FEA result, reference formula output, relative error, and reward.
