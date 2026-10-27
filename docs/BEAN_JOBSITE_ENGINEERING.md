@@ -77,6 +77,20 @@ When a limit is exceeded, its mitigation list identifies higher section stiffnes
 
 [Actual BEAN mitigation learning workflow](https://github.com/danieloculus0-bot/BEAN/actions/workflows/bean-engineering-learning.yml)
 
+### Real EZ-FEA evidence: circular-shaft torsion handoff
+
+BEAN now accepts an actual exported EZ-FEA C3D10 torsion report. The [independent importer](../bean/engineering/fea_evidence.py) checks the original STEP SHA field, explicit round-shaft geometry, E and Poisson ratio, torque, analytical twist, measured nodal-displacement twist, applied-force audits, reaction torque, and at least two separate meshes.
+
+To check an exported actual `TORSION_EVIDENCE.json`:
+
+```bash
+python -m bean.engineering.fea_evidence TORSION_EVIDENCE.json --out bean_crosschecked_torsion.json --source-ref your-exact-EZFEA-run-link
+```
+
+The BEAN command inbox also registers `engineering_fea_evidence_review`, accepting `{"report":{...},"source_ref":"..."}` and logging a source-digested, independently recomputed engineering observation via the **existing Core event logger**. The raw input is host-supplied and cannot authenticate itself; BEAN does **not** automatically score a training reward or change Q/model weights from that input.
+
+[**End-to-end real EZ-FEA → BEAN Actions workflow**](https://github.com/danieloculus0-bot/BEAN/actions/workflows/bean-native-fea-evidence-bridge.yml) checks out the original EZ-FEA main source, runs actual Gmsh and CalculiX, and feeds the resulting report to BEAN. Its artifacts contain both the raw native solver evidence and the BEAN independent-reference review. This is an actual physics-data integration exercise, not a fabricated model output.
+
 ### Keeping engineering rules trustworthy
 
 Local code requirements differ by location, adopted building-code edition and amendments. Lumber design properties differ by grade, species, product and service conditions. The bundled catalog contains the mathematical rule set but **deliberately leaves jurisdiction-specific allowable spans, connections and strength values unapproved and unset**. Adding a code-backed rule requires identifying the actual source, edition, applicability, material, load combinations, adjustment factors and approval requirements.
