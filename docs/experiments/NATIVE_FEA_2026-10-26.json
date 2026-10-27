@@ -1,0 +1,62 @@
+{
+  "schema": "bean.native_fea_experiment_summary.v1",
+  "date": "2026-10-26",
+  "source": "GitHub Actions actual Gmsh C3D10 STEP CalculiX and BEAN SpongeTD runs",
+  "exercise": "Axial tension/compression, Y-directed cantilever bending, round-shaft pure torsion",
+  "geometry_split": {
+    "train": 12,
+    "unseen": 30
+  },
+  "actions_per_training_case": 5,
+  "q_updates": 60,
+  "earlier_run": {
+    "url": "https://github.com/danieloculus0-bot/BEAN/actions/runs/40425518608",
+    "overall_analytic_mean_relative_error": 0.1059945678817274,
+    "overall_bean_mean_relative_error": 0.087635800511801,
+    "bending_analytic_mean_relative_error": 0.31793836849631923,
+    "bending_bean_mean_relative_error": 0.2628620663865401,
+    "checkpoint_promotable": false,
+    "defect": "Reference beam bends around Z from transverse Y force; initial code incorrectly used I_y instead of I_z for nonsquare section",
+    "status": "superseded_wrong_axis_reference_not_fit_for_policy_promotion"
+  },
+  "corrected_run": {
+    "url": "https://github.com/danieloculus0-bot/BEAN/actions/runs/40426288352",
+    "native_cases_finished": 42,
+    "native_source_hashes_verified_against_step_files": 42,
+    "actual_dat_files_present": 42,
+    "sponge_q_updates": 60,
+    "unseen_geometry_count": 30,
+    "overall_analytic_mean_relative_error": 0.0015244559862617514,
+    "overall_bean_mean_relative_error": 0.0015244559862617514,
+    "improvement_percentage_points": 0,
+    "by_family": {
+      "axial": {
+        "analytic_mean_relative_error": 8.984808419345583e-8,
+        "bean_mean_relative_error": 8.984808419345583e-8
+      },
+      "bending": {
+        "analytic_mean_relative_error": 0.004528032809922287,
+        "bean_mean_relative_error": 0.004528032809922287
+      },
+      "torsion": {
+        "analytic_mean_relative_error": 0.000045245300778773915,
+        "bean_mean_relative_error": 0.000045245300778773915
+      }
+    },
+    "illustrative_screen_accuracy_analytic": 1,
+    "illustrative_screen_accuracy_bean": 1,
+    "checkpoint": {
+      "score": 43,
+      "delta": 0,
+      "sample_count": 30,
+      "promotable": false,
+      "sha256": "0ff76421ae9b4da7b55582059b25f31236d39030752bfd676660a9be2c0d1b5a"
+    },
+    "status": "physics_baseline_matched_no_policy_promotion"
+  },
+  "root_cause": "A physically incorrect reference can make a learned correction seem beneficial. Fix coordinate conventions/section properties before treating a surrogate residual as material physics.",
+  "recovered_lesson": "For this supported simple linear elastic geometry, use the known analytical reference; the tested bounded Q correction brought no accuracy gain on unseen geometry.",
+  "scope_limitation": "Neither run measures fracture, buckling, nonlinear plasticity, weld/bolt load transfer, fatigue or real building-code compliance.",
+  "durable_source": "This snapshot is permanent GitHub-tracked summary. Full solver traces and local SQLite Q journal are in temporary 90-day Actions artifacts; regenerate from tracked source.",
+  "future_work": "Transfer to structural assembly connectors, unsupported geometries, contact stress and material failure using separate independently verified native/experimental reference sets."
+}
