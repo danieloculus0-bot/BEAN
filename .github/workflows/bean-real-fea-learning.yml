@@ -1,0 +1,96 @@
+name: BEAN Learns From Real 3D FEA and Unseen Geometry
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "bean/engineering/native_fea_learning.py"
+      - "bean/tests/test_native_fea_learning.py"
+      - ".github/workflows/bean-real-fea-learning.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  genuine-native-physics-training:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Verify held-out isolation, rejection and BEAN Q checkpoint restore
+        run: |
+          python -m unittest bean.tests.test_native_fea_learning -v
+      - name: Check out the existing EZ-FEA production main source
+        uses: actions/checkout@v4
+        with:
+          repository: danieloculus0-bot/EZ-FEA
+          ref: main
+          path: ezfea-source
+          persist-credentials: false
+      - name: Record exact source revisions and curriculum provenance
+        run: |
+          mkdir -p real_fea_corpus
+          printf '%s\n' "$(git rev-parse HEAD)" > real_fea_corpus/bean_source_sha.txt
+          printf '%s\n' "$(git -C ezfea-source rev-parse HEAD)" > real_fea_corpus/ezfea_source_sha.txt
+      - name: Install native STEP CAD mesher and CalculiX
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y calculix-ccx libglu1-mesa
+          python -m pip install -r ezfea-source/requirements.txt
+      - name: Run all 42 real STEP geometry and CalculiX C3D10 analyses
+        env:
+          PYTHONPATH: ${{ github.workspace }}/ezfea-source
+        run: |
+          python -m ezfea.native_learning_cases --out real_fea_corpus
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          data=json.loads(Path("real_fea_corpus/native_curriculum.json").read_text())
+          assert data["cases_executed"]==42 and data["failed_or_needs_review"]==0
+          assert sum(x["split"]=="train" for x in data["cases"])==12
+          assert sum(x["split"]=="holdout" for x in data["cases"])==30
+          assert len({x["geometry_key"] for x in data["cases"]})==42
+          print("Real native specimen cases:",data["cases_executed"])
+          PY
+      - name: Update BEAN's existing SpongeTD Q policy with only real training cases
+        run: |
+          python -m bean.engineering.native_fea_learning real_fea_corpus/native_curriculum.json --out bean_native_training
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          report=json.loads(Path("bean_native_training/native_fea_learning.json").read_text())
+          assert report["training_real_native_cases"]==12
+          assert report["heldout_geometry_distinct_cases"]==30
+          assert report["training_q_updates"]==60
+          assert report["checkpoint"]["sample_count"]==30
+          assert report["checkpoint"]["receipt_sha256"]==report["receipt_sha256"]
+          assert report["existing_sponge_td_q_updated"]
+          assert report["no_heldout_reward_updates"]
+          assert not report["design_approval"]
+          overall=report["heldout"]["overall"]
+          with open("beam_learning_summary.md","w") as fh:
+              fh.write("# BEAN on real Gmsh/CalculiX geometry holdout\n\n")
+              fh.write("| Measure | Pure analytical reference | BEAN Q correction |\n|---|---:|---:|\n")
+              fh.write(f"| Mean relative error | {overall['analytical_mean_relative_error']:.5%} | {overall['bean_mean_relative_error']:.5%} |\n")
+              fh.write(f"| Example-limit label agreement | {overall['analytical_screen_accuracy']:.1%} | {overall['bean_screen_accuracy']:.1%} |\n")
+              fh.write("\nSource: real C3D10 training, 12 training specimens, 30 unseen physical geometries. Not structural validation.\n")
+              fh.write(f"\nCheckpoint promotable: {report['checkpoint']['promotable']}; reasoned use must still be reviewed.\n")
+          print(json.dumps(report["heldout"],indent=2))
+          print("Checkpoint:",report["checkpoint"])
+          PY
+          cat beam_learning_summary.md >> "$GITHUB_STEP_SUMMARY"
+      - name: Archive real STEP and solver traces, measured failures, learned policy, Q journal, and unseen scores
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: BEAN-real-FEA-42-cases-learning-evidence
+          path: |
+            real_fea_corpus/
+            bean_native_training/
+            beam_learning_summary.md
+          retention-days: 90
+          if-no-files-found: warn
