@@ -82,6 +82,78 @@ class ActiveHypothesisTests(unittest.TestCase):
                 self.assertEqual(len(stored),1)
             finally:recovered.close()
 
+    def test_new_feedback_can_revise_hypothesis(self):
+        with tempfile.TemporaryDirectory() as d:
+            db=Path(d)/"learning.sqlite3"
+            world=World(120,"channel")
+            core=NativeReasoningService(db)
+            original=core.discover_analogy(
+                domain="controls",task_ref="original-world",
+                source_ref="fixture:control-before",
+                probe_ids=[str(100+i) for i in range(40)],
+                observe=world.observe,reward=world.feedback,budget=12)
+            self.assertEqual(original["status"],"provisional_rule")
+            changed_feedback=lambda case,action: world.feedback(case,-action)
+            revision=core.revise_discovered_analogy(
+                parent_receipt_id=original["receipt_id"],
+                domain="controls",task_ref="changed-world",
+                source_ref="fixture:control-after",
+                probe_ids=[str(200+i) for i in range(40)],
+                observe=world.observe,reward=changed_feedback,budget=12)
+            self.assertEqual(revision["status"],"provisional_rule")
+            self.assertEqual(revision["revision_decision"],
+                             "updated_from_fresh_feedback")
+            self.assertGreater(revision["fresh_advantage_per_probe"],0.08)
+            self.assertNotEqual(revision["selected_rule"],
+                                original["selected_rule"])
+            unseen=[str(600+i) for i in range(30)]
+            old_correct=sum(world.feedback(case,-act(
+                original["selected_rule"],world.observe(case))) for case in unseen)
+            new_correct=sum(world.feedback(case,-act(
+                revision["selected_rule"],world.observe(case))) for case in unseen)
+            self.assertGreater(new_correct,old_correct)
+            with self.assertRaisesRegex(ValueError,"unseen probe"):
+                core.revise_discovered_analogy(
+                    parent_receipt_id=revision["receipt_id"],
+                    domain="controls",task_ref="duplicate",
+                    source_ref="fixture:duplicate",
+                    probe_ids=[revision["records"][0]["probe_id"]]+
+                              [str(700+i) for i in range(39)],
+                    observe=world.observe,reward=changed_feedback,budget=12)
+            self.assertEqual(len([e for e in core.bank.journal.events()
+                if e["kind"]=="trial" and e["data"].get("experiment") ==
+                "bean.native.active_hypothesis.v1"]),2)
+            old_action=core.use_discovered_analogy(
+                receipt_id=original["receipt_id"],sensors=world.observe(9000))
+            new_action=core.use_discovered_analogy(
+                receipt_id=revision["receipt_id"],sensors=world.observe(9000))
+            self.assertEqual(old_action["action"],-new_action["action"])
+            core.close()
+            recovered=NativeReasoningService(db)
+            try:
+                self.assertEqual(recovered.use_discovered_analogy(
+                    receipt_id=revision["receipt_id"],
+                    sensors=world.observe(9000)),new_action)
+                self.assertEqual(recovered.use_discovered_analogy(
+                    receipt_id=original["receipt_id"],
+                    sensors=world.observe(9000)),old_action)
+            finally:
+                recovered.close()
+
+    def test_revision_rejects_bad_parent_and_invalid_gain(self):
+        with tempfile.TemporaryDirectory() as d:
+            core=NativeReasoningService(Path(d)/"reason.sqlite")
+            world=World(120,"channel")
+            params=dict(parent_receipt_id="not-a-real-receipt",
+                        domain="controls",task_ref="bad",source_ref="fixture:bad",
+                        probe_ids=[str(500+i) for i in range(40)],
+                        observe=world.observe,reward=world.feedback)
+            with self.assertRaisesRegex(ValueError,"Unknown previous"):
+                core.revise_discovered_analogy(**params)
+            with self.assertRaisesRegex(ValueError,"min_gain"):
+                core.revise_discovered_analogy(**params,min_gain=float("nan"))
+            core.close()
+
     def test_blind_suite_is_repeatable_and_discloses_misses(self):
         r=benchmark(worlds_per_family=3,budgets=(3,6))
         again=benchmark(worlds_per_family=3,budgets=(3,6))
