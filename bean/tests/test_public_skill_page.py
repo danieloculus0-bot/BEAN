@@ -64,8 +64,9 @@ class PublicSkillsPageTests(unittest.TestCase):
         self.assertIn("height:auto;object-fit:contain", self.page)
 
     def test_identity_theme_and_home_links(self):
-        for phrase in ("Memory. Evidence.", "Judgment.",
-                       "Published results link to code and test evidence.",
+        for phrase in ("Meet BEAN.", "AI that remembers and learns.",
+                       "BEAN is an AI agent", "Remember. Think. Improve.",
+                       "Every measured result links to evidence and limitations.",
                        "--accent:#79DE4B", "237 / 240"):
             self.assertIn(phrase, self.page)
         for href in ("#lab", "#learning", "#capabilities", "#aiscend", "#start",
@@ -75,6 +76,22 @@ class PublicSkillsPageTests(unittest.TestCase):
         self.assertIn('href="./aiscend.html" target="_blank" rel="noopener noreferrer"',
                       self.page)
         self.assertIn("Explore the public AIscend demo", self.page)
+
+    def test_bean_agent_pitch_is_consistent_across_public_pages(self):
+        readme = (ROOT / "README.md").read_text(encoding="utf-8")
+        self.assertIn("An AI agent that remembers and learns.", readme[:900])
+        self.assertIn("Remember:", readme[:1500])
+        self.assertIn("Reason:", readme[:1500])
+        self.assertIn("Improve:", readme[:1500])
+        for path in (
+            "index.html", "for-ai-developers.html", "portfolio/index.html",
+            "portfolio/bean-learning/index.html", "aiscend.html"
+        ):
+            with self.subTest(page=path):
+                content = (PAGE.parent / path).read_text(encoding="utf-8")
+                self.assertIn("AI agent", content)
+                self.assertIn("learn", content.casefold())
+                self.assertIn("experimental", content.casefold())
 
     def test_removed_browser_memory_playground_stays_unpublished(self):
         # Public calls to action must not misrepresent localStorage as BEAN Core.
@@ -136,7 +153,7 @@ class PublicSkillsPageTests(unittest.TestCase):
         self.assertIn("research-only", self.page)
         self.assertIn("now on Core main through PR #153", self.page)
         self.assertIn("id=\"judgment\"", self.page)
-        self.assertIn("adequate existing answer", self.page)
+        self.assertIn("reuse a good answer", self.page)
         self.assertIn("four-platform Core regression passed", self.page)
         self.assertIn("38257867402", self.page)
 
