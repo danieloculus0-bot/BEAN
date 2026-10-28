@@ -27,6 +27,8 @@ class ActiveHypothesisTests(unittest.TestCase):
         outcome=discover(probe_ids=probes,observe=world.observe,
                          reward=actual_reward,budget=12)
         self.assertEqual(outcome["reward_calls"],36)
+        self.assertEqual(outcome["sensor_observations"],40)
+        self.assertEqual(outcome["observed_probe_ids"],probes)
         self.assertEqual(len(seen),36)
         self.assertTrue(set(case for case,_ in seen) <= set(probes))
         self.assertEqual({a for _,a in seen},{-1,0,1})
@@ -141,6 +143,8 @@ class ActiveHypothesisTests(unittest.TestCase):
             self.assertEqual(revision["status"],"provisional_rule")
             self.assertEqual(revision["revision_decision"],
                              "updated_from_fresh_feedback")
+            self.assertEqual(revision["ancestry_observation_coverage"],
+                             "all_observed_probe_ids")
             self.assertGreater(revision["fresh_advantage_per_probe"],0.08)
             self.assertNotEqual(revision["selected_rule"],
                                 original["selected_rule"])
@@ -157,6 +161,18 @@ class ActiveHypothesisTests(unittest.TestCase):
                     source_ref="fixture:duplicate",
                     probe_ids=[revision["records"][0]["probe_id"]]+
                               [str(700+i) for i in range(39)],
+                    observe=world.observe,reward=changed_feedback,budget=12)
+            # The original experiment observed 40 sensors but rewarded only
+            # 12. An unrewarded sensor is still previously seen evidence.
+            rewarded={row["probe_id"] for row in original["records"]}
+            observed_only=next(pid for pid in original["observed_probe_ids"]
+                               if pid not in rewarded)
+            with self.assertRaisesRegex(ValueError,"unseen probe"):
+                core.revise_discovered_analogy(
+                    parent_receipt_id=revision["receipt_id"],
+                    domain="controls",task_ref="observed-but-unrewarded",
+                    source_ref="fixture:unrewarded-reuse",
+                    probe_ids=[observed_only]+[str(800+i) for i in range(39)],
                     observe=world.observe,reward=changed_feedback,budget=12)
             self.assertEqual(len([e for e in core.bank.journal.events()
                 if e["kind"]=="trial" and e["data"].get("experiment") ==
