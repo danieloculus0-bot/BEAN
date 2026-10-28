@@ -1,14 +1,24 @@
 # BEAN — Behavior Enabled Avatar Node
 
-**Adaptive intelligence infrastructure for AI agents and language models.** BEAN is an experimental Python platform for persistent memory, evidence-linked reasoning, reusable strategies, model assistance, feedback-driven adaptation and independent evaluation. It aims to strengthen existing models rather than replace them with another chatbot.
+## An AI agent that remembers and learns.
 
-[**BEAN technical overview and research collaboration**](https://danieloculus0-bot.github.io/BEAN/for-ai-developers.html) · [**Project website**](https://danieloculus0-bot.github.io/BEAN/) · [**Source tests and CI**](https://github.com/danieloculus0-bot/BEAN/actions)
+**BEAN is an experimental AI agent designed to give artificial intelligence something resembling continuity, experience, judgment, and the ability to improve its decisions.**
+
+Instead of treating every interaction like a fresh start, BEAN is built to remember useful experiences, weigh what it knows, and learn from feedback. It can work alongside different AI models while keeping its own history.
+
+- **Remember:** Keep experiences, lessons and decisions between sessions.
+- **Reason:** Reuse what works, weigh evidence and recognize when it needs help.
+- **Improve:** Learn from successes and mistakes, then test whether its next decisions get better.
+
+**What is real today?** BEAN's Python Core includes persistent memory, source-aware reasoning tools, feedback records and reinforcement-learning components. **What is still experimental?** Broad autonomous decision-making, reliable learning across unrelated tasks, and full integration with every BEAN-connected application. This is working research software, not a claim of general intelligence.
+
+[**Meet BEAN**](https://danieloculus0-bot.github.io/BEAN/) · [**See the learning results**](https://danieloculus0-bot.github.io/BEAN/portfolio/bean-learning/) · [**For developers and partners**](https://danieloculus0-bot.github.io/BEAN/for-ai-developers.html) · [**Code and test evidence**](https://github.com/danieloculus0-bot/BEAN/actions)
 
 **Collaboration and licensing inquiries:** [open a GitHub issue](https://github.com/danieloculus0-bot/BEAN/issues/new). Source availability is not an open-source grant: this repository currently has no declared software license. Confirm permissions with the owner before reuse, redistribution or commercial integration.
 
 **[BEAN Workshop — Projects and demonstrations](https://danieloculus0-bot.github.io/BEAN/portfolio/)** · Browse 19 catalogued projects and nine featured browser experiences, with published source code, development status and available test evidence.
 
-Persistent experimental reasoning and evidence system. BEAN Core maintains SQLite-backed observations, source-aware claims, revision history, recovery and repeatable research tests. It is not a production-grade autonomous software engineer.
+**Technical detail starts below.** The following sections document BEAN Core implementations, tests, limitations and open research questions for people who want to inspect the engineering.
 
 ## Current Python Core status (October 25, 2026)
 
