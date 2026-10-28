@@ -133,13 +133,20 @@ class NativeReasoningService:
         # Treat every previously sampled probe in the ancestry as used
         # evidence: repeating it cannot count as fresh learning.
         used_probes, seen_receipts = set(), set()
+        complete_observation_history = True
         cursor = parent_receipt_id
         while cursor:
             if cursor in seen_receipts or cursor not in by_receipt:
                 raise ValueError("Invalid hypothesis revision ancestry")
             seen_receipts.add(cursor)
             previous = by_receipt[cursor]["decision"]
-            used_probes.update(row["probe_id"] for row in previous["records"])
+            observed = previous.get("observed_probe_ids")
+            if observed is None:
+                # Historical receipts retained rewarded probes, not every
+                # sensor observation. Do not misrepresent that limitation.
+                complete_observation_history = False
+                observed = [row["probe_id"] for row in previous["records"]]
+            used_probes.update(observed)
             cursor = previous.get("parent_receipt_id")
         if (not isinstance(probe_ids, (tuple, list)) or
                 any(not isinstance(pid, str) for pid in probe_ids) or
@@ -183,6 +190,9 @@ class NativeReasoningService:
             "fresh_advantage_per_probe": advantage,
             "minimum_change_advantage": float(min_gain),
             "previous_evidence_preserved": True,
+            "ancestry_observation_coverage": (
+                "all_observed_probe_ids" if complete_observation_history
+                else "legacy_rewarded_probe_ids_only"),
             "independent_validation": False,
             "selected_rule": selected,
             "status": "provisional_rule" if selected is not None else "abstain",
