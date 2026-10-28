@@ -98,6 +98,114 @@ class NativeReasoningService:
                 "journal_tip": tip, "evidence_retained": True,
                 "external_model_invoked": False}
 
+    def revise_discovered_analogy(self, *, parent_receipt_id, domain, task_ref,
+                                  source_ref, probe_ids, observe, reward,
+                                  budget=12, method="disagreement", seed=0,
+                                  min_gain=0.08):
+        """Reevaluate a saved numeric rule using fresh matched host feedback.
+
+        The new decision is separately journaled; the parent decision and
+        negative observations remain intact. Host rewards are not verified.
+        """
+        from .active_hypothesis import _vector
+        import math
+
+        if self.closed:
+            raise ValueError("Reasoning memory is closed")
+        domain = _required(domain, "domain", 100).casefold()
+        task_ref = _required(task_ref, "task_ref", 200)
+        source_ref = _required(source_ref, "source_ref", 500)
+        parent_receipt_id = _required(parent_receipt_id, "parent_receipt_id", 64)
+        if (type(min_gain) not in (int, float) or not math.isfinite(min_gain)
+                or min_gain < 0):
+            raise ValueError("min_gain must be finite and nonnegative")
+
+        trials = [event["data"] for event in self.bank.journal.events()
+                  if event["kind"] == "trial" and event["data"].get(
+                      "experiment") == "bean.native.active_hypothesis.v1"]
+        by_receipt = {sha256(canonical(trial)).hexdigest(): trial
+                      for trial in trials}
+        if parent_receipt_id not in by_receipt:
+            raise ValueError("Unknown previous hypothesis receipt")
+        if by_receipt[parent_receipt_id]["domain"] != domain:
+            raise ValueError("Revision domain differs from parent")
+
+        # Treat every previously sampled probe in the ancestry as used
+        # evidence: repeating it cannot count as fresh learning.
+        used_probes, seen_receipts = set(), set()
+        cursor = parent_receipt_id
+        while cursor:
+            if cursor in seen_receipts or cursor not in by_receipt:
+                raise ValueError("Invalid hypothesis revision ancestry")
+            seen_receipts.add(cursor)
+            previous = by_receipt[cursor]["decision"]
+            used_probes.update(row["probe_id"] for row in previous["records"])
+            cursor = previous.get("parent_receipt_id")
+        if (not isinstance(probe_ids, (tuple, list)) or
+                any(not isinstance(pid, str) for pid in probe_ids) or
+                set(probe_ids) & used_probes):
+            raise ValueError("Revision requires unseen probe IDs")
+
+        parent = by_receipt[parent_receipt_id]["decision"]
+        dimensions = len(parent["records"][0]["sensors"])
+        fresh = discover(probe_ids=probe_ids, observe=observe, reward=reward,
+                         budget=budget, method=method, seed=seed)
+        if any(len(row["sensors"]) != dimensions for row in fresh["records"]):
+            raise ValueError("Sensor layout changed across revisions")
+
+        prior = parent.get("selected_rule")
+        prior_regret = None
+        if prior is not None:
+            loss = 0.0
+            for row in fresh["records"]:
+                sensors = _vector(row["sensors"], dimensions=dimensions)
+                rewards = dict(row["rewards_by_action"])
+                loss += max(rewards.values()) - rewards[act(prior, sensors)]
+            prior_regret = loss / len(fresh["records"])
+        advantage = (None if prior_regret is None
+                     else prior_regret - fresh["best_loss_per_probe"])
+
+        if fresh["selected_rule"] is not None and (
+                prior is None or advantage > min_gain):
+            selected = fresh["selected_rule"]
+            change = "updated_from_fresh_feedback"
+        elif prior is not None and prior_regret <= 0.12:
+            selected = prior
+            change = "retained_after_fresh_feedback"
+        else:
+            selected = None
+            change = "abstained_insufficient_fresh_support"
+
+        fresh.update({
+            "parent_receipt_id": parent_receipt_id,
+            "revision_decision": change,
+            "prior_regret_per_probe": prior_regret,
+            "fresh_advantage_per_probe": advantage,
+            "minimum_change_advantage": float(min_gain),
+            "previous_evidence_preserved": True,
+            "independent_validation": False,
+            "selected_rule": selected,
+            "status": "provisional_rule" if selected is not None else "abstain",
+            "failure_reason": (None if selected is not None
+                               else "insufficient_evidence_or_model_mismatch"),
+        })
+        fresh.pop("evidence_sha256", None)
+        fresh["evidence_sha256"] = sha256(json.dumps(
+            fresh, sort_keys=True, separators=(",", ":"),
+            allow_nan=False).encode()).hexdigest()
+        entry = {
+            "schema": "bean.adaptive_lab026.v1",
+            "experiment": "bean.native.active_hypothesis.v1",
+            "domain": domain, "task_ref": task_ref, "source_ref": source_ref,
+            "decision": fresh,
+            "outcome_origin": "host_observation_and_reward",
+            "independently_authenticated": False,
+        }
+        receipt_id = sha256(canonical(entry)).hexdigest()
+        tip = self.bank.record_trial(entry)
+        return {**fresh, "receipt_id": receipt_id, "journal_tip": tip,
+                "evidence_retained": True, "external_model_invoked": False}
+
     def use_discovered_analogy(self, *, receipt_id, sensors):
         """Replay an empirically selected rule from the durable BEAN ledger."""
         if self.closed:
