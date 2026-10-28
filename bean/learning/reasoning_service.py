@@ -221,6 +221,11 @@ class NativeReasoningService:
                 return {"status": "abstain", "reason": "no_accepted_hypothesis"}
             from .active_hypothesis import _vector
             numbers = _vector(sensors)
+            # Index validity alone is insufficient: a retained rule is tied
+            # to the complete observed sensor layout, including unused channels.
+            expected_dimensions = len(stored["records"][0]["sensors"])
+            if len(numbers) != expected_dimensions:
+                raise ValueError("Incompatible sensor layout")
             rule = stored["selected_rule"]
             if (rule["lhs"] is not None and rule["lhs"] >= len(numbers)) or (
                     rule["rhs"] is not None and rule["rhs"] >= len(numbers)):
