@@ -82,6 +82,44 @@ class ActiveHypothesisTests(unittest.TestCase):
                 self.assertEqual(len(stored),1)
             finally:recovered.close()
 
+    def test_persisted_rule_requires_exact_sensor_layout(self):
+        with tempfile.TemporaryDirectory() as d:
+            db = Path(d) / "layout.sqlite3"
+            world = World(120, "channel")
+            core = NativeReasoningService(db)
+            original = core.discover_analogy(
+                domain="controls", task_ref="sensor-schema",
+                source_ref="fixture:four-channel",
+                probe_ids=[str(100+i) for i in range(40)],
+                observe=world.observe, reward=world.feedback, budget=12)
+            self.assertEqual(original["status"], "provisional_rule")
+            receipt = original["receipt_id"]
+            valid = world.observe(9000)
+            self.assertEqual(len(valid), 4)
+            self.assertEqual(core.use_discovered_analogy(
+                receipt_id=receipt, sensors=valid)["status"],
+                "provisional_action")
+            # Even when the learned rule uses only channel zero, extra or
+            # missing channels change the meaning of the observation schema.
+            for incompatible in (valid[:2], valid + (0.5,)):
+                with self.subTest(dimensions=len(incompatible)):
+                    with self.assertRaisesRegex(ValueError,
+                                                "Incompatible sensor layout"):
+                        core.use_discovered_analogy(
+                            receipt_id=receipt, sensors=incompatible)
+            core.close()
+            recovered = NativeReasoningService(db)
+            try:
+                with self.assertRaisesRegex(ValueError,
+                                            "Incompatible sensor layout"):
+                    recovered.use_discovered_analogy(
+                        receipt_id=receipt, sensors=valid[:2])
+                self.assertEqual(recovered.use_discovered_analogy(
+                    receipt_id=receipt, sensors=valid)["status"],
+                    "provisional_action")
+            finally:
+                recovered.close()
+
     def test_new_feedback_can_revise_hypothesis(self):
         with tempfile.TemporaryDirectory() as d:
             db=Path(d)/"learning.sqlite3"
