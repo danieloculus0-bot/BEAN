@@ -144,6 +144,11 @@ def discover(*, probe_ids, observe, reward, budget=12, method="disagreement",
         "probe_selection": "candidate_action_disagreement" if method == "disagreement"
             else "random_without_replacement",
         "probes_used": budget, "reward_calls": budget * len(ACTIONS),
+        # All candidate sensors are observed before reward probes are chosen.
+        # Retain the entire observed pool so later revisions cannot recycle
+        # unrewarded observations and mislabel them as fresh evidence.
+        "observed_probe_ids": list(probe_ids),
+        "sensor_observations": len(views),
         "records": records,
         "best_rule": rules[first], "best_loss_per_probe": losses[first] / budget,
         "second_best_gap_per_probe": gap / budget,
