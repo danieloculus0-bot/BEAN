@@ -281,6 +281,7 @@ class WebResearchService:
         status = "locally_solved" if local_status == "locally_solved" else None
         prior = None
         last = None
+        seen_source_hashes = set()
 
         if status is None and not allow_external:
             status = "external_research_disabled"
@@ -295,7 +296,10 @@ class WebResearchService:
                         domain=domain, task_ref=task_ref + ":try-" +
                         str(attempt_number), question=question,
                         provider=provider, max_pages=max_pages,
-                        answer_with_model=do_model, search_query=search_query)
+                        answer_with_model=do_model, search_query=search_query,
+                        previously_seen_source_hashes=(
+                            sorted(seen_source_hashes)
+                            if seen_source_hashes else None))
                 except (ResearchTransportError, ValueError, OSError) as exc:
                     attempts.append({
                         "number": attempt_number,
@@ -313,6 +317,9 @@ class WebResearchService:
                     "research_journal_tip": last["research_journal_tip"],
                     "fetch_errors": last["fetch_errors"],
                 }
+                new_hashes = (set(item["source_refs"]) - seen_source_hashes)
+                item["new_source_count"] = len(new_hashes)
+                seen_source_hashes.update(item["source_refs"])
                 attempts.append(item)
                 answer = last.get("answer")
                 if not last["source_count"]:
@@ -391,7 +398,7 @@ class WebResearchService:
 
     def investigate(self, *, domain, task_ref, question,
                     provider="auto", max_pages=3, answer_with_model=True,
-                    search_query=None):
+                    search_query=None, previously_seen_source_hashes=None):
         """BEAN decides to search and retains the results; model use is optional.
 
         No claims about source agreement, factual truth, or performance are
@@ -406,6 +413,12 @@ class WebResearchService:
         if (type(max_pages) is not int or not 1 <= max_pages <= MAX_READS
                 or type(answer_with_model) is not bool):
             raise ValueError("1..3 pages and Boolean model option required")
+        if (previously_seen_source_hashes is not None and
+                (not isinstance(previously_seen_source_hashes, (list, tuple))
+                 or len(previously_seen_source_hashes) > 64
+                 or any(not isinstance(h, str) or len(h) != 64
+                        for h in previously_seen_source_hashes))):
+            raise ValueError("Invalid previous source evidence fingerprints")
         if answer_with_model and self.core.model is None:
             raise ValueError("Configure a real reasoning model or use evidence-only mode")
         planned = self.research_needed(domain=domain, question=question)
@@ -468,6 +481,13 @@ class WebResearchService:
             "learning_improvement_proven": False,
             "action_executed": False,
         }
+        if previously_seen_source_hashes is not None and gathered and not (
+                {d["text_sha256"] for d in gathered} -
+                set(previously_seen_source_hashes)):
+            # The second search found no novel information. Preserve the
+            # repeated source packet, but avoid another model inference.
+            result["answer_status"] = "no_new_research_evidence"
+            return result
         if not answer_with_model:
             return result
         if not gathered:
