@@ -45,7 +45,7 @@ The candidate must exactly preserve a successful initial controller
 route; this is a safety property, not evidence of novel learning.
 A rescue success beyond both controls would be stronger evidence.
 
-An invocation uses a **24-action compute slice**, not a total solution
+An invocation uses a **128-action compute slice**, not a total solution
 move limit. Unfinished cases are marked paused, never solved or
 definitively failed. The checkpoint stores the entire legal route,
 starting state, action-source counts and hashes of both frozen Q tables;
