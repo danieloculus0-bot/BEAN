@@ -1,194 +1,124 @@
-"""Regression checks for the current BEAN public laboratory landing page.
+"""Static regression checks for BEAN's plain-language public homepage.
 
-Tests verify the current dark-theme design and source-grounded evidence. The
-pre-redesign checks referred to deleted anchors and an older HTML template.
-These are static source checks, not claims of live site deployment.
+The detailed research lab and demos have dedicated pages. This suite checks
+current claims and links without restoring deleted technical-homepage markup.
 """
-from __future__ import annotations
-
 from html.parser import HTMLParser
 from pathlib import Path
-import re
-import shutil
-import subprocess
+from urllib.parse import urlsplit
 import unittest
+import re
 
 ROOT = Path(__file__).resolve().parents[2]
 PAGE = ROOT / "docs" / "index.html"
 
 
-class SiteMarkup(HTMLParser):
+class Markup(HTMLParser):
     def __init__(self):
         super().__init__()
         self.ids = set()
         self.links = []
         self.images = []
-        self.lab_cards = []
-        self._lab = False
 
     def handle_starttag(self, tag, attrs):
-        props = dict(attrs)
-        if props.get("id"):
-            self.ids.add(props["id"])
-            if props["id"] == "experiments":
-                self._lab = True
-        if tag == "a" and "href" in props:
-            self.links.append(props["href"])
+        data = dict(attrs)
+        if data.get("id"):
+            self.ids.add(data["id"])
+        if tag == "a":
+            self.links.append(data)
         if tag == "img":
-            self.images.append(props)
-        if tag == "article" and "card" in props.get("class", "").split():
-            self.lab_cards.append(props)
-
-    def handle_endtag(self, tag):
-        pass
+            self.images.append(data)
 
 
 class PublicSkillsPageTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.page = PAGE.read_text(encoding="utf-8")
-        cls.markup = SiteMarkup()
-        cls.markup.feed(cls.page)
+        cls.html = PAGE.read_text(encoding="utf-8")
+        cls.dom = Markup()
+        cls.dom.feed(cls.html)
+        cls.hrefs = [x["href"] for x in cls.dom.links if x.get("href")]
 
-    def test_project_brand_mark_and_research_hero(self):
-        marks = [x for x in self.markup.images
-                 if x.get("src") == "./bean-official.webp"]
-        self.assertEqual(len(marks), 1)
-        self.assertEqual(marks[0]["alt"], "BEAN brand mark")
+    def test_document_integrity(self):
+        self.assertEqual(self.html.count("<!doctype html>"), 1)
+        self.assertEqual(self.html.count("</body>"), 1)
+        self.assertEqual(self.html.count("</html>"), 1)
+        self.assertRegex(self.html, r"</body>\s*</html>\s*\Z")
+
+    def test_plain_language_and_claim_boundaries(self):
+        for phrase in ("What if AI could", "learn from yesterday?",
+                       "memory, evidence and feedback", "Still in development",
+                       "No claims of finished AGI or consciousness",
+                       "aren't yet one seamless general-purpose intelligence"):
+            self.assertIn(phrase.casefold(), self.html.casefold())
+        self.assertNotIn("BEAN has achieved AGI", self.html)
+
+    def test_mascot_accessibility_and_brand(self):
+        imgs = [x for x in self.dom.images if
+                x.get("src") == "./bean-official.webp"]
+        self.assertEqual(len(imgs), 2)
+        self.assertTrue(any(x.get("alt") == "BEAN project mascot" for x in imgs))
         self.assertTrue((PAGE.parent / "bean-official.webp").is_file())
-        self.assertIn('class="hero-research"', self.page)
-        self.assertIn("View the experiment and evidence", self.page)
-        self.assertIn("object-fit:contain", self.page)
-        self.assertIn("flex-shrink:0", self.page)
-        self.assertIn(".brand img{display:block;width:54px;height:62px", self.page)
-        self.assertIn("height:auto;object-fit:contain", self.page)
+        self.assertIn("prefers-reduced-motion:reduce", self.html)
+        self.assertIn("a:focus-visible", self.html)
+        self.assertIn('aria-label="Main navigation"', self.html)
+        self.assertIn('class="skip" href="#main"', self.html)
 
-    def test_identity_theme_and_home_links(self):
-        for phrase in ("Memory. Evidence.", "Judgment.",
-                       "Published results link to code and test evidence.",
-                       "--accent:#79DE4B", "237 / 240"):
-            self.assertIn(phrase, self.page)
-        for href in ("#lab", "#learning", "#capabilities", "#aiscend", "#start",
-                     "./aiscend.html", "./portfolio/bean-learning/",
-                     "https://github.com/danieloculus0-bot/BEAN"):
-            self.assertIn(href, self.markup.links)
-        self.assertIn('href="./aiscend.html" target="_blank" rel="noopener noreferrer"',
-                      self.page)
-        self.assertIn("Explore the public AIscend demo", self.page)
-
-    def test_removed_browser_memory_playground_stays_unpublished(self):
-        # Public calls to action must not misrepresent localStorage as BEAN Core.
-        retired = ("try-bean.html", "try-bean-memory.js")
-        for name in retired:
-            self.assertFalse((PAGE.parent / name).exists(), name)
-            self.assertNotIn(name, self.page)
-        self.assertNotIn('id="try-bean"', self.page)
-        self.assertNotIn("Try BEAN without login", self.page)
-        self.assertNotIn("browser-local playground", self.page)
-        self.assertIn('href="#start"', self.page)
-        readme = (ROOT / "README.md").read_text(encoding="utf-8")
-        self.assertNotIn("try-bean.html", readme)
-        self.assertIn("## Verify BEAN Core locally", readme)
-
-    def test_learning_claims_are_reproducible_and_scoped(self):
-        # Both original and independently reseeded experiment must be
-        # represented, with comparable cold controls and an immutable receipt.
-        for phrase in ("11.305", "1.355", "12.040", "1.360", "98.5%",
-                       "200-game holdout", "disjoint validation and holdout seeds",
-                       "different training games", "Windows and Linux",
-                       "not evidence of improved learning algorithms",
-                       "SHA-256", "scored"):
-            self.assertIn(phrase.casefold(), self.page.casefold())
-        for href in (
-            "https://github.com/danieloculus0-bot/BEAN/pull/99",
-            "https://github.com/danieloculus0-bot/BEAN/actions/runs/39536702492",
-            "https://github.com/danieloculus0-bot/BEAN/blob/experiment/bean-sponge-core-20261011/experiments/sponge_breakout/evidence/score_ledger.jsonl",
-        ):
-            self.assertIn(href, self.markup.links)
-        self.assertNotIn("no independent training-seed replication yet", self.page.casefold())
-
-    def test_neuroevolution_has_negative_findings_and_sources(self):
-        for phrase in ("44", "45", "46", "9.683", "4.833",
-                       "not a replicated evolutionary advantage",
-                       "two validation cohorts", "standard DQN"):
-            self.assertIn(phrase.casefold(), self.page.casefold())
-        for href in ("https://github.com/danieloculus0-bot/BEAN/pull/107",
-                     "https://github.com/danieloculus0-bot/BEAN/actions/runs/38229337741"):
-            self.assertIn(href, self.markup.links)
-        self.assertIn("not DeepMind pixel Atari", self.page)
-        self.assertIn("This is not a replicated evolutionary advantage", self.page.replace(
-            "<strong>not a replicated evolutionary advantage</strong>",
-            "This is not a replicated evolutionary advantage"))
-
-    def test_readme_milestones_are_scoped_and_linked(self):
-        for name in ("BEAN Watcher", "Local Windows voice",
-                     "Read-only MCP preview", "GitHub evidence bridge"):
-            self.assertIn(name, self.page)
-        for suffix in (
-            "/README.md",
-            "/docs/bean-watcher-contract.md",
-            "/docs/bean-local-voice.md",
-            "/integrations/chatgpt/README.md",
-            "/docs/bean-github-engineering-bridge.md",
-        ):
-            self.assertTrue(any(link.endswith(suffix) for link in self.markup.links),
-                            suffix)
-        self.assertIn("research-only", self.page)
-        self.assertIn("now on Core main through PR #153", self.page)
-        self.assertIn("id=\"judgment\"", self.page)
-        self.assertIn("adequate existing answer", self.page)
-        self.assertIn("four-platform Core regression passed", self.page)
-        self.assertIn("38257867402", self.page)
-
-    def test_aiscend_preview_only_uses_real_fields(self):
-        for value in ("Net liquidation", "Cash / USDC", "Wealth multiple",
-                      "P/L", "GAME SCORE", "0 points", "2X",
-                      "$25.60", "$6.20", "+$0.60", "1.0240"):
-            self.assertIn(value, self.page)
-        self.assertIn("sample account", self.page)
-        self.assertIn("fabricated $100 buy/sell terminal was removed", self.page)
-        self.assertNotIn("mock-bars", self.page)
-        self.assertNotIn("Synthetic asset", self.page)
-        self.assertNotIn("PAPER TRADING LAB", self.page)
-        self.assertNotIn('id="paperBuy"', self.page)
-        self.assertIn("https://github.com/danieloculus0-bot/AIscend/blob/main/templates/index.html",
-                      self.markup.links)
-
-    def test_specialist_battle_does_not_invent_wins(self):
-        for phrase in ("OpenCode", "Goose", "OpenHands", "Continue", "Cline",
-                       "five competitive verdicts", "INCONCLUSIVE",
-                       "agent battle did", "newer Sponge or DQN evolution policy"):
-            self.assertIn(phrase.casefold(), self.page.casefold())
-        self.assertIn("https://github.com/danieloculus0-bot/BEAN/actions/runs/38187443602",
-                      self.markup.links)
-
-    def test_navigation_and_interactive_lab_filter_counts(self):
-        for href in self.markup.links:
+    def test_sections_and_internal_anchors(self):
+        for section in ("main", "what", "capabilities", "how", "real",
+                        "learning", "lab", "questions", "start"):
+            self.assertIn(section, self.dom.ids)
+        for href in self.hrefs:
             if href.startswith("#"):
-                self.assertIn(href[1:], self.markup.ids, href)
-        self.assertEqual(len(self.markup.lab_cards), 8)
-        self.assertIn("8 studies shown", self.page)
-        self.assertIn("data-filter", self.page)
-        self.assertIn("button.addEventListener('click'", self.page)
-        self.assertIn("copy.addEventListener('click'", self.page)
+                self.assertIn(href[1:], self.dom.ids, href)
 
-    def test_no_duplicate_html_or_unsafe_browser_link(self):
-        self.assertEqual(self.page.count("</html>"), 1)
-        self.assertEqual(self.page.count("</body>"), 1)
-        self.assertRegex(self.page, r"</body>\s*</html>\s*\Z")
-        self.assertFalse(self.page.split("</html>", 1)[1].strip())
-        self.assertIn("rel=\"noopener noreferrer\"", self.page)
-        self.assertNotIn("0x" + "1" * 40, self.page)
-        self.assertNotRegex(self.page, r"sk-(?:or|proj)-[A-Za-z0-9_-]{12,}")
+    def test_local_links_resolve_to_real_files(self):
+        for href in self.hrefs:
+            url = urlsplit(href)
+            if url.scheme or url.netloc or not url.path:
+                continue
+            with self.subTest(href=href):
+                self.assertFalse(url.path.startswith("/"))
+                target = (PAGE.parent / url.path).resolve()
+                self.assertTrue(target.is_relative_to(PAGE.parent.resolve()))
+                if target.is_dir():
+                    target = target / "index.html"
+                self.assertTrue(target.is_file(), str(target))
 
-    @unittest.skipUnless(shutil.which("node"), "Node.js needed for script syntax test")
-    def test_home_inline_javascript_parses(self):
-        scripts = re.findall(r"<script[^>]*>([\s\S]*?)</script>", self.page)
-        self.assertEqual(len(scripts), 1)
-        for script in scripts:
-            out = subprocess.run([shutil.which("node"), "--check"],
-                                 input=script, text=True, capture_output=True)
-            self.assertEqual(out.returncode, 0, out.stderr)
+    def test_learning_numbers_are_scoped_and_source_linked(self):
+        for phrase in ("12.04", "1.36", "200-game held-out test",
+                       "not an overall intelligence score",
+                       "not proof it could automatically master"):
+            self.assertIn(phrase.casefold(), self.html.casefold())
+        self.assertTrue(any("sponge_breakout/evidence/score_ledger.jsonl"
+                            in href for href in self.hrefs))
+        self.assertIn("./research-lab.html", self.hrefs)
+        self.assertIn("./portfolio/bean-learning/", self.hrefs)
+
+    def test_research_and_demo_routes_are_preserved(self):
+        for link in ("./for-ai-developers.html", "./portfolio/",
+                     "./aiscend.html", "./axiom.html", "./rubiks-cube.html",
+                     "https://github.com/danieloculus0-bot/BEAN"):
+            self.assertIn(link, self.hrefs)
+        self.assertIn('id="aiscend"', self.html)
+        self.assertIn("does not promise profitable trades", self.html)
+
+    def test_external_new_tab_links_are_safe(self):
+        for link in self.dom.links:
+            if link.get("target", "").lower() == "_blank":
+                self.assertIn("noopener", link.get("rel", "").split())
+                self.assertIn("noreferrer", link.get("rel", "").split())
+
+    def test_no_public_browser_memory_or_fake_wallet(self):
+        for retired in ("try-bean.html", "try-bean-memory.js",
+                        'id="paperBuy"', "PAPER TRADING LAB"):
+            self.assertNotIn(retired, self.html)
+        self.assertNotRegex(self.html, r"\bsk-(?:or|proj)-[A-Za-z0-9_-]{12,}")
+        self.assertNotRegex(self.html, r"\b0x[0-9a-fA-F]{40}\b")
+
+    def test_public_metadata(self):
+        for marker in ('name="description"', 'property="og:title"',
+                       'property="og:image"', 'rel="canonical"'):
+            self.assertIn(marker, self.html)
 
 
 if __name__ == "__main__":

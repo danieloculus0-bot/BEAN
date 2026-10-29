@@ -103,9 +103,10 @@ class PublicAiscendDemoTests(unittest.TestCase):
         self.assertNotIn("Authorization: Bearer", self.html)
 
     def test_main_site_opens_demo_in_new_tab(self):
-        self.assertIn('href="./aiscend.html" target="_blank" '
-                      'rel="noopener noreferrer"', self.home)
-        self.assertIn("Explore the public AIscend demo", self.home)
+        # Internal demo navigation is now an ordinary same-tab link.
+        self.assertIn('href="./aiscend.html"', self.home)
+        self.assertIn('id="aiscend"', self.home)
+        self.assertNotIn('href="./aiscend.html" target="_blank"', self.home)
 
     def test_identity_and_account_identifiers_are_not_published(self):
         for pattern in (

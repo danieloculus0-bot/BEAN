@@ -56,7 +56,7 @@ def test_workshop_and_bean_home_link_working_suite():
     assert 'n===19?' in workshop
     assert 'Showing all 19 projects' in workshop
     assert "data-category=\"platform\" data-search=\"ez office" in workshop
-    assert 'href="./portfolio/ez-office/"' in homepage
+    assert 'href="./portfolio/"' in homepage  # Suite linked from Workshop
     readme = (ROOT / "README.md").read_text(encoding="utf-8")
     assert "https://danieloculus0-bot.github.io/BEAN/portfolio/ez-office/" in readme
     assert "DOCX/XLSX/PPTX" in readme
