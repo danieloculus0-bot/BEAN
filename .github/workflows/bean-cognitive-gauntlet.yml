@@ -211,6 +211,10 @@ jobs:
         run: python -m experiments.cognitive_gauntlet.rubiks3_temperature --test-seed-start 13000 --output cognitive-gauntlet-results/rubiks3-temperature-13000.json
       - name: Independent hotter-colder holdout 14000
         run: python -m experiments.cognitive_gauntlet.rubiks3_temperature --test-seed-start 14000 --output cognitive-gauntlet-results/rubiks3-temperature-14000.json
+      - name: Corrected potential-Q interpretation fresh holdout 16000
+        run: python -m experiments.cognitive_gauntlet.rubiks3_temperature --controller unshaped --test-seed-start 16000 --output cognitive-gauntlet-results/rubiks3-temperature-unshaped-16000.json
+      - name: Corrected potential-Q interpretation independent holdout 17000
+        run: python -m experiments.cognitive_gauntlet.rubiks3_temperature --controller unshaped --test-seed-start 17000 --output cognitive-gauntlet-results/rubiks3-temperature-unshaped-17000.json
       - name: Archive all temperature experiments including failed cases
         if: always()
         uses: actions/upload-artifact@v4
