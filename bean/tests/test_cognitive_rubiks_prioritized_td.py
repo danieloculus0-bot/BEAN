@@ -102,6 +102,16 @@ class PrioritizedCubeTDTests(unittest.TestCase):
                                 apply(row['state'], row['candidate_moves']) == SOLVED
                                 for row in report['cases']))
 
+    def test_fractional_rate_experiment_uses_matched_td_budgets(self):
+        report = tiny(alpha=.25)
+        self.assertEqual(report['td_alpha'], .25)
+        self.assertEqual(report['baseline_td_steps'], report['candidate_td_steps'])
+        self.assertEqual(report['extra_td_updates_per_arm'], 100)
+        self.assertEqual(report['eligible_cases'] + report['excluded_count'], 6)
+        self.assertTrue(all(
+            apply(row['state'], row['candidate_moves']) == SOLVED
+            for row in report['cases'] if row['candidate_solved']))
+
     def test_training_and_holdout_rotation_classes_disjoint(self):
         report = tiny()
         from experiments.cognitive_gauntlet.rubiks3_sponge import collect_states
@@ -148,6 +158,10 @@ class PrioritizedCubeTDTests(unittest.TestCase):
                 learner.close()
         with self.assertRaises(ValueError):
             tiny(test_seeds=(0, 7000))
+        with self.assertRaises(ValueError):
+            tiny(alpha=0)
+        with self.assertRaises(ValueError):
+            tiny(alpha=float('nan'))
 
 
 if __name__ == '__main__':
