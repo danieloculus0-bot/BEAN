@@ -135,6 +135,10 @@ jobs:
         run: python -m unittest bean.tests.test_cognitive_rubiks_curriculum -v
       - name: Compare frozen policies after matched-update feedback training
         run: python -m experiments.cognitive_gauntlet.rubiks3_curriculum --output cognitive-gauntlet-results/rubiks3-curriculum.json
+      - name: Independent BEAN TD curriculum holdout cohort 2000
+        run: python -m experiments.cognitive_gauntlet.rubiks3_curriculum --test-seed-start 2000 --output cognitive-gauntlet-results/rubiks3-curriculum-2000.json
+      - name: Independent BEAN TD curriculum holdout cohort 3000
+        run: python -m experiments.cognitive_gauntlet.rubiks3_curriculum --test-seed-start 3000 --output cognitive-gauntlet-results/rubiks3-curriculum-3000.json
       - name: Retain all BEAN-native cube receipts, including failures
         if: always()
         uses: actions/upload-artifact@v4

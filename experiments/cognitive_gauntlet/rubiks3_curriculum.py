@@ -189,8 +189,14 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--output',
                         default='cognitive-gauntlet-results/rubiks3-curriculum.json')
+    parser.add_argument('--test-seed-start', type=int, default=1000)
+    parser.add_argument('--test-count', type=int, default=10)
     args = parser.parse_args()
-    report = experiment(output=args.output)
+    if args.test_count < 1:
+        parser.error('test-count must be positive')
+    report = experiment(test_seeds=range(args.test_seed_start,
+                                         args.test_seed_start + args.test_count),
+                        output=args.output)
     print(json.dumps({key: report[key] for key in
                       ('eligible_cases', 'excluded_count', 'chosen_exploration_lengths',
                        'baseline_solved', 'candidate_solved', 'candidate_better',
