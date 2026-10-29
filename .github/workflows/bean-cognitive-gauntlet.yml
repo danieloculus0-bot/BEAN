@@ -13,6 +13,7 @@ on:
       - 'bean/tests/test_cognitive_decision_audit.py'
       - 'bean/tests/test_cognitive_wisdom.py'
       - 'bean/tests/test_cognitive_rubiks3.py'
+      - 'bean/tests/test_cognitive_rubiks_memory.py'
       - '.github/workflows/bean-cognitive-gauntlet.yml'
   pull_request:
     branches: [main]
@@ -27,6 +28,7 @@ on:
       - 'bean/tests/test_cognitive_decision_audit.py'
       - 'bean/tests/test_cognitive_wisdom.py'
       - 'bean/tests/test_cognitive_rubiks3.py'
+      - 'bean/tests/test_cognitive_rubiks_memory.py'
       - '.github/workflows/bean-cognitive-gauntlet.yml'
   workflow_dispatch:
 permissions:
@@ -53,6 +55,10 @@ jobs:
         run: python -m unittest bean.tests.test_cognitive_rubiks3 -v
       - name: Replay bounded 3x3 cube cases with failure receipts
         run: python -m experiments.cognitive_gauntlet.rubiks3 --seeds 3
+      - name: Verify cube route memory and unseen-state transfer
+        run: python -m unittest bean.tests.test_cognitive_rubiks_memory -v
+      - name: Replay disjoint seeded cube learning and preserve negative cases
+        run: python -m experiments.cognitive_gauntlet.rubiks3_memory
       - name: Execute exact paired evidence comparisons
         run: python -m experiments.cognitive_gauntlet.runner
       - name: Tune on training seeds and evaluate held-out adaptive predictions
