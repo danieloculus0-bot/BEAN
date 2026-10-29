@@ -74,6 +74,10 @@ def prioritized_replay(learner, edges, updates, *, seed=31, tolerance=1e-12):
         learner.learn(state, action, 1.0 if nxt == SOLVED else 0.0,
                       nxt, nxt == SOLVED)
         useful += 1
+        # For fractional learning rates a single backup leaves a nonzero
+        # Bellman residual. Requeue the updated edge until it converges or
+        # the matched update budget is exhausted. Alpha=1 stays unchanged.
+        schedule(i)
         new_best = max(learner.q[learner.key(state)])
         if abs(new_best - old_best) > tolerance:
             for parent in parents.get(state, ()):
