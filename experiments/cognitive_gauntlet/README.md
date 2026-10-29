@@ -129,3 +129,48 @@ Do not retune the threshold against these results and then continue to
 call the same cases independent holdout evidence. The next experiment
 should investigate calibration and false-positive volatility switches on
 newly preregistered conditions.
+
+
+## BEAN-native SpongeTD 3x3 policy, independent from reference solver
+
+`rubiks3_sponge.py` reuses the existing **BEAN Core SpongeTD Q-learner**
+(`bean/optimization/sponge_td.py`), 18 legal half-turn-metric actions and
+`rubiks3.py` legal facelet transitions. It is not a wrapper around cubejs,
+the bounded search solver, or the inverse scramble recipe. During training,
+self-play generates legal states; the learner explores legal transitions
+between observed states and receives a reward **only for reaching SOLVED**.
+The policy chooses moves using its frozen learned action-values. On an unseen
+state it may use one legal transition to consult learned successor values,
+but it does not run a goal search. It stops on absent learned value or a
+cycle, not an arbitrary solution-move ceiling. The reference search is called
+**after** policy evaluation solely to provide an unchanged comparator.
+
+Reproduce the independent tests and exact case-level receipts:
+
+```bash
+python -m unittest bean.tests.test_cognitive_rubiks_sponge -v
+python -m experiments.cognitive_gauntlet.rubiks3_sponge
+```
+
+The command writes `cognitive-gauntlet-results/rubiks3-sponge-td.json`
+with training episodes, seeds, complete move sequences, holdout exclusions,
+all successes and failures, independent solved-state replays, source hash,
+Q-table SHA-256 and conventional reference comparisons. It also saves the
+scored compressed SpongeTD policy in an append-only SQLite journal, which
+is reopened in the tests to verify that the same frozen policy reproduces
+the solutions. The GitHub Actions matrix uploads both files as artifacts.
+
+**Local Linux Python replay, before exact-head CI**: 250 self-play training
+seeds (0..249), 1,138 observed states, 2,752 observed legal transitions,
+33,024 TD updates; 50 predeclared heldout seed/length combinations
+(seeds 1000..1009, lengths 3, 4, 5, 6, 20). Two states were excluded by
+the preregistered train-overlap / duplicate-state rule, leaving **48
+independent unseen starting states**. The BEAN-native frozen policy solved
+**7/48**, all independently replayed, and matched the proven optimal HTM
+length on those seven. By scramble length: 3 turns 5/8, 4 turns 2/10,
+5 turns 0/10, 6 turns 0/10, 20 turns **0/10**. The untrained policy solved
+0/48; unchanged conventional bounded search (depth 6) solved 38/48.
+The learned policy therefore does **not** solve arbitrary full-length
+3x3 challenges, and this is not a BEAN Core production integration or
+evidence of AGI. Source, case-level failures and training/holdout boundaries
+are preserved rather than silently replacing failures with search answers.
