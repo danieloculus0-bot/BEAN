@@ -1,0 +1,48 @@
+name: BEAN native cube policy regression
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'experiments/cognitive_gauntlet/rubiks3.py'
+      - 'experiments/cognitive_gauntlet/rubiks3_sponge.py'
+      - 'bean/tests/test_cognitive_rubiks3.py'
+      - 'bean/tests/test_cognitive_rubiks_sponge.py'
+      - '.github/workflows/bean-cube-td.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'experiments/cognitive_gauntlet/rubiks3.py'
+      - 'experiments/cognitive_gauntlet/rubiks3_sponge.py'
+      - 'bean/tests/test_cognitive_rubiks3.py'
+      - 'bean/tests/test_cognitive_rubiks_sponge.py'
+      - '.github/workflows/bean-cube-td.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  cube-policy:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        python: ['3.11', '3.12']
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Independent cube geometry, TD learning, heldout and restart tests
+        run: python -m unittest bean.tests.test_cognitive_rubiks3 bean.tests.test_cognitive_rubiks_sponge -v
+      - name: Run frozen BEAN-native policy and preserve all heldout failures
+        run: python -m experiments.cognitive_gauntlet.rubiks3_sponge
+      - name: Upload complete case receipts and scored SpongeTD journal
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bean-cube-td-${{ matrix.os }}-py${{ matrix.python }}
+          path: cognitive-gauntlet-results/
+          if-no-files-found: warn
