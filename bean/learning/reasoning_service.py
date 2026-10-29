@@ -110,7 +110,7 @@ class NativeReasoningService:
         The new decision is separately journaled; the parent decision and
         negative observations remain intact. Host rewards are not verified.
         """
-        from .active_hypothesis import _vector
+        from .active_hypothesis import _vector, _sensor_fingerprint
         import math
 
         if self.closed:
@@ -135,8 +135,9 @@ class NativeReasoningService:
 
         # Treat every previously sampled probe in the ancestry as used
         # evidence: repeating it cannot count as fresh learning.
-        used_probes, seen_receipts = set(), set()
+        used_probes, used_sensor_states, seen_receipts = set(), set(), set()
         complete_observation_history = True
+        complete_sensor_history = True
         cursor = parent_receipt_id
         while cursor:
             if cursor in seen_receipts or cursor not in by_receipt:
@@ -150,6 +151,25 @@ class NativeReasoningService:
                 complete_observation_history = False
                 observed = [row["probe_id"] for row in previous["records"]]
             used_probes.update(observed)
+            fingerprints = previous.get("observed_sensor_fingerprints")
+            if (isinstance(fingerprints, dict) and
+                    set(fingerprints) == set(observed) and
+                    all(isinstance(v, str) and len(v) == 64
+                        and all(c in "0123456789abcdef" for c in v)
+                        for v in fingerprints.values())):
+                used_sensor_states.update(fingerprints.values())
+            else:
+                # Old immutable receipts have only rewarded observations.
+                # Compare everything actually retained, but never claim
+                # complete sensor independence from those legacy ancestors.
+                complete_sensor_history = False
+                used_sensor_states.update(
+                    _sensor_fingerprint(row["sensors"])
+                    for row in previous["records"])
+                if previous.get("validation"):
+                    used_sensor_states.update(
+                        _sensor_fingerprint(row["sensors"])
+                        for row in previous["validation"]["records"])
             cursor = previous.get("parent_receipt_id")
         if (not isinstance(probe_ids, (tuple, list)) or
                 any(not isinstance(pid, str) for pid in probe_ids) or
@@ -162,11 +182,24 @@ class NativeReasoningService:
 
         parent = by_receipt[parent_receipt_id]["decision"]
         dimensions = len(parent["records"][0]["sensors"])
-        fresh = discover(probe_ids=probe_ids, observe=observe, reward=reward,
+        current_states = set()
+
+        def observe_fresh(pid):
+            # discover() observes its entire development/validation pool
+            # before calling reward(). Reject relabelled observations here,
+            # before spending any host reward evaluations.
+            sensors = _vector(observe(pid), dimensions=dimensions)
+            fingerprint = _sensor_fingerprint(sensors)
+            if fingerprint in used_sensor_states:
+                raise ValueError("Revision requires unseen sensor states")
+            if fingerprint in current_states:
+                raise ValueError("Revision requires distinct fresh sensor states")
+            current_states.add(fingerprint)
+            return sensors
+
+        fresh = discover(probe_ids=probe_ids, observe=observe_fresh, reward=reward,
                          budget=budget, method=method, seed=seed,
                          validation_probe_ids=validation_probe_ids)
-        if any(len(row["sensors"]) != dimensions for row in fresh["records"]):
-            raise ValueError("Sensor layout changed across revisions")
 
         prior = parent.get("selected_rule")
         prior_regret = None
@@ -242,6 +275,10 @@ class NativeReasoningService:
             "ancestry_observation_coverage": (
                 "all_observed_probe_ids" if complete_observation_history
                 else "legacy_rewarded_probe_ids_only"),
+            "ancestry_sensor_coverage": (
+                "all_observed_sensor_states" if complete_sensor_history
+                else "legacy_rewarded_sensor_states_only"),
+            "sensor_state_reuse_rejected_before_rewards": True,
             "independent_validation": False,
             "selected_rule": selected,
             "status": "provisional_rule" if selected is not None else "abstain",
