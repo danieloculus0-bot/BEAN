@@ -11,6 +11,7 @@ on:
       - 'bean/tests/test_cognitive_sensor.py'
       - 'bean/tests/test_cognitive_schrodinger.py'
       - 'bean/tests/test_cognitive_decision_audit.py'
+      - 'bean/tests/test_cognitive_rubiks3.py'
       - '.github/workflows/bean-cognitive-gauntlet.yml'
   pull_request:
     branches: [main]
@@ -23,6 +24,7 @@ on:
       - 'bean/tests/test_cognitive_sensor.py'
       - 'bean/tests/test_cognitive_schrodinger.py'
       - 'bean/tests/test_cognitive_decision_audit.py'
+      - 'bean/tests/test_cognitive_rubiks3.py'
       - '.github/workflows/bean-cognitive-gauntlet.yml'
   workflow_dispatch:
 permissions:
@@ -45,6 +47,10 @@ jobs:
           python-version: ${{ matrix.python }}
       - name: Verify test assumptions and complete receipts
         run: python -m unittest bean.tests.test_cognitive_gauntlet bean.tests.test_cognitive_adaptive bean.tests.test_cognitive_stress bean.tests.test_cognitive_pattern bean.tests.test_cognitive_sensor bean.tests.test_cognitive_schrodinger bean.tests.test_cognitive_decision_audit -v
+      - name: Check legal cube moves, optimality and bounded failures
+        run: python -m unittest bean.tests.test_cognitive_rubiks3 -v
+      - name: Replay bounded 3x3 cube cases with failure receipts
+        run: python -m experiments.cognitive_gauntlet.rubiks3 --seeds 3
       - name: Execute exact paired evidence comparisons
         run: python -m experiments.cognitive_gauntlet.runner
       - name: Tune on training seeds and evaluate held-out adaptive predictions
