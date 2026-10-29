@@ -11,6 +11,7 @@ on:
       - 'bean/tests/test_cognitive_sensor.py'
       - 'bean/tests/test_cognitive_schrodinger.py'
       - 'bean/tests/test_cognitive_decision_audit.py'
+      - 'bean/tests/test_cognitive_wisdom.py'
       - 'bean/tests/test_cognitive_rubiks3.py'
       - '.github/workflows/bean-cognitive-gauntlet.yml'
   pull_request:
@@ -24,6 +25,7 @@ on:
       - 'bean/tests/test_cognitive_sensor.py'
       - 'bean/tests/test_cognitive_schrodinger.py'
       - 'bean/tests/test_cognitive_decision_audit.py'
+      - 'bean/tests/test_cognitive_wisdom.py'
       - 'bean/tests/test_cognitive_rubiks3.py'
       - '.github/workflows/bean-cognitive-gauntlet.yml'
   workflow_dispatch:
@@ -46,7 +48,7 @@ jobs:
         with:
           python-version: ${{ matrix.python }}
       - name: Verify test assumptions and complete receipts
-        run: python -m unittest bean.tests.test_cognitive_gauntlet bean.tests.test_cognitive_adaptive bean.tests.test_cognitive_stress bean.tests.test_cognitive_pattern bean.tests.test_cognitive_sensor bean.tests.test_cognitive_schrodinger bean.tests.test_cognitive_decision_audit -v
+        run: python -m unittest bean.tests.test_cognitive_gauntlet bean.tests.test_cognitive_adaptive bean.tests.test_cognitive_stress bean.tests.test_cognitive_pattern bean.tests.test_cognitive_sensor bean.tests.test_cognitive_schrodinger bean.tests.test_cognitive_decision_audit bean.tests.test_cognitive_wisdom -v
       - name: Check legal cube moves, optimality and bounded failures
         run: python -m unittest bean.tests.test_cognitive_rubiks3 -v
       - name: Replay bounded 3x3 cube cases with failure receipts
@@ -63,6 +65,8 @@ jobs:
         run: python -m experiments.cognitive_gauntlet.sensor_benchmark
       - name: Schrodinger's Logic chaos-only parallel-state versus unchanged controls
         run: python -m experiments.cognitive_gauntlet.schrodinger_benchmark
+      - name: Measure five cognitive dimensions without collapsing to intelligence score
+        run: python -m experiments.cognitive_gauntlet.wisdom_benchmark
       - name: Retain full positive and negative receipts
         if: always()
         uses: actions/upload-artifact@v4
