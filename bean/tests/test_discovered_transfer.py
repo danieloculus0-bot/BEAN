@@ -218,6 +218,89 @@ class DiscoveredTransferTests(unittest.TestCase):
         self.assertEqual(len(decisions), 1)
         self.assertEqual(decisions[0]["reward_calls"], 48)
 
+    def test_failed_development_reward_abstains_and_persists_partial_evidence(self):
+        attempts = []
+        def failing_reward(case, action):
+            attempts.append((case, action))
+            if len(attempts) == 4:
+                raise RuntimeError("private host diagnostics must not be retained")
+            return self.world.feedback(case, action)
+        result = self.transfer(
+            domain="target interrupted development",
+            reward=failing_reward,
+            validation=[str(2000+i) for i in range(12)])
+        self.assertEqual(result["comparison_result"], "host_reward_failed_abstain")
+        self.assertIsNone(result["selected"])
+        self.assertFalse(result["transfer_accepted"])
+        self.assertEqual(result["reward_calls"], 3)
+        self.assertEqual(result["reward_attempts"], 4)
+        self.assertEqual(result["number_of_pairs"], 1)
+        self.assertEqual(len(result["completed_reward_observations"]), 3)
+        self.assertEqual(result["host_reward_failure"]["stage"], "development")
+        self.assertEqual(result["host_reward_failure"]["error_class"], "RuntimeError")
+        self.assertEqual(result["validation_failure"], "validation_not_run")
+        self.assertEqual(result["target_validation_probe_ids"],
+                         [str(2000+i) for i in range(12)])
+        self.assertEqual(self.core.use_tested_transfer(
+            transfer_receipt_id=result["receipt_id"],
+            sensors=self.target_sensors("9000"))["status"], "abstain")
+        self.assertNotIn("private host diagnostics", str(result))
+        self.core.close()
+        recovered = NativeReasoningService(self.path)
+        try:
+            records = [e["data"]["decision"]
+                       for e in recovered.bank.journal.events()
+                       if e["kind"] == "trial" and e["data"].get("experiment")
+                       == "bean.native.discovered_transfer.v1"]
+            self.assertEqual(len(records), 1)
+            self.assertEqual(records[0]["reward_calls"], 3)
+            self.assertEqual(records[0]["host_reward_failure"]["stage"],
+                             "development")
+            self.assertNotIn("private host diagnostics", str(records))
+        finally:
+            recovered.close()
+
+    def test_failed_validation_reward_keeps_development_and_abstains(self):
+        attempts = []
+        def failing_reward(case, action):
+            attempts.append((case, action))
+            if len(attempts) == 27:
+                raise OSError("host went offline")
+            return self.world.feedback(case, action)
+        result = self.transfer(
+            domain="target interrupted validation",
+            reward=failing_reward,
+            validation=[str(2000+i) for i in range(12)])
+        self.assertEqual(result["development_selected"], "source_rule")
+        self.assertIsNone(result["selected"])
+        self.assertEqual(result["comparison_result"], "host_reward_failed_abstain")
+        self.assertEqual(result["host_reward_failure"]["stage"], "validation")
+        self.assertEqual(result["host_reward_failure"]["error_class"], "OSError")
+        self.assertEqual(result["validation_failure"], "host_reward_failed")
+        self.assertEqual(result["number_of_pairs"], 12)
+        self.assertEqual(result["target_validation"]["number_of_pairs"], 1)
+        self.assertEqual(result["reward_calls"], 26)
+        self.assertEqual(result["reward_attempts"], 27)
+        self.assertEqual(len(result["completed_reward_observations"]), 26)
+        self.assertEqual(self.core.use_tested_transfer(
+            transfer_receipt_id=result["receipt_id"],
+            sensors=self.target_sensors("9000"))["status"], "abstain")
+
+    def test_nonfinite_host_reward_cannot_earn_transfer_credit(self):
+        result = self.transfer(
+            domain="target invalid reward",
+            reward=lambda *_: float("nan"))
+        self.assertEqual(result["comparison_result"], "host_reward_failed_abstain")
+        self.assertEqual(result["host_reward_failure"]["error_class"],
+                         "InvalidReward")
+        self.assertEqual(result["reward_attempts"], 1)
+        self.assertEqual(result["reward_calls"], 0)
+        self.assertEqual(result["completed_reward_observations"], [])
+        self.assertIsNone(result["selected"])
+        self.assertEqual(self.core.use_tested_transfer(
+            transfer_receipt_id=result["receipt_id"],
+            sensors=self.target_sensors("9000"))["status"], "abstain")
+
     def test_negative_transfer_rejects_old_rule_for_no_action_baseline(self):
         outcome = self.transfer(
             domain="target safety stop",
