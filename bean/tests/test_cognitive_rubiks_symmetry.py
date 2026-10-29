@@ -61,6 +61,15 @@ class SymmetryCubeTests(unittest.TestCase):
             self.assertEqual(len(a['cases']) + len(a['excluded']), 16)
             self.assertTrue((Path(tmp)/'results.json').is_file())
             self.assertTrue(any(c['scramble_length'] == 20 for c in a['cases']))
+            # Independent holdout units are rotation classes, not just strings.
+            classes = [canonical(c['state'])[0] for c in a['cases']]
+            self.assertEqual(len(classes), len(set(classes)))
+            self.assertEqual(classes, [c['canonical_state'] for c in a['cases']])
+            self.assertTrue(all(c['canonical_state'] == canonical(c['state'])[0]
+                                for c in a['excluded']))
+            self.assertTrue(all(c['reason'] in ('training_symmetry_overlap',
+                                               'duplicate_holdout_symmetry_class')
+                                for c in a['excluded']))
             for c in a['cases']:
                 self.assertEqual(c['baseline_solved'], apply(c['state'], c['baseline_moves']) == SOLVED)
                 self.assertEqual(c['candidate_solved'], apply(c['state'], c['candidate_moves']) == SOLVED)
