@@ -1,0 +1,40 @@
+name: BEAN public Rubik cube 3x3 contract
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'docs/rubiks-cube.html'
+      - 'docs/rubiks-cube.js'
+      - 'docs/rubiks-cube-worker.js'
+      - 'docs/vendor/cubejs/**'
+      - 'bean/tests/rubiks_browser.test.cjs'
+      - '.github/workflows/bean-rubiks-browser.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'docs/rubiks-cube.html'
+      - 'docs/rubiks-cube.js'
+      - 'docs/rubiks-cube-worker.js'
+      - 'docs/vendor/cubejs/**'
+      - 'bean/tests/rubiks_browser.test.cjs'
+      - '.github/workflows/bean-rubiks-browser.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  independent-solver-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check standalone browser code syntax
+        run: |
+          node --check docs/rubiks-cube.js
+          node --check docs/rubiks-cube-worker.js
+      - name: Verify independent cube geometry, 40-turn scrambles and shorter route
+        run: node bean/tests/rubiks_browser.test.cjs
