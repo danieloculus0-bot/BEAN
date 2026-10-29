@@ -42,7 +42,7 @@ the checkout revision on CI; local runs are marked `local_unverified`.
 ## Reproduce
 
 ```bash
-python -m unittest bean.tests.test_cognitive_rubiks3 bean.tests.test_cognitive_rubiks_sponge bean.tests.test_cognitive_rubiks_symmetry -v
+python -m unittest bean.tests.test_cognitive_rubiks3 bean.tests.test_cognitive_rubiks_sponge bean.tests.test_cognitive_rubiks_symmetry bean.tests.test_cognitive_rubiks_legality -v
 python -m experiments.cognitive_gauntlet.rubiks3_symmetry --output cognitive-gauntlet-results/rubiks3-symmetry-1000.json --test-seed-start 1000
 python -m experiments.cognitive_gauntlet.rubiks3_symmetry --output cognitive-gauntlet-results/rubiks3-symmetry-2000.json --test-seed-start 2000
 python -m experiments.cognitive_gauntlet.rubiks3_symmetry --output cognitive-gauntlet-results/rubiks3-symmetry-3000.json --test-seed-start 3000
@@ -51,3 +51,32 @@ python -m experiments.cognitive_gauntlet.rubiks3_symmetry --output cognitive-gau
 No external AI runtime was compared. This is transfer of learned values through
 exact cube symmetry, not proof of general reasoning, and the model is not wired
 into BEAN Core or the hosted BEAN connector.
+
+## Physical-state validity integrated from Gauntlet (2026-10-29)
+
+The previously CI-verified Gauntlet physical-state validator has been promoted
+to isolated mainline cube code. `rubiks3_legality.py` checks fixed centers,
+distinct corner/edge cubies, corner twist modulo three, edge flip modulo two,
+and matching permutation parity. Both `policy_solve` and
+`policy_solve_symmetric` now reject impossible facelet inputs before learned
+inference. This is **task-input integrity**, not a new learning strategy.
+
+The exact experimental source commit was
+[`c2f95fe7890e74f74884e4a8493bb5b13d046a48`](https://github.com/danieloculus0-bot/BEAN/commit/c2f95fe7890e74f74884e4a8493bb5b13d046a48).
+[Gauntlet CI run 40834834408](https://github.com/danieloculus0-bot/BEAN/actions/runs/40834834408)
+passed **8/8 jobs** on Linux/Windows, Python 3.11/3.12. Eight case-level
+artifacts were retained, including failure receipts. The promoted validator,
+two policy files, and eight legality unit tests match the tested Gauntlet
+blobs exactly. The dedicated mainline cube workflow now runs those tests and
+the original three frozen symmetry cohorts.
+
+The tests include 40 independent 40-turn legal scrambles across 24 global
+rotations (960 legal-state checks), impossible single edge flips, single
+corner twists, cubie identity defects, center swaps, odd swaps, malformed
+inputs and both policy entry points. These checks do not establish new
+out-of-distribution solving ability or change the frozen benchmark result:
+**32/117 versus 6/117**, with **0/30** twenty-turn successes. No hardware,
+financial, or production cognition runtime is activated. Mainline exact-head
+CI must be verified separately from the experimental CI before claiming it
+passed. Original Gauntlet branch, case receipts and historical failures
+remain unchanged.
