@@ -274,6 +274,11 @@ class ActiveHypothesisTests(unittest.TestCase):
             self.assertGreater(inconsistent["prior_regret_per_probe"],0.12)
             self.assertAlmostEqual(inconsistent["prior_validation_regret"],0)
             self.assertFalse(inconsistent["validation"]["passed"])
+            self.assertEqual(inconsistent["validation"]["selected_policy_origin"],
+                             "parent")
+            self.assertAlmostEqual(
+                inconsistent["validation"]["selected_policy_mean_regret"], 0)
+            self.assertTrue(inconsistent["validation"]["selected_policy_passed"])
             with self.assertRaisesRegex(ValueError,"unseen validation"):
                 core.revise_discovered_analogy(
                     parent_receipt_id=inconsistent["receipt_id"],
@@ -297,6 +302,48 @@ class ActiveHypothesisTests(unittest.TestCase):
                     original["selected_rule"])
             finally:
                 recovered.close()
+
+    def test_validated_revision_reports_actual_new_policy_quality(self):
+        with tempfile.TemporaryDirectory() as d:
+            world = World(120, "channel")
+            core = NativeReasoningService(Path(d) / "new-policy.sqlite")
+            try:
+                parent = core.discover_analogy(
+                    domain="control", task_ref="initial",
+                    source_ref="fixture:initial",
+                    probe_ids=[str(100+i) for i in range(40)],
+                    observe=world.observe, reward=world.feedback, budget=12)
+                self.assertEqual(parent["status"], "provisional_rule")
+                revised = core.revise_discovered_analogy(
+                    parent_receipt_id=parent["receipt_id"], domain="control",
+                    task_ref="changed", source_ref="fixture:changed",
+                    probe_ids=[str(200+i) for i in range(40)],
+                    validation_probe_ids=[str(5000+i) for i in range(12)],
+                    observe=world.observe,
+                    reward=lambda case, action: world.feedback(case, -action),
+                    budget=12)
+                self.assertEqual(revised["revision_decision"],
+                                 "updated_from_fresh_feedback")
+                self.assertEqual(revised["validation"]["selected_policy_origin"],
+                                 "candidate")
+                self.assertTrue(revised["validation"]["passed"])
+                self.assertTrue(revised["validation"]["selected_policy_passed"])
+                self.assertAlmostEqual(
+                    revised["validation"]["selected_policy_mean_regret"], 0)
+                self.assertGreater(revised["prior_validation_regret"], 0.12)
+                self.assertEqual(revised["observed_probe_ids"][-12:],
+                                 [str(5000+i) for i in range(12)])
+                unseen = [str(9000+i) for i in range(30)]
+                before = sum(world.feedback(
+                    case, -act(parent["selected_rule"], world.observe(case)))
+                    for case in unseen)
+                after = sum(world.feedback(
+                    case, -act(revised["selected_rule"], world.observe(case)))
+                    for case in unseen)
+                self.assertEqual(before, 0)
+                self.assertEqual(after, 30)
+            finally:
+                core.close()
 
     def test_blind_suite_is_repeatable_and_discloses_misses(self):
         r=benchmark(worlds_per_family=3,budgets=(3,6))
