@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#050607">
+<meta name="description" content="An interactive, reproducible 3x3 Rubik's Cube search challenge in BEAN's Cognitive Gauntlet.">
+<title>Rubik's Cube Challenge | BEAN Cognitive Gauntlet</title>
+<link rel="icon" type="image/webp" href="./bean-official.webp">
+<style>
+:root{color-scheme:dark;--bg:#050607;--panel:#131619;--edge:#34383c;--green:#79de4b;--text:#edf2ef;--muted:#b1bab6}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 50% 0,#19301c,#050607 55%);color:var(--text);font:16px/1.55 system-ui,sans-serif}
+a{color:var(--green)}button,input,select{font:inherit}button{cursor:pointer}button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--green);outline-offset:3px}
+nav,.wrap{max-width:1140px;margin:auto;padding:0 22px}nav{display:flex;gap:24px;align-items:center;padding-top:20px;padding-bottom:20px}nav a{text-decoration:none;font-weight:750}nav .home{margin-right:auto;color:white;font-size:1.25rem}
+h1{font-size:clamp(2.3rem,5vw,4.4rem);line-height:1.08;letter-spacing:-.05em;margin:20px 0}h1 em{color:var(--green);font-style:normal}h2{font-size:1.2rem}
+.lead{max-width:750px;color:var(--muted);font-size:1.13rem}.eyebrow{color:var(--green);text-transform:uppercase;letter-spacing:.12em;font-size:.75rem;font-weight:900}
+main{padding-bottom:45px}.grid{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(285px,.9fr);gap:22px;margin-top:35px}
+.panel{background:var(--panel);border:1px solid var(--edge);border-radius:19px;padding:23px;min-width:0}
+.controls{display:flex;flex-wrap:wrap;gap:12px;align-items:end;margin:16px 0}label{display:flex;flex-direction:column;gap:5px;color:var(--muted);font-size:.83rem}input,select{border:1px solid #555c5a;background:#090c0e;color:white;border-radius:9px;padding:10px 12px;min-width:90px}
+button{background:#252d29;color:var(--text);border:1px solid #5c6b61;border-radius:10px;padding:10px 13px;font-weight:750}button:hover{border-color:var(--green)}button:disabled{opacity:.6;cursor:wait}.primary{background:var(--green);border-color:var(--green);color:#102014}
+#cube-net{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));grid-template-rows:repeat(3,auto);gap:9px;max-width:510px;margin:16px auto 23px}
+.face{min-width:0}.face-U{grid-column:2;grid-row:1}.face-L{grid-column:1;grid-row:2}.face-F{grid-column:2;grid-row:2}.face-R{grid-column:3;grid-row:2}.face-B{grid-column:4;grid-row:2}.face-D{grid-column:2;grid-row:3}
+.face-name{color:#cad5c9;text-align:center;font-weight:800;font-size:.7rem}.face-cells{display:grid;grid-template-columns:repeat(3,1fr);gap:3px;background:#050607;padding:3px;border-radius:5px;aspect-ratio:1}
+.tile{border-radius:3px;min-width:0;border:1px solid #151616}
+#message{min-height:70px;border-left:3px solid var(--green);padding:11px 15px;background:#0c100e;color:#e8f6e7;border-radius:0 9px 9px 0}
+#summary{color:var(--muted);overflow-wrap:anywhere;min-height:25px}.moves{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px}.move{padding:8px 0}
+.small{font-size:.86rem;color:var(--muted)}.stat{font-size:1.7rem;color:var(--green);font-weight:850}ol{padding-left:22px;color:var(--muted);overflow-wrap:anywhere}
+footer{border-top:1px solid var(--edge);padding:25px 0;color:var(--muted);font-size:.85rem}
+@media(max-width:820px){.grid{grid-template-columns:1fr}.panel{padding:17px}nav{flex-wrap:wrap}#cube-net{max-width:460px}}
+@media(max-width:460px){.controls{gap:8px}.controls button{flex:1 1 120px}h1{font-size:2.4rem}}
+</style>
+</head>
+<body>
+<nav aria-label="Navigation"><a class="home" href="./">BEAN</a><a href="./">Home</a><a href="https://github.com/danieloculus0-bot/BEAN/pull/199">Gauntlet PR #199</a></nav>
+<main class="wrap">
+<span class="eyebrow">The Cognitive Gauntlet · 3×3 puzzle lab</span>
+<h1>Forget speed.<br><em>Find the shortest solution.</em></h1>
+<p class="lead">Scramble a real 3×3 cube state and challenge a rules-only search to discover a solution. We count legal face turns, not seconds. The solver gets the scrambled stickers, <strong>not the scramble instructions</strong>.</p>
+<div class="grid">
+<section class="panel" aria-label="Interactive cube">
+<h2>The cube <span class="small" id="current-state">Solved</span></h2>
+<div id="cube-net" role="img" aria-label="Cube net with U, L, F, R, B, and D faces arranged in unfolded layout"></div>
+<div class="controls">
+<label>Seed<input id="seed" type="number" min="0" max="4294967295" step="1" value="0"></label>
+<label>Scramble length<select id="length"><option>3</option><option>5</option><option selected>8</option><option>9</option><option>20</option></select></label>
+<button id="scramble">Scramble</button>
+<button id="shortcut">Shortcut example</button>
+</div>
+<div class="controls"><button id="solve" class="primary">Search for a solution</button><button id="play">Play next move</button><button id="reset">Reset</button></div>
+<p id="message" role="status" aria-live="polite">Choose a scramble, then search.</p>
+<p id="summary">Ready for a new challenge.</p>
+</section>
+<aside class="panel">
+<h2>The rules and the scoreboard</h2>
+<p><strong>Allowed:</strong> U, D, F, B, R, L turns, each clockwise, counterclockwise or 180°. Every turn counts as one move (half-turn metric).</p>
+<p><strong>Engine:</strong> deterministic bidirectional breadth-first search over 54 stickers. It checks solutions up to <strong>8 turns</strong> and verifies the resulting solved state. It does not use a learned BEAN policy or a memorized scramble.</p>
+<p class="small">An eight-move solution is guaranteed shortest only when the bounded search completes. Failure past that limit means <em>not found within the budget</em>, not that the cube is impossible to solve. A 20-turn scramble will often defeat this bounded prototype.</p>
+<div class="stat">15 / 21</div>
+<p class="small">Seeded Python development cases solved (seeds 0–2, lengths 3, 4, 5, 6, 8, 9, 20). Six failures preserved; zero shorter-than-recipe solutions in this particular seeded sample. This is not a result from BEAN's learned cognition.</p>
+<h2>Turn faces yourself</h2>
+<div class="moves" id="moves" aria-label="Manual face turns"></div>
+<h2>Session receipts</h2>
+<ol id="history" aria-label="Recent search attempts"></ol>
+<button id="export">Export all attempts as JSON</button>
+<p class="small">Session receipts include successful and failed searches. They stay in this browser until exported; no backend telemetry or training is implied.</p>
+</aside>
+</div>
+<section class="panel" style="margin-top:22px">
+<h2>What does this prove?</h2>
+<p>We can test a machine's ability to explore legal possibilities and discover a shorter path without telling it the inverse of the scramble. This is a <strong>classical search baseline</strong> in the BEAN Gauntlet, not proof of artificial general intelligence, autonomous learning, or a general 20-move Rubik's Cube solver.</p>
+<p>Try the <strong>Shortcut example</strong>: three legal turns create a position that can be solved in one. The search discovers the one-turn answer from the position alone. For truly random walks, a shorter answer is not guaranteed.</p>
+<p class="small">Inspect <a href="https://github.com/danieloculus0-bot/BEAN/blob/experiment/agi-cognitive-gauntlet-20261028/experiments/cognitive_gauntlet/rubiks3.py">Python rules and benchmark code</a>, <a href="https://github.com/danieloculus0-bot/BEAN/blob/experiment/agi-cognitive-gauntlet-20261028/bean/tests/test_cognitive_rubiks3.py">unit tests</a>, <a href="https://github.com/danieloculus0-bot/BEAN/actions/workflows/bean-cognitive-gauntlet.yml">CI and evidence receipts</a>, or <a href="https://github.com/danieloculus0-bot/BEAN/pull/199">the experimental pull request</a>. The web demo reproduces the documented legal moves and deterministic scramble generator; it is not wired into the installed BEAN Core runtime.</p>
+</section>
+</main>
+<footer><div class="wrap">BEAN · Behavior Enabled Avatar Node · An evidence-first public research demonstration</div></footer>
+<script src="./rubiks-cube.js" defer></script>
+</body></html>
