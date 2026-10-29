@@ -310,6 +310,8 @@ jobs:
         run: python -m experiments.cognitive_gauntlet.rubiks3_joint_rescue --test-seed-start 26000 --output cognitive-gauntlet-results/rubiks3-rescue-26000.json
       - name: Disjoint native-rescue holdout 27000, all failures
         run: python -m experiments.cognitive_gauntlet.rubiks3_joint_rescue --test-seed-start 27000 --output cognitive-gauntlet-results/rubiks3-rescue-27000.json
+      - name: Independently replay both full receipt archives without policy inference
+        run: python -m experiments.cognitive_gauntlet.rubiks3_joint_rescue_verify cognitive-gauntlet-results/rubiks3-rescue-26000.json cognitive-gauntlet-results/rubiks3-rescue-27000.json
       - name: Archive baseline, matched and rescue routes including pauses
         if: always()
         uses: actions/upload-artifact@v4
