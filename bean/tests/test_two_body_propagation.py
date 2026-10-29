@@ -57,6 +57,53 @@ class TestTwoBodyPropagation(unittest.TestCase):
         self.assertGreater(coarse_error, 1.0)
         self.assertLess(fine_error, coarse_error/10)
 
+    def test_initial_conic_circular_and_elliptical(self):
+        circular = reference(radius=7000, dt=1, steps=1)["initial_conic_reference"]
+        self.assertEqual(circular["classification"], "bound")
+        self.assertAlmostEqual(circular["eccentricity"], 0, delta=1e-12)
+        self.assertAlmostEqual(circular["periapsis_radius_km"], 7000, delta=1e-6)
+        self.assertAlmostEqual(circular["apoapsis_radius_km"], 7000, delta=1e-6)
+        self.assertFalse(circular["periapsis_intersects_body"])
+        self.assertFalse(circular["degenerate_radial_path"])
+
+        rp, ra = 7000., 14000.
+        a = (rp + ra) / 2
+        vp = math.sqrt(MU * (2 / rp - 1 / a))
+        ellipse = reference(radius=rp, velocity=vp, dt=1, steps=1)["initial_conic_reference"]
+        self.assertEqual(ellipse["classification"], "bound")
+        self.assertAlmostEqual(ellipse["eccentricity"], 1/3, delta=1e-12)
+        self.assertAlmostEqual(ellipse["semimajor_axis_km"], a, delta=1e-6)
+        self.assertAlmostEqual(ellipse["periapsis_radius_km"], rp, delta=1e-6)
+        self.assertAlmostEqual(ellipse["apoapsis_radius_km"], ra, delta=1e-6)
+
+    def test_initial_conic_escape_and_hyperbolic(self):
+        escape = math.sqrt(2 * MU / 7000)
+        parabola = reference(radius=7000, velocity=escape, dt=1, steps=1)[
+            "initial_conic_reference"]
+        self.assertEqual(parabola["classification"], "near_parabolic")
+        self.assertAlmostEqual(parabola["eccentricity"], 1, delta=1e-12)
+        self.assertAlmostEqual(parabola["periapsis_radius_km"], 7000, delta=1e-6)
+        self.assertIsNone(parabola["apoapsis_radius_km"])
+        self.assertIsNone(parabola["semimajor_axis_km"])
+
+        hyperbola = reference(radius=7000, velocity=1.1 * escape, dt=1, steps=1)[
+            "initial_conic_reference"]
+        self.assertEqual(hyperbola["classification"], "unbound")
+        self.assertGreater(hyperbola["eccentricity"], 1)
+        self.assertLess(hyperbola["semimajor_axis_km"], 0)
+        self.assertIsNone(hyperbola["apoapsis_radius_km"])
+
+    def test_initial_conic_radial_impact_warning(self):
+        radial = propagate_two_body(
+            mu_km3_s2=MU, minimum_radius_km=EARTH_RADIUS,
+            position_km=[7000, 0, 0], velocity_km_s=[0, 0, 0],
+            step_seconds=1, steps=1)["initial_conic_reference"]
+        self.assertEqual(radial["classification"], "bound")
+        self.assertTrue(radial["degenerate_radial_path"])
+        self.assertTrue(radial["periapsis_intersects_body"])
+        self.assertAlmostEqual(radial["periapsis_radius_km"], 0, delta=1e-12)
+        self.assertAlmostEqual(radial["apoapsis_radius_km"], 7000, delta=1e-6)
+
     def test_schema_route_and_metadata(self):
         radius = EARTH_RADIUS + 400
         speed = math.sqrt(MU / radius)
