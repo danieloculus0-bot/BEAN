@@ -47,8 +47,10 @@ class JointTemperatureTests(unittest.TestCase):
         self.assertGreater(unchanged, colder)
         self.assertGreater(joint_temperature_reward(
             (1, 0), (0, 0), (False, True), (True, True), gamma), 0)
-        self.assertLessEqual(joint_temperature_reward(
-            (0, 0), (0, 0), (True, True), (True, True), gamma), 0)
+        self.assertEqual(joint_temperature_reward(
+            (0, 0), (0, 0), (True, True), (True, True), gamma), 0.0)
+        self.assertLess(joint_temperature_reward(
+            (0, 0), (1, 0), (True, True), (False, True), gamma), 0.0)
         with self.assertRaises(ValueError):
             joint_temperature_reward((-1, 0), (0, 0),
                                      (False, True), (True, True), gamma)
