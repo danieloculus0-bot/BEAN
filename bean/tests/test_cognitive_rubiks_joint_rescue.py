@@ -9,11 +9,14 @@ from experiments.cognitive_gauntlet import rubiks3
 from experiments.cognitive_gauntlet.rubiks3_joint_rescue import (
     experiment, policy_solve_joint_rescue,
 )
+from experiments.cognitive_gauntlet.rubiks3_joint_rescue_verify import verify_receipt
+from experiments.cognitive_gauntlet.rubiks3_sponge import _digest
+import json
 from experiments.cognitive_gauntlet.rubiks3_pair_goals import (
     pair_features, train_pairs,
 )
 from experiments.cognitive_gauntlet.rubiks3_pieces import observed_edges
-from experiments.cognitive_gauntlet.rubiks3_sponge import _digest, collect_states
+from experiments.cognitive_gauntlet.rubiks3_sponge import collect_states
 from experiments.cognitive_gauntlet.rubiks3_symmetry import learn_symmetric
 from experiments.cognitive_gauntlet.rubiks3_value_rollout import policy_solve_value_rollout
 
@@ -94,6 +97,22 @@ class JointRescueTests(unittest.TestCase):
             if row['candidate_paused']:
                 self.assertEqual(row['candidate_checkpoint']['route'],
                                  row['candidate_moves'])
+
+    def test_independent_receipt_replay_rejects_tampered_success(self):
+        with TemporaryDirectory() as tmp:
+            path = Path(tmp) / 'receipt.json'
+            original = experiment(train_seeds=range(2), test_seeds=range(28100, 28101),
+                                  train_lengths=(2, 3), test_lengths=(3, 20),
+                                  epochs=1, work_budget=2, output=path)
+            verified = verify_receipt(path)
+            self.assertEqual(verified['candidate_solved'], original['candidate_solved'])
+            tampered = json.loads(path.read_text(encoding='utf-8'))
+            tampered['cases'][0]['candidate_solved'] = not tampered['cases'][0]['candidate_solved']
+            tampered['sha256'] = _digest({k: v for k, v in tampered.items()
+                                          if k != 'sha256'})
+            path.write_text(json.dumps(tampered), encoding='utf-8')
+            with self.assertRaises(ValueError):
+                verify_receipt(path)
 
     def test_invalid_inputs_and_overlapping_seeds(self):
         with TemporaryDirectory() as tmp:
