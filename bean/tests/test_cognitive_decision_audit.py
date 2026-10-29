@@ -56,6 +56,18 @@ class DecisionAuditTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             audit_cases([corrupt], ["a", "b"])
 
+    def test_integrated_five_arm_replay_matches_existing_mse(self):
+        from experiments.cognitive_gauntlet.schrodinger_benchmark import benchmark, ARMS
+        result = benchmark(first_seed=8000, seeds=2, rounds=20)
+        audit = result["decision_quality"]
+        self.assertEqual(audit["overall"]["cases"], len(result["cases"]))
+        self.assertEqual(audit["source_digest"], result["reference_digest"])
+        for arm in ARMS:
+            self.assertAlmostEqual(audit["overall"]["arms"][arm]["brier"],
+                                   result["scores"]["all"]["mse"][arm])
+        self.assertEqual(audit["overall"]["dual_state"]["chaos_predictions"],
+                         result["scores"]["all"]["chaos_cases"])
+
     def test_exact_digest_and_replay(self):
         rows = [case(0, 1, .7, .9), case(1, 0, .4, .1)]
         a = audit_cases(rows, ["a", "b"], source_digest="a"*64)
