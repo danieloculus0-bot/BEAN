@@ -99,14 +99,15 @@ class PrioritizedCubeTDTests(unittest.TestCase):
             learner = SpongeTD(Path(tmp) / 'td.db', actions=MOVES,
                                alpha=1, gamma=.9, epsilon=0)
             try:
-                prioritized_replay(learner, [(canonical(one)[0], MOVES.index("U'"),
+                normalized, faces = canonical(one)
+                prioritized_replay(learner, [(normalized, MOVES.index(faces['U'] + "'"),
                                               canonical(SOLVED)[0])], 5)
                 # No reference solve, scramble generator, or inverse recipe may
                 # be consulted by the policy at inference.
                 with patch('experiments.cognitive_gauntlet.rubiks3.solve',
-                           side_effect=AssertionError('reference solver leaked')), \\
+                           side_effect=AssertionError('reference solver leaked')), \
                      patch('experiments.cognitive_gauntlet.rubiks3.invert',
-                           side_effect=AssertionError('inverse recipe leaked')), \\
+                           side_effect=AssertionError('inverse recipe leaked')), \
                      patch('experiments.cognitive_gauntlet.rubiks3.scramble',
                            side_effect=AssertionError('scramble leaked')):
                     route, info = policy_solve_value_rollout(learner, one)
