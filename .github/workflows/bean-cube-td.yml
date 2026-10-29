@@ -15,6 +15,9 @@ on:
       - 'experiments/cognitive_gauntlet/rubiks3_value_rollout.py'
       - 'experiments/cognitive_gauntlet/rubiks3_curriculum.py'
       - 'bean/tests/test_cognitive_rubiks_curriculum.py'
+      - 'bean/tests/test_cognitive_rubiks_prioritized_td.py'
+      - 'experiments/cognitive_gauntlet/rubiks3_prioritized_td.py'
+      - 'experiments/cognitive_gauntlet/RUBIKS_PRIORITIZED_TD.md'
       - 'experiments/cognitive_gauntlet/RUBIKS_TD_CURRICULUM.md'
       - '.github/workflows/bean-cube-td.yml'
   pull_request:
@@ -32,6 +35,9 @@ on:
       - 'experiments/cognitive_gauntlet/rubiks3_value_rollout.py'
       - 'experiments/cognitive_gauntlet/rubiks3_curriculum.py'
       - 'bean/tests/test_cognitive_rubiks_curriculum.py'
+      - 'bean/tests/test_cognitive_rubiks_prioritized_td.py'
+      - 'experiments/cognitive_gauntlet/rubiks3_prioritized_td.py'
+      - 'experiments/cognitive_gauntlet/RUBIKS_PRIORITIZED_TD.md'
       - 'experiments/cognitive_gauntlet/RUBIKS_TD_CURRICULUM.md'
       - '.github/workflows/bean-cube-td.yml'
   workflow_dispatch:
@@ -84,5 +90,38 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: bean-cube-td-${{ matrix.os }}-py${{ matrix.python }}
+          path: cognitive-gauntlet-results/
+          if-no-files-found: warn
+
+  cube-prioritized-td:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        python: ['3.11', '3.12']
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Verify BEAN Bellman-priority TD and replay integrity
+        run: python -m unittest bean.tests.test_cognitive_rubiks_prioritized_td -v
+      - name: Matched-budget unchanged-policy control, cohort 7000
+        run: python -m experiments.cognitive_gauntlet.rubiks3_prioritized_td --test-seed-start 7000 --output cognitive-gauntlet-results/rubiks3-priority-7000.json
+      - name: Independent matched-budget control, cohort 8000
+        run: python -m experiments.cognitive_gauntlet.rubiks3_prioritized_td --test-seed-start 8000 --output cognitive-gauntlet-results/rubiks3-priority-8000.json
+      - name: Low-budget learned-priority holdout cohort 9000
+        run: python -m experiments.cognitive_gauntlet.rubiks3_prioritized_td --epochs 1 --extra-updates 200 --test-seed-start 9000 --output cognitive-gauntlet-results/rubiks3-priority-lowbudget-9000.json
+      - name: Independent low-budget holdout cohort 10000
+        run: python -m experiments.cognitive_gauntlet.rubiks3_prioritized_td --epochs 1 --extra-updates 200 --test-seed-start 10000 --output cognitive-gauntlet-results/rubiks3-priority-lowbudget-10000.json
+      - name: Archive all solved and failed cube receipts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bean-priority-main-${{ matrix.os }}-py${{ matrix.python }}
           path: cognitive-gauntlet-results/
           if-no-files-found: warn
