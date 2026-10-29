@@ -88,3 +88,7 @@ compare external OpenNARS, OpenCog, PLN, Voyager, Letta or DreamerV3 runtimes.
 Run:
 
     python -m experiments.cognitive_gauntlet.rubiks3_joint_rescue --rescue-backup --test-seed-start 29000 --test-count 5 --work-budget 64
+
+The successor backup can also act when the current 96 pair configurations
+have no stored Q values, provided a legal successor has learned values.
+The unchanged direct controller still reports its original no-value failure.

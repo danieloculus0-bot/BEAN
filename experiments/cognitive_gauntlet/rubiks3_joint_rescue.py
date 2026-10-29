@@ -103,8 +103,10 @@ def policy_solve_joint_rescue(full, joint, start, *, checkpoint=None, work_budge
         features = pair_features(state)
         rows = [joint.q.get(joint.key((pair_id, config)))
                 for pair_id, config, _ in features]
-        if not any(row is not None for row in rows):
+        if not any(row is not None for row in rows) and not rescue_backup:
             return finish(False, 'no_joint_values_after_full_stall')
+        # Backup mode can transfer from successor values even when every
+        # current pair configuration is unseen by the learner.
         rescue = []
         for action, move in enumerate(MOVES):
             nxt = turn(state, move)

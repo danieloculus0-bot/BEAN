@@ -151,6 +151,37 @@ class JointRescueTests(unittest.TestCase):
                 full.close()
                 joint.close()
 
+    def test_backup_can_transfer_from_unseen_current_pair_configurations(self):
+        state = rubiks3.apply(rubiks3.SOLVED, rubiks3.scramble(43210, 20))
+        current = {(pair_id, config) for pair_id, config, _ in pair_features(state)}
+        with TemporaryDirectory() as tmp:
+            full = SpongeTD(Path(tmp) / 'full.db', actions=rubiks3.MOVES)
+            joint = SpongeTD(Path(tmp) / 'joint.db', actions=rubiks3.MOVES)
+            try:
+                discovered = False
+                for move in rubiks3.MOVES:
+                    nxt = rubiks3.turn(state, move)
+                    for pair_id, config, _ in pair_features(nxt):
+                        if (pair_id, config) not in current:
+                            joint.values((pair_id, config))[0] = 1.0
+                            discovered = True
+                            break
+                    if discovered:
+                        break
+                self.assertTrue(discovered)
+                direct, direct_info = policy_solve_joint_rescue(full, joint, state,
+                                                                work_budget=1)
+                self.assertEqual(direct, [])
+                self.assertEqual(direct_info['failure'], 'no_joint_values_after_full_stall')
+                backup, info = policy_solve_joint_rescue(full, joint, state,
+                                                          work_budget=1, rescue_backup=True)
+                self.assertEqual(len(backup), 1)
+                self.assertEqual(info['joint_steps'], 1)
+                self.assertEqual(info['solved'], rubiks3.apply(state, backup) == rubiks3.SOLVED)
+            finally:
+                full.close()
+                joint.close()
+
     def test_invalid_inputs_and_overlapping_seeds(self):
         with TemporaryDirectory() as tmp:
             full = SpongeTD(Path(tmp) / 'full.db', actions=rubiks3.MOVES)
