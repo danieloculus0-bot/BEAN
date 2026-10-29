@@ -208,6 +208,96 @@ class ActiveHypothesisTests(unittest.TestCase):
                 core.revise_discovered_analogy(**params,min_gain=float("nan"))
             core.close()
 
+    def test_disjoint_validation_detects_changed_feedback(self):
+        world = World(120, "channel")
+        training = [str(100+i) for i in range(40)]
+        validation = [str(5000+i) for i in range(12)]
+        original = discover(
+            probe_ids=training, observe=world.observe, reward=world.feedback,
+            budget=12, validation_probe_ids=validation)
+        self.assertEqual(original["status"], "provisional_rule")
+        self.assertTrue(original["validation"]["passed"])
+        self.assertAlmostEqual(original["validation"]["mean_regret"], 0)
+        self.assertEqual(original["reward_calls"], (12+12)*3)
+        self.assertEqual(original["sensor_observations"], 52)
+        self.assertEqual(original["observed_probe_ids"], training+validation)
+        self.assertEqual(original["validation"]["probe_ids"], validation)
+        self.assertFalse(original["validation"]["used_for_candidate_generation"])
+        shifted = discover(
+            probe_ids=training, observe=world.observe,
+            reward=lambda case, action: (
+                world.feedback(case, -action)
+                if case in validation else world.feedback(case, action)),
+            budget=12, validation_probe_ids=validation)
+        self.assertEqual(shifted["status"], "abstain")
+        self.assertIsNone(shifted["selected_rule"])
+        self.assertEqual(shifted["failure_reason"],
+                         "fresh_validation_regret_exceeded_tolerance")
+        self.assertFalse(shifted["validation"]["passed"])
+        self.assertGreater(shifted["validation"]["mean_regret"], 0.12)
+        self.assertEqual(shifted["best_rule"], original["best_rule"])
+        self.assertNotEqual(shifted["evidence_sha256"],
+                            original["evidence_sha256"])
+        with self.assertRaisesRegex(ValueError,"unique unseen validation"):
+            discover(probe_ids=training,observe=world.observe,
+                     reward=world.feedback,validation_probe_ids=training[:3])
+        with self.assertRaisesRegex(ValueError,"unique unseen validation"):
+            discover(probe_ids=training,observe=world.observe,
+                     reward=world.feedback,
+                     validation_probe_ids=["5555","5555","5556"])
+
+    def test_revision_uses_validation_to_reject_false_relearning(self):
+        with tempfile.TemporaryDirectory() as d:
+            world=World(120,"channel")
+            core=NativeReasoningService(Path(d)/"validated.sqlite")
+            original=core.discover_analogy(
+                domain="control",task_ref="before",source_ref="sim:before",
+                probe_ids=[str(100+i) for i in range(40)],
+                observe=world.observe,reward=world.feedback,budget=12)
+            self.assertEqual(original["status"],"provisional_rule")
+            train_ids=[str(200+i) for i in range(40)]
+            validation_ids=[str(5000+i) for i in range(12)]
+            # Only the learning probes invert their reward relation;
+            # the independent validation cases still favor the old rule.
+            inconsistent=core.revise_discovered_analogy(
+                parent_receipt_id=original["receipt_id"],domain="control",
+                task_ref="temporary-drift",source_ref="sim:temporary-drift",
+                probe_ids=train_ids,observe=world.observe,
+                reward=lambda case,action: (
+                    world.feedback(case,-action) if case in train_ids
+                    else world.feedback(case,action)),
+                validation_probe_ids=validation_ids,budget=12)
+            self.assertEqual(inconsistent["revision_decision"],
+                             "retained_after_fresh_feedback")
+            self.assertEqual(inconsistent["selected_rule"],
+                             original["selected_rule"])
+            self.assertGreater(inconsistent["prior_regret_per_probe"],0.12)
+            self.assertAlmostEqual(inconsistent["prior_validation_regret"],0)
+            self.assertFalse(inconsistent["validation"]["passed"])
+            with self.assertRaisesRegex(ValueError,"unseen validation"):
+                core.revise_discovered_analogy(
+                    parent_receipt_id=inconsistent["receipt_id"],
+                    domain="control",task_ref="duplicate",
+                    source_ref="sim:duplicate",
+                    probe_ids=[str(700+i) for i in range(40)],
+                    observe=world.observe,reward=world.feedback,
+                    validation_probe_ids=validation_ids,budget=12)
+            core.close()
+            recovered=NativeReasoningService(Path(d)/"validated.sqlite")
+            try:
+                persisted=[entry["data"] for entry in
+                    recovered.bank.journal.events() if entry["kind"]=="trial"
+                    and entry["data"].get("experiment")==
+                    "bean.native.active_hypothesis.v1"]
+                self.assertEqual(len(persisted),2)
+                self.assertEqual(
+                    recovered.use_discovered_analogy(
+                        receipt_id=inconsistent["receipt_id"],
+                        sensors=world.observe(9000))["hypothesis"],
+                    original["selected_rule"])
+            finally:
+                recovered.close()
+
     def test_blind_suite_is_repeatable_and_discloses_misses(self):
         r=benchmark(worlds_per_family=3,budgets=(3,6))
         again=benchmark(worlds_per_family=3,budgets=(3,6))
