@@ -14,6 +14,7 @@ import argparse
 import hashlib
 import heapq
 import json
+import math
 import os
 import random
 from pathlib import Path
@@ -96,7 +97,7 @@ def prioritized_replay(learner, edges, updates, *, seed=31, tolerance=1e-12):
 def experiment(*, train_seeds=range(50), test_seeds=range(7000, 7010),
                train_lengths=(2, 3, 4, 5, 6),
                test_lengths=(3, 4, 5, 6, 20),
-               epochs=8, extra_updates=4000, output=None):
+               epochs=8, extra_updates=4000, alpha=1.0, output=None):
     train_seeds, test_seeds = tuple(train_seeds), tuple(test_seeds)
     if (not train_seeds or not test_seeds or
             len(set(train_seeds)) != len(train_seeds) or
@@ -107,15 +108,17 @@ def experiment(*, train_seeds=range(50), test_seeds=range(7000, 7010),
         raise ValueError('invalid experiment configuration')
     if type(extra_updates) is not int or extra_updates < 0:
         raise ValueError('invalid update count')
+    if type(alpha) not in (float, int) or not math.isfinite(alpha) or not 0 < alpha <= 1:
+        raise ValueError('invalid TD learning rate')
 
     states, episodes = collect_states(train_seeds, train_lengths)
     known = {canonical(state)[0] for state in states}
     edges = edges_for(states)
     with TemporaryDirectory(prefix='bean-cube-priority-') as tmp:
         baseline = SpongeTD(Path(tmp) / 'baseline.db', actions=MOVES,
-                            alpha=1, gamma=.9, epsilon=0, seed=19)
+                            alpha=alpha, gamma=.9, epsilon=0, seed=19)
         candidate = SpongeTD(Path(tmp) / 'candidate.db', actions=MOVES,
-                             alpha=1, gamma=.9, epsilon=0, seed=19)
+                             alpha=alpha, gamma=.9, epsilon=0, seed=19)
         try:
             training = learn_symmetric(baseline, states, epochs=epochs)
             learn_symmetric(candidate, states, epochs=epochs)
@@ -176,6 +179,7 @@ def experiment(*, train_seeds=range(50), test_seeds=range(7000, 7010),
                 'initial_q_sha256': initial,
                 'observed_canonical_states': len(known),
                 'observed_edges': len(edges), 'extra_td_updates_per_arm': extra_updates,
+                'td_alpha': alpha,
                 'baseline_td_steps': baseline.steps, 'candidate_td_steps': candidate.steps,
                 'priority_training': priority,
                 'baseline_q_sha256': frozen[0], 'candidate_q_sha256': frozen[1],
@@ -208,6 +212,7 @@ if __name__ == '__main__':
     parser.add_argument('--test-count', type=int, default=10)
     parser.add_argument('--epochs', type=int, default=8)
     parser.add_argument('--extra-updates', type=int, default=4000)
+    parser.add_argument('--alpha', type=float, default=1.0)
     parser.add_argument('--output', default='cognitive-gauntlet-results/rubiks3-prioritized-td.json')
     args = parser.parse_args()
     if args.test_count < 1:
@@ -215,6 +220,7 @@ if __name__ == '__main__':
     report = experiment(test_seeds=range(args.test_seed_start,
                                          args.test_seed_start + args.test_count),
                         epochs=args.epochs, extra_updates=args.extra_updates,
+                        alpha=args.alpha,
                         output=args.output)
     print(json.dumps({k: report[k] for k in
                       ('eligible_cases', 'excluded_count', 'baseline_solved',
