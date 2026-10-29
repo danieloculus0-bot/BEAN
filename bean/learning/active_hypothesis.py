@@ -68,7 +68,8 @@ def _entropy(actions):
 
 
 def discover(*, probe_ids, observe, reward, budget=12, method="disagreement",
-             seed=0, tolerance=0.12, min_gap=0.08):
+             seed=0, tolerance=0.12, min_gap=0.08,
+             validation_probe_ids=None):
     """Choose and execute bounded resettable paired-intervention experiments.
 
     observe(probe_id) exposes ONLY the sensor vector. reward(probe_id, action)
@@ -77,12 +78,23 @@ def discover(*, probe_ids, observe, reward, budget=12, method="disagreement",
     may expose the withheld mapping or blind outcomes.
 
     The passive comparator uses identical actions and number of probes.
+    Optional disjoint validation cases are evaluated only AFTER hypothesis
+    selection, so they cannot influence the fitted candidate or probe order.
+    Validation is an evidence gate, not a final independent blind benchmark.
     """
     if (not isinstance(probe_ids, (tuple, list)) or
             not 3 <= len(probe_ids) <= 96 or
             not all(isinstance(x, str) and 0 < len(x) <= 128
                     for x in probe_ids) or len(set(probe_ids)) != len(probe_ids)):
         raise ValueError("Require 3..96 unique bounded probe identifiers")
+    if validation_probe_ids is not None:
+        if (not isinstance(validation_probe_ids, (tuple, list)) or
+                not 3 <= len(validation_probe_ids) <= 32 or
+                any(not isinstance(pid, str) or not 0 < len(pid) <= 128
+                    for pid in validation_probe_ids) or
+                len(set(validation_probe_ids)) != len(validation_probe_ids) or
+                set(validation_probe_ids) & set(probe_ids)):
+            raise ValueError("Require 3..32 unique unseen validation probe IDs")
     if not callable(observe) or not callable(reward):
         raise ValueError("Live observation and reward callbacks required")
     if type(budget) is not int or not 1 <= budget <= 16 or budget > len(probe_ids):
@@ -135,6 +147,44 @@ def discover(*, probe_ids, observe, reward, budget=12, method="disagreement",
     selected = (rules[first] if
                 losses[first] / budget <= tolerance and gap / budget >= min_gap
                 else None)
+    validation = None
+    failure_reason = None if selected else "insufficient_evidence_or_model_mismatch"
+    if validation_probe_ids is not None:
+        validation_records = []
+        for pid in validation_probe_ids:
+            sensors = _vector(observe(pid), dimensions=n)
+            scores = []
+            for action in ACTIONS:
+                measurement = reward(pid, action)
+                if not _number(measurement):
+                    raise ValueError("Non-finite or invalid validation reward")
+                scores.append(float(measurement))
+            prediction = act(selected, sensors) if selected is not None else None
+            regret = (max(scores) - scores[ACTIONS.index(prediction)]
+                      if prediction is not None else None)
+            validation_records.append({
+                "probe_id": pid, "sensors": sensors,
+                "rewards_by_action": list(zip(ACTIONS, scores)),
+                "predicted_action": prediction, "regret": regret,
+            })
+        average_regret = (sum(row["regret"] for row in validation_records) /
+                          len(validation_records) if selected is not None else None)
+        passed = (average_regret <= tolerance if average_regret is not None
+                  else False)
+        validation = {
+            "probe_ids": list(validation_probe_ids),
+            "records": validation_records,
+            "mean_regret": average_regret,
+            "tolerance": tolerance,
+            "passed": passed,
+            "measured_by": "host_reward_callback",
+            "independently_authenticated": False,
+            "used_for_candidate_generation": False,
+            "separate_from_final_blind_evaluation": True,
+        }
+        if selected is not None and not passed:
+            selected = None
+            failure_reason = "fresh_validation_regret_exceeded_tolerance"
     result = {
         "schema": SCHEMA, "method": method, "grammar": (
             "signed_sensor", "signed_sensor_difference", "constant_action"),
@@ -147,17 +197,23 @@ def discover(*, probe_ids, observe, reward, budget=12, method="disagreement",
         # All candidate sensors are observed before reward probes are chosen.
         # Retain the entire observed pool so later revisions cannot recycle
         # unrewarded observations and mislabel them as fresh evidence.
-        "observed_probe_ids": list(probe_ids),
-        "sensor_observations": len(views),
+        "observed_probe_ids": (list(probe_ids) +
+                               (list(validation_probe_ids)
+                                if validation_probe_ids is not None else [])),
+        "sensor_observations": len(views) + (
+            len(validation_probe_ids) if validation_probe_ids is not None else 0),
         "records": records,
         "best_rule": rules[first], "best_loss_per_probe": losses[first] / budget,
         "second_best_gap_per_probe": gap / budget,
         "selected_rule": selected,
         "status": "provisional_rule" if selected else "abstain",
-        "failure_reason": None if selected else "insufficient_evidence_or_model_mismatch",
+        "failure_reason": failure_reason,
         "blind_cases_used": False,
         "truth_oracle_used": False,
     }
+    if validation is not None:
+        result["validation"] = validation
+        result["reward_calls"] += len(validation_probe_ids) * len(ACTIONS)
     result["evidence_sha256"] = sha256(json.dumps(
         result, sort_keys=True, separators=(",", ":"),
         allow_nan=False).encode()).hexdigest()
