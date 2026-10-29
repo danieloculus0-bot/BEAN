@@ -19,6 +19,7 @@ on:
       - 'bean/tests/test_cognitive_rubiks_legality.py'
       - 'bean/tests/test_cognitive_rubiks_value_rollout.py'
       - 'bean/tests/test_cognitive_rubiks_curriculum.py'
+      - 'bean/tests/test_cognitive_rubiks_prioritized_td.py'
       - '.github/workflows/bean-cognitive-gauntlet.yml'
   pull_request:
     branches: [main]
@@ -39,6 +40,7 @@ on:
       - 'bean/tests/test_cognitive_rubiks_legality.py'
       - 'bean/tests/test_cognitive_rubiks_value_rollout.py'
       - 'bean/tests/test_cognitive_rubiks_curriculum.py'
+      - 'bean/tests/test_cognitive_rubiks_prioritized_td.py'
       - '.github/workflows/bean-cognitive-gauntlet.yml'
   workflow_dispatch:
 permissions:
@@ -144,5 +146,35 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: bean-native-cube-${{ matrix.os }}-py${{ matrix.python }}
+          path: cognitive-gauntlet-results/
+          if-no-files-found: warn
+
+  cube-prioritized-td:
+    # Isolated from the already-proven cube and cognitive suites.
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        python: ['3.11', '3.12']
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Verify BEAN-native Bellman-priority replay, matched budgets and complete failures
+        run: python -m unittest bean.tests.test_cognitive_rubiks_prioritized_td -v
+      - name: Fresh unseen 3x3 holdout 7000 with original failure receipts
+        run: python -m experiments.cognitive_gauntlet.rubiks3_prioritized_td --test-seed-start 7000 --output cognitive-gauntlet-results/rubiks3-priority-7000.json
+      - name: Independent unseen 3x3 holdout 8000 with original failure receipts
+        run: python -m experiments.cognitive_gauntlet.rubiks3_prioritized_td --test-seed-start 8000 --output cognitive-gauntlet-results/rubiks3-priority-8000.json
+      - name: Archive all original attempts including failures
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bean-prioritized-cube-${{ matrix.os }}-py${{ matrix.python }}
           path: cognitive-gauntlet-results/
           if-no-files-found: warn
