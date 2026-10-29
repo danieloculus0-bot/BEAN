@@ -16,9 +16,10 @@ updates, same frozen two-transition controller and same test puzzles.
 The only changed variable is transition selection during extra training.
 
 Candidate prioritization uses `abs(reward + gamma * max(Q(next)) - Q(state, action))`.
-It queues predecessors when a state's best value changes. If no nonzero
-residuals remain, it uses ordinary seeded replay to finish the matched update
-budget. Both useful and filler updates are counted. No inverse scramble,
+It queues predecessors when a state's best value changes, and also requeues
+the just-updated transition when a fractional TD learning rate leaves residual
+error. If no nonzero residuals remain, it uses ordinary seeded replay to finish
+the matched update budget. Both useful and filler updates are counted. No inverse scramble,
 cubejs, external solver, solution teacher, or held-out outcome is fed to
 training or inference.
 
@@ -70,3 +71,15 @@ seeds 9000 to 9009 and 10000 to 10009. It tests whether priority matters
 before both methods have had thousands of backups. These new cohorts are not
 reused from the first negative result, and the first negative receipts remain
 unchanged. The low-budget results are **33/95 candidate solved versus 27/95 baseline**\nacross 95 eligible held-out states (5 excluded): cohort 9000 was 15/50\nversus 13/50; cohort 10000 was 18/45 versus 14/45. Six additional\nindependently replayed solutions, zero reverse regressions, and **0/20\n20-turn states solved**. All four isolated priority jobs passed at\n[exact-head CI 40856372962](https://github.com/danieloculus0-bot/BEAN/actions/runs/40856372962)\non Ubuntu/Windows with Python 3.11/3.12. Per-cohort SHA-256 receipts\nmatched across platforms. This is a **small sample-efficiency improvement**\nat a reduced TD budget, not general cube mastery or evidence of shorter\noptimal solutions.
+
+## Fractional-alpha priority correction (2026-10-29)
+
+Earlier priority replay did not requeue the just-updated transition. With
+`alpha=1` this was harmless for the terminal edge, but fractional TD rates
+could leave positive Bellman error and prematurely use random filler updates.
+The correction requeues that edge after each partial backup and adds a
+five-update, `alpha=.25` regression test with an analytic expected Q value.
+Existing cube benchmarks use `alpha=1`, so their previously reported matched
+holdout results are not retroactively changed. This is a learning-scheduler
+correctness fix, **not** evidence of new 20-turn solving ability. Exact-head
+cross-platform CI must pass before treating the correction as verified.
