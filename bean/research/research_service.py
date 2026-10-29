@@ -29,11 +29,17 @@ def _bounded(value, label, maximum=500):
 class WebResearchService:
     """Provides a native, read-only research outlet to the existing BEAN Core."""
 
-    def __init__(self, core: NativeReasoningService, *, sources=None):
+    def __init__(self, core: NativeReasoningService, *, sources=None,
+                 trusted_verifier=None):
         if not isinstance(core, NativeReasoningService):
             raise TypeError("Use BEAN Core's existing reasoning owner")
+        if trusted_verifier is not None and not callable(trusted_verifier):
+            raise TypeError("Host verifier must be callable")
         self.core = core
         self.sources = sources or PublicWebSources()
+        # A trusted Python host may validate the proposed answer. This
+        # callback is never accepted as a serialized inbox argument.
+        self.trusted_verifier = trusted_verifier
 
     def research_needed(self, *, domain, question):
         """BEAN marks unknown evidence for investigation; do not fake certainty."""
@@ -243,6 +249,146 @@ class WebResearchService:
         return {"status": "no_new_research_eligible_goals",
                 "network_requests": 0, "source_count": 0}
 
+    def solve_task(self, *, domain, task_ref, question, allow_external=False,
+                   provider="auto", max_pages=2, answer_with_model=True,
+                   max_attempts=1):
+        """Local reasoning, explicit web gap-filling, and bounded host feedback.
+
+        The first step uses BEAN's existing local symbolic reasoner. If it
+        cannot solve the task, a caller-approved web search gathers evidence,
+        and the configured model may produce an UNVERIFIED answer. A trusted
+        host verifier, installed in Python rather than supplied by inbox
+        arguments, may report a missing public fact for one further attempt.
+        This is not autonomous fact verification or a background crawler.
+        """
+        domain = _bounded(domain, "domain", 100).casefold()
+        task_ref = _bounded(task_ref, "task_ref", 200)
+        question = _bounded(question, "question")
+        if (type(allow_external) is not bool
+                or type(answer_with_model) is not bool
+                or type(max_attempts) is not int or max_attempts not in (1, 2)
+                or type(max_pages) is not int or not 1 <= max_pages <= MAX_READS):
+            raise ValueError("Explicit web consent, 1..3 pages, 1..2 attempts required")
+        if max_attempts == 2 and self.trusted_verifier is None:
+            raise ValueError("Second research attempt requires trusted host verifier")
+
+        start_requests = self.sources.call_count
+        attempts = []
+        local = self.core.reason_local(
+            domain=domain, task_ref=task_ref, query=question)
+        local_status = local.get("status", "unknown")
+        answer = local.get("answer") if local_status == "locally_solved" else None
+        status = "locally_solved" if local_status == "locally_solved" else None
+        prior = None
+        last = None
+
+        if status is None and not allow_external:
+            status = "external_research_disabled"
+        elif status is None:
+            prior = self.research_needed(domain=domain, question=question)
+            # With no provider, gather sources instead of simulating a model.
+            do_model = answer_with_model and self.core.model is not None
+            search_query = question
+            for attempt_number in range(1, max_attempts + 1):
+                try:
+                    last = self.investigate(
+                        domain=domain, task_ref=task_ref + ":try-" +
+                        str(attempt_number), question=question,
+                        provider=provider, max_pages=max_pages,
+                        answer_with_model=do_model, search_query=search_query)
+                except (ResearchTransportError, ValueError, OSError) as exc:
+                    attempts.append({
+                        "number": attempt_number,
+                        "status": "research_fetch_failed",
+                        "error_class": type(exc).__name__,
+                        "research_receipt": None, "source_count": 0})
+                    status = "research_fetch_failed"
+                    break
+                item = {
+                    "number": attempt_number,
+                    "status": last.get("answer_status", "evidence_only"),
+                    "source_count": last["source_count"],
+                    "source_refs": [d["text_sha256"] for d in last["sources"]],
+                    "inference_receipt": last.get("inference_receipt"),
+                    "research_journal_tip": last["research_journal_tip"],
+                    "fetch_errors": last["fetch_errors"],
+                }
+                attempts.append(item)
+                answer = last.get("answer")
+                if not last["source_count"]:
+                    status = "no_retrieved_sources"
+                    break
+                if not do_model:
+                    status = ("model_not_configured" if answer_with_model
+                              else "evidence_collected")
+                    break
+                if last.get("answer_status") != "unverified_model_answer":
+                    status = last.get("answer_status", "model_answer_unavailable")
+                    break
+                status = "candidate_unverified"
+                if self.trusted_verifier is None:
+                    break
+                try:
+                    finding = self.trusted_verifier(
+                        answer=answer, question=question,
+                        sources=last["sources"])
+                    if (not isinstance(finding, dict)
+                            or type(finding.get("passed")) is not bool):
+                        raise ValueError("Invalid host verification result")
+                    gap = finding.get("public_gap", "")
+                    if not isinstance(gap, str) or len(gap) > 100:
+                        raise ValueError("Invalid bounded public research gap")
+                except Exception as exc:
+                    item["host_feedback"] = "verifier_unavailable"
+                    item["verifier_error_class"] = type(exc).__name__
+                    status = "host_verifier_unavailable"
+                    break
+                item["host_feedback"] = ("passed" if finding["passed"] else "failed")
+                item["host_evidence_independently_authenticated"] = False
+                if finding["passed"]:
+                    status = "host_reported_pass"
+                    break
+                status = "host_reported_failure"
+                if not gap.strip() or attempt_number == max_attempts:
+                    break
+                # Only the caller-authorized public query and bounded host
+                # feedback are sent outward; private goal state is not used.
+                search_query = (question + " " + gap.strip())[:500]
+
+        decision = {
+            "schema": "bean.native.research_solve.v1",
+            "experiment": "bean.native.research_solve.v1",
+            "domain": domain, "task_ref": task_ref, "question": question,
+            "local_status": local_status,
+            "prior_evidence_status": prior,
+            "research_attempts": attempts,
+            "status": status,
+            "external_research_authorized": allow_external,
+            "model_answer_requested": answer_with_model,
+            "model_configured": self.core.model is not None,
+            "trusted_host_verifier_configured": self.trusted_verifier is not None,
+            "network_requests": self.sources.call_count - start_requests,
+            "max_network_requests": max_attempts * (1 + max_pages),
+            "independently_authenticated": False,
+            "final_answer_verified": False,
+            "action_executed": False,
+        }
+        tip = self.core.bank.record_trial(decision)
+        result = {
+            "schema": decision["schema"], "domain": domain, "task_ref": task_ref,
+            "status": status, "answer": answer,
+            "local_status": local_status, "research_attempts": attempts,
+            "network_requests": decision["network_requests"],
+            "source_count": last["source_count"] if last is not None else 0,
+            "sources": last["sources"] if last is not None else [],
+            "independently_authenticated": False,
+            "human_review_required": status != "locally_solved",
+            "journal_tip": tip, "evidence_retained": True,
+            "external_model_invoked": any(a.get("inference_receipt")
+                                          for a in attempts),
+        }
+        return result
+
     def investigate(self, *, domain, task_ref, question,
                     provider="auto", max_pages=3, answer_with_model=True,
                     search_query=None):
@@ -402,6 +548,7 @@ def register_web_research_handlers(inbox, service):
         raise TypeError("Concrete BEAN-owned web research service required")
     inbox.register("research_needed", lambda m, _: service.research_needed(**m.args))
     inbox.register("research_investigate", lambda m, _: service.investigate(**m.args))
+    inbox.register("research_solve", lambda m, _: service.solve_task(**m.args))
     inbox.register("research_solve", lambda m, _: service.solve_open_question(**m.args))
     inbox.register("research_pending_goal", lambda m, _: service.investigate_pending_goal(**m.args))
     return inbox
