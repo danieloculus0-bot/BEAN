@@ -170,6 +170,54 @@ class DiscoveredTransferTests(unittest.TestCase):
                     self.transfer(reward=measured, validation=validation)
         self.assertEqual(called, [])
 
+    def test_relabeling_validation_sensors_does_not_create_new_evidence(self):
+        # Distinct case IDs with identical observations are not a fresh
+        # target-validation split. Reject before any reward measurements.
+        measured = []
+        def duplicate_state(case):
+            if case == "2000":
+                return self.target_sensors("1000")
+            return self.target_sensors(case)
+        def feedback(case, action):
+            measured.append((case, action))
+            return self.world.feedback(case, action)
+        before = len([e for e in self.core.bank.journal.events()
+                      if e["kind"] == "trial" and e["data"].get("experiment")
+                      == "bean.native.discovered_transfer.v1"])
+        with self.assertRaisesRegex(ValueError, "distinct observed sensor states"):
+            self.transfer(
+                validation=[str(2000+i) for i in range(12)],
+                observe=duplicate_state, reward=feedback)
+        self.assertEqual(measured, [])
+        after = len([e for e in self.core.bank.journal.events()
+                     if e["kind"] == "trial" and e["data"].get("experiment")
+                     == "bean.native.discovered_transfer.v1"])
+        self.assertEqual(after, before)
+
+    def test_relabeling_prior_target_sensors_is_not_fresh_validation(self):
+        first = self.transfer(validation=[str(2000+i) for i in range(12)])
+        self.assertEqual(first["selected"], "source_rule")
+        measured = []
+        def recycled(case):
+            if case == "4000":
+                return self.target_sensors("1000")
+            return self.target_sensors(case)
+        def feedback(case, action):
+            measured.append((case, action))
+            return self.world.feedback(case, action)
+        with self.assertRaisesRegex(ValueError, "fresh observed sensor states"):
+            self.transfer(
+                probes=[str(4000+i) for i in range(12)],
+                validation=[str(5000+i) for i in range(12)],
+                observe=recycled, reward=feedback)
+        self.assertEqual(measured, [])
+        decisions = [e["data"]["decision"]
+                     for e in self.core.bank.journal.events()
+                     if e["kind"] == "trial" and e["data"].get("experiment")
+                     == "bean.native.discovered_transfer.v1"]
+        self.assertEqual(len(decisions), 1)
+        self.assertEqual(decisions[0]["reward_calls"], 48)
+
     def test_negative_transfer_rejects_old_rule_for_no_action_baseline(self):
         outcome = self.transfer(
             domain="target safety stop",
