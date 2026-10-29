@@ -123,6 +123,12 @@ jobs:
         run: python -m unittest bean.tests.test_cognitive_rubiks_value_rollout -v
       - name: Frozen BEAN learned-value rollout cohort 1000 with complete failures
         run: python -m experiments.cognitive_gauntlet.rubiks3_value_rollout --output cognitive-gauntlet-results/rubiks3-value-rollout-1000.json --test-seed-start 1000
+      - name: Frozen BEAN learned-value rollout fresh cohort 4000 with complete failures
+        run: python -m experiments.cognitive_gauntlet.rubiks3_value_rollout --output cognitive-gauntlet-results/rubiks3-value-rollout-4000.json --test-seed-start 4000
+      - name: Frozen BEAN learned-value rollout fresh cohort 5000 with complete failures
+        run: python -m experiments.cognitive_gauntlet.rubiks3_value_rollout --output cognitive-gauntlet-results/rubiks3-value-rollout-5000.json --test-seed-start 5000
+      - name: Frozen BEAN learned-value rollout fresh cohort 6000 with complete failures
+        run: python -m experiments.cognitive_gauntlet.rubiks3_value_rollout --output cognitive-gauntlet-results/rubiks3-value-rollout-6000.json --test-seed-start 6000
       - name: Retain all BEAN-native cube receipts, including failures
         if: always()
         uses: actions/upload-artifact@v4
