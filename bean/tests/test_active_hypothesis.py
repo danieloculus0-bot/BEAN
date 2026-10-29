@@ -507,5 +507,60 @@ class ActiveHypothesisTests(unittest.TestCase):
                 core.close()
 
 
+    def test_duplicate_training_observations_rejected_before_any_rewards(self):
+        training = [f"case-{i}" for i in range(8)]
+        for validation in (None, [f"blind-{i}" for i in range(3)]):
+            with self.subTest(validation=validation is not None):
+                observations, rewards = [], []
+                def observe(pid):
+                    observations.append(pid)
+                    index = int(pid.split("-")[1])
+                    if pid == "case-7":
+                        index = 0  # Same state, different identifier.
+                    if pid.startswith("blind-"):
+                        index += 100
+                    return (float(index), float(index + 1))
+                def reward(pid, action):
+                    rewards.append((pid, action))
+                    return 1.0 if action == 0 else 0.0
+                with self.assertRaisesRegex(
+                        ValueError, "distinct training sensor states"):
+                    discover(probe_ids=training, observe=observe,
+                             reward=reward, budget=4,
+                             validation_probe_ids=validation)
+                self.assertEqual(observations, training)
+                self.assertEqual(rewards, [])
+
+    def test_duplicate_training_observations_do_not_create_core_receipt(self):
+        with tempfile.TemporaryDirectory() as d:
+            core = NativeReasoningService(Path(d) / "duplicate.sqlite3")
+            training = [f"case-{i}" for i in range(8)]
+            calls = []
+            def observe(pid):
+                index = int(pid.split("-")[1])
+                if pid == "case-7":
+                    index = 0
+                return (float(index), float(index + 1))
+            def reward(pid, action):
+                calls.append((pid, action))
+                return 0.0
+            try:
+                with self.assertRaisesRegex(
+                        ValueError, "distinct training sensor states"):
+                    core.discover_analogy(
+                        domain="controls", task_ref="duplicate-training",
+                        source_ref="fixture:duplicate-training",
+                        probe_ids=training, observe=observe, reward=reward,
+                        budget=4)
+                self.assertEqual(calls, [])
+                self.assertFalse(any(
+                    event["kind"] == "trial" and event["data"].get(
+                        "experiment") == "bean.native.active_hypothesis.v1"
+                    for event in core.bank.journal.events()))
+            finally:
+                core.close()
+
+
+
 if __name__=="__main__":
     unittest.main()

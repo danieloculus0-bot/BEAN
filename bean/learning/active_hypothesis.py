@@ -114,6 +114,11 @@ def discover(*, probe_ids, observe, reward, budget=12, method="disagreement",
     n = len(next(iter(views.values())))
     if any(len(v) != n for v in views.values()):
         raise ValueError("Sensor vectors changed length")
+    # Distinct IDs do not make duplicated sensor states independent probes.
+    # Reject the full training pool before any reward evaluations so a
+    # relabelled observation cannot inflate support for a hypothesis.
+    if len(set(views.values())) != len(views):
+        raise ValueError("Training requires distinct training sensor states")
     validation_views = {}
     if validation_probe_ids is not None:
         # IDs alone do not prove independent validation: a host may relabel
