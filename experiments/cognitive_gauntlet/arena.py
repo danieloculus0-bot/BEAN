@@ -44,7 +44,7 @@ def run(*, seeds=25, rounds=30):
                                       for k, v in estimates.items()},
                 })
     scores = {}
-    for scenario in ("stationary", "drifting"):
+    for scenario in ("stationary", "drifting", "rapid_drift"):
         cases = [r for r in records if r["scenario"] == scenario]
         averages = {arm: sum(r["squared_error"][arm] for r in cases) / len(cases)
                     for arm in ("bean_revision", "bean_latest")}
