@@ -83,6 +83,8 @@ def main():
     raw = (json.dumps(result, indent=2, sort_keys=True) + "\n").encode()
     if args.output.suffix == ".gz":
         args.output.write_bytes(gzip.compress(raw, mtime=0))
+        if gzip.decompress(args.output.read_bytes()) != raw:
+            raise RuntimeError("Compressed evidence failed round-trip verification")
     else:
         args.output.write_bytes(raw)
     print(json.dumps({"scores": result["scoreboard"],
