@@ -53,6 +53,28 @@ bound. For a circular Earth orbit, a full revolution and an elliptical
 half-revolution are compared against independent analytic predictions; step
 refinement is checked separately.
 
+## Spaceflight 101: orbit energy and shape
+
+The two-body result now includes `initial_conic_reference` with **specific
+orbital energy**, **eccentricity**, **periapsis**, **apoapsis** (when bound),
+and a basic **bound / near-parabolic / unbound** classification.
+
+- **Bound:** total specific energy is negative. An ideal orbit can remain
+  gravitationally attached to its central body.
+- **Near-parabolic:** specific energy is indistinguishable from zero at the
+  declared numerical tolerance. The exact escape boundary is not robustly
+  distinguishable in finite precision.
+- **Unbound:** specific energy is positive. The ideal trajectory escapes.
+- **Periapsis:** closest point implied by the initial position **and velocity
+  direction**. The diagnostic flags a predicted periapsis inside the body's
+  mean radius, but does not detect all impacts between integration steps.
+
+This is transferable to a robot's general understanding of energy, speed,
+momentum and prediction. It does not provide collision-free guidance,
+autonomous thruster commands, planetary phasing or safe orbit certification.
+The diagnostic is an initial-state *Keplerian snapshot*; the integration
+still reports numerical energy/angular-momentum drift independently.
+
 ## Native BEAN Core command inbox (experimental)
 
 The existing `bean.runtime.inbox_handlers.register_all` now registers
