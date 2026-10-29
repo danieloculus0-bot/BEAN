@@ -126,3 +126,49 @@ The Gauntlet branch remains untouched. Exact-head Gauntlet run
 at `b7624e182e412288089de3ca7963e1aeb561fd9b` finished with eight
 successful jobs and uploaded case-level artifacts. That verifies those
 synthetic experimental regressions, not deployment or general intelligence.
+
+
+## Active-hypothesis revision sensor ancestry (2026-10-29)
+
+Core's existing `discover_analogy` and `revise_discovered_analogy`
+previously checked that revision **probe IDs** were unseen. That was not
+enough: a host could relabel an old numeric observation as a fresh case,
+including an observation BEAN had seen but never spent a reward call on.
+A revision could then earn undeserved evidence credit.
+
+The active-hypothesis result now retains a stable SHA-256 fingerprint of
+**every** observed numeric sensor vector, including the full development
+pool and any validation pool. The revision checks these fingerprints across
+the immutable parent/ancestor receipts and against all observations in its
+own new pool. Repeated values under different IDs fail before a single
+new host reward call. The original parent receipts remain append-only.
+
+Historical receipts created before complete fingerprints existed cannot
+reconstruct unrecorded observations. The revision compares their retained
+rewarded and validation observations, and explicitly records
+`ancestry_sensor_coverage=legacy_rewarded_sensor_states_only` rather than
+claiming complete independence. New-format ancestry records
+`all_observed_sensor_states`. Equal vectors in different hidden contexts
+may represent different tasks, and unequal vectors can still be correlated:
+this is an exact-state anti-recycling check, **not** statistical independence,
+real-world OOD performance, or authenticated host evidence.
+
+Three synthetic regression tests in
+`bean/tests/test_active_hypothesis.py` cover restart persistence,
+relabelled **unrewarded** ancestor observations, repeated fresh observations,
+relabelled validation observations, and the unchanged successful fresh
+revision path. They are committed specifications, not claimed passing
+until exact-source runner output is inspected.
+
+The separate Gauntlet PR #199 was inspected at `01cc9c608187`.
+Its new validation-directed cube curriculum remains experimental and its
+exact-head CI was not confirmed by the available run lookup. Prior verified
+Gauntlet learned-value rollout run 40841033958 passed eight jobs, and
+mainline rollout run 40841426306 passed four jobs; neither proves this new
+Core revision change passed. Gauntlet files were not modified.
+
+Targeted command:
+
+```sh
+python -m unittest bean.tests.test_active_hypothesis -v
+```
