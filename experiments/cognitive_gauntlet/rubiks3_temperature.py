@@ -112,9 +112,69 @@ def learn_temperature(learner, states, *, epochs=8, seed=19):
             'reward': 'terminal + discounted cubie-distance potential difference'}
 
 
+def _unshaped_action(learner, state, move):
+    """Remove the state potential from a learned shaped Q before control."""
+    from .rubiks3_symmetry import MOVE_INDEX
+    normalized, faces = canonical(state)
+    values = learner.q.get(learner.key(normalized))
+    if values is None:
+        return 0.0
+    mapped = faces[move[0]] + move[1:]
+    return max(0.0, values[MOVE_INDEX[mapped]] + temperature(state))
+
+
+def _unshaped_value(learner, state, remaining, forbidden):
+    """Use the trained value, correcting for the potential, then legal backups."""
+    if state == SOLVED:
+        return 1.0
+    if state in forbidden:
+        return 0.0
+    normalized, _ = canonical(state)
+    values = learner.q.get(learner.key(normalized))
+    best = max(0.0, max(values) + temperature(state)) if values else 0.0
+    if remaining:
+        for move in MOVES:
+            nxt = turn(state, move)
+            if nxt in forbidden:
+                continue
+            candidate = (1.0 if nxt == SOLVED else
+                         learner.gamma * _unshaped_value(
+                             learner, nxt, remaining - 1, forbidden | {state}))
+            if candidate > best:
+                best = candidate
+    return best
+
+
+def policy_solve_unshaped(learner, start):
+    """Interpret shaped Q as ordinary Q; no reference answer or inverse route."""
+    validate_legal_cube(start)
+    state, path, visited = start, [], set()
+    while state != SOLVED:
+        if state in visited:
+            return path, {'solved': False, 'failure': 'cycle'}
+        visited.add(state)
+        choices = []
+        for action, move in enumerate(MOVES):
+            nxt = turn(state, move)
+            if nxt in visited:
+                continue
+            direct = _unshaped_action(learner, state, move)
+            backed = (1.0 if nxt == SOLVED else
+                      learner.gamma * _unshaped_value(learner, nxt, 1, visited))
+            score = max(direct, backed)
+            if score > 0:
+                choices.append((score, -action, move, nxt))
+        if not choices:
+            return path, {'solved': False, 'failure': 'no_positive_unshaped_value'}
+        _, _, move, state = max(choices)
+        path.append(move)
+    return path, {'solved': True, 'failure': None}
+
+
 def experiment(*, train_seeds=range(50), test_seeds=range(13000, 13010),
                train_lengths=(2, 3, 4, 5, 6),
-               test_lengths=(3, 4, 5, 6, 20), epochs=8, output=None):
+               test_lengths=(3, 4, 5, 6, 20), epochs=8, output=None,
+               controller='raw'):
     train_seeds, test_seeds = tuple(train_seeds), tuple(test_seeds)
     if (not train_seeds or not test_seeds or
             len(set(train_seeds)) != len(train_seeds) or
@@ -123,6 +183,8 @@ def experiment(*, train_seeds=range(50), test_seeds=range(13000, 13010),
         raise ValueError('nonempty, disjoint, unique seed splits required')
     if not train_lengths or not test_lengths:
         raise ValueError('empty scramble lengths')
+    if controller not in ('raw', 'unshaped'):
+        raise ValueError('invalid temperature controller')
     states, episodes = collect_states(train_seeds, train_lengths)
     known = {canonical(state)[0] for state in states}
     with TemporaryDirectory(prefix='bean-cube-temperature-') as tmp:
@@ -152,7 +214,9 @@ def experiment(*, train_seeds=range(50), test_seeds=range(13000, 13010),
                         continue
                     seen.add(key)
                     baseline_moves, bi = policy_solve_value_rollout(baseline, state)
-                    candidate_moves, ci = policy_solve_value_rollout(candidate, state)
+                    candidate_moves, ci = (policy_solve_value_rollout(candidate, state)
+                                           if controller == 'raw' else
+                                           policy_solve_unshaped(candidate, state))
                     bok = apply(state, baseline_moves) == SOLVED
                     cok = apply(state, candidate_moves) == SOLVED
                     if bok != bi['solved'] or cok != ci['solved']:
@@ -173,13 +237,16 @@ def experiment(*, train_seeds=range(50), test_seeds=range(13000, 13010),
                                   'optimality_proven': False})
             if frozen != (_digest(baseline.q), _digest(candidate.q)):
                 raise AssertionError('evaluation mutated frozen learned weights')
-            result = {'schema': 'bean.rubiks3.temperature-shaping.v1',
+            result = {'schema': ('bean.rubiks3.temperature-shaping.v1' if controller == 'raw'
+                                 else 'bean.rubiks3.temperature-unshaped.v2'),
+                      'controller': controller,
                       'source_revision': os.environ.get('GITHUB_SHA', 'local_unverified'),
                       'module_sha256': hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
                       'mechanism': 'BEAN SpongeTD terminal reward plus legal-cubie potential shaping',
                       'not_full_cube_distance': True, 'not_general_solver': True,
                       'reference_solver_used': False, 'inverse_scramble_used': False,
-                      'policy': 'unchanged two-transition learned-value controller for both arms',
+                      'policy': ('unchanged learned-value controller for both arms' if controller == 'raw'
+                                 else 'potential-corrected shaped Q controller versus unchanged baseline'),
                       'train_seeds': list(train_seeds), 'test_seeds': list(test_seeds),
                       'train_lengths': list(train_lengths), 'test_lengths': list(test_lengths),
                       'training_episodes': episodes,
@@ -211,12 +278,13 @@ if __name__ == '__main__':
     p.add_argument('--test-seed-start', type=int, default=13000)
     p.add_argument('--test-count', type=int, default=10)
     p.add_argument('--epochs', type=int, default=8)
+    p.add_argument('--controller', choices=('raw', 'unshaped'), default='raw')
     p.add_argument('--output', default='cognitive-gauntlet-results/rubiks3-temperature-13000.json')
     args = p.parse_args()
     if args.test_count < 1:
         p.error('test-count must be positive')
     result = experiment(test_seeds=range(args.test_seed_start, args.test_seed_start + args.test_count),
-                        epochs=args.epochs, output=args.output)
+                        epochs=args.epochs, controller=args.controller, output=args.output)
     print(json.dumps({k: result[k] for k in
                       ('eligible_cases', 'excluded_count', 'baseline_solved',
                        'candidate_solved', 'candidate_better', 'candidate_worse',
