@@ -1,0 +1,45 @@
+name: BEAN Experimental Spaceflight Physics
+
+on:
+  push:
+    branches:
+      - experiment/spaceflight-reference-20261028
+    paths:
+      - "bean/engineering/spaceflight.py"
+      - "bean/tests/test_spaceflight_reference.py"
+      - "research/spaceflight/**"
+      - ".github/workflows/bean-spaceflight-reference.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "bean/engineering/spaceflight.py"
+      - "bean/tests/test_spaceflight_reference.py"
+      - "research/spaceflight/**"
+      - ".github/workflows/bean-spaceflight-reference.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  reference-physics:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        python-version: ["3.10", "3.12"]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Compile and verify physical invariants
+        run: |
+          python -m compileall -q bean/engineering/spaceflight.py bean/tests/test_spaceflight_reference.py
+          python -m unittest bean.tests.test_spaceflight_reference -v
+      - name: Exercise Mars calculation interface
+        run: python -m bean.engineering.spaceflight --demo mars
