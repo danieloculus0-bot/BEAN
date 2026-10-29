@@ -1,5 +1,6 @@
 """Causal and regression checks for delayed-outcome dependency inference."""
 import hashlib
+import copy
 import json
 import unittest
 from experiments.cognitive_gauntlet.sensor_reliability import SensorObservation
@@ -58,6 +59,72 @@ class SensorDependencyTests(unittest.TestCase):
         self.assertEqual(len(model.pairs), 1)
         with self.assertRaises(ValueError):
             model.forecast(obs)
+
+
+    def test_checkpoint_continuation_matches_uninterrupted_heldout(self):
+        # Frozen policy and disjoint deterministic observations; no outcome is
+        # revealed until after both forecasts, including missing-feedback cases.
+        uninterrupted = OnlineDependencyLearner(min_samples=10, min_coerrors=2,
+                                                min_excess=.05)
+        restarted = OnlineDependencyLearner(min_samples=10, min_coerrors=2,
+                                           min_excess=.05)
+        for step in range(90):
+            truth = (step // 7) % 2
+            observations = [
+                SensorObservation(f"restart:{step}:{i}", f"s{i}",
+                                  truth ^ int((step % 9 == 0 and i < 2)
+                                             or (i == 2 and step % 13 == 0)))
+                for i in range(3)
+            ]
+            self.assertEqual(uninterrupted.forecast(observations),
+                             restarted.forecast(observations))
+            self.assertEqual(uninterrupted.last_groups, restarted.last_groups)
+            if step % 11 == 0:
+                uninterrupted.skip_feedback(reason="host_unavailable")
+                restarted.skip_feedback(reason="host_unavailable")
+            else:
+                uninterrupted.learn(truth)
+                restarted.learn(truth)
+            if step in (29, 59):
+                snapshot = restarted.state()
+                restarted = OnlineDependencyLearner.restore(snapshot)
+                self.assertEqual(snapshot, restarted.state())
+        self.assertEqual(uninterrupted.state(), restarted.state())
+
+    def test_checkpoint_rejects_corruption_and_pending_feedback(self):
+        model = OnlineDependencyLearner()
+        observations = [SensorObservation("checkpoint:a", "s0", 1),
+                        SensorObservation("checkpoint:b", "s1", 0)]
+        model.forecast(observations)
+        with self.assertRaises(ValueError):
+            model.state()
+        model.learn(1)
+        original = model.state()
+        self.assertEqual(OnlineDependencyLearner.restore(original).state(), original)
+        corruptions = []
+        wrong = copy.deepcopy(original)
+        wrong["pairs"][0]["both_wrong"] = 2.0
+        corruptions.append(wrong)
+        wrong = copy.deepcopy(original)
+        wrong["pairs"].append(copy.deepcopy(wrong["pairs"][0]))
+        corruptions.append(wrong)
+        wrong = copy.deepcopy(original)
+        wrong["pairs"][0]["sources"] = ["s1", "s0"]
+        corruptions.append(wrong)
+        wrong = copy.deepcopy(original)
+        wrong["pairs"][0]["n"] = float("nan")
+        corruptions.append(wrong)
+        wrong = copy.deepcopy(original)
+        wrong["trust"]["seen_ids"] = []
+        corruptions.append(wrong)
+        wrong = copy.deepcopy(original)
+        wrong["schema"] = "other"
+        corruptions.append(wrong)
+        for snapshot in corruptions:
+            with self.subTest(snapshot=snapshot.get("schema")):
+                with self.assertRaises(ValueError):
+                    OnlineDependencyLearner.restore(snapshot)
+        self.assertEqual(model.state(), original)
 
     def test_heldout_receipts_and_negative_controls(self):
         report = benchmark(seeds=2, rounds=45)
