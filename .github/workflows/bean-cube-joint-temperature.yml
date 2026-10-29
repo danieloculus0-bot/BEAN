@@ -1,7 +1,7 @@
 name: BEAN native joint-cube temperature learning
 on:
   push:
-    branches: [experiment/agi-cognitive-gauntlet-20261028]
+    branches: [main, experiment/agi-cognitive-gauntlet-20261028]
     paths:
       - 'experiments/cognitive_gauntlet/rubiks3_joint_temperature.py'
       - 'experiments/cognitive_gauntlet/RUBIKS_JOINT_TEMPERATURE.md'
