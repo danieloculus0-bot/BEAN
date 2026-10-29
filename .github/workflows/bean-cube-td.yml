@@ -13,6 +13,9 @@ on:
       - 'bean/tests/test_cognitive_rubiks_legality.py'
       - 'bean/tests/test_cognitive_rubiks_value_rollout.py'
       - 'experiments/cognitive_gauntlet/rubiks3_value_rollout.py'
+      - 'experiments/cognitive_gauntlet/rubiks3_curriculum.py'
+      - 'bean/tests/test_cognitive_rubiks_curriculum.py'
+      - 'experiments/cognitive_gauntlet/RUBIKS_TD_CURRICULUM.md'
       - '.github/workflows/bean-cube-td.yml'
   pull_request:
     branches: [main]
@@ -27,6 +30,9 @@ on:
       - 'bean/tests/test_cognitive_rubiks_legality.py'
       - 'bean/tests/test_cognitive_rubiks_value_rollout.py'
       - 'experiments/cognitive_gauntlet/rubiks3_value_rollout.py'
+      - 'experiments/cognitive_gauntlet/rubiks3_curriculum.py'
+      - 'bean/tests/test_cognitive_rubiks_curriculum.py'
+      - 'experiments/cognitive_gauntlet/RUBIKS_TD_CURRICULUM.md'
       - '.github/workflows/bean-cube-td.yml'
   workflow_dispatch:
 permissions:
@@ -65,6 +71,14 @@ jobs:
         run: python -m experiments.cognitive_gauntlet.rubiks3_value_rollout --output cognitive-gauntlet-results/rubiks3-value-rollout-5000.json --test-seed-start 5000
       - name: Replay BEAN learned-value transfer cohort 6000, including failures
         run: python -m experiments.cognitive_gauntlet.rubiks3_value_rollout --output cognitive-gauntlet-results/rubiks3-value-rollout-6000.json --test-seed-start 6000
+      - name: Validate matched-update BEAN-native TD curriculum
+        run: python -m unittest bean.tests.test_cognitive_rubiks_curriculum -v
+      - name: Independent curriculum holdout cohort 1000
+        run: python -m experiments.cognitive_gauntlet.rubiks3_curriculum --test-seed-start 1000 --output cognitive-gauntlet-results/rubiks3-curriculum-1000.json
+      - name: Independent curriculum holdout cohort 2000
+        run: python -m experiments.cognitive_gauntlet.rubiks3_curriculum --test-seed-start 2000 --output cognitive-gauntlet-results/rubiks3-curriculum-2000.json
+      - name: Independent curriculum holdout cohort 3000
+        run: python -m experiments.cognitive_gauntlet.rubiks3_curriculum --test-seed-start 3000 --output cognitive-gauntlet-results/rubiks3-curriculum-3000.json
       - name: Upload complete case receipts and scored SpongeTD journal
         if: always()
         uses: actions/upload-artifact@v4
