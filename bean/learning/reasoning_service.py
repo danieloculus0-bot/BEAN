@@ -10,6 +10,7 @@ from __future__ import annotations
 from hashlib import sha256
 from pathlib import Path
 import json
+import math
 
 from .experimental import ExperienceBank, TrialCase, material_for
 from .native_skills import BEANReasoningSkills
@@ -331,6 +332,8 @@ class NativeReasoningService:
             raise ValueError("Require 3..16 unique target probe IDs")
         if not callable(observe) or not callable(reward):
             raise ValueError("Observation and host reward callbacks required")
+        if type(margin) not in (int, float) or not math.isfinite(margin) or margin < 0:
+            raise ValueError("Margin must be finite and nonnegative")
         if validation_probe_ids is not None and (
                 not isinstance(validation_probe_ids, (list, tuple))
                 or not 3 <= len(validation_probe_ids) <= 16
@@ -395,42 +398,124 @@ class NativeReasoningService:
         source_rule = learned["selected_rule"]
         action_cache = {}
         measured = {}
+        host_failure = {}
+        reward_attempts = []
+
+        class _HostRewardFailure(Exception):
+            """Distinguish failed host measurements from invalid API inputs."""
+
         def paired_reward(policy, case):
             action = act(source_rule, views[case]) if policy == "source_rule" else 0
             key = (case, action)
             if key not in measured:
-                measured[key] = reward(case, action)
+                reward_attempts.append({"probe_id": case, "action": action})
+                try:
+                    value = reward(case, action)
+                except Exception as exc:
+                    host_failure.update({
+                        "probe_id": case, "policy": policy, "action": action,
+                        "error_class": type(exc).__name__,
+                    })
+                    raise _HostRewardFailure from None
+                if type(value) not in (int, float) or not math.isfinite(value):
+                    host_failure.update({
+                        "probe_id": case, "policy": policy, "action": action,
+                        "error_class": "InvalidReward",
+                    })
+                    raise _HostRewardFailure from None
+                measured[key] = float(value)
             action_cache.setdefault(case, {})[policy] = action
             return measured[key]
 
-        result = evaluate_transfer(
-            retained="source_rule", alternative="stay_0", probe_ids=probe_ids,
-            reward=paired_reward, margin=margin)
-        development_selected = result["selected"]
-        if validation_probe_ids is not None:
-            # This is an independent *target validation gate*, not the final
-            # blind benchmark. The candidate is fixed by development probes;
-            # the heldout cannot select a new policy after seeing its rewards.
-            validation = evaluate_transfer(
-                retained="source_rule", alternative="stay_0",
-                probe_ids=validation_probe_ids,
-                reward=paired_reward, margin=margin)
-            result["target_validation"] = {
-                **validation,
-                "source_policy_frozen_before_validation": True,
-                "used_for_candidate_selection": False,
-                "final_blind_benchmark": False,
+        def completed_pairs(probes):
+            # Reconstruct ONLY pairs with both host rewards observed. An
+            # interrupted pair must never be scored as a complete success.
+            pairs = []
+            for case in probes:
+                actions = action_cache.get(case, {})
+                if "source_rule" not in actions or "stay_0" not in actions:
+                    continue
+                first = measured.get((case, actions["source_rule"]))
+                second = measured.get((case, actions["stay_0"]))
+                if first is None or second is None:
+                    continue
+                pairs.append({
+                    "probe_id": case, "retained_reward": first,
+                    "alternative_reward": second, "difference": first - second,
+                })
+            return pairs
+
+        def incomplete_result(stage, development=None):
+            dev_pairs = completed_pairs(probe_ids)
+            val_pairs = completed_pairs(validation_probe_ids or ())
+            return {
+                "schema": "bean.native.selective_transfer.v1",
+                "retained": "source_rule", "alternative": "stay_0",
+                "pairs": dev_pairs, "number_of_pairs": len(dev_pairs),
+                "average_advantage": None, "required_margin": float(margin),
+                "selected": None, "transfer_accepted": False,
+                "decision": "reject_or_abstain",
+                "comparison_result": "host_reward_failed_abstain",
+                "measured_in": "paired_probe_reward",
+                "oracle_labels_used": False, "heldout_data_used": False,
+                "independent_verification": False,
+                "development_selected": (
+                    development["selected"] if development else None),
+                "validation_selected": None,
+                "target_validation": ({
+                    "status": "incomplete", "pairs": val_pairs,
+                    "number_of_pairs": len(val_pairs),
+                    "source_policy_frozen_before_validation": True,
+                    "used_for_candidate_selection": False,
+                    "final_blind_benchmark": False,
+                } if stage == "validation" else None),
+                "validation_failure": (
+                    "host_reward_failed" if stage == "validation"
+                    else "validation_not_run"),
+                "host_reward_failure": {**host_failure, "stage": stage},
+                "completed_reward_observations": [
+                    {"probe_id": case, "action": action, "reward": value}
+                    for (case, action), value in measured.items()
+                ],
+                "reward_attempts": len(reward_attempts),
             }
-            result["development_selected"] = development_selected
-            result["validation_selected"] = validation["selected"]
-            if development_selected != validation["selected"]:
-                result["selected"] = None
-                result["transfer_accepted"] = False
-                result["decision"] = "reject_or_abstain"
-                result["comparison_result"] = "validation_disagreement_abstain"
-                result["validation_failure"] = "development_validation_disagree"
-            else:
-                result["validation_failure"] = None
+
+        try:
+            result = evaluate_transfer(
+                retained="source_rule", alternative="stay_0",
+                probe_ids=probe_ids, reward=paired_reward, margin=margin)
+        except _HostRewardFailure:
+            result = incomplete_result("development")
+        else:
+            development_selected = result["selected"]
+            if validation_probe_ids is not None:
+                # Freeze development choice. A failed host measurement
+                # cannot silently select a replacement or erase the
+                # completed development/validation observations.
+                try:
+                    validation = evaluate_transfer(
+                        retained="source_rule", alternative="stay_0",
+                        probe_ids=validation_probe_ids,
+                        reward=paired_reward, margin=margin)
+                except _HostRewardFailure:
+                    result = incomplete_result("validation", development=result)
+                else:
+                    result["target_validation"] = {
+                        **validation,
+                        "source_policy_frozen_before_validation": True,
+                        "used_for_candidate_selection": False,
+                        "final_blind_benchmark": False,
+                    }
+                    result["development_selected"] = development_selected
+                    result["validation_selected"] = validation["selected"]
+                    if development_selected != validation["selected"]:
+                        result["selected"] = None
+                        result["transfer_accepted"] = False
+                        result["decision"] = "reject_or_abstain"
+                        result["comparison_result"] = "validation_disagreement_abstain"
+                        result["validation_failure"] = "development_validation_disagree"
+                    else:
+                        result["validation_failure"] = None
         result.update({
             "schema": "bean.native.discovered_transfer.v1",
             "candidate_generator": "recovered_native_hypothesis",
@@ -443,9 +528,10 @@ class NativeReasoningService:
             "development_probe_ids": list(probe_ids),
             "target_validation_probe_ids": list(validation_probe_ids or ()),
             "observations": [{"probe_id": p, "sensors": views[p],
-                              "policy_actions": action_cache[p]}
+                              "policy_actions": action_cache.get(p, {})}
                              for p in all_probe_ids],
             "reward_calls": len(measured),
+            "reward_attempts": len(reward_attempts),
             "source_ancestry_observation_coverage": (
                 "complete" if complete_source_history else "legacy_partial"),
             "target_validation_used": validation_probe_ids is not None,
