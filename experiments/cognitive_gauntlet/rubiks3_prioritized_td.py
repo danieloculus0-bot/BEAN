@@ -202,12 +202,15 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--test-seed-start', type=int, default=7000)
     parser.add_argument('--test-count', type=int, default=10)
+    parser.add_argument('--epochs', type=int, default=8)
+    parser.add_argument('--extra-updates', type=int, default=4000)
     parser.add_argument('--output', default='cognitive-gauntlet-results/rubiks3-prioritized-td.json')
     args = parser.parse_args()
     if args.test_count < 1:
         parser.error('test-count must be positive')
     report = experiment(test_seeds=range(args.test_seed_start,
                                          args.test_seed_start + args.test_count),
+                        epochs=args.epochs, extra_updates=args.extra_updates,
                         output=args.output)
     print(json.dumps({k: report[k] for k in
                       ('eligible_cases', 'excluded_count', 'baseline_solved',
