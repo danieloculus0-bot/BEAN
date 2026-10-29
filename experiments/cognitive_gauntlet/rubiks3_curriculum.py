@@ -146,7 +146,7 @@ def experiment(*, train_seeds=range(50), validation_seeds=range(600, 606),
                 raise AssertionError('evaluation changed frozen TD weights')
             result = {'schema': 'bean.rubiks3.validation-curriculum.v1',
                       'source_revision': os.environ.get('GITHUB_SHA', 'local_unverified'),
-                      'module_sha256': hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
+                      'module_sha256': hashlib.sha256(Path(__file__).read_text(encoding='utf-8').encode('utf-8')).hexdigest(),
                       'mechanism': 'validation-directed legal self-play, SpongeTD terminal reward',
                       'not_general_solver': True, 'optimality_unproven': True,
                       'split_seeds': {k: list(v) for k, v in splits.items()},

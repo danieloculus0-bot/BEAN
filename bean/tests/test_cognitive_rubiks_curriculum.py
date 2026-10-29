@@ -1,4 +1,5 @@
 """Reproducibility and isolation tests for native cube TD curriculum."""
+import hashlib
 import json
 import unittest
 from pathlib import Path
@@ -81,6 +82,10 @@ class CurriculumTests(unittest.TestCase):
             path = Path(tmp) / 'cases.json'
             report = tiny(output=path)
             self.assertEqual(report, json.loads(path.read_text(encoding='utf-8')))
+            source = Path(__import__('experiments.cognitive_gauntlet.rubiks3_curriculum',
+                                     fromlist=['experiment']).__file__)
+            normalized = source.read_text(encoding='utf-8').encode('utf-8')
+            self.assertEqual(report['module_sha256'], hashlib.sha256(normalized).hexdigest())
             self.assertEqual(len(report['cases']) + len(report['excluded']), 6)
 
 
