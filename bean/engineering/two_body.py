@@ -136,6 +136,7 @@ def propagate_two_body(*, mu_km3_s2, minimum_radius_km, position_km,
         return acceleration
 
     accel = gravity(pos)
+    initial_accel = accel
     initial_energy, initial_h = _invariants(mu, pos, vel)
     initial_conic = _conic_diagnostics(mu, minimum_radius, pos, vel)
     initial_radius = _norm(pos)
@@ -168,9 +169,12 @@ def propagate_two_body(*, mu_km3_s2, minimum_radius_km, position_km,
         "method": "fixed_step_velocity_verlet_newtonian_point_mass",
         "frame": "body_centered_inertial_assumed_not_transformed",
         "units": {"position": "km", "velocity": "km/s", "time": "s",
-                  "specific_energy": "km^2/s^2", "specific_angular_momentum": "km^2/s"},
+                  "specific_energy": "km^2/s^2", "specific_angular_momentum": "km^2/s",
+                  "gravitational_acceleration": "km/s^2"},
         "steps": steps, "step_seconds": dt, "elapsed_seconds": elapsed,
         "final_position_km": list(pos), "final_velocity_km_s": list(vel),
+        "initial_gravitational_acceleration_km_s2": list(initial_accel),
+        "final_gravitational_acceleration_km_s2": list(accel),
         "initial_conic_reference": initial_conic,
         "initial_specific_energy_km2_s2": initial_energy,
         "final_specific_energy_km2_s2": final_energy,

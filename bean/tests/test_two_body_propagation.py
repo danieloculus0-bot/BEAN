@@ -57,6 +57,22 @@ class TestTwoBodyPropagation(unittest.TestCase):
         self.assertGreater(coarse_error, 1.0)
         self.assertLess(fine_error, coarse_error/10)
 
+    def test_gravity_vector_is_inward_and_inverse_square(self):
+        # Independent Newtonian GM/r^2 check, including the propagated state.
+        near = reference(radius=7000., dt=1., steps=1)
+        far = reference(radius=14000., dt=1., steps=1)
+        g_near = near["initial_gravitational_acceleration_km_s2"]
+        g_far = far["initial_gravitational_acceleration_km_s2"]
+        self.assertEqual(near["units"]["gravitational_acceleration"], "km/s^2")
+        self.assertAlmostEqual(g_near[0], -MU / 7000.**2, places=12)
+        self.assertEqual(g_near[1:], [0., 0.])
+        self.assertAlmostEqual(g_near[0] / g_far[0], 4., places=12)
+        final_pos = near["final_position_km"]
+        final_g = near["final_gravitational_acceleration_km_s2"]
+        self.assertLess(sum(p * a for p, a in zip(final_pos, final_g)), 0.)
+        self.assertAlmostEqual(math.hypot(*final_g),
+                               MU / math.hypot(*final_pos)**2, places=12)
+
     def test_initial_conic_circular_and_elliptical(self):
         circular = reference(radius=7000, dt=1, steps=1)["initial_conic_reference"]
         self.assertEqual(circular["classification"], "bound")

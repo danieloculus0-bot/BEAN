@@ -20,6 +20,11 @@ autonomously acquired NASA expertise or has supercomputer hardware.
   declared initial state, source-labelled body GM and a physical-radius collision
   guard. Reports energy and angular-momentum drift and the final state. This
   is not date-specific planetary navigation or high-fidelity orbit propagation.
+  The result also exposes the initial and final **gravity acceleration vectors**
+  in km/s², pointing toward the central body. A test checks the Newtonian
+  inverse-square relationship: at twice the radius, gravity is one-quarter as
+  strong. These are idealized point-mass accelerations, not measured onboard
+  accelerometer readings or a drone guidance command.
 - Strict numeric, parameter and operation validation; explicit unit names and method limits.
 
 Use:
