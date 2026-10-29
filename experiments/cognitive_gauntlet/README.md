@@ -1,0 +1,44 @@
+# BEAN Cognitive Gauntlet (isolated experiment)
+
+This experiment stays off main. It has **not** implemented AGI or executed
+OpenNARS, Hyperon, PLN, Voyager, Letta or DreamerV3 as opponents.
+
+## Current measured challenge
+
+The first CPU-only pilot compares an independent-evidence pool with a
+newest-claim baseline, using the **same** simulated observations, truth labels,
+budget and seeds. Both may fail. Run:
+
+    python -m unittest bean.tests.test_cognitive_gauntlet -v
+    python -m experiments.cognitive_gauntlet.runner
+
+The runner writes a gzip JSON receipt preserving every synthetic case, every
+incorrect prediction, comparator errors, seeds and SHA-256 payload digest.
+The test suite checks deterministic replay and score reconciliation.
+
+This first comparator is a *prototype*, not BEAN Core's live world-model
+runtime. No external competitor is installed or measured in this pilot.
+The existing real BEAN-versus-Aider coding contest remains in
+experiments/agent_arena and is not replaced.
+
+## Proposed next rounds (not completed)
+
+- OpenNARS / PLN: compare source-aware truth revision and inference, including
+  conflicting evidence and correlated sources, to BEAN's existing claim model.
+- Hyperon: test typed relationship query and provenance versus current claims.
+- Voyager: test curriculum and retained-skill retrieval against BEAN native skills.
+- Letta: compare context recall, consolidation and restart continuity.
+- DreamerV3: compare world prediction and control on matched observation/action
+  environments with matched compute budgets and actual installed runtimes.
+
+These projects have incompatible interfaces and computational requirements.
+An experiment is not an external head-to-head until both actual systems execute
+the same held-out tasks. Maintain their exact revisions, licenses and adapters.
+
+## Acceptance condition
+
+For any claimed improvement, save all failures and successes, assess equal
+evaluation budgets, compare with the unchanged main baseline, run held-out
+tasks and verify across restarts. A win on the synthetic pilot is **not**
+a win against any external AI system. Do not merge while external competitions
+are described as completed unless their original receipts exist.
