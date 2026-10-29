@@ -101,3 +101,29 @@ A separate small 15000 cohort tests basic integration. The baseline remains
 the original terminal-only learner. Both failures and improvements count.
 No generalization or 20-turn success is claimed until exact-head CI receipts
 are inspected.
+
+
+## Corrected fresh-holdout result (2026-10-29)
+
+The potential-corrected controller passed all eight temperature tests on
+Linux Python 3.11 and 3.12 at run
+https://github.com/danieloculus0-bot/BEAN/actions/runs/40872267768 .
+On disjoint untouched 16000/17000 cohorts:
+
+- 16000: 45 eligible, 5 excluded; unchanged baseline 19 solved,
+  potential-corrected shaped learner 19 solved; 0 better, 0 worse; 0/10
+  20-turn cubes.
+- 17000: 49 eligible, 1 excluded; unchanged baseline 17 solved,
+  potential-corrected shaped learner 17 solved; 0 better, 0 worse; 0/10
+  20-turn cubes.
+
+**Combined 36/94 versus 36/94, with 0/20 full 20-turn solves.**
+This is a valid negative result. The shaped reward provided more intermediate
+feedback, but did not create new state coverage or longer-range generalization
+in this matched training setting. The naive raw-value controller's 0/92
+failure remains separately preserved, not erased by this correction.
+
+The next experiment should isolate *learned piece-level value transfer* or
+reusable subgoals on states outside the tabular Q graph, rather than another
+whole-state replay scheduler. Any such proposal must be compared on new
+independent holdouts. Do not promote this reward shaping as a solving gain.
