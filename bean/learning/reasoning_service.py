@@ -296,7 +296,8 @@ class NativeReasoningService:
 
     def transfer_discovered_analogy(self, *, source_receipt_id, target_domain,
                                     task_ref, source_ref, probe_ids, observe,
-                                    reward, margin=0.0):
+                                    reward, margin=0.0,
+                                    validation_probe_ids=None):
         """Test a saved self-discovered rule in another domain against no-op.
 
         Candidate comes from BEAN's journal, not the host. Both policies face
@@ -330,6 +331,14 @@ class NativeReasoningService:
             raise ValueError("Require 3..16 unique target probe IDs")
         if not callable(observe) or not callable(reward):
             raise ValueError("Observation and host reward callbacks required")
+        if validation_probe_ids is not None and (
+                not isinstance(validation_probe_ids, (list, tuple))
+                or not 3 <= len(validation_probe_ids) <= 16
+                or any(not isinstance(p, str) or not 0 < len(p) <= 128
+                       for p in validation_probe_ids)
+                or len(set(validation_probe_ids)) != len(validation_probe_ids)
+                or set(validation_probe_ids) & set(probe_ids)):
+            raise ValueError("Require disjoint 3..16 target validation probe IDs")
 
         prior_seen = set()
         complete_source_history = True
@@ -352,11 +361,13 @@ class NativeReasoningService:
                     == source_receipt_id
                     and previous.get("domain") == target_domain):
                 prior_seen.update(previous["decision"]["observed_probe_ids"])
-        if set(probe_ids) & prior_seen:
+        all_probe_ids = list(probe_ids) + list(validation_probe_ids or ())
+        if set(all_probe_ids) & prior_seen:
             raise ValueError("Transfer requires fresh target probe IDs")
 
         dimensions = len(learned["records"][0]["sensors"])
-        views = {p: _vector(observe(p), dimensions=dimensions) for p in probe_ids}
+        views = {p: _vector(observe(p), dimensions=dimensions)
+                 for p in all_probe_ids}
         source_rule = learned["selected_rule"]
         action_cache = {}
         measured = {}
@@ -371,6 +382,31 @@ class NativeReasoningService:
         result = evaluate_transfer(
             retained="source_rule", alternative="stay_0", probe_ids=probe_ids,
             reward=paired_reward, margin=margin)
+        development_selected = result["selected"]
+        if validation_probe_ids is not None:
+            # This is an independent *target validation gate*, not the final
+            # blind benchmark. The candidate is fixed by development probes;
+            # the heldout cannot select a new policy after seeing its rewards.
+            validation = evaluate_transfer(
+                retained="source_rule", alternative="stay_0",
+                probe_ids=validation_probe_ids,
+                reward=paired_reward, margin=margin)
+            result["target_validation"] = {
+                **validation,
+                "source_policy_frozen_before_validation": True,
+                "used_for_candidate_selection": False,
+                "final_blind_benchmark": False,
+            }
+            result["development_selected"] = development_selected
+            result["validation_selected"] = validation["selected"]
+            if development_selected != validation["selected"]:
+                result["selected"] = None
+                result["transfer_accepted"] = False
+                result["decision"] = "reject_or_abstain"
+                result["comparison_result"] = "validation_disagreement_abstain"
+                result["validation_failure"] = "development_validation_disagree"
+            else:
+                result["validation_failure"] = None
         result.update({
             "schema": "bean.native.discovered_transfer.v1",
             "candidate_generator": "recovered_native_hypothesis",
@@ -379,13 +415,16 @@ class NativeReasoningService:
             "target_domain": target_domain,
             "source_hypothesis": source_rule,
             "sensor_dimensions": dimensions,
-            "observed_probe_ids": list(probe_ids),
+            "observed_probe_ids": all_probe_ids,
+            "development_probe_ids": list(probe_ids),
+            "target_validation_probe_ids": list(validation_probe_ids or ()),
             "observations": [{"probe_id": p, "sensors": views[p],
                               "policy_actions": action_cache[p]}
-                             for p in probe_ids],
+                             for p in all_probe_ids],
             "reward_calls": len(measured),
             "source_ancestry_observation_coverage": (
                 "complete" if complete_source_history else "legacy_partial"),
+            "target_validation_used": validation_probe_ids is not None,
             "final_heldout_used": False,
             "independently_authenticated": False,
         })
