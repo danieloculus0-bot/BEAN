@@ -395,5 +395,117 @@ class ActiveHypothesisTests(unittest.TestCase):
         self.assertFalse(r["model_independently_builds_grammar"])
 
 
+    def test_full_observation_fingerprints_survive_restart(self):
+        with tempfile.TemporaryDirectory() as d:
+            db = Path(d) / "fingerprints.sqlite3"
+            world = World(120, "channel")
+            core = NativeReasoningService(db)
+            try:
+                parent = core.discover_analogy(
+                    domain="control", task_ref="first",
+                    source_ref="sim:full-pool",
+                    probe_ids=[str(100+i) for i in range(40)],
+                    validation_probe_ids=[str(5000+i) for i in range(3)],
+                    observe=world.observe, reward=world.feedback, budget=12)
+                self.assertEqual(len(parent["observed_sensor_fingerprints"]), 43)
+                self.assertEqual(parent["sensor_fingerprint_coverage"],
+                                 "all_observed_probe_ids")
+                self.assertEqual(set(parent["observed_sensor_fingerprints"]),
+                                 set(parent["observed_probe_ids"]))
+                self.assertEqual(len(set(
+                    parent["observed_sensor_fingerprints"].values())), 43)
+            finally:
+                core.close()
+            recovered = NativeReasoningService(db)
+            try:
+                trials = [e["data"] for e in recovered.bank.journal.events()
+                          if e["kind"] == "trial" and e["data"].get(
+                              "experiment") == "bean.native.active_hypothesis.v1"]
+                self.assertEqual(len(trials), 1)
+                self.assertEqual(
+                    trials[0]["decision"]["observed_sensor_fingerprints"],
+                    parent["observed_sensor_fingerprints"])
+            finally:
+                recovered.close()
+
+    def test_revision_rejects_relabelled_unrewarded_ancestral_state(self):
+        with tempfile.TemporaryDirectory() as d:
+            world = World(120, "channel")
+            core = NativeReasoningService(Path(d) / "ancestry.sqlite3")
+            try:
+                original = core.discover_analogy(
+                    domain="control", task_ref="parent",
+                    source_ref="sim:parent",
+                    probe_ids=[str(100+i) for i in range(40)],
+                    observe=world.observe, reward=world.feedback, budget=12)
+                rewarded = {row["probe_id"] for row in original["records"]}
+                unrewarded = next(pid for pid in original["observed_probe_ids"]
+                                  if pid not in rewarded)
+                reward_calls = []
+                def relabelled(pid):
+                    return world.observe(unrewarded if pid == "200" else pid)
+                def count_reward(pid, action):
+                    reward_calls.append((pid, action))
+                    return world.feedback(pid, action)
+                with self.assertRaisesRegex(ValueError, "unseen sensor states"):
+                    core.revise_discovered_analogy(
+                        parent_receipt_id=original["receipt_id"],
+                        domain="control", task_ref="relabelled",
+                        source_ref="sim:relabelled",
+                        probe_ids=[str(200+i) for i in range(40)],
+                        observe=relabelled, reward=count_reward, budget=12)
+                self.assertEqual(reward_calls, [])
+                self.assertEqual(len([e for e in core.bank.journal.events()
+                                      if e["kind"] == "trial" and e["data"].get(
+                                          "experiment") ==
+                                      "bean.native.active_hypothesis.v1"]), 1)
+            finally:
+                core.close()
+
+    def test_revision_rejects_repeated_fresh_or_validation_states(self):
+        with tempfile.TemporaryDirectory() as d:
+            world = World(120, "channel")
+            core = NativeReasoningService(Path(d) / "fresh.sqlite3")
+            try:
+                original = core.discover_analogy(
+                    domain="control", task_ref="parent",
+                    source_ref="sim:parent",
+                    probe_ids=[str(100+i) for i in range(40)],
+                    observe=world.observe, reward=world.feedback, budget=12)
+                reward_calls = []
+                def count_reward(pid, action):
+                    reward_calls.append((pid, action))
+                    return world.feedback(pid, action)
+                params = dict(
+                    parent_receipt_id=original["receipt_id"],
+                    domain="control", task_ref="duplicate",
+                    source_ref="sim:duplicate",
+                    probe_ids=[str(200+i) for i in range(40)],
+                    reward=count_reward, budget=12)
+                with self.assertRaisesRegex(ValueError,
+                                            "distinct fresh sensor states"):
+                    core.revise_discovered_analogy(
+                        **params,
+                        observe=lambda pid: world.observe(
+                            "200" if pid == "201" else pid))
+                self.assertEqual(reward_calls, [])
+                with self.assertRaisesRegex(ValueError, "unseen sensor states"):
+                    core.revise_discovered_analogy(
+                        **params,
+                        validation_probe_ids=[str(5000+i) for i in range(3)],
+                        observe=lambda pid: world.observe(
+                            "100" if pid == "5000" else pid))
+                self.assertEqual(reward_calls, [])
+                revised = core.revise_discovered_analogy(
+                    **params, observe=world.observe)
+                self.assertEqual(revised["ancestry_sensor_coverage"],
+                                 "all_observed_sensor_states")
+                self.assertTrue(
+                    revised["sensor_state_reuse_rejected_before_rewards"])
+                self.assertEqual(len(revised["observed_sensor_fingerprints"]), 40)
+            finally:
+                core.close()
+
+
 if __name__=="__main__":
     unittest.main()
