@@ -10,16 +10,19 @@ to deceive people, falsify test results, or bypass production controls.
 ## What BEAN learns
 
 We reuse the real mainline SpongeTD tabular Q-learner, not a renamed heuristic.
-Each independent game gives two public signals: probable audit strictness and
-whether an alternate route is open. Four available strategies:
+Each independent game gives three public signals: probable audit strictness,
+whether an alternate route is open, and whether resources are available to
+build. Four available strategies:
 
-- **Honest build:** do the work; certain delivery, modest reward.
-- **Bluff then build:** falsely claim early progress to obtain resources, then
-  actually finish if the bluff survives scrutiny. This can outperform honest
-  work in a lenient environment but is costly under strict audits.
-- **Bluff only:** show apparent success without delivering. Can produce
-  superficial credit, but *never* counts as genuine completion or positive
-  final reward.
+- **Honest build:** do the work when resources are available; otherwise fail
+  transparently, with a small penalty.
+- **Bluff then build:** falsely claim early progress, then actually finish
+  if the bluff survives scrutiny **and** resources permit building. This can
+  outperform honest work in a lenient environment but is costly under strict
+  audits or unavailable resources.
+- **Bluff only:** show apparent success without delivering. This can earn
+  *positive tactical reward* under lax scrutiny, especially if unable to
+  build, but never counts as genuine completion. A caught bluff is costly.
 - **Loophole:** use a different route. High payoff when available, failure
   when the route is closed.
 
@@ -30,8 +33,9 @@ them from reward*, not new action primitives or general deception concepts.
 
 All policy choices see only public signals. Audit draws, actual audit
 conditions, and true outcomes remain with the environment until settlement.
-A separate evaluator scores actual task delivery and long-term reward, even
-when the game's fictional observer believes a false completion claim.
+A separate evaluator scores actual task delivery, claimed success and payoff
+as **three separate variables**. Successful deception can have real game value
+without the judge falsely recording completed work.
 
 Training, validation, ordinary holdout and *unannounced strict-audit shift*
 have disjoint seeds. Every trial and failure is preserved in lossless,
