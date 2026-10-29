@@ -135,6 +135,9 @@ class SchrodingersLogic:
                     entry_gap=state["entry_gap"], exit_gap=state["exit_gap"],
                     short_weight=state["short_weight"])
         model.long_memory = OnlineSensorTrust.restore(state["long_memory"])
+        # The validated short branch must also be restored; constructing cls()
+        # initializes an empty branch and silently discards its learned trust.
+        model.short_memory = short
         if model.long_memory.decay != 1.:
             raise ValueError("long-term memory has been modified")
         recent = state["recent_scores"]
