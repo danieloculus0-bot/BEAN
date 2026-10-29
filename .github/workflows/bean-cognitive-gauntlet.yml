@@ -55,6 +55,44 @@ jobs:
           python-version: ${{ matrix.python }}
       - name: Verify test assumptions and complete receipts
         run: python -m unittest bean.tests.test_cognitive_gauntlet bean.tests.test_cognitive_adaptive bean.tests.test_cognitive_stress bean.tests.test_cognitive_pattern bean.tests.test_cognitive_sensor bean.tests.test_cognitive_schrodinger bean.tests.test_cognitive_decision_audit bean.tests.test_cognitive_wisdom -v
+      - name: Execute exact paired evidence comparisons
+        run: python -m experiments.cognitive_gauntlet.runner
+      - name: Tune on training seeds and evaluate held-out adaptive predictions
+        run: python -m experiments.cognitive_gauntlet.adaptive_benchmark --seeds 80 --training-seeds 20 --rounds 100
+      - name: Test frozen adaptive policy on unseen scenario families
+        run: python -m experiments.cognitive_gauntlet.stress
+      - name: Frozen Bayesian mixture, held-out plus additional synthetic families
+        run: python -m experiments.cognitive_gauntlet.pattern_benchmark
+      - name: Online sensor reliability, frozen comparator and complete delayed feedback receipts
+        run: python -m experiments.cognitive_gauntlet.sensor_benchmark
+      - name: Schrodinger's Logic chaos-only parallel-state versus unchanged controls
+        run: python -m experiments.cognitive_gauntlet.schrodinger_benchmark
+      - name: Measure five cognitive dimensions without collapsing to intelligence score
+        run: python -m experiments.cognitive_gauntlet.wisdom_benchmark
+      - name: Retain full positive and negative receipts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cognitive-gauntlet-${{ matrix.os }}-py${{ matrix.python }}
+          path: cognitive-gauntlet-results/
+          if-no-files-found: warn
+
+  cube-policy:
+    # Keep BEAN's cube tests independent of unrelated cognitive experiment failures.
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        python: ['3.11', '3.12']
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
       - name: Check legal cube moves, optimality and bounded failures
         run: python -m unittest bean.tests.test_cognitive_rubiks3 -v
       - name: Replay bounded 3x3 cube cases with failure receipts
@@ -75,24 +113,10 @@ jobs:
         run: python -m experiments.cognitive_gauntlet.rubiks3_symmetry --output cognitive-gauntlet-results/rubiks3-symmetry-2000.json --test-seed-start 2000
       - name: Frozen cube symmetry holdout cohort 3000 with every failure
         run: python -m experiments.cognitive_gauntlet.rubiks3_symmetry --output cognitive-gauntlet-results/rubiks3-symmetry-3000.json --test-seed-start 3000
-      - name: Execute exact paired evidence comparisons
-        run: python -m experiments.cognitive_gauntlet.runner
-      - name: Tune on training seeds and evaluate held-out adaptive predictions
-        run: python -m experiments.cognitive_gauntlet.adaptive_benchmark --seeds 80 --training-seeds 20 --rounds 100
-      - name: Test frozen adaptive policy on unseen scenario families
-        run: python -m experiments.cognitive_gauntlet.stress
-      - name: Frozen Bayesian mixture, held-out plus additional synthetic families
-        run: python -m experiments.cognitive_gauntlet.pattern_benchmark
-      - name: Online sensor reliability, frozen comparator and complete delayed feedback receipts
-        run: python -m experiments.cognitive_gauntlet.sensor_benchmark
-      - name: Schrodinger's Logic chaos-only parallel-state versus unchanged controls
-        run: python -m experiments.cognitive_gauntlet.schrodinger_benchmark
-      - name: Measure five cognitive dimensions without collapsing to intelligence score
-        run: python -m experiments.cognitive_gauntlet.wisdom_benchmark
-      - name: Retain full positive and negative receipts
+      - name: Retain all BEAN-native cube receipts, including failures
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: cognitive-gauntlet-${{ matrix.os }}-py${{ matrix.python }}
+          name: bean-native-cube-${{ matrix.os }}-py${{ matrix.python }}
           path: cognitive-gauntlet-results/
           if-no-files-found: warn
