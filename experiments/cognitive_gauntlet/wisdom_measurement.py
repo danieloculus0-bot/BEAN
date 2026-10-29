@@ -10,6 +10,7 @@ import json
 import math
 from .decision_audit import audit_cases
 from .sensor_reliability import OnlineSensorTrust, SensorObservation
+from .sensor_benchmark import REGIMES
 
 ARMS = ("fixed_prior", "long_memory", "forgetful", "unweighted", "schrodingers_logic")
 WISDOM_SCHEMA = "bean.gauntlet.wisdom_measurement.v1"
@@ -26,6 +27,16 @@ def measure(report):
     cases = report["cases"]
     if not cases or not isinstance(report.get("reference_digest"), str):
         raise ValueError("source evidence digest required")
+    if (type(report.get("seeds")) is not int or type(report.get("rounds")) is not int
+            or type(report.get("first_seed")) is not int):
+        raise ValueError("source budget required")
+    expected = report["seeds"] * report["rounds"] * len(REGIMES)
+    if len(cases) != expected:
+        raise ValueError("source event count incomplete")
+    unsigned = {key: value for key, value in report.items() if key != "digest"}
+    canonical_source = json.dumps(unsigned, sort_keys=True, separators=(",", ":"), allow_nan=False)
+    if report.get("digest") != hashlib.sha256(canonical_source.encode()).hexdigest():
+        raise ValueError("source event digest mismatch")
     audit = audit_cases(cases, ARMS, source_digest=report["reference_digest"])
     groups = {}
     outcomes = defaultdict(list)
@@ -79,6 +90,10 @@ def measure(report):
                 case["losses"]["schrodingers_logic"] - best_ex_post)
     if len(cases) != audit["overall"]["cases"]:
         raise ValueError("case coverage mismatch")
+    expected_groups = {(regime, seed) for regime in REGIMES for seed in
+                       range(report["first_seed"], report["first_seed"] + report["seeds"])}
+    if set(groups) != expected_groups or any(step != report["rounds"]-1 for step in last_step.values()):
+        raise ValueError("missing or substituted seed/scenario receipts")
 
     evidence = {}
     options = {}
