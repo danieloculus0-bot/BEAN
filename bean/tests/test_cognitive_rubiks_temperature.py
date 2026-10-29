@@ -69,6 +69,36 @@ class RubiksTemperatureTests(unittest.TestCase):
         self.assertEqual(result['candidate_better'],
                          sum(c['candidate_solved'] and not c['baseline_solved'] for c in result['cases']))
 
+    def test_potential_corrected_value_interpretation(self):
+        from tempfile import TemporaryDirectory
+        from pathlib import Path
+        from bean.optimization.sponge_td import SpongeTD
+        from experiments.cognitive_gauntlet.rubiks3_symmetry import canonical, MOVE_INDEX
+        from experiments.cognitive_gauntlet.rubiks3_temperature import _unshaped_action
+        state = rubiks3.turn(rubiks3.SOLVED, 'R')
+        normalized, faces = canonical(state)
+        with TemporaryDirectory() as tmp:
+            learner = SpongeTD(Path(tmp) / 'test.db', actions=rubiks3.MOVES,
+                               alpha=1, gamma=.9, epsilon=0)
+            try:
+                values = learner.values(normalized)
+                values[MOVE_INDEX[faces["R"] + "'"]] = .8 - temperature(state)
+                self.assertAlmostEqual(_unshaped_action(learner, state, "R'"), .8)
+            finally:
+                learner.close()
+
+    def test_corrected_policy_receipts_on_separate_validation(self):
+        result = experiment(train_seeds=range(10), test_seeds=range(15000, 15003),
+                            train_lengths=(2, 3, 4), test_lengths=(3, 4, 20),
+                            epochs=2, controller='unshaped')
+        self.assertEqual(result['controller'], 'unshaped')
+        self.assertEqual(result['eligible_cases'] + result['excluded_count'], 9)
+        self.assertEqual(result['baseline_training']['td_updates'],
+                         result['candidate_training']['td_updates'])
+        self.assertEqual(result['twenty_turn_solved'],
+                         sum(c['candidate_solved'] for c in result['cases']
+                             if c['scramble_length'] == 20))
+
     def test_no_reference_solver_or_scramble_at_inference(self):
         from tempfile import TemporaryDirectory
         from pathlib import Path
