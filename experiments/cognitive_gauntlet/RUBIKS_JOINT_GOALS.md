@@ -11,8 +11,10 @@ This experiment reuses the existing BEAN SpongeTD implementation, cube
 legality checks, legal self-play transition graph, piece identity features,
 canonical state exclusion, and learned-value rollout comparator. It learns
 96 labeled corner-edge joint action-value tables per observed transition.
-Reward +1 is delivered only when **both** pieces in a pair are solved.
-Single-piece progress earns no joint terminal reward. This is a narrow
+Reward +1 is delivered only when **both** pieces in a pair become solved
+on that transition. Keeping an already completed pair solved earns zero,
+preventing repeatable reward harvesting. Single-piece progress earns no
+joint terminal reward. This is a narrow
 representation experiment, not a general planner or an external solver.
 
 The candidate is an actual learned Q-value action controller. At inference
