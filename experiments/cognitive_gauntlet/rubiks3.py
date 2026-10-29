@@ -7,7 +7,6 @@ from __future__ import annotations
 from collections import deque
 import hashlib
 import json
-import random
 
 FACES = 'UDFBRL'
 NORMAL = {'U':(0,1,0),'D':(0,-1,0),'F':(0,0,1),
@@ -89,11 +88,15 @@ def invert(moves):
 def scramble(seed, length):
     if length < 0 or length > 100:
         raise ValueError('scramble length out of range')
-    rng = random.Random(seed)
+    x = (int(seed) & 0xffffffff) or 0x9e3779b9
     out = []
     for _ in range(length):
+        x ^= (x << 13) & 0xffffffff
+        x ^= x >> 17
+        x ^= (x << 5) & 0xffffffff
+        x &= 0xffffffff
         valid = [m for m in MOVES if not out or m[0] != out[-1][0]]
-        out.append(rng.choice(valid))
+        out.append(valid[x % len(valid)])
     return out
 
 
