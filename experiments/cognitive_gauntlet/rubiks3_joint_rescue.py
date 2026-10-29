@@ -202,7 +202,7 @@ def experiment(*, train_seeds=range(16), test_seeds=range(26000, 26010),
             result = {
                 'schema': SCHEMA,
                 'source_revision': os.environ.get('GITHUB_SHA', 'local_unverified'),
-                'module_sha256': hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
+                'module_sha256': hashlib.sha256(Path(__file__).read_text(encoding='utf-8').encode('utf-8')).hexdigest(),
                 'mechanism': 'unchanged BEAN full-state policy with joint-Q rescue only on stall',
                 'reference_solver_used': False, 'inverse_scramble_used': False,
                 'not_general_solver': True, 'optimality_unproven': True,
