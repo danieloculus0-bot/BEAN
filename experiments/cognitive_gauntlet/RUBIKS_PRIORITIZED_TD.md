@@ -53,3 +53,20 @@ microbenchmark is not a head-to-head win against OpenNARS, Hyperon, PLN,
 Voyager, Letta or DreamerV3, none of which runs in this experiment.
 
 Production BEAN cognition and the mainline developer's files are unchanged.
+
+## First matched-update result and independent low-budget falsification
+
+The first two cohorts, seeds 7000 to 7009 and 8000 to 8009, used eight
+initial epochs and 4,000 additional updates per arm. On 90 eligible states
+(10 excluded), **both** unchanged random replay and prioritized replay solved
+35/90. Candidate better: 0; candidate worse: 0; 20-turn solved: 0/20.
+The four isolated priority CI jobs passed at the first exact-head run
+[40856126221](https://github.com/danieloculus0-bot/BEAN/actions/runs/40856126221).
+This is a **negative finding**, not an improvement.
+
+A separate, preregistered **sample-efficiency** test now uses one initial
+epoch and 200 additional TD updates per arm, on two fresh, untouched cohorts:
+seeds 9000 to 9009 and 10000 to 10009. It tests whether priority matters
+before both methods have had thousands of backups. These new cohorts are not
+reused from the first negative result, and the first negative receipts remain
+unchanged. The low-budget outcome is unknown until exact-commit CI completes.
