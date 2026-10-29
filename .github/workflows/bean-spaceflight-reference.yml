@@ -7,8 +7,11 @@ on:
     paths:
       - "bean/engineering/spaceflight.py"
       - "bean/engineering/two_body.py"
+      - "bean/runtime/inbox_handlers.py"
+      - "bean/runtime/inbox.py"
       - "bean/tests/test_spaceflight_reference.py"
       - "bean/tests/test_two_body_propagation.py"
+      - "bean/tests/test_spaceflight_inbox.py"
       - "research/spaceflight/**"
       - ".github/workflows/bean-spaceflight-reference.yml"
   pull_request:
@@ -16,8 +19,11 @@ on:
     paths:
       - "bean/engineering/spaceflight.py"
       - "bean/engineering/two_body.py"
+      - "bean/runtime/inbox_handlers.py"
+      - "bean/runtime/inbox.py"
       - "bean/tests/test_spaceflight_reference.py"
       - "bean/tests/test_two_body_propagation.py"
+      - "bean/tests/test_spaceflight_inbox.py"
       - "research/spaceflight/**"
       - ".github/workflows/bean-spaceflight-reference.yml"
   workflow_dispatch:
@@ -43,7 +49,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: Compile deterministic reference modules and receipt generator
         run: |
-          python -m compileall -q bean/engineering/spaceflight.py bean/engineering/two_body.py bean/tests/test_spaceflight_reference.py bean/tests/test_two_body_propagation.py research/spaceflight/ci_receipt.py
+          python -m compileall -q bean/engineering/spaceflight.py bean/engineering/two_body.py bean/tests/test_spaceflight_reference.py bean/tests/test_two_body_propagation.py research/spaceflight/ci_receipt.py bean/runtime/inbox_handlers.py bean/runtime/inbox.py bean/tests/test_spaceflight_inbox.py
       - name: Verify physics and generate source-hashed evidence receipt
         run: python -m research.spaceflight.ci_receipt --output spaceflight_receipt.json
       - name: Exercise Mars calculation interface
