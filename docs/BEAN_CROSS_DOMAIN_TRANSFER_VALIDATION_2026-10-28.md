@@ -91,3 +91,38 @@ count committed tests as passed without runner output. The separate Gauntlet
 symmetry experiment at PR #199 reported 33/118 held-out cube successes against
 6/118 unchanged SpongeTD, with 0/30 twenty-turn successes, in local
 synthetic evidence; no Gauntlet branch files were edited here.
+
+
+## Incomplete host-feedback receipts (2026-10-29)
+
+A host reward callback can fail partway through a paired transfer evaluation.
+Previously that exception aborted the call before a transfer trial was written,
+losing the partial measured rewards and the reason for stopping. The Core
+`transfer_discovered_analogy` implementation now records a **fail-closed
+abstention** with `comparison_result=host_reward_failed_abstain` and
+`selected=None` if a host reward raises an exception or returns a nonfinite
+or nonnumeric value. This applies to both development and target validation.
+
+The existing SHA-chained trial includes the completed paired observations,
+individual successful action/reward measurements, attempted-versus-completed
+reward counts, failure stage, probe, action, policy, and bounded exception
+class. The raw exception message is deliberately **not** copied into the
+journal. If validation fails after development succeeded, the original
+development selection and completed validation pairs remain visible but
+cannot authorize a policy. `use_tested_transfer` abstains for that receipt.
+
+A failed reward is never imputed as zero, treated as a tie, or counted as a
+successful paired comparison. Caller input validation (including the margin)
+still rejects invalid requests. Source/target ancestry and duplicate-state
+checks remain unchanged. No external provider, device, or trade is invoked.
+
+Three synthetic regressions exercise interrupted development, interrupted
+validation after a completed development phase, nonfinite rewards, durable
+restart recovery, and refusal to reuse an incomplete transfer. They are
+test **specifications** until an exact-source runner confirms execution.
+
+The Gauntlet branch remains untouched. Exact-head Gauntlet run
+[40822971069](https://github.com/danieloculus0-bot/BEAN/actions/runs/40822971069)
+at `b7624e182e412288089de3ca7963e1aeb561fd9b` finished with eight
+successful jobs and uploaded case-level artifacts. That verifies those
+synthetic experimental regressions, not deployment or general intelligence.
