@@ -1,5 +1,6 @@
 """Exact-source independent checks for 24-rotation BEAN SpongeTD transfer."""
 import unittest
+from unittest.mock import patch
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
@@ -77,6 +78,30 @@ class SymmetryCubeTests(unittest.TestCase):
         twenty = [c for c in result['cases'] if c['scramble_length'] == 20]
         self.assertEqual(len(twenty), 10)
         self.assertTrue(all(not c['candidate_solved'] for c in twenty))
+
+    def test_inference_uses_learned_policy_without_reference_or_scramble(self):
+        # Training comes only from a tiny legal transition graph and terminal
+        # reward. The inference path must not be able to call a teacher,
+        # scramble generator, or the baseline search routine.
+        start = turn(SOLVED, 'R')
+        states = {SOLVED, start, turn(start, 'U')}
+        with TemporaryDirectory() as tmp:
+            learner = SpongeTD(Path(tmp)/'policy.db', actions=MOVES,
+                               alpha=1, gamma=.9, epsilon=0)
+            try:
+                learn_symmetric(learner, states, epochs=8)
+                with (patch('experiments.cognitive_gauntlet.rubiks3_symmetry.solve',
+                            side_effect=AssertionError('reference solver called')),
+                      patch('experiments.cognitive_gauntlet.rubiks3_symmetry.scramble',
+                            side_effect=AssertionError('scramble leaked')),
+                      patch('experiments.cognitive_gauntlet.rubiks3_sponge.solve',
+                            side_effect=AssertionError('baseline solver called'))):
+                    moves, report = policy_solve_symmetric(learner, start)
+                self.assertTrue(report['solved'])
+                self.assertEqual(apply(start, moves), SOLVED)
+                self.assertEqual(len(moves), 1)
+            finally:
+                learner.close()
 
     def test_overlap_rejected(self):
         with self.assertRaises(ValueError):
