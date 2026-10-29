@@ -69,4 +69,4 @@ epoch and 200 additional TD updates per arm, on two fresh, untouched cohorts:
 seeds 9000 to 9009 and 10000 to 10009. It tests whether priority matters
 before both methods have had thousands of backups. These new cohorts are not
 reused from the first negative result, and the first negative receipts remain
-unchanged. The low-budget outcome is unknown until exact-commit CI completes.
+unchanged. The low-budget results are **33/95 candidate solved versus 27/95 baseline**\nacross 95 eligible held-out states (5 excluded): cohort 9000 was 15/50\nversus 13/50; cohort 10000 was 18/45 versus 14/45. Six additional\nindependently replayed solutions, zero reverse regressions, and **0/20\n20-turn states solved**. All four isolated priority jobs passed at\n[exact-head CI 40856372962](https://github.com/danieloculus0-bot/BEAN/actions/runs/40856372962)\non Ubuntu/Windows with Python 3.11/3.12. Per-cohort SHA-256 receipts\nmatched across platforms. This is a **small sample-efficiency improvement**\nat a reduced TD budget, not general cube mastery or evidence of shorter\noptimal solutions.
