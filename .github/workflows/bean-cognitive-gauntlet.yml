@@ -1,0 +1,44 @@
+name: BEAN experimental cognitive gauntlet
+on:
+  push:
+    branches: [experiment/agi-cognitive-gauntlet-20261028]
+    paths:
+      - 'experiments/cognitive_gauntlet/**'
+      - 'bean/tests/test_cognitive_gauntlet.py'
+      - '.github/workflows/bean-cognitive-gauntlet.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'experiments/cognitive_gauntlet/**'
+      - 'bean/tests/test_cognitive_gauntlet.py'
+      - '.github/workflows/bean-cognitive-gauntlet.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  fair-replay:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        python: ['3.11', '3.12']
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Verify test assumptions and complete receipts
+        run: python -m unittest bean.tests.test_cognitive_gauntlet -v
+      - name: Execute exact paired evidence comparisons
+        run: python -m experiments.cognitive_gauntlet.runner
+      - name: Retain full positive and negative receipts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cognitive-gauntlet-${{ matrix.os }}-py${{ matrix.python }}
+          path: cognitive-gauntlet-results/
+          if-no-files-found: warn
