@@ -22,6 +22,7 @@ on:
       - 'bean/tests/test_cognitive_rubiks_prioritized_td.py'
       - 'bean/tests/test_cognitive_rubiks_temperature.py'
       - 'bean/tests/test_cognitive_rubiks_pieces.py'
+      - 'bean/tests/test_cognitive_rubiks_pair_goals.py'
       - '.github/workflows/bean-cognitive-gauntlet.yml'
   pull_request:
     branches: [main]
@@ -45,6 +46,7 @@ on:
       - 'bean/tests/test_cognitive_rubiks_prioritized_td.py'
       - 'bean/tests/test_cognitive_rubiks_temperature.py'
       - 'bean/tests/test_cognitive_rubiks_pieces.py'
+      - 'bean/tests/test_cognitive_rubiks_pair_goals.py'
       - '.github/workflows/bean-cognitive-gauntlet.yml'
   workflow_dispatch:
 permissions:
@@ -252,5 +254,35 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: bean-piece-cube-${{ matrix.os }}-py${{ matrix.python }}
+          path: cognitive-gauntlet-results/
+          if-no-files-found: warn
+
+  cube-joint-goals:
+    # Native paired cubie learning, isolated from prior cube and cognition jobs.
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        python: ['3.11', '3.12']
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Verify joint goals, frozen policy, matched TD budget and replay
+        run: python -m unittest bean.tests.test_cognitive_rubiks_pair_goals -v
+      - name: Independent joint-goal holdout 22000, retain all failures
+        run: python -m experiments.cognitive_gauntlet.rubiks3_pair_goals --test-seed-start 22000 --output cognitive-gauntlet-results/rubiks3-pairs-22000.json
+      - name: Independent joint-goal holdout 23000, retain all failures
+        run: python -m experiments.cognitive_gauntlet.rubiks3_pair_goals --test-seed-start 23000 --output cognitive-gauntlet-results/rubiks3-pairs-23000.json
+      - name: Archive original scrambles, both move sequences and failures
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bean-joint-cube-${{ matrix.os }}-py${{ matrix.python }}
           path: cognitive-gauntlet-results/
           if-no-files-found: warn
