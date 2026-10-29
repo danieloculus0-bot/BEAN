@@ -33,7 +33,7 @@ BODIES = {
 }
 COMMON_LIMITATIONS = [
     "Simplified analytic reference, not flight-qualified or independently validated",
-    "No date-specific ephemeris, perturbations, orbital inclination or uncertainty propagation",
+    "No date-specific ephemeris, perturbations or uncertainty propagation",
     "No finite-burn, gravity/drag loss, atmospheric entry, navigation or operational margins",
 ]
 
@@ -169,6 +169,24 @@ def acceleration_reference(*, delta_v_km_s, acceleration_m_s2):
     }
 
 
+def two_body_reference(*, body, position_km, velocity_km_s, step_seconds, steps):
+    """Propagate a declared initial state using a bounded two-body integrator."""
+    from .two_body import propagate_two_body
+
+    data = _body(body)
+    result = propagate_two_body(
+        mu_km3_s2=data["mu_km3_s2"],
+        minimum_radius_km=data["mean_radius_km"],
+        position_km=position_km,
+        velocity_km_s=velocity_km_s,
+        step_seconds=step_seconds,
+        steps=steps,
+    )
+    result["body"] = body
+    result["mu_km3_s2"] = data["mu_km3_s2"]
+    return result
+
+
 def solve_spaceflight_reference(request):
     """Solve one declared problem and return an evidence-scoped JSON result.
 
@@ -194,6 +212,10 @@ def solve_spaceflight_reference(request):
         "rocket": (("delta_v_km_s", "isp_s", "dry_mass_kg"), rocket_reference),
         "departure_burn": (("body", "parking_altitude_km", "v_infinity_km_s"), departure_burn_reference),
         "acceleration": (("delta_v_km_s", "acceleration_m_s2"), acceleration_reference),
+        "two_body_propagation": (
+            ("body", "position_km", "velocity_km_s", "step_seconds", "steps"),
+            two_body_reference,
+        ),
     }
     if calc not in methods:
         raise ValueError("Unknown spaceflight calculation")
