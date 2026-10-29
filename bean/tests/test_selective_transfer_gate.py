@@ -40,6 +40,7 @@ class SelectiveTransferTests(unittest.TestCase):
                 candidate, seed, objective="match"))
         self.assertTrue(decision["transfer_accepted"])
         self.assertEqual(decision["selected"], "retained")
+        self.assertEqual(decision["comparison_result"], "reuse_retained")
         self.assertEqual(len(decision["pairs"]), len(ids))
         blinded=[str(30000+i) for i in range(100)]
         score_retained=sum(fixture_reward("retained", s, objective="match") for s in blinded)
@@ -54,6 +55,7 @@ class SelectiveTransferTests(unittest.TestCase):
                 candidate, seed, objective="different"))
         self.assertFalse(decision["transfer_accepted"])
         self.assertEqual(decision["selected"], "fresh")
+        self.assertEqual(decision["comparison_result"], "prefer_alternative")
         blinded=[str(40000+i) for i in range(100)]
         a=sum(fixture_reward("retained", s, objective="different") for s in blinded)
         b=sum(fixture_reward("fresh", s, objective="different") for s in blinded)
@@ -65,6 +67,51 @@ class SelectiveTransferTests(unittest.TestCase):
             reward=lambda policy, case: 1.0)
         self.assertFalse(response["transfer_accepted"])
         self.assertEqual(response["decision"], "reject_or_abstain")
+        self.assertIsNone(response["selected"])
+        self.assertEqual(response["comparison_result"], "inconclusive_abstain")
+        self.assertEqual(response["average_advantage"], 0.0)
+        self.assertEqual(len(response["pairs"]), 1)
+
+    def test_insufficient_margin_abstains_without_promoting_either_policy(self):
+        for preferred in ("retained", "alternative"):
+            with self.subTest(preferred=preferred):
+                def reward(policy, case):
+                    return 1.0 if policy == preferred else 0.0
+                response = evaluate_transfer(
+                    retained="retained", alternative="alternative",
+                    probe_ids=["trial-1", "trial-2"], reward=reward,
+                    margin=1.0)
+                self.assertIsNone(response["selected"])
+                self.assertFalse(response["transfer_accepted"])
+                self.assertEqual(response["comparison_result"],
+                                 "inconclusive_abstain")
+                self.assertEqual(response["required_margin"], 1.0)
+
+    def test_core_persists_abstention_and_recovers_original_receipt(self):
+        with tempfile.TemporaryDirectory() as d:
+            db = Path(d) / "abstain.sqlite3"
+            brain = NativeReasoningService(db)
+            decision = brain.test_analogy(
+                domain="controls", task_ref="inconclusive-transfer",
+                source_ref="fixture:equal-feedback",
+                retained="retained", alternative="fresh",
+                probe_ids=["heldout-excluded-1", "heldout-excluded-2"],
+                reward=lambda *_: 0.5)
+            self.assertIsNone(decision["selected"])
+            self.assertEqual(decision["comparison_result"],
+                             "inconclusive_abstain")
+            brain.close()
+            reopened = NativeReasoningService(db)
+            try:
+                trials = [e["data"] for e in reopened.bank.journal.events()
+                          if e["kind"] == "trial" and e["data"].get(
+                              "experiment") == "bean.native.selective_transfer.v1"]
+                self.assertEqual(len(trials), 1)
+                self.assertIsNone(trials[0]["decision"]["selected"])
+                self.assertEqual(trials[0]["decision"]["evidence_sha256"],
+                                 decision["evidence_sha256"])
+            finally:
+                reopened.close()
 
     def test_invalid_evidence_rejected(self):
         with self.assertRaises(ValueError):
