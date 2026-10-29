@@ -17,17 +17,20 @@ def run(*, seeds=25, rounds=30):
     if not 2 <= seeds <= 250 or not 4 <= rounds <= 500:
         raise ValueError("invalid test budget")
     records = []
-    for scenario in ("stationary", "drifting"):
+    for scenario in ("stationary", "drifting", "rapid_drift"):
         for seed in range(seeds):
-            rng = random.Random(120011 + seed * 31 + (0 if scenario == "stationary" else 900001))
+            rng = random.Random(120011 + seed * 31 + ({"stationary": 0, "drifting": 900001, "rapid_drift": 1800002}[scenario]))
             truth = rng.randrange(2)
             model = RevisableBelief()
             for step in range(rounds):
                 if scenario == "drifting" and step and step % 7 == 0:
                     truth = 1 - truth
+                if scenario == "rapid_drift" and step:
+                    truth = 1 - truth
                 # The environment generates real measured labels, unseen by both arms.
                 origin = "sensor-" + str(step % 5)
-                frequency = truth if rng.random() < 0.72 else 1 - truth
+                reliability = 0.90 if scenario == "rapid_drift" else 0.72
+                frequency = truth if rng.random() < reliability else 1 - truth
                 model.observe(Evidence(f"{scenario}:{seed}:{step}", origin,
                                        float(frequency), 0.65))
                 estimates = {"bean_revision": model.prediction(),
@@ -57,7 +60,7 @@ def run(*, seeds=25, rounds=30):
             else "latest" if averages["bean_revision"] > averages["bean_latest"] else "tie",
         }
     payload = {
-        "schema": "bean.cognitive_gauntlet.belief_microbenchmark.v1",
+        "schema": "bean.cognitive_gauntlet.belief_microbenchmark.v2",
         "source": "seeded synthetic noisy binary observations",
         "arms": ["bean_revision", "bean_latest"],
         "external_runtimes_executed": [],
