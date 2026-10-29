@@ -81,6 +81,23 @@ class OnlineSensorTrust:
                               "feedback_after_prediction": True})
         self._pending = None
 
+    def skip_feedback(self, *, reason: str) -> None:
+        """Close an unresolved forecast without fabricating a binary reward.
+
+        A missing outcome never changes trust counts (including decay).
+        Evidence IDs remain consumed and the missing receipt is checkpointed.
+        A later genuine outcome cannot be applied retroactively by this API.
+        """
+        if self._pending is None:
+            raise ValueError("no prediction awaiting feedback")
+        if (not isinstance(reason, str) or not 1 <= len(reason) <= 120
+                or reason != reason.strip()):
+            raise ValueError("explicit bounded missing-feedback reason required")
+        self.receipts.append({"evidence_ids": [item.evidence_id for item in self._pending],
+                              "outcome": None, "feedback_after_prediction": True,
+                              "feedback_status": "missing", "reason": reason})
+        self._pending = None
+
     def state(self) -> dict:
         if self._pending is not None:
             raise ValueError("cannot checkpoint with pending unverified outcome")
@@ -109,7 +126,16 @@ class OnlineSensorTrust:
             raise ValueError("invalid checkpoint evidence ids")
         result._ids = set(ids)
         result.receipts = list(state["receipts"])
-        if any(not isinstance(row, dict) or not row.get("feedback_after_prediction")
-               for row in result.receipts):
-            raise ValueError("invalid feedback receipt")
+        for row in result.receipts:
+            if not isinstance(row, dict) or row.get("feedback_after_prediction") is not True:
+                raise ValueError("invalid feedback receipt")
+            if row.get("feedback_status") == "missing":
+                reason = row.get("reason")
+                if (row.get("outcome") is not None or not isinstance(reason, str)
+                        or not 1 <= len(reason) <= 120 or reason != reason.strip()):
+                    raise ValueError("invalid missing-feedback receipt")
+            elif (row.get("feedback_status") not in (None, "observed")
+                  or type(row.get("outcome")) is not int
+                  or row["outcome"] not in (0, 1)):
+                raise ValueError("invalid observed-feedback receipt")
         return result

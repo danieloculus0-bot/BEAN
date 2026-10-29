@@ -90,3 +90,49 @@ feedback, correlated sources, and source identity spoofing before claiming
 broader autonomy. This implementation is available on main for explicit
 research imports, not enabled in production cognition or promoted as a
 validated real-world intelligence gain.
+
+## Missing-outcome continuation and independent failure-path holdout (2026-10-29)
+
+Mainline research code now offers `skip_feedback(reason=...)` to close a forecast
+whose outcome was **not supplied**, without treating the absence as a wrong
+or correct sensor prediction. It does not update or decay learned trust,
+retains the original consumed evidence IDs, and appends an explicit
+`outcome: null` receipt. Checkpoint restoration validates these receipts;
+older observed-outcome checkpoints remain readable. Skipping is irreversible
+through this single-pending-forecast interface: late-arriving labels require
+a separately designed and tested asynchronous learner. The host must explicitly
+declare missing feedback; BEAN cannot authenticate the declaration.
+
+The new `sensor_missing_feedback.py` benchmark uses **predeclared new seeds
+26000 to 26011**, 100 rounds per seed, and four synthetic regimes (4,800
+total forecasts). The existing 0.97-decay learner, prior and parameters
+are frozen; no holdout tuning. A matched oracle receives every delayed
+label; the partial-feedback learner receives the same observations but skips
+missing outcomes; a fixed prior and unweighted vote are additional controls.
+The oracle is **not deployable** in a missing-label environment. Both
+random missingness and outcome-dependent selective missingness are tested.
+Each case retains the original observations, truth held by the evaluator,
+predictions, losses, before/after trust counts, and whether feedback arrived.
+
+**Locally executed result** (Python, 2026-10-29; exact GitHub CI is
+a separate verification): 5/5 missing-feedback tests passed. 4,800
+synthetic forecasts, 1,657 missing labels, full-feedback oracle MSE
+0.113102, partial-feedback MSE **0.169053**, fixed-prior 0.190142,
+unweighted 0.174042. Lower is better. In the most hostile
+`swap_selective` regime, missing feedback **regressed** to 0.368322
+versus fixed-prior 0.325195 and unweighted 0.267533. This is a real
+limitation: feedback absence correlated with hard cases biases the
+available learning signal. In `diverse_random`, partial feedback
+0.047236 versus oracle 0.047612 (small stochastic difference, not
+evidence of superiority). Full original negative cases are archived
+by the new workflow artifact, without modifying prior ledgers.
+
+Reproduce:
+```sh
+python -m unittest bean.tests.test_cognitive_sensor_missing -v
+python -m experiments.cognitive_gauntlet.sensor_missing_feedback
+```
+
+This is a safe continuation and evidence-integrity improvement, **not**
+a demonstrated cross-domain generalization gain, real-world sensor
+authentication, consciousness, AGI or a production Core integration.

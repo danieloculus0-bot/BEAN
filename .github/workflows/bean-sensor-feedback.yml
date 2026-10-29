@@ -5,16 +5,20 @@ on:
     paths:
       - 'experiments/cognitive_gauntlet/sensor_reliability.py'
       - 'experiments/cognitive_gauntlet/sensor_benchmark.py'
+      - 'experiments/cognitive_gauntlet/sensor_missing_feedback.py'
       - 'experiments/cognitive_gauntlet/SENSOR_RELIABILITY.md'
       - 'bean/tests/test_cognitive_sensor.py'
+      - 'bean/tests/test_cognitive_sensor_missing.py'
       - '.github/workflows/bean-sensor-feedback.yml'
   pull_request:
     branches: [main]
     paths:
       - 'experiments/cognitive_gauntlet/sensor_reliability.py'
       - 'experiments/cognitive_gauntlet/sensor_benchmark.py'
+      - 'experiments/cognitive_gauntlet/sensor_missing_feedback.py'
       - 'experiments/cognitive_gauntlet/SENSOR_RELIABILITY.md'
       - 'bean/tests/test_cognitive_sensor.py'
+      - 'bean/tests/test_cognitive_sensor_missing.py'
       - '.github/workflows/bean-sensor-feedback.yml'
   workflow_dispatch:
 permissions:
@@ -37,12 +41,18 @@ jobs:
           python-version: ${{ matrix.python }}
       - name: Verify delayed feedback, invalid receipts and checkpoint recovery
         run: python -m unittest bean.tests.test_cognitive_sensor -v
+      - name: Verify missing-feedback continuation and receipts
+        run: python -m unittest bean.tests.test_cognitive_sensor_missing -v
       - name: Replay all 21600 synthetic cases and retain every error
         run: python -m experiments.cognitive_gauntlet.sensor_benchmark
+      - name: Replay 4800 new independent missing-label heldouts
+        run: python -m experiments.cognitive_gauntlet.sensor_missing_feedback
       - name: Upload full source observations, negative cases and scores
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: bean-sensor-feedback-${{ matrix.os }}-py${{ matrix.python }}
-          path: cognitive-gauntlet-results/sensor-feedback.json.gz
+          path: |
+            cognitive-gauntlet-results/sensor-feedback.json.gz
+            cognitive-gauntlet-results/sensor-missing-feedback.json.gz
           if-no-files-found: warn
