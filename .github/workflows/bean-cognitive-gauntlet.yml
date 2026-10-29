@@ -21,6 +21,7 @@ on:
       - 'bean/tests/test_cognitive_rubiks_curriculum.py'
       - 'bean/tests/test_cognitive_rubiks_prioritized_td.py'
       - 'bean/tests/test_cognitive_rubiks_temperature.py'
+      - 'bean/tests/test_cognitive_rubiks_pieces.py'
       - '.github/workflows/bean-cognitive-gauntlet.yml'
   pull_request:
     branches: [main]
@@ -43,6 +44,7 @@ on:
       - 'bean/tests/test_cognitive_rubiks_curriculum.py'
       - 'bean/tests/test_cognitive_rubiks_prioritized_td.py'
       - 'bean/tests/test_cognitive_rubiks_temperature.py'
+      - 'bean/tests/test_cognitive_rubiks_pieces.py'
       - '.github/workflows/bean-cognitive-gauntlet.yml'
   workflow_dispatch:
 permissions:
@@ -220,5 +222,35 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: bean-temperature-cube-${{ matrix.os }}-py${{ matrix.python }}
+          path: cognitive-gauntlet-results/
+          if-no-files-found: warn
+
+  cube-pieces:
+    # Native piece-level SpongeTD transfer is an isolated hypothesis, not a solver.
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        python: ['3.11', '3.12']
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Verify learned piece subgoals, matched TD budgets and frozen inference
+        run: python -m unittest bean.tests.test_cognitive_rubiks_pieces -v
+      - name: Fresh heldout piece-subgoal cohort 18000 with all failures
+        run: python -m experiments.cognitive_gauntlet.rubiks3_pieces --test-seed-start 18000 --output cognitive-gauntlet-results/rubiks3-pieces-18000.json
+      - name: Independent heldout piece-subgoal cohort 19000 with all failures
+        run: python -m experiments.cognitive_gauntlet.rubiks3_pieces --test-seed-start 19000 --output cognitive-gauntlet-results/rubiks3-pieces-19000.json
+      - name: Archive all piece-subgoal successes, failures and exclusions
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bean-piece-cube-${{ matrix.os }}-py${{ matrix.python }}
           path: cognitive-gauntlet-results/
           if-no-files-found: warn
