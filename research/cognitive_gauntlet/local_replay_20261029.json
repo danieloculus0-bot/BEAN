@@ -1,0 +1,41 @@
+{
+  "schema": "bean.cognitive_gauntlet.local_replay_receipt.v1",
+  "test_date_utc": "2026-10-29",
+  "environment": "local Python 3.13.5 x86_64 CPU, not Jetson",
+  "source_branch": "experiment/agi-cognitive-gauntlet-20261028",
+  "source_blobs": {
+    "experiments/cognitive_gauntlet/arena.py": "881ac314ab523e9554d33e87d5ee6fba90fcdef8",
+    "experiments/cognitive_gauntlet/cognition.py": "c125ff5afaa8dd3fa1e651da6cb81e12065e3cdb",
+    "experiments/cognitive_gauntlet/runner.py": "2e41c9a67650dec50375500c2a33494739eb509c",
+    "bean/tests/test_cognitive_gauntlet.py": "73a1a9dff495f899ee463058b4baa92802e9f3cf"
+  },
+  "command": "python -m experiments.cognitive_gauntlet.runner",
+  "tests": "python -m unittest bean.tests.test_cognitive_gauntlet -v",
+  "local_unit_tests": {
+    "passed": 8,
+    "failed": 0
+  },
+  "case_count": 2250,
+  "seed_count": 25,
+  "rounds_per_seed": 30,
+  "scoreboard": {
+    "stationary": {
+      "revision_mse": 0.11674537409854534,
+      "latest_mse": 0.268
+    },
+    "drifting": {
+      "revision_mse": 0.21510913653804933,
+      "latest_mse": 0.296
+    },
+    "rapid_drift": {
+      "revision_mse": 0.19272049801952135,
+      "latest_mse": 0.08
+    }
+  },
+  "payload_evidence_sha256": "f385100e0cec9d483022bb0a16b95383d69b1117e75bd45f0d199efdec176e63",
+  "compressed_archive_sha256": "acce53673921d9a7715fc93bf4fb8a20945c52ce0a27547900bdef231a44b3ac",
+  "archive_status": "Local complete archive generated and round-trip verified. GitHub CI artifact pending.",
+  "comparison_scope": "Fixed revision prototype vs latest-only synthetic reference; neither is a full external AI runtime.",
+  "external_opponents_executed": [],
+  "notes": "All 2250 cases, including failed predictions, exist in reproducible gzip receipt. Fixed revision loses on rapid drift. Seeded repeatability is not model learning. GitHub CI results must be checked separately."
+}
