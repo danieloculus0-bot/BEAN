@@ -105,3 +105,27 @@ to revision on stationary (0.126681 vs 0.124714) and slower drift
 installed external AI, not a deployed BEAN Core improvement, and not proof
 of AGI. Results are conditional on the preselected environment families;
 additional unseen families and a real Core adapter remain necessary.
+
+
+## Frozen-policy out-of-family falsification
+
+After choosing threshold 0.75 on the original training seeds, `stress.py`
+tests four **new** environments on independent seeds 80 through 139. No
+threshold re-selection occurs. Its 24,000 case-level receipts are retained
+alongside the original 24,000-case training/held-out replay.
+
+Local results, mean squared error (lower is better):
+
+| New regime | Fixed revision | Adaptive | Outcome |
+| --- | ---: | ---: | --- |
+| Weak stationary signal | 0.241438 | 0.250721 | Adaptive regresses |
+| Weak alternating signal | 0.263388 | 0.260310 | Small adaptive gain |
+| Stochastic drift | 0.161132 | 0.160409 | Small adaptive gain |
+| Stable then abrupt flip | 0.084187 | 0.084784 | Adaptive regresses |
+
+These are **out-of-family stress tests**, not external model matches.
+They demonstrate that the adaptive switch is not uniformly better.
+Do not retune the threshold against these results and then continue to
+call the same cases independent holdout evidence. The next experiment
+should investigate calibration and false-positive volatility switches on
+newly preregistered conditions.
