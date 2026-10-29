@@ -18,11 +18,11 @@ SCHEMA = "bean.native.selective_transfer.v1"
 
 def evaluate_transfer(*, retained, alternative, probe_ids, reward,
                       margin=0.0):
-    """Return auditable keep/reject decision from matched reward observations.
+    """Compare paired interventions, abstaining when evidence is inconclusive.
 
     reward(policy_id, probe_id) must perform a genuine evaluation and return a
-    finite real-valued reward. A tie or inconclusive result rejects transfer.
-    Probe IDs must be disjoint from subsequent held-out test IDs.
+    finite real-valued reward. A tie or insufficient margin must not select
+    either policy. Probe IDs must be disjoint from subsequent held-out cases.
     """
     if not all(isinstance(p, str) and 0 < len(p.strip()) <= 128
                for p in (retained, alternative)) or retained == alternative:
@@ -50,13 +50,20 @@ def evaluate_transfer(*, retained, alternative, probe_ids, reward,
                       "difference": values[0] - values[1]})
     delta = sum(p["difference"] for p in pairs) / len(pairs)
     keep = delta > float(margin)
+    prefer_alternative = delta < -float(margin)
+    selected = retained if keep else alternative if prefer_alternative else None
     record = {
         "schema": SCHEMA, "retained": retained, "alternative": alternative,
         "pairs": pairs, "number_of_pairs": len(pairs),
         "average_advantage": delta, "required_margin": float(margin),
-        "selected": retained if keep else alternative,
+        "selected": selected,
         "transfer_accepted": keep,
+        # Preserve the legacy decision label for existing consumers, but
+        # distinguish a measured alternative win from insufficient evidence.
         "decision": "reuse" if keep else "reject_or_abstain",
+        "comparison_result": ("reuse_retained" if keep else
+                              "prefer_alternative" if prefer_alternative else
+                              "inconclusive_abstain"),
         "measured_in": "paired_probe_reward",
         "candidate_generator": "supplied_by_host",
         "oracle_labels_used": False,
