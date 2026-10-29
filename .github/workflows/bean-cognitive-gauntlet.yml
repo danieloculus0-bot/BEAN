@@ -14,6 +14,7 @@ on:
       - 'bean/tests/test_cognitive_wisdom.py'
       - 'bean/tests/test_cognitive_rubiks3.py'
       - 'bean/tests/test_cognitive_rubiks_memory.py'
+      - 'bean/tests/test_cognitive_rubiks_sponge.py'
       - '.github/workflows/bean-cognitive-gauntlet.yml'
   pull_request:
     branches: [main]
@@ -29,6 +30,7 @@ on:
       - 'bean/tests/test_cognitive_wisdom.py'
       - 'bean/tests/test_cognitive_rubiks3.py'
       - 'bean/tests/test_cognitive_rubiks_memory.py'
+      - 'bean/tests/test_cognitive_rubiks_sponge.py'
       - '.github/workflows/bean-cognitive-gauntlet.yml'
   workflow_dispatch:
 permissions:
@@ -59,6 +61,10 @@ jobs:
         run: python -m unittest bean.tests.test_cognitive_rubiks_memory -v
       - name: Replay disjoint seeded cube learning and preserve negative cases
         run: python -m experiments.cognitive_gauntlet.rubiks3_memory
+      - name: Verify BEAN SpongeTD policy, heldout replay and checkpoint restoration
+        run: python -m unittest bean.tests.test_cognitive_rubiks_sponge -v
+      - name: Run frozen BEAN-native cube policy and archive all failures
+        run: python -m experiments.cognitive_gauntlet.rubiks3_sponge
       - name: Execute exact paired evidence comparisons
         run: python -m experiments.cognitive_gauntlet.runner
       - name: Tune on training seeds and evaluate held-out adaptive predictions
