@@ -97,3 +97,38 @@ Investigate shorter detection lag, outcome scarcity and feedback corruption
 using a new preregistered seed distribution. Do not tune on the two
 published samples while claiming they are unseen. The design is not AGI,
 not an external-framework contest and not merged into BEAN main.
+
+## Decision quality is not reaction speed
+
+A deliberate, slower decision can be reasonable given the evidence available
+at the time, even if it later turns out to be wrong. Conversely, a lucky
+guess is not evidence of good reasoning. Switching quickly is **not** a
+standalone objective, and a system that refuses to switch may be appropriately
+skeptical or dangerously stubborn depending on its evidence.
+
+The separate `decision_audit.py` now scores the existing **frozen** case
+receipts, without changing or tuning the predictions. The benchmark embeds
+the audit in its compressed receipt. It reports:
+
+- Brier score and log loss, which reward honest probability estimates
+  rather than simply counting correct binary choices
+- Classification errors and high-confidence mistakes, separating
+  justified uncertainty from confidently wrong predictions
+- Descriptive 10-bin calibration error, with known sample-size sensitivity
+- Decision changes separately from chaos-mode changes, without treating
+  fewer changes as automatically better
+- Sensitivity to hypothetical switching costs 0, 0.02 and 0.10, never
+  presenting any one cost as a universal measure of intelligence
+- Per-regime breakdowns, all cases retained, and an independent SHA-256
+  audit receipt linked to the original sensor-duel digest
+
+The audit requires contiguous case steps, identical arm coverage and
+recomputed squared losses; missing, duplicate or corrupted cases fail
+rather than disappearing from the average. It never sees labels before
+the already-recorded forecasts. These are **retrospective evaluation
+metrics**, not evidence that the predictor considered all options or
+performed human-like deliberation.
+
+Reproduce the metric unit tests with
+`python -m unittest bean.tests.test_cognitive_decision_audit -v`.
+The repository workflow also runs these tests on four Python/OS jobs.
