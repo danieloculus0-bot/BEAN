@@ -48,13 +48,20 @@ def verify_receipt(path):
         if row['canonical_state'] in scored_classes:
             raise ValueError('duplicate scored rotation class')
         scored_classes.add(row['canonical_state'])
-        for prefix in ('initial', 'matched', 'candidate'):
+        prefixes = (('initial', 'matched', 'candidate', 'rescue_control')
+                    if record.get('rescue_backup') else ('initial', 'matched', 'candidate'))
+        for prefix in prefixes:
             moves = row[prefix + '_moves']
             if (not isinstance(moves, list) or any(move not in MOVES for move in moves)
                     or len(moves) != row[prefix + '_move_count']):
                 raise ValueError('invalid recorded moves')
             if (apply(row['state'], moves) == SOLVED) != row[prefix + '_solved']:
                 raise ValueError('solved-state replay mismatch')
+        if record.get('rescue_backup'):
+            if row['candidate_better_than_rescue_control'] != (row['candidate_solved'] and not row['rescue_control_solved']):
+                raise ValueError('rescue control improvement mismatch')
+            if row['candidate_worse_than_rescue_control'] != (row['rescue_control_solved'] and not row['candidate_solved']):
+                raise ValueError('rescue control regression mismatch')
         if row['initial_solved'] and (
                 not row['candidate_solved']
                 or row['initial_moves'] != row['candidate_moves']):
@@ -70,6 +77,7 @@ def verify_receipt(path):
                     or cp.get('route') != row['candidate_moves']
                     or cp.get('full_q_sha256') != record['initial_q_sha256']
                     or cp.get('joint_q_sha256') != record['joint_q_sha256']
+                    or cp.get('rescue_backup', False) != record.get('rescue_backup', False)
                     or cp.get('full_steps') != row['candidate_full_steps']
                     or cp.get('joint_steps') != row['candidate_joint_steps']):
                 raise ValueError('invalid pause checkpoint')
@@ -103,6 +111,12 @@ def verify_receipt(path):
         'twenty_turn_solved': sum(c['candidate_solved'] for c in cases
                                   if c['scramble_length'] == 20),
     }
+    if record.get('rescue_backup'):
+        counts.update({
+            'rescue_control_solved': sum(c['rescue_control_solved'] for c in cases),
+            'candidate_better_than_rescue_control': sum(c['candidate_better_than_rescue_control'] for c in cases),
+            'candidate_worse_than_rescue_control': sum(c['candidate_worse_than_rescue_control'] for c in cases),
+        })
     for key, value in counts.items():
         if record[key] != value:
             raise ValueError('incorrect aggregate: ' + key)

@@ -23,6 +23,7 @@ on:
       - 'bean/tests/test_cognitive_rubiks_temperature.py'
       - 'bean/tests/test_cognitive_rubiks_pieces.py'
       - 'bean/tests/test_cognitive_rubiks_pair_goals.py'
+      - 'bean/tests/test_cognitive_rubiks_joint_rescue.py'
       - '.github/workflows/bean-cognitive-gauntlet.yml'
   pull_request:
     branches: [main]
@@ -47,6 +48,7 @@ on:
       - 'bean/tests/test_cognitive_rubiks_temperature.py'
       - 'bean/tests/test_cognitive_rubiks_pieces.py'
       - 'bean/tests/test_cognitive_rubiks_pair_goals.py'
+      - 'bean/tests/test_cognitive_rubiks_joint_rescue.py'
       - '.github/workflows/bean-cognitive-gauntlet.yml'
   workflow_dispatch:
 permissions:
@@ -317,5 +319,37 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: bean-rescue-cube-${{ matrix.os }}-py${{ matrix.python }}
+          path: cognitive-gauntlet-results/
+          if-no-files-found: warn
+
+  cube-joint-backup:
+    # Frozen joint-Q one-successor backup versus unchanged direct rescue.
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        python: ['3.11', '3.12']
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Verify backup, frozen Q, checkpoint binding and receipt replay
+        run: python -m unittest bean.tests.test_cognitive_rubiks_joint_rescue -v
+      - name: Disjoint frozen-backup holdout 29000 with all failures
+        run: python -m experiments.cognitive_gauntlet.rubiks3_joint_rescue --rescue-backup --test-seed-start 29000 --test-count 5 --work-budget 64 --output cognitive-gauntlet-results/rubiks3-rescue-backup-29000.json
+      - name: Independent frozen-backup holdout 30000 with all failures
+        run: python -m experiments.cognitive_gauntlet.rubiks3_joint_rescue --rescue-backup --test-seed-start 30000 --test-count 5 --work-budget 64 --output cognitive-gauntlet-results/rubiks3-rescue-backup-30000.json
+      - name: Independently replay full-state, direct-rescue and backup routes
+        run: python -m experiments.cognitive_gauntlet.rubiks3_joint_rescue_verify cognitive-gauntlet-results/rubiks3-rescue-backup-29000.json cognitive-gauntlet-results/rubiks3-rescue-backup-30000.json
+      - name: Archive every success, failure, exclusion and paused route
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bean-rescue-backup-${{ matrix.os }}-py${{ matrix.python }}
           path: cognitive-gauntlet-results/
           if-no-files-found: warn

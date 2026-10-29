@@ -29,13 +29,15 @@ from .rubiks3_value_rollout import (
 SCHEMA = 'bean.rubiks3.joint-rescue.v1'
 
 
-def policy_solve_joint_rescue(full, joint, start, *, checkpoint=None, work_budget=128):
+def policy_solve_joint_rescue(full, joint, start, *, checkpoint=None, work_budget=128, rescue_backup=False):
     """Resume frozen BEAN policy inference in bounded compute slices.
 
     No total solution-move limit exists. A paused checkpoint binds the start,
     complete legal route, and BOTH Q digests. Full-state action choice exactly
     matches the unchanged value-rollout controller until it would stop.
     """
+    if type(rescue_backup) is not bool:
+        raise ValueError('rescue_backup must be bool')
     validate_legal_cube(start)
     if type(work_budget) is not int or work_budget < 1:
         raise ValueError('positive integer work budget required')
@@ -47,6 +49,7 @@ def policy_solve_joint_rescue(full, joint, start, *, checkpoint=None, work_budge
                 or checkpoint.get('start') != start
                 or checkpoint.get('full_q_sha256') != full_hash
                 or checkpoint.get('joint_q_sha256') != joint_hash
+                or checkpoint.get('rescue_backup', False) != rescue_backup
                 or not isinstance(checkpoint.get('route'), list)):
             raise ValueError('stale or malformed policy checkpoint')
         for move in checkpoint['route']:
@@ -67,6 +70,7 @@ def policy_solve_joint_rescue(full, joint, start, *, checkpoint=None, work_budge
             'start': start, 'route': list(route),
             'full_q_sha256': full_hash, 'joint_q_sha256': joint_hash,
             'full_steps': full_steps, 'joint_steps': joint_steps,
+            'rescue_backup': rescue_backup,
         } if paused else None)
         return route, {'solved': solved, 'failure': failure, 'paused': paused,
                        'checkpoint': next_checkpoint,
@@ -106,7 +110,16 @@ def policy_solve_joint_rescue(full, joint, start, *, checkpoint=None, work_budge
             nxt = turn(state, move)
             if nxt in visited:
                 continue
-            score = sum(row[action] for row in rows if row is not None) / 96.0
+            direct = sum(row[action] for row in rows if row is not None) / 96.0
+            score = direct
+            if rescue_backup:
+                # One legal successor backup into the SAME frozen joint Q table.
+                # This is value transfer, not generic search or new learning.
+                successors = (joint.q.get(joint.key((pair_id, config)))
+                              for pair_id, config, _ in pair_features(nxt))
+                future = sum(max(values) for values in successors
+                             if values is not None) / 96.0
+                score = max(direct, joint.gamma * future)
             if score > 0:
                 rescue.append((score, -action, move, nxt))
         if not rescue:
@@ -122,7 +135,9 @@ def policy_solve_joint_rescue(full, joint, start, *, checkpoint=None, work_budge
 def experiment(*, train_seeds=range(16), test_seeds=range(26000, 26010),
                train_lengths=(2, 3, 4, 5, 6),
                test_lengths=(3, 4, 5, 6, 20), epochs=2, output=None,
-               work_budget=128):
+               work_budget=128, rescue_backup=False):
+    if type(rescue_backup) is not bool:
+        raise ValueError('rescue_backup must be bool')
     train_seeds, test_seeds = tuple(train_seeds), tuple(test_seeds)
     if (not train_seeds or not test_seeds
             or len(set(train_seeds)) != len(train_seeds)
@@ -168,13 +183,21 @@ def experiment(*, train_seeds=range(16), test_seeds=range(26000, 26010),
                     seen.add(key)
                     bm, bi = policy_solve_value_rollout(initial, state)
                     mm, mi = policy_solve_value_rollout(matched, state)
-                    cm, ci = policy_solve_joint_rescue(
+                    control_moves, control_info = (policy_solve_joint_rescue(
                         initial, joint, state, work_budget=work_budget)
+                        if rescue_backup else (None, None))
+                    cm, ci = policy_solve_joint_rescue(
+                        initial, joint, state, work_budget=work_budget,
+                        rescue_backup=rescue_backup)
                     bok, mok, cok = (apply(state, moves) == SOLVED
                                       for moves in (bm, mm, cm))
                     if (bok != bi['solved'] or mok != mi['solved']
                             or cok != ci['solved']):
                         raise AssertionError('independent replay disagrees with policy')
+                    control_ok = (apply(state, control_moves) == SOLVED
+                                  if rescue_backup else None)
+                    if rescue_backup and control_ok != control_info['solved']:
+                        raise AssertionError('direct-rescue control replay mismatch')
                     if bok and (not cok or cm != bm):
                         raise AssertionError('joint rescue changed a successful initial policy')
                     cases.append({
@@ -185,12 +208,19 @@ def experiment(*, train_seeds=range(16), test_seeds=range(26000, 26010),
                         'initial_solved': bok, 'initial_failure': bi['failure'],
                         'matched_moves': mm, 'matched_move_count': len(mm),
                         'matched_solved': mok, 'matched_failure': mi['failure'],
+                        'rescue_control_moves': control_moves,
+                        'rescue_control_move_count': (len(control_moves) if rescue_backup else None),
+                        'rescue_control_solved': control_ok,
+                        'rescue_control_failure': (control_info['failure'] if rescue_backup else None),
+                        'rescue_control_paused': (control_info['paused'] if rescue_backup else None),
                         'candidate_moves': cm, 'candidate_move_count': len(cm),
                         'candidate_solved': cok, 'candidate_failure': ci['failure'],
                         'candidate_paused': ci['paused'],
                         'candidate_checkpoint': ci['checkpoint'],
                         'candidate_full_steps': ci['full_steps'],
                         'candidate_joint_steps': ci['joint_steps'],
+                        'candidate_better_than_rescue_control': (cok and not control_ok if rescue_backup else None),
+                        'candidate_worse_than_rescue_control': (control_ok and not cok if rescue_backup else None),
                         'candidate_better_than_initial': cok and not bok,
                         'candidate_worse_than_initial': bok and not cok,
                         'candidate_better_than_matched': cok and not mok,
@@ -204,6 +234,9 @@ def experiment(*, train_seeds=range(16), test_seeds=range(26000, 26010),
                 'source_revision': os.environ.get('GITHUB_SHA', 'local_unverified'),
                 'module_sha256': hashlib.sha256(Path(__file__).read_text(encoding='utf-8').encode('utf-8')).hexdigest(),
                 'mechanism': 'unchanged BEAN full-state policy with joint-Q rescue only on stall',
+                'rescue_backup': rescue_backup,
+                'rescue_backup_mechanism': ('one legal successor backup into frozen joint Q' if rescue_backup
+                                            else 'direct frozen joint Q only'),
                 'reference_solver_used': False, 'inverse_scramble_used': False,
                 'not_general_solver': True, 'optimality_unproven': True,
                 'train_seeds': list(train_seeds), 'test_seeds': list(test_seeds),
@@ -220,6 +253,12 @@ def experiment(*, train_seeds=range(16), test_seeds=range(26000, 26010),
                 'initial_solved': sum(c['initial_solved'] for c in cases),
                 'matched_solved': sum(c['matched_solved'] for c in cases),
                 'candidate_solved': sum(c['candidate_solved'] for c in cases),
+                'rescue_control_solved': (sum(c['rescue_control_solved'] for c in cases)
+                                          if rescue_backup else None),
+                'candidate_better_than_rescue_control': (sum(c['candidate_better_than_rescue_control']
+                                                             for c in cases) if rescue_backup else None),
+                'candidate_worse_than_rescue_control': (sum(c['candidate_worse_than_rescue_control']
+                                                            for c in cases) if rescue_backup else None),
                 'candidate_paused': sum(c['candidate_paused'] for c in cases),
                 'candidate_joint_actions': sum(c['candidate_joint_steps'] for c in cases),
                 'candidate_better_than_initial': sum(c['candidate_better_than_initial'] for c in cases),
@@ -250,15 +289,19 @@ if __name__ == '__main__':
     parser.add_argument('--test-seed-start', type=int, default=26000)
     parser.add_argument('--test-count', type=int, default=10)
     parser.add_argument('--work-budget', type=int, default=128)
+    parser.add_argument('--rescue-backup', action='store_true')
     parser.add_argument('--output', default='cognitive-gauntlet-results/rubiks3-rescue-26000.json')
     args = parser.parse_args()
     if args.test_count < 1:
         parser.error('test-count must be positive')
     result = experiment(test_seeds=range(args.test_seed_start,
                                          args.test_seed_start + args.test_count),
-                        output=args.output, work_budget=args.work_budget)
+                        output=args.output, work_budget=args.work_budget,
+                        rescue_backup=args.rescue_backup)
     print(json.dumps({k: result[k] for k in
                       ('eligible_cases', 'excluded_count', 'initial_solved',
                        'matched_solved', 'candidate_solved', 'candidate_paused',
-                       'candidate_joint_actions', 'twenty_turn_cases',
+                       'candidate_joint_actions', 'rescue_control_solved',
+                       'candidate_better_than_rescue_control',
+                       'candidate_worse_than_rescue_control', 'twenty_turn_cases',
                        'twenty_turn_solved', 'sha256')}, indent=2))

@@ -65,3 +65,26 @@ exclusions. **Do not claim improvement before exact-revision CI and
 independent replay evidence.** The 20-turn BEAN-native solving
 notification threshold remains unmet until a full unseen legal cube is
 actually solved and verified without external solver inference.
+
+## Frozen joint-value successor backup pilot (2026-10-29)
+
+A new candidate evaluates one legal successor using the SAME frozen BEAN
+joint-pair SpongeTD Q table when the full-state policy stalls. This is
+learned-value action-selection transfer, not a new weight update, a generic
+cube search or an external solver. It does not consume scramble inverses.
+
+The unchanged direct-rescue controller, initial full-state policy and
+update-matched full-state control are evaluated on exactly the same unseen
+states. Complete routes, failed cases, source hashes, Q digests, exclusions,
+pauses and checkpoints are archived. Backup-mode checkpoints cannot resume
+under the direct-rescue policy. Independent replay verifies every route.
+
+Fresh disjoint holdouts: seeds 29000-29004 and 30000-30004, lengths 3, 4,
+5, 6, and 20. Each invocation permits 64 actions as a resumable compute
+slice, NOT a maximum solution length. No new solve or improvement claim is
+made until exact-commit CI evidence is checked. This experiment does not
+compare external OpenNARS, OpenCog, PLN, Voyager, Letta or DreamerV3 runtimes.
+
+Run:
+
+    python -m experiments.cognitive_gauntlet.rubiks3_joint_rescue --rescue-backup --test-seed-start 29000 --test-count 5 --work-budget 64

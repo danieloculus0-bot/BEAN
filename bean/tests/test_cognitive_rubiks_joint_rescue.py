@@ -114,6 +114,43 @@ class JointRescueTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 verify_receipt(path)
 
+    def test_successor_backup_control_receipts_and_independent_replay(self):
+        with TemporaryDirectory() as tmp:
+            path = Path(tmp) / 'backup.json'
+            record = experiment(train_seeds=range(3), test_seeds=range(29100, 29102),
+                                train_lengths=(2, 3), test_lengths=(3, 20),
+                                epochs=1, work_budget=6, rescue_backup=True,
+                                output=path)
+            self.assertTrue(record['rescue_backup'])
+            self.assertEqual(record['candidate_total_td_updates'], record['matched_td_updates'])
+            self.assertEqual(verify_receipt(path)['candidate_solved'], record['candidate_solved'])
+            for row in record['cases']:
+                self.assertEqual(row['rescue_control_solved'],
+                                 rubiks3.apply(row['state'], row['rescue_control_moves']) == rubiks3.SOLVED)
+                self.assertEqual(row['candidate_solved'],
+                                 rubiks3.apply(row['state'], row['candidate_moves']) == rubiks3.SOLVED)
+                if row['initial_solved']:
+                    self.assertEqual(row['initial_moves'], row['candidate_moves'])
+
+    def test_backup_checkpoint_rejects_strategy_change(self):
+        state = rubiks3.apply(rubiks3.SOLVED, ('R', 'U', 'F'))
+        with TemporaryDirectory() as tmp:
+            full = SpongeTD(Path(tmp) / 'full.db', actions=rubiks3.MOVES)
+            joint = SpongeTD(Path(tmp) / 'joint.db', actions=rubiks3.MOVES)
+            try:
+                for pair_id, config, _ in pair_features(state):
+                    joint.values((pair_id, config))[0] = .1
+                route, info = policy_solve_joint_rescue(full, joint, state,
+                                                         work_budget=1, rescue_backup=True)
+                if info['paused']:
+                    with self.assertRaises(ValueError):
+                        policy_solve_joint_rescue(full, joint, state,
+                                                  checkpoint=info['checkpoint'],
+                                                  rescue_backup=False)
+            finally:
+                full.close()
+                joint.close()
+
     def test_invalid_inputs_and_overlapping_seeds(self):
         with TemporaryDirectory() as tmp:
             full = SpongeTD(Path(tmp) / 'full.db', actions=rubiks3.MOVES)
