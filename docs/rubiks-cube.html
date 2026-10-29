@@ -35,14 +35,14 @@ footer{border-top:1px solid var(--edge);padding:25px 0;color:var(--muted);font-s
 <main class="wrap">
 <span class="eyebrow">The Cognitive Gauntlet · 3×3 puzzle lab</span>
 <h1>Forget speed.<br><em>Find the shortest solution.</em></h1>
-<p class="lead">Scramble a real 3×3 cube state and challenge a rules-only search to discover a solution. We count legal face turns, not seconds. The solver gets the scrambled stickers, <strong>not the scramble instructions</strong>.</p>
+<p class="lead">Scramble a real 3×3 cube state and challenge a complete two-phase solver and a separate learning candidate to discover a solution. We count legal face turns, not seconds. The solver gets the scrambled stickers, <strong>not the scramble instructions</strong>. It handles arbitrary legal scrambles; short-move proofs and remembered solutions may improve the reference answer.</p>
 <div class="grid">
 <section class="panel" aria-label="Interactive cube">
 <h2>The cube <span class="small" id="current-state">Solved</span></h2>
 <div id="cube-net" role="img" aria-label="Cube net with U, L, F, R, B, and D faces arranged in unfolded layout"></div>
 <div class="controls">
 <label>Seed<input id="seed" type="number" min="0" max="4294967295" step="1" value="0"></label>
-<label>Scramble length<select id="length"><option>3</option><option>5</option><option selected>8</option><option>9</option><option>20</option></select></label>
+<label>Scramble length<select id="length"><option>3</option><option>5</option><option selected>8</option><option>9</option><option>12</option><option>20</option><option>30</option><option>60</option></select></label>
 <button id="scramble">Scramble</button>
 <button id="shortcut">Shortcut example</button>
 </div>
@@ -53,23 +53,23 @@ footer{border-top:1px solid var(--edge);padding:25px 0;color:var(--muted);font-s
 <aside class="panel">
 <h2>The rules and the scoreboard</h2>
 <p><strong>Allowed:</strong> U, D, F, B, R, L turns, each clockwise, counterclockwise or 180°. Every turn counts as one move (half-turn metric).</p>
-<p><strong>Engine:</strong> deterministic bidirectional breadth-first search over 54 stickers. It checks solutions up to <strong>8 turns</strong> and verifies the resulting solved state. It does not use a learned BEAN policy or a memorized scramble.</p>
-<p class="small">An eight-move solution is guaranteed shortest only when the bounded search completes. Failure past that limit means <em>not found within the budget</em>, not that the cube is impossible to solve. A 20-turn scramble will often defeat this bounded prototype.</p>
+<p><strong>Reference:</strong> unmodified, MIT-licensed <a href="https://github.com/ldez/cubejs">cubejs</a> two-phase solver, in a background worker. Every valid 3×3 state is within its documented 22-move search bound. This is not an arbitrary eight-move cutoff.</p><p><strong>Candidate:</strong> a six-move shortest-path probe plus case-based route memory learned from verified solutions in this browser. It tries to improve the reference move count, then independently replays every candidate.</p>
+<p class="small">The six-move probe only checks for shorter solutions. It does not cap the reference solver. Cubejs is a conventional algorithm, not a learned BEAN agent. Remembered routes persist in this browser only, not BEAN Core.</p>
 <div class="stat">15 / 21</div>
-<p class="small">Seeded Python development cases solved (seeds 0–2, lengths 3, 4, 5, 6, 8, 9, 20). Six failures preserved; zero shorter-than-recipe solutions in this particular seeded sample. This is not a result from BEAN's learned cognition.</p>
+<p class="small">Original bounded eight-move Python baseline, 21 seeded cases: 15 solved, six unresolved. This is archived historical context, <strong>not</strong> the new complete browser reference solver. New session results are displayed below.</p>
 <h2>Turn faces yourself</h2>
 <div class="moves" id="moves" aria-label="Manual face turns"></div>
 <h2>Session receipts</h2>
 <ol id="history" aria-label="Recent search attempts"></ol>
 <button id="export">Export all attempts as JSON</button>
-<p class="small">Session receipts include successful and failed searches. They stay in this browser until exported; no backend telemetry or training is implied.</p>
+<p class="small">Session receipts keep successes and failures. Verified case routes are reused and stored in browser local storage. They are not sent to BEAN Core or trained into model weights.</p>
 </aside>
 </div>
 <section class="panel" style="margin-top:22px">
 <h2>What does this prove?</h2>
-<p>We can test a machine's ability to explore legal possibilities and discover a shorter path without telling it the inverse of the scramble. This is a <strong>classical search baseline</strong> in the BEAN Gauntlet, not proof of artificial general intelligence, autonomous learning, or a general 20-move Rubik's Cube solver.</p>
-<p>Try the <strong>Shortcut example</strong>: three legal turns create a position that can be solved in one. The search discovers the one-turn answer from the position alone. For truly random walks, a shorter answer is not guaranteed.</p>
-<p class="small">Inspect <a href="https://github.com/danieloculus0-bot/BEAN/blob/experiment/agi-cognitive-gauntlet-20261028/experiments/cognitive_gauntlet/rubiks3.py">Python rules and benchmark code</a>, <a href="https://github.com/danieloculus0-bot/BEAN/blob/experiment/agi-cognitive-gauntlet-20261028/bean/tests/test_cognitive_rubiks3.py">unit tests</a>, <a href="https://github.com/danieloculus0-bot/BEAN/actions/workflows/bean-cognitive-gauntlet.yml">CI and evidence receipts</a>, or <a href="https://github.com/danieloculus0-bot/BEAN/pull/199">the experimental pull request</a>. The web demo reproduces the documented legal moves and deterministic scramble generator; it is not wired into the installed BEAN Core runtime.</p>
+<p>We test a conventional full-cube solver against a small, explicitly separate route-learning candidate without giving either one the inverse scramble. A learned route wins only if it uses fewer valid face turns than the same-position reference, and each result is verified by independent sticker-level replay. This is <strong>case reuse</strong>, not evidence of general intelligence or learned model weights.</p>
+<p>Try the <strong>Shortcut example</strong>: three legal turns create a position that can be solved in one. The search discovers the one-turn answer from the position alone. For arbitrary long scrambles, a shorter answer is not guaranteed. The solver can use more than eight moves, and the candidate can lose or tie.</p>
+<p class="small">Inspect <a href="https://github.com/danieloculus0-bot/BEAN/blob/experiment/agi-cognitive-gauntlet-20261028/experiments/cognitive_gauntlet/rubiks3.py">Python rules and benchmark code</a>, <a href="https://github.com/danieloculus0-bot/BEAN/blob/experiment/agi-cognitive-gauntlet-20261028/bean/tests/test_cognitive_rubiks3.py">unit tests</a>, <a href="https://github.com/danieloculus0-bot/BEAN/actions/workflows/bean-cognitive-gauntlet.yml">CI and evidence receipts</a>, or <a href="https://github.com/danieloculus0-bot/BEAN/pull/199">the experimental pull request</a>. The web demo reproduces the legal moves, deterministic scramble generator and case memory; it is not wired into the installed BEAN Core runtime. Solver credit and license are preserved in <a href="./vendor/cubejs/LICENSE">the MIT notice</a>.</p>
 </section>
 </main>
 <footer><div class="wrap">BEAN · Behavior Enabled Avatar Node · An evidence-first public research demonstration</div></footer>
