@@ -166,13 +166,13 @@ def experiment(*, train_seeds=range(250), test_seeds=range(1000, 1010),
                     state = apply(SOLVED, recipe)
                     normalized, _ = canonical(state)
                     reason = ('training_symmetry_overlap' if normalized in known else
-                              'duplicate_holdout_state' if state in seen else None)
+                              'duplicate_holdout_symmetry_class' if normalized in seen else None)
                     if reason:
                         excluded.append({'seed': seed, 'scramble_length': length,
                                          'scramble_evaluator_only': recipe,
-                                         'state': state, 'reason': reason})
+                                         'state': state, 'canonical_state': normalized, 'reason': reason})
                         continue
-                    seen.add(state)
+                    seen.add(normalized)
                     untrained_moves, untrained_info = policy_solve_symmetric(untrained, state)
                     base_moves, base_info = policy_solve(baseline, state)
                     moves, info = policy_solve_symmetric(candidate, state)
@@ -186,6 +186,7 @@ def experiment(*, train_seeds=range(250), test_seeds=range(1000, 1010),
                                            if ok or base_ok else (None, None))
                     cases.append({'seed': seed, 'scramble_length': length,
                                   'scramble_evaluator_only': recipe, 'state': state,
+                                  'canonical_state': normalized,
                                   'untrained_moves': untrained_moves,
                                   'untrained_solved': untrained_ok,
                                   'baseline_moves': base_moves, 'baseline_solved': base_ok,
