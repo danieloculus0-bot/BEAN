@@ -10,6 +10,7 @@ on:
       - 'bean/learning/reasoning_service.py'
       - 'bean/learning/bridge_feedback.py'
       - 'bean/tests/test_native_web_research.py'
+      - 'bean/tests/test_research_problem_solving.py'
       - 'bean/tests/test_web_research_bridge_loop.py'
       - 'bean/evaluation/live_web_research_nemotron.py'
       - 'bean_run.py'
@@ -52,7 +53,7 @@ jobs:
       - name: Compile web/network boundary and real BEAN Core
         run: python -m compileall -q bean bean_run.py
       - name: Test real Core source persistence, public HTTP safety, Bridge verification, retained transfer
-        run: python -m unittest bean.tests.test_native_web_research bean.tests.test_web_research_bridge_loop bean.tests.test_bridge_reasoning_loop -v
+        run: python -m unittest bean.tests.test_native_web_research bean.tests.test_research_problem_solving bean.tests.test_web_research_bridge_loop bean.tests.test_bridge_reasoning_loop -v
       - name: Whole Core regression
         run: python -m pytest bean/tests -q -ra --tb=short
   optional-live-nemotron-and-public-web:
