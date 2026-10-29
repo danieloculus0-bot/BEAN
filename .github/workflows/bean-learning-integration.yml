@@ -3,11 +3,24 @@ name: BEAN learning integration verification
 on:
   push:
     branches:
+      - main
       - integrate/bean-learning-core-20261022
+    paths:
+      - "bean/learning/**"
+      - "bean/evaluation/active_abstraction_benchmark.py"
+      - "bean/optimization/sponge_*.py"
+      - "bean/optimization/intuition_maze.py"
+      - "bean/tests/test_active_hypothesis.py"
+      - "bean/tests/test_learning_runtime.py"
+      - "bean/tests/test_intuition_maze.py"
+      - "bean_run.py"
+      - ".github/workflows/bean-learning-integration.yml"
   pull_request:
     branches: [main]
     paths:
       - "bean/learning/**"
+      - "bean/evaluation/active_abstraction_benchmark.py"
+      - "bean/tests/test_active_hypothesis.py"
       - "bean/optimization/sponge_*.py"
       - "bean/optimization/intuition_maze.py"
       - "bean/tests/test_learning_runtime.py"
