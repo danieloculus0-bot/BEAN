@@ -21,6 +21,7 @@ import tempfile
 
 from bean.optimization.sponge_td import SpongeTD
 from .rubiks3 import MOVES, SOLVED, apply, scramble, solve, turn
+from .rubiks3_legality import validate_legal_cube
 
 SCHEMA = 'bean.rubiks3.sponge-td.v1'
 
@@ -75,8 +76,7 @@ def policy_solve(learner, start):
     Stops on missing positive value or repeated state, never at a move-count
     ceiling. Does not modify learner.q or consult a reference solver.
     """
-    if len(start) != 54 or sorted(start) != sorted(SOLVED):
-        raise ValueError('invalid facelet colors')
+    validate_legal_cube(start)
     current, path, seen = start, [], set()
     transfer_used = False
     while current != SOLVED:
