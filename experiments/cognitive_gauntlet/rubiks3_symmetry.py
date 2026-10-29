@@ -17,6 +17,7 @@ import tempfile
 from bean.optimization.sponge_td import SpongeTD
 from .rubiks3 import FACES, INDEX, MOVES, NORMAL, SOLVED, STICKERS, apply, scramble, solve, turn, _spin
 from .rubiks3_sponge import _digest, collect_states, learn_policy, policy_solve
+from .rubiks3_legality import validate_legal_cube
 
 MOVE_INDEX = {m: i for i, m in enumerate(MOVES)}
 NORMAL_FACE = {v: f for f, v in NORMAL.items()}
@@ -102,7 +103,7 @@ def learn_symmetric(learner, states, *, epochs=12, seed=19):
 
 def policy_solve_symmetric(learner, start):
     """Greedy learned canonical Q-values; never consumes scramble or solution."""
-    canonical(start)  # validate input before any policy action
+    validate_legal_cube(start)  # reject physically impossible 3x3 states
     state, path, visited = start, [], set()
     transfer_used = False
     while state != SOLVED:
