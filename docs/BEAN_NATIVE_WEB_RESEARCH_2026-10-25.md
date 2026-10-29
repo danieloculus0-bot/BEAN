@@ -13,6 +13,47 @@ Normal `python bean_run.py` startup (unless `BEAN_REASONING_ENABLED=0`) now regi
 
 All ordinary `reasoning_*` commands remain available. There is **one Core reasoning service and one memory owner**. Saved source snippets and failed requests are never treated as positive rewards.
 
+## Local-first task solving (October 28, 2026)
+
+The existing Python Core now registers `research_solve` through the normal
+BEAN inbox. Example request arguments:
+
+```json
+{"domain":"engineering","task_ref":"public-question-001","question":"What does a publicly available technical standard say about this material?","allow_external":true,"provider":"auto","max_pages":2,"answer_with_model":true,"max_attempts":1}
+```
+
+`WebResearchService.solve_task` first calls BEAN's native symbolic/composition
+reasoner. A locally solved question needs **zero** network or model calls.
+Otherwise `allow_external=false` stops with a durable unresolved receipt.
+When the caller explicitly permits public research, BEAN reuses
+`research_needed` and `research_investigate`: at most **one search, three
+public page reads and one configured-model attempt per pass**. The default
+is one pass. Two passes require a trusted Python-host verifier installed at
+service construction, which can return a short public information gap for
+one further search. Host feedback is not independent factual verification;
+`host_reported_pass` remains explicitly unverified. No crawler starts in
+the background, no private cognition metadata is automatically uploaded,
+and no hardware or trading action is performed.
+
+For applications that need to avoid repeated public searches,
+`WebResearchService.solve_open_question` is a direct Python method with
+a stricter one-pass budget and source-linked replay. It checks BEAN's
+existing SHA-chained journal for the same domain and question, reuses a
+previous *unverified* inference receipt without contacting the network,
+or returns `cached_sources_unanswered` when the previous run only
+collected evidence. Callers may explicitly request `force_refresh=true`;
+they must independently decide whether cached material is still current.
+This method is **not** the `research_solve` inbox handler. Both paths
+preserve negative outcomes, network counts, source references and
+nonverification status in BEAN's original journal.
+
+Regression coverage lives in
+`bean/tests/test_research_problem_solving.py` and
+`bean/tests/test_native_web_research.py`; passing source tests do not
+prove open-domain problem-solving accuracy or real-model improvement.
+Check the exact commit's GitHub Actions run before describing these
+new tests as passed.
+
 ## Search providers
 
 - **Wikipedia** is the key-free fallback for public encyclopedic information. Uses the MediaWiki search endpoint and reads a cited Wikipedia HTML page. It is **not** general open-web search, and pages from the same site do not count as independent sources for Bridge.
