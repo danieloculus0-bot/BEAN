@@ -1,0 +1,48 @@
+name: BEAN sensor feedback research regression
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'experiments/cognitive_gauntlet/sensor_reliability.py'
+      - 'experiments/cognitive_gauntlet/sensor_benchmark.py'
+      - 'experiments/cognitive_gauntlet/SENSOR_RELIABILITY.md'
+      - 'bean/tests/test_cognitive_sensor.py'
+      - '.github/workflows/bean-sensor-feedback.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'experiments/cognitive_gauntlet/sensor_reliability.py'
+      - 'experiments/cognitive_gauntlet/sensor_benchmark.py'
+      - 'experiments/cognitive_gauntlet/SENSOR_RELIABILITY.md'
+      - 'bean/tests/test_cognitive_sensor.py'
+      - '.github/workflows/bean-sensor-feedback.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  feedback-replay:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        python: ['3.11', '3.12']
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Verify delayed feedback, invalid receipts and checkpoint recovery
+        run: python -m unittest bean.tests.test_cognitive_sensor -v
+      - name: Replay all 21600 synthetic cases and retain every error
+        run: python -m experiments.cognitive_gauntlet.sensor_benchmark
+      - name: Upload full source observations, negative cases and scores
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bean-sensor-feedback-${{ matrix.os }}-py${{ matrix.python }}
+          path: cognitive-gauntlet-results/sensor-feedback.json.gz
+          if-no-files-found: warn
