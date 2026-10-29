@@ -1,0 +1,40 @@
+name: BEAN delayed-feedback dependency learning
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'experiments/cognitive_gauntlet/sensor_dependency.py'
+      - 'experiments/cognitive_gauntlet/sensor_dependency_benchmark.py'
+      - 'experiments/cognitive_gauntlet/sensor_reliability.py'
+      - 'bean/tests/test_cognitive_sensor_dependency.py'
+      - '.github/workflows/bean-sensor-dependency.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'experiments/cognitive_gauntlet/sensor_dependency.py'
+      - 'experiments/cognitive_gauntlet/sensor_dependency_benchmark.py'
+      - 'experiments/cognitive_gauntlet/sensor_reliability.py'
+      - 'bean/tests/test_cognitive_sensor_dependency.py'
+      - '.github/workflows/bean-sensor-dependency.yml'
+jobs:
+  dependency-regression:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        python-version: ['3.11', '3.12']
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Test causal delayed-feedback learning
+        run: python -m unittest bean.tests.test_cognitive_sensor_dependency -v
+      - name: Independent synthetic heldout with all cases
+        run: python -m experiments.cognitive_gauntlet.sensor_dependency_benchmark
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sensor-dependency-${{ matrix.os }}-py${{ matrix.python-version }}
+          path: cognitive-gauntlet-results/sensor-dependency.json.gz
+          if-no-files-found: error
