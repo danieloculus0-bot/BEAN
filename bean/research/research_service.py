@@ -183,7 +183,9 @@ class WebResearchService:
             "error_class": outcome.get("error_class"),
         }
         entry = {
-            "schema": outcome["schema"],
+            # ExperienceBank.record_trial requires its established trial
+            # envelope, while the nested outcome retains its own schema.
+            "schema": "bean.adaptive_lab026.v1",
             "experiment": "bean.native.research_problem_solving.v1",
             "domain": domain, "task_ref": task_ref, "question": question,
             "decision": decision,
@@ -366,7 +368,8 @@ class WebResearchService:
                 search_query = (question + " " + gap.strip())[:500]
 
         decision = {
-            "schema": "bean.native.research_solve.v1",
+            "schema": "bean.adaptive_lab026.v1",
+            "result_schema": "bean.native.research_solve.v1",
             "experiment": "bean.native.research_solve.v1",
             "domain": domain, "task_ref": task_ref, "question": question,
             "local_status": local_status,
@@ -385,7 +388,8 @@ class WebResearchService:
         }
         tip = self.core.bank.record_trial(decision)
         result = {
-            "schema": decision["schema"], "domain": domain, "task_ref": task_ref,
+            "schema": "bean.native.research_solve.v1",
+            "domain": domain, "task_ref": task_ref,
             "status": status, "answer": answer,
             "local_status": local_status, "research_attempts": attempts,
             "network_requests": decision["network_requests"],
