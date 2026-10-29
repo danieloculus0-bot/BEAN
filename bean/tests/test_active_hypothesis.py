@@ -208,6 +208,45 @@ class ActiveHypothesisTests(unittest.TestCase):
                 core.revise_discovered_analogy(**params,min_gain=float("nan"))
             core.close()
 
+    def test_validation_rejects_relabelled_training_state_before_rewards(self):
+        training = [f"train-{i}" for i in range(8)]
+        validation = [f"blind-{i}" for i in range(3)]
+        calls = []
+        def observe(pid):
+            calls.append(("observe", pid))
+            # A different ID for the exact same observation is not new data.
+            index = int(pid.split("-")[1])
+            if pid == "blind-0":
+                index = 2
+            else:
+                index += 100 if pid.startswith("blind-") else 0
+            return (float(index), float(index + 1))
+        def reward(pid, action):
+            calls.append(("reward", pid, action))
+            return 1.0 if action == 0 else 0.0
+        with self.assertRaisesRegex(ValueError, "sensor states unseen"):
+            discover(probe_ids=training, validation_probe_ids=validation,
+                     observe=observe, reward=reward, budget=4)
+        self.assertEqual(len([x for x in calls if x[0] == "observe"]), 11)
+        self.assertFalse(any(x[0] == "reward" for x in calls))
+
+    def test_validation_rejects_relabelled_validation_state_before_rewards(self):
+        training = [f"train-{i}" for i in range(8)]
+        validation = [f"blind-{i}" for i in range(3)]
+        reward_calls = []
+        def observe(pid):
+            index = int(pid.split("-")[1])
+            if pid.startswith("blind-"):
+                index = 100 if index in (0, 1) else 102
+            return (float(index), float(index + 1))
+        def reward(pid, action):
+            reward_calls.append((pid, action))
+            return 0.0
+        with self.assertRaisesRegex(ValueError, "distinct within validation"):
+            discover(probe_ids=training, validation_probe_ids=validation,
+                     observe=observe, reward=reward, budget=4)
+        self.assertEqual(reward_calls, [])
+
     def test_disjoint_validation_detects_changed_feedback(self):
         world = World(120, "channel")
         training = [str(100+i) for i in range(40)]
