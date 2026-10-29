@@ -67,3 +67,37 @@ itself generalize the tabular policy to every previously unseen state;
 piece-factorized control or learned subgoals remain separate hypotheses.
 
 No Core runtime, public cube page, or mainline cognition behavior changes.
+
+
+## First result: naive use of shaped Q values failed
+
+On the original preregistered holdouts 13000 and 14000, Linux Python
+3.11/3.12 CI reproduced a decisive negative result at commit
+325b066e9b5b38378ecd41bd15b17ec8b7eaef34:
+- 13000: 45 eligible, 5 excluded; terminal-only 19 solved, shaped 0 solved,
+  19 reverse regressions; 0/10 full 20-turn cubes.
+- 14000: 47 eligible, 3 excluded; terminal-only 18 solved, shaped 0 solved,
+  18 reverse regressions; 0/10 full 20-turn cubes.
+
+The learned Q values trained with potential shaping represent Q'(s,a), not
+ordinary Q(s,a). Feeding Q' directly into the unchanged value controller
+is a mismatch: potential shaping shifts every state-action value by -Phi(s).
+The initial experiment deliberately preserved this failure instead of
+silently rewriting it. All individual case receipts remain in the original
+CI artifacts. Passing unit tests alone did not establish a good policy.
+
+## Corrected interpretation, separately tested
+
+The follow-up hypothesis applies the algebraic correction
+Q(s,a) = Q'(s,a) + Phi(s) before using shaped values for action selection.
+It still uses the same two-transition BEAN learned-value controller, the
+same legal rules and the same matched SpongeTD update budgets, with no
+external solver. This corrects interpretation of the trained values; it
+does **not** add a full-cube distance oracle or solve unseen states by search.
+
+The corrected candidate is evaluated on **new, untouched cohorts 16000 and
+17000**, never on the already-observed 13000/14000 cohorts as if fresh.
+A separate small 15000 cohort tests basic integration. The baseline remains
+the original terminal-only learner. Both failures and improvements count.
+No generalization or 20-turn success is claimed until exact-head CI receipts
+are inspected.
