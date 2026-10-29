@@ -5,16 +5,20 @@ on:
     paths:
       - 'experiments/cognitive_gauntlet/rubiks3.py'
       - 'experiments/cognitive_gauntlet/rubiks3_sponge.py'
+      - 'experiments/cognitive_gauntlet/rubiks3_symmetry.py'
       - 'bean/tests/test_cognitive_rubiks3.py'
       - 'bean/tests/test_cognitive_rubiks_sponge.py'
+      - 'bean/tests/test_cognitive_rubiks_symmetry.py'
       - '.github/workflows/bean-cube-td.yml'
   pull_request:
     branches: [main]
     paths:
       - 'experiments/cognitive_gauntlet/rubiks3.py'
       - 'experiments/cognitive_gauntlet/rubiks3_sponge.py'
+      - 'experiments/cognitive_gauntlet/rubiks3_symmetry.py'
       - 'bean/tests/test_cognitive_rubiks3.py'
       - 'bean/tests/test_cognitive_rubiks_sponge.py'
+      - 'bean/tests/test_cognitive_rubiks_symmetry.py'
       - '.github/workflows/bean-cube-td.yml'
   workflow_dispatch:
 permissions:
@@ -36,9 +40,15 @@ jobs:
         with:
           python-version: ${{ matrix.python }}
       - name: Independent cube geometry, TD learning, heldout and restart tests
-        run: python -m unittest bean.tests.test_cognitive_rubiks3 bean.tests.test_cognitive_rubiks_sponge -v
+        run: python -m unittest bean.tests.test_cognitive_rubiks3 bean.tests.test_cognitive_rubiks_sponge bean.tests.test_cognitive_rubiks_symmetry -v
       - name: Run frozen BEAN-native policy and preserve all heldout failures
         run: python -m experiments.cognitive_gauntlet.rubiks3_sponge
+      - name: Replay symmetry-aware learned policy with every heldout failure
+        run: python -m experiments.cognitive_gauntlet.rubiks3_symmetry --output cognitive-gauntlet-results/rubiks3-symmetry-1000.json --test-seed-start 1000
+      - name: Replay independent symmetry cohort 2000
+        run: python -m experiments.cognitive_gauntlet.rubiks3_symmetry --output cognitive-gauntlet-results/rubiks3-symmetry-2000.json --test-seed-start 2000
+      - name: Replay independent symmetry cohort 3000
+        run: python -m experiments.cognitive_gauntlet.rubiks3_symmetry --output cognitive-gauntlet-results/rubiks3-symmetry-3000.json --test-seed-start 3000
       - name: Upload complete case receipts and scored SpongeTD journal
         if: always()
         uses: actions/upload-artifact@v4
