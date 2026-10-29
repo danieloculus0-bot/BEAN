@@ -6,9 +6,12 @@ on:
       - 'experiments/cognitive_gauntlet/sensor_reliability.py'
       - 'experiments/cognitive_gauntlet/sensor_benchmark.py'
       - 'experiments/cognitive_gauntlet/sensor_missing_feedback.py'
+      - 'experiments/cognitive_gauntlet/sensor_provenance.py'
+      - 'experiments/cognitive_gauntlet/SENSOR_PROVENANCE.md'
       - 'experiments/cognitive_gauntlet/SENSOR_RELIABILITY.md'
       - 'bean/tests/test_cognitive_sensor.py'
       - 'bean/tests/test_cognitive_sensor_missing.py'
+      - 'bean/tests/test_cognitive_sensor_provenance.py'
       - '.github/workflows/bean-sensor-feedback.yml'
   pull_request:
     branches: [main]
@@ -16,9 +19,12 @@ on:
       - 'experiments/cognitive_gauntlet/sensor_reliability.py'
       - 'experiments/cognitive_gauntlet/sensor_benchmark.py'
       - 'experiments/cognitive_gauntlet/sensor_missing_feedback.py'
+      - 'experiments/cognitive_gauntlet/sensor_provenance.py'
+      - 'experiments/cognitive_gauntlet/SENSOR_PROVENANCE.md'
       - 'experiments/cognitive_gauntlet/SENSOR_RELIABILITY.md'
       - 'bean/tests/test_cognitive_sensor.py'
       - 'bean/tests/test_cognitive_sensor_missing.py'
+      - 'bean/tests/test_cognitive_sensor_provenance.py'
       - '.github/workflows/bean-sensor-feedback.yml'
   workflow_dispatch:
 permissions:
@@ -47,6 +53,10 @@ jobs:
         run: python -m experiments.cognitive_gauntlet.sensor_benchmark
       - name: Replay 4800 new independent missing-label heldouts
         run: python -m experiments.cognitive_gauntlet.sensor_missing_feedback
+      - name: Verify known shared-provenance grouping and false-group regressions
+        run: python -m unittest bean.tests.test_cognitive_sensor_provenance -v
+      - name: Replay 7200 independent grouped-source heldouts
+        run: python -m experiments.cognitive_gauntlet.sensor_provenance
       - name: Upload full source observations, negative cases and scores
         if: always()
         uses: actions/upload-artifact@v4
@@ -55,4 +65,5 @@ jobs:
           path: |
             cognitive-gauntlet-results/sensor-feedback.json.gz
             cognitive-gauntlet-results/sensor-missing-feedback.json.gz
+            cognitive-gauntlet-results/sensor-provenance.json.gz
           if-no-files-found: warn

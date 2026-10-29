@@ -38,7 +38,8 @@ class OnlineSensorTrust:
         correct, wrong = self.counts.get(origin, (0., 0.))
         return (self.alpha + correct) / (self.alpha + self.beta + correct + wrong)
 
-    def forecast(self, observations: list[SensorObservation]) -> float:
+    def forecast(self, observations: list[SensorObservation], *,
+                 provenance_groups: dict[str, str] | None = None) -> float:
         if self._pending is not None:
             raise ValueError("previous prediction still awaits feedback")
         if not isinstance(observations, (tuple, list)) or not observations:
@@ -55,10 +56,23 @@ class OnlineSensorTrust:
                 raise ValueError("duplicate origin or receipt")
             seen.add(item.origin)
             ids.add(item.evidence_id)
-        odds = 0.0
+        if provenance_groups is not None:
+            # These are host-asserted common upstream origins, not inferred truth.
+            # Validate before consuming any evidence IDs.
+            if (type(provenance_groups) is not dict
+                    or set(provenance_groups) != seen
+                    or any(type(group) is not str or not 1 <= len(group) <= 120
+                           or group != group.strip() for group in provenance_groups.values())):
+                raise ValueError("one valid provenance group required per origin")
+        votes_by_group: dict[str, list[float]] = {}
         for item in observations:
             reliability = min(.99, max(.01, self.reliability(item.origin)))
-            odds += (2 * item.value - 1) * math.log(reliability / (1 - reliability))
+            vote = (2 * item.value - 1) * math.log(reliability / (1 - reliability))
+            group = item.origin if provenance_groups is None else provenance_groups[item.origin]
+            votes_by_group.setdefault(group, []).append(vote)
+        # A shared upstream channel contributes one mean vote, not N
+        # supposedly independent votes. Unique groups reproduce the baseline.
+        odds = sum(sum(votes) / len(votes) for votes in votes_by_group.values())
         odds = max(-self.max_log_odds, min(self.max_log_odds, odds))
         self._pending = tuple(observations)
         self._ids.update(ids)
