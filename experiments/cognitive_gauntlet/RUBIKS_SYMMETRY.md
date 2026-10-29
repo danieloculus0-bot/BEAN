@@ -1,6 +1,6 @@
 # BEAN 3x3: rotation-equivariant SpongeTD pilot
 
-Experimental branch only. This is **BEAN's own trained tabular policy**, not
+The current v2 holdout correction remains on the experimental branch; the original CI-proven v1 policy was separately integrated into `main` at `a74ccfe3`. This is **BEAN's own trained tabular policy**, not
 cubejs, an inverse-scramble recipe, a conventional solver, or a claim of
 arbitrary full-cube solving. The 3x3 move geometry is the unchanged
 `rubiks3.py`; terminal rewards and Q updates use existing mainline `SpongeTD`.
@@ -25,12 +25,13 @@ goal, a cycle, or missing positive learned value.
 - Frozen test cohorts: seeds 1000-1009, 2000-2009, and 3000-3009;
   lengths 3, 4, 5, 6, and 20 (150 predeclared cases).
 - Exclude states equivalent under one of the 24 rotations to a **training**
-  state, and repeated holdout states. Both baseline and candidate receive
-  exactly the same eligible states. This conservative rule excluded 32/150.
-- Matched original SpongeTD policy: **6/118** eligible cases solved.
-- New rotation-equivariant SpongeTD: **33/118** solved, including 27 cases
+  state, and repeated **rotation-equivalent holdout** states. Both baseline and
+  candidate receive the same 117 eligible states. This stricter v2 rule excluded
+  33/150 cases. Canonical state is recorded for every included/excluded case.
+- Matched original SpongeTD policy: **6/117** eligible cases solved.
+- New rotation-equivariant SpongeTD: **32/117** solved, including 26 cases
   the unchanged policy missed and zero reverse regressions in this sample.
-- Untrained rotation-equivariant policy: **0/118**. Every one of the 33
+- Untrained rotation-equivariant policy: **0/117**. Every one of the 32
   successes independently replays to the solved cube and matches the shortest
   length proved by the separate bounded search (at most six HTM moves).
 - All **30/30** held-out 20-turn scrambles remain unsolved. The candidate is
@@ -38,6 +39,8 @@ goal, a cycle, or missing positive learned value.
   the symmetry-aware learner uses a different transition graph and **26,880**
   TD updates versus **33,024** in the unchanged control. The controls are
   matched on self-play and epochs, not on identical transition graphs.
+
+**Evidence:** v2 source at `aa1457c801c949954f7ee63caf5c2c7075c31cc6` passed [8/8 exact-head CI jobs](https://github.com/danieloculus0-bot/BEAN/actions/runs/40828666437) on Linux/Windows, Python 3.11/3.12. Cohorts 1000, 2000 and 3000 contain 36, 41 and 40 eligible cases respectively; all 30 eligible 20-turn cases failed. The prior v1 **33/118** figure is retained as historical evidence from before the stronger holdout deduplication and must not be substituted for v2.
 
 The three cohort receipts record original scrambles (evaluator only), states,
 selected moves, every failure, exclusions, training episodes, Q-table digests,
