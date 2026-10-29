@@ -42,6 +42,27 @@ class PrioritizedCubeTDTests(unittest.TestCase):
             finally:
                 learner.close()
 
+    def test_fractional_alpha_requeues_unfinished_bellman_backups(self):
+        # A fractional TD step cannot erase the terminal Bellman residual.
+        # Every available priority update should keep working on it rather
+        # than silently falling through to seeded random-budget filler.
+        with TemporaryDirectory() as tmp:
+            learner = SpongeTD(Path(tmp) / 'td.db', actions=MOVES,
+                               alpha=.25, gamma=.9, epsilon=0)
+            try:
+                one = turn(SOLVED, 'U')
+                edge = (one, MOVES.index("U'"), SOLVED)
+                stats = prioritized_replay(learner, [edge], 5)
+                self.assertEqual(stats['prioritized_updates'], 5)
+                self.assertEqual(stats['matched_budget_filler_updates'], 0)
+                self.assertEqual(stats['total_updates'], 5)
+                self.assertAlmostEqual(
+                    learner.q[learner.key(one)][MOVES.index("U'")],
+                    1.0 - .75 ** 5)
+                self.assertAlmostEqual(residual(learner, edge), .75 ** 5)
+            finally:
+                learner.close()
+
     def test_priorities_propagate_through_observed_legal_edges(self):
         one = turn(SOLVED, 'U')
         two = turn(one, 'F')
