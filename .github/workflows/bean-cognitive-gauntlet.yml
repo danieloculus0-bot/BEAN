@@ -15,6 +15,7 @@ on:
       - 'bean/tests/test_cognitive_rubiks3.py'
       - 'bean/tests/test_cognitive_rubiks_memory.py'
       - 'bean/tests/test_cognitive_rubiks_sponge.py'
+      - 'bean/tests/test_cognitive_rubiks_symmetry.py'
       - '.github/workflows/bean-cognitive-gauntlet.yml'
   pull_request:
     branches: [main]
@@ -31,6 +32,7 @@ on:
       - 'bean/tests/test_cognitive_rubiks3.py'
       - 'bean/tests/test_cognitive_rubiks_memory.py'
       - 'bean/tests/test_cognitive_rubiks_sponge.py'
+      - 'bean/tests/test_cognitive_rubiks_symmetry.py'
       - '.github/workflows/bean-cognitive-gauntlet.yml'
   workflow_dispatch:
 permissions:
@@ -65,6 +67,14 @@ jobs:
         run: python -m unittest bean.tests.test_cognitive_rubiks_sponge -v
       - name: Run frozen BEAN-native cube policy and archive all failures
         run: python -m experiments.cognitive_gauntlet.rubiks3_sponge
+      - name: Verify rotation-equivariant learned TD policy and exact replay
+        run: python -m unittest bean.tests.test_cognitive_rubiks_symmetry -v
+      - name: Frozen cube symmetry holdout cohort 1000 with every failure
+        run: python -m experiments.cognitive_gauntlet.rubiks3_symmetry --output cognitive-gauntlet-results/rubiks3-symmetry-1000.json --test-seed-start 1000
+      - name: Frozen cube symmetry holdout cohort 2000 with every failure
+        run: python -m experiments.cognitive_gauntlet.rubiks3_symmetry --output cognitive-gauntlet-results/rubiks3-symmetry-2000.json --test-seed-start 2000
+      - name: Frozen cube symmetry holdout cohort 3000 with every failure
+        run: python -m experiments.cognitive_gauntlet.rubiks3_symmetry --output cognitive-gauntlet-results/rubiks3-symmetry-3000.json --test-seed-start 3000
       - name: Execute exact paired evidence comparisons
         run: python -m experiments.cognitive_gauntlet.runner
       - name: Tune on training seeds and evaluate held-out adaptive predictions
