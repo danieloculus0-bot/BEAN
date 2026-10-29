@@ -55,6 +55,139 @@ class WebResearchService:
             "web_evidence_is_verified": False,
         }
 
+    def solve_open_question(self, *, domain, task_ref, question,
+                            allow_external=False, provider="auto",
+                            max_pages=3, answer_with_model=True,
+                            force_refresh=False):
+        """Local-first, explicitly authorized, one-pass research problem solving.
+
+        The local symbolic/composition engine tries first. If it abstains,
+        BEAN checks its existing source ledger, then optionally performs one
+        bounded public search and one model inference. Every outcome,
+        including refusal, provider failure and unresolved evidence, is
+        journaled. A source-backed answer is still unverified, not learning
+        or a claim that the original task was objectively solved.
+        """
+        domain = _bounded(domain, "domain", 100).casefold()
+        task_ref = _bounded(task_ref, "task_ref", 200)
+        question = _bounded(question, "question")
+        if (type(allow_external) is not bool or type(answer_with_model) is not bool
+                or type(force_refresh) is not bool or type(max_pages) is not int
+                or not 1 <= max_pages <= MAX_READS
+                or provider not in ("auto", "wikipedia", "brave")):
+            raise ValueError("Explicit Boolean permissions, valid provider and 1..3 pages required")
+        before_requests = self.sources.call_count
+        local = self.core.reason_local(
+            domain=domain, task_ref=task_ref, query=question)
+        outcome = {
+            "schema": "bean.native.research_problem_solving.v1",
+            "domain": domain, "task_ref": task_ref, "question": question,
+            "local_status": local["status"],
+            "local_reason": local.get("reason"),
+            "status": "unresolved", "answer": None,
+            "source_count": 0, "source_refs": [],
+            "inference_receipt": None, "model_attempted": False,
+            "network_requests": 0, "facts_verified": False,
+            "learning_improvement_proven": False,
+            "action_executed": False,
+        }
+        if local["status"] == "locally_solved":
+            outcome.update(status="locally_solved", answer=local["answer"])
+        elif not allow_external:
+            outcome["status"] = "needs_external_research_authorization"
+        else:
+            cached = None
+            for event in reversed(self.core.bank.journal.events()):
+                if event["kind"] != "research":
+                    continue
+                packet = event["data"]
+                if (packet.get("domain") == domain and
+                        packet.get("question") == question and
+                        packet.get("sources")):
+                    cached = packet
+                    break
+            if cached is not None and not force_refresh:
+                outcome["source_count"] = len(cached["sources"])
+                outcome["source_refs"] = [
+                    "web:" + item["text_sha256"] for item in cached["sources"]]
+                outcome["status"] = "cached_sources_unanswered"
+                if answer_with_model:
+                    evidence_hash = sha256(canonical(cached)).hexdigest()
+                    for event in reversed(self.core.bank.journal.events()):
+                        if event["kind"] != "inference":
+                            continue
+                        record = event["data"]
+                        if (record.get("purpose") == "research_answer" and
+                                record.get("evidence_packet_sha256") == evidence_hash
+                                and record.get("domain") == domain and
+                                record.get("query") == question):
+                            outcome.update(
+                                status="cached_unverified_answer",
+                                answer=record["answer"],
+                                inference_receipt=record["receipt_id"])
+                            break
+            elif answer_with_model and self.core.model is None:
+                outcome["status"] = "model_unavailable"
+            else:
+                try:
+                    result = self.investigate(
+                        domain=domain, task_ref=task_ref, question=question,
+                        provider=provider, max_pages=max_pages,
+                        answer_with_model=answer_with_model)
+                except (ResearchTransportError, ValueError) as exc:
+                    outcome["status"] = "research_unavailable"
+                    outcome["error_class"] = type(exc).__name__
+                else:
+                    outcome.update(
+                        answer=result["answer"],
+                        source_count=result["source_count"],
+                        source_refs=["web:" + s["text_sha256"]
+                                     for s in result["sources"]],
+                        inference_receipt=result["inference_receipt"],
+                        model_attempted=bool(
+                            answer_with_model and result["source_count"]),
+                        research_journal_tip=result["research_journal_tip"],
+                        status=("researched_unverified_answer"
+                                if result["inference_receipt"]
+                                else "research_unresolved"),
+                    )
+                    if result.get("answer_status"):
+                        outcome["answer_status"] = result["answer_status"]
+                    if result.get("error_class"):
+                        outcome["error_class"] = result["error_class"]
+        outcome["network_requests"] = self.sources.call_count - before_requests
+        # Preserve decisions even when no search was authorized or a provider
+        # failed. These are host/model observations, never validated rewards.
+        decision = {
+            "schema": outcome["schema"],
+            "local_status": outcome["local_status"],
+            "local_reason": outcome["local_reason"],
+            "status": outcome["status"],
+            "source_refs": outcome["source_refs"],
+            "source_count": outcome["source_count"],
+            "inference_receipt": outcome["inference_receipt"],
+            "network_requests": outcome["network_requests"],
+            "model_attempted": outcome["model_attempted"],
+            "external_authorized": allow_external,
+            "force_refresh": force_refresh,
+            "max_pages": max_pages,
+            "answer_with_model": answer_with_model,
+            "facts_verified": False,
+            "learning_improvement_proven": False,
+            "error_class": outcome.get("error_class"),
+        }
+        entry = {
+            "schema": outcome["schema"],
+            "experiment": "bean.native.research_problem_solving.v1",
+            "domain": domain, "task_ref": task_ref, "question": question,
+            "decision": decision,
+            "outcome_origin": "local_rules_and_optional_public_web",
+            "independently_authenticated": False,
+        }
+        outcome["receipt_id"] = sha256(canonical(entry)).hexdigest()
+        outcome["journal_tip"] = self.core.bank.record_trial(entry)
+        return outcome
+
     def investigate_pending_goal(self, *, session_uuid, allow_external=False,
                                  provider="auto", answer_with_model=True):
         """Let BEAN choose one unanswered, approved-for-read-only cognitive goal.
@@ -269,5 +402,6 @@ def register_web_research_handlers(inbox, service):
         raise TypeError("Concrete BEAN-owned web research service required")
     inbox.register("research_needed", lambda m, _: service.research_needed(**m.args))
     inbox.register("research_investigate", lambda m, _: service.investigate(**m.args))
+    inbox.register("research_solve", lambda m, _: service.solve_open_question(**m.args))
     inbox.register("research_pending_goal", lambda m, _: service.investigate_pending_goal(**m.args))
     return inbox
