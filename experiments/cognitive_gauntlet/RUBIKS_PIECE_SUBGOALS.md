@@ -68,3 +68,32 @@ to this BEAN-native learned controller only after independent unseen-state
 replay, with exact commit, failures, move counts and comparison to the
 unchanged baseline. Without such evidence, the user's full-cube notification
 condition is **not met**. No production cognition or mainline files change.
+
+## First untouched holdout result (2026-10-29)
+
+At commit `d2a4c2c80f09c2a58b49e887545bb691b645fe4f`, all four isolated
+piece-subgoal CI jobs passed on Linux/Windows, Python 3.11/3.12:
+https://github.com/danieloculus0-bot/BEAN/actions/runs/40881337272
+
+- Cohort 18000: 40 eligible, 10 excluded; unchanged baseline **7 solved**,
+  learned independent-cubie controller **0 solved**; 7 reverse regressions,
+  0/10 twenty-turn successes.
+- Cohort 19000: 48 eligible, 2 excluded; unchanged baseline **10 solved**,
+  learned independent-cubie controller **0 solved**; 10 reverse regressions,
+  0/10 twenty-turn successes.
+- Combined: **0/88 versus 17/88** unchanged baseline, 17 regressions,
+  zero gains, and **0/20** twenty-turn successes.
+
+This is an explicit **negative** result. The individual cubie value
+representation did not produce coordinated full-cube decisions, even with
+the same number of SpongeTD updates. Preserve the candidate and all failed
+case receipts rather than promoting it as progress. The next hypothesis
+must learn *interactions between subgoals* or a global goal-conditioned
+value, rather than summing independent piece preferences.
+
+The first run also exposed a cross-platform source-receipt mismatch:
+Windows checked-out source bytes use different line endings than Linux.
+Commit `cb40acbc4a0cb214aeb5d2069b215b39b936ed32` normalizes the
+module source hash to UTF-8 text before hashing. The prior original
+receipts and negative results remain intact. Do not treat this portability
+fix as improved cube-solving ability; verify the new exact-head CI separately.
