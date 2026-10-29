@@ -97,3 +97,57 @@ Fixtures cover real BEAN SQLite append/restart, source hashes, Brave index parsi
 ## Next learning improvements
 
 Active BEAN-driven search planning from uncertainty/goal state; retrieval caching, stricter per-origin ownership independence, safe pinned-IP host networking or allowlisted outbound proxy, robust HTML extraction and documents (PDF), and larger paired live Nemotron experiments where independent sources really identify the expected answer. Keep everything in Core's original ledger and API.
+
+
+## Opt-in research-driven task solving (incremental Core integration)
+
+The regular Python Core inbox now also registers `research_solve`. It reuses
+`NativeReasoningService.reason_local` and `WebResearchService.investigate`
+rather than creating another agent, memory database, search engine or provider.
+Example:
+
+```json
+{
+  "domain": "engineering",
+  "task_ref": "example-unknown-001",
+  "question": "What published physical property is needed for this calculation?",
+  "allow_external": true,
+  "provider": "auto",
+  "max_pages": 2,
+  "answer_with_model": true,
+  "max_attempts": 1
+}
+```
+
+- First try retained native symbolic rules/compositions. A locally solved task
+  consumes zero network/model calls; this does not itself validate the result.
+- Otherwise, refuse outbound research unless `allow_external=true`.
+  With consent, collect a limited source packet, then make at most one model
+  inference if a provider is configured. With no provider, return source evidence
+  and `model_not_configured`, not an invented answer.
+- A Python host may install a **trusted verifier callable** on the existing
+  `WebResearchService`. With `max_attempts=2` it can return structured
+  `{ "passed": false, "public_gap": "..." }` feedback. The second public
+  search is allowed only with a bounded missing-information clue. If the
+  same source-content hashes reappear, the new packet is retained but no
+  second model answer is requested or counted as improvement.
+- Every result stores a trial in BEAN's original SHA ledger, referring to
+  any research packets, provider inference receipts, failures and host
+  feedback. `host_reported_pass` means the configured host said it passed,
+  **not** independently authenticated truth. The answer remains explicitly
+  unverified without independent evidence.
+- This is a host-requested bounded attempt, **not** a background autonomous
+  general solver, automatic re-planner, arbitrary-code executor or physical
+  action. The installed ChatGPT @BEAN hosted adapter still does not execute
+  this local Python Core command.
+
+Synthetic regression command:
+
+```sh
+python -m unittest bean.tests.test_research_problem_solving -v
+```
+
+The local/HTTP/model/host-verifier tests are synthetic mechanism checks,
+not evidence of solved arbitrary web puzzles or measured general intelligence.
+The same native-web workflow runs this test along with existing web-research
+and Bridge regressions on supported runners.
