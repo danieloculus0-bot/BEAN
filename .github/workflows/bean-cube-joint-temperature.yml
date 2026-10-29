@@ -1,0 +1,45 @@
+name: BEAN native joint-cube temperature learning
+on:
+  push:
+    branches: [experiment/agi-cognitive-gauntlet-20261028]
+    paths:
+      - 'experiments/cognitive_gauntlet/rubiks3_joint_temperature.py'
+      - 'experiments/cognitive_gauntlet/RUBIKS_JOINT_TEMPERATURE.md'
+      - 'bean/tests/test_cognitive_rubiks_joint_temperature.py'
+      - '.github/workflows/bean-cube-joint-temperature.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  matched-joint-learning:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        python: ['3.11', '3.12']
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Verify legal rewards, matched learning and independent replay
+        run: python -m unittest bean.tests.test_cognitive_rubiks_joint_temperature -v
+      - name: Fresh independent cohort 33000 with all successes, failures and pauses
+        run: python -m experiments.cognitive_gauntlet.rubiks3_joint_temperature --test-seed-start 33000 --output cognitive-gauntlet-results/joint-temperature-33000.json
+      - name: Independently verify every original scramble and legal route in cohort 33000
+        run: python -m experiments.cognitive_gauntlet.rubiks3_joint_temperature --verify --output cognitive-gauntlet-results/joint-temperature-33000.json
+      - name: Disjoint independent cohort 34000 with all successes, failures and pauses
+        run: python -m experiments.cognitive_gauntlet.rubiks3_joint_temperature --test-seed-start 34000 --output cognitive-gauntlet-results/joint-temperature-34000.json
+      - name: Independently verify every original scramble and legal route in cohort 34000
+        run: python -m experiments.cognitive_gauntlet.rubiks3_joint_temperature --verify --output cognitive-gauntlet-results/joint-temperature-34000.json
+      - name: Preserve full matched baseline and candidate receipts including negative cases
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bean-joint-temperature-${{ matrix.os }}-py${{ matrix.python }}
+          path: cognitive-gauntlet-results/
+          if-no-files-found: warn
