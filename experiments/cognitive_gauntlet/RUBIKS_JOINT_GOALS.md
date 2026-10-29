@@ -19,8 +19,13 @@ The candidate is an actual learned Q-value action controller. At inference
 it sees only the scrambled legal facelet state and its frozen learned joint
 Q table. It chooses each legal face turn using the aggregate of 96 joint
 values. It never reads the scramble recipe, inverse, cubejs, or reference
-search. It stops on a cycle or when no positive learned action remains,
-not at an arbitrary solution-move limit.
+search. It stops on a cycle or when no positive learned action remains.
+For runaway prevention, each invocation has a 128-action **compute slice**.
+An unfinished attempt is recorded as **paused**, with a serialized starting
+state and complete legal route. It can resume on a later invocation with
+\`policy_solve_pairs(learner, start, checkpoint=receipt, work_budget=128)\`.
+This is not a final solution-move cap, and paused cases are not completed
+failures. Independent replay still checks the partial route.
 
 ## Matched comparison
 
