@@ -82,8 +82,7 @@ def main():
     args.output.parent.mkdir(parents=True, exist_ok=True)
     raw = (json.dumps(result, indent=2, sort_keys=True) + "\n").encode()
     if args.output.suffix == ".gz":
-        with gzip.open(args.output, "wb", mtime=None) as stream:
-            stream.write(raw)
+        args.output.write_bytes(gzip.compress(raw, mtime=0))
     else:
         args.output.write_bytes(raw)
     print(json.dumps({"scores": result["scoreboard"],
