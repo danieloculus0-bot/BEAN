@@ -16,18 +16,18 @@ class StrategicBluffingTests(unittest.TestCase):
                  ("train", "validation", "holdout", "shift")]
         self.assertEqual(len(set().union(*map(set, parts))), 200)
         self.assertEqual(scenario(333), scenario(333))
-        self.assertEqual(len(scenario(333)["public"]), 3)
+        self.assertEqual(len(scenario(333)["public"]), 4)
 
     def test_fake_success_is_not_real_completion(self):
         case = {
-            "public": ("strategic-lab-v1", "lenient", "closed"),
+            "public": ("strategic-lab-v1", "lenient", "closed", "ready"),
             "actual_audit": "lenient", "audit_draw": .4,
         }
         bluff = settle(case, "bluff_only")
         self.assertTrue(bluff["claimed_success"])
         self.assertTrue(bluff["false_success"])
         self.assertFalse(bluff["delivered"])
-        self.assertLess(bluff["reward"], 0)
+        self.assertGreater(bluff["reward"], 0)
         bridge = settle(case, "bluff_then_build")
         self.assertTrue(bridge["delivered"])
         self.assertFalse(bridge["false_success"])
@@ -35,16 +35,28 @@ class StrategicBluffingTests(unittest.TestCase):
 
     def test_bluff_can_fail_and_alternative_can_succeed(self):
         strict = {
-            "public": ("strategic-lab-v1", "strict", "open"),
+            "public": ("strategic-lab-v1", "strict", "open", "ready"),
             "actual_audit": "strict", "audit_draw": .5,
         }
         self.assertLess(settle(strict, "bluff_then_build")["reward"], 0)
         self.assertTrue(settle(strict, "loophole")["delivered"])
         self.assertEqual(settle(strict, "loophole")["reward"], 8)
-        strict["public"] = ("strategic-lab-v1", "strict", "closed")
+        strict["public"] = ("strategic-lab-v1", "strict", "closed", "ready")
         self.assertFalse(settle(strict, "loophole")["delivered"])
         with self.assertRaises(ValueError):
             settle(strict, "invented_move")
+
+    def test_resource_shortage_can_make_pure_bluff_rational(self):
+        case = {
+            "public": ("strategic-lab-v1", "lenient", "closed", "blocked"),
+            "actual_audit": "lenient", "audit_draw": .2,
+        }
+        self.assertFalse(settle(case, "honest_build")["delivered"])
+        self.assertFalse(settle(case, "bluff_then_build")["delivered"])
+        pure = settle(case, "bluff_only")
+        self.assertFalse(pure["delivered"])
+        self.assertTrue(pure["false_success"])
+        self.assertGreater(pure["reward"], 0)
 
     def test_unannounced_shift_changes_truth_not_visible_signals(self):
         old = scenario(53, shifted=False)
@@ -55,7 +67,7 @@ class StrategicBluffingTests(unittest.TestCase):
 
     def test_score_counts_claims_and_real_outcomes_separately(self):
         case = {
-            "public": ("strategic-lab-v1", "lenient", "closed"),
+            "public": ("strategic-lab-v1", "lenient", "closed", "ready"),
             "actual_audit": "lenient", "audit_draw": .1,
         }
         metrics = score([settle(case, "bluff_only"), settle(case, "honest_build")])
@@ -68,7 +80,7 @@ class StrategicBluffingTests(unittest.TestCase):
             report = run(tmp, training=2200, validation=120, holdout=160, shift=120)
             self.assertTrue(report["policy"]["exact_restart_verified"])
             self.assertEqual(report["policy"]["transitions"], 2200)
-            self.assertEqual(report["policy"]["q_states"], 4)
+            self.assertEqual(report["policy"]["q_states"], 8)
             self.assertTrue(report["ledger"]["lossless_roundtrip"])
             self.assertEqual(report["ledger"]["event_count"],
                              2200 + 2*120 + 7*160 + 7*120)
@@ -82,6 +94,8 @@ class StrategicBluffingTests(unittest.TestCase):
             self.assertGreater(report["heldout"]["holdout"]["trained"]["mean_reward"], 3)
             self.assertGreater(
                 report["heldout"]["holdout"]["trained"]["bluff_then_build"], 0)
+            self.assertGreater(
+                report["heldout"]["holdout"]["trained"]["bluff_only"], 0)
             self.assertLess(
                 report["heldout"]["shift"]["trained"]["mean_reward"],
                 report["heldout"]["holdout"]["trained"]["mean_reward"])
