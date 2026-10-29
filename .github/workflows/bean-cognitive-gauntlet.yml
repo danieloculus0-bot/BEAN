@@ -7,12 +7,16 @@ on:
       - 'bean/tests/test_cognitive_gauntlet.py'
       - 'bean/tests/test_cognitive_adaptive.py'
       - 'bean/tests/test_cognitive_stress.py'
+      - 'bean/tests/test_cognitive_pattern.py'
       - '.github/workflows/bean-cognitive-gauntlet.yml'
   pull_request:
     branches: [main]
     paths:
       - 'experiments/cognitive_gauntlet/**'
       - 'bean/tests/test_cognitive_gauntlet.py'
+      - 'bean/tests/test_cognitive_adaptive.py'
+      - 'bean/tests/test_cognitive_stress.py'
+      - 'bean/tests/test_cognitive_pattern.py'
       - '.github/workflows/bean-cognitive-gauntlet.yml'
   workflow_dispatch:
 permissions:
@@ -34,13 +38,15 @@ jobs:
         with:
           python-version: ${{ matrix.python }}
       - name: Verify test assumptions and complete receipts
-        run: python -m unittest bean.tests.test_cognitive_gauntlet bean.tests.test_cognitive_adaptive bean.tests.test_cognitive_stress -v
+        run: python -m unittest bean.tests.test_cognitive_gauntlet bean.tests.test_cognitive_adaptive bean.tests.test_cognitive_stress bean.tests.test_cognitive_pattern -v
       - name: Execute exact paired evidence comparisons
         run: python -m experiments.cognitive_gauntlet.runner
       - name: Tune on training seeds and evaluate held-out adaptive predictions
         run: python -m experiments.cognitive_gauntlet.adaptive_benchmark --seeds 80 --training-seeds 20 --rounds 100
       - name: Test frozen adaptive policy on unseen scenario families
         run: python -m experiments.cognitive_gauntlet.stress
+      - name: Frozen Bayesian mixture, held-out plus additional synthetic families
+        run: python -m experiments.cognitive_gauntlet.pattern_benchmark
       - name: Retain full positive and negative receipts
         if: always()
         uses: actions/upload-artifact@v4
