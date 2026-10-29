@@ -70,7 +70,16 @@ epoch and 200 additional TD updates per arm, on two fresh, untouched cohorts:
 seeds 9000 to 9009 and 10000 to 10009. It tests whether priority matters
 before both methods have had thousands of backups. These new cohorts are not
 reused from the first negative result, and the first negative receipts remain
-unchanged. The low-budget results are **33/95 candidate solved versus 27/95 baseline**\nacross 95 eligible held-out states (5 excluded): cohort 9000 was 15/50\nversus 13/50; cohort 10000 was 18/45 versus 14/45. Six additional\nindependently replayed solutions, zero reverse regressions, and **0/20\n20-turn states solved**. All four isolated priority jobs passed at\n[exact-head CI 40856372962](https://github.com/danieloculus0-bot/BEAN/actions/runs/40856372962)\non Ubuntu/Windows with Python 3.11/3.12. Per-cohort SHA-256 receipts\nmatched across platforms. This is a **small sample-efficiency improvement**\nat a reduced TD budget, not general cube mastery or evidence of shorter\noptimal solutions.
+unchanged. The low-budget results are **33/95 candidate solved versus 27/95 baseline**
+across 95 eligible held-out states (5 excluded): cohort 9000 was 15/50
+versus 13/50; cohort 10000 was 18/45 versus 14/45. Six additional
+independently replayed solutions, zero reverse regressions, and **0/20
+20-turn states solved**. All four isolated priority jobs passed at
+[exact-head CI 40856372962](https://github.com/danieloculus0-bot/BEAN/actions/runs/40856372962)
+on Ubuntu/Windows with Python 3.11/3.12. Per-cohort SHA-256 receipts
+matched across platforms. This is a **small sample-efficiency improvement**
+at a reduced TD budget, not general cube mastery or evidence of shorter
+optimal solutions.
 
 ## Fractional-alpha priority correction (2026-10-29)
 
@@ -83,3 +92,18 @@ Existing cube benchmarks use `alpha=1`, so their previously reported matched
 holdout results are not retroactively changed. This is a learning-scheduler
 correctness fix, **not** evidence of new 20-turn solving ability. Exact-head
 cross-platform CI must pass before treating the correction as verified.
+
+## Preregistered fractional-rate comparison
+
+The experimental workflow now runs two additional disjoint held-out cohorts,
+seeds 11000 to 11009 and 12000 to 12009, with `alpha=.25`, one initial
+training epoch, and 200 matched additional TD updates per arm. This probes
+whether repeatedly reprioritizing partially updated transitions improves
+BEAN's sample efficiency when `alpha<1`. The unchanged uniform-replay arm
+receives the same self-play graph and update budget. Original scrambles,
+exclusions, failures and both policies' move sequences are archived in
+separate JSON artifacts. **No result is claimed until exact-commit CI runs.**
+
+Neither arm receives inverse scramble recipes or reference-solver answers.
+The 20-turn solve criterion and shortest-HTM evidence requirements are
+unchanged. This experiment must not be described as a general cube solver.
