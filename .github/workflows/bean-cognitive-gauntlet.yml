@@ -171,6 +171,10 @@ jobs:
         run: python -m experiments.cognitive_gauntlet.rubiks3_prioritized_td --test-seed-start 7000 --output cognitive-gauntlet-results/rubiks3-priority-7000.json
       - name: Independent unseen 3x3 holdout 8000 with original failure receipts
         run: python -m experiments.cognitive_gauntlet.rubiks3_prioritized_td --test-seed-start 8000 --output cognitive-gauntlet-results/rubiks3-priority-8000.json
+      - name: Preregistered low-update sample-efficiency holdout 9000
+        run: python -m experiments.cognitive_gauntlet.rubiks3_prioritized_td --epochs 1 --extra-updates 200 --test-seed-start 9000 --output cognitive-gauntlet-results/rubiks3-priority-lowbudget-9000.json
+      - name: Independent low-update sample-efficiency holdout 10000
+        run: python -m experiments.cognitive_gauntlet.rubiks3_prioritized_td --epochs 1 --extra-updates 200 --test-seed-start 10000 --output cognitive-gauntlet-results/rubiks3-priority-lowbudget-10000.json
       - name: Archive all original attempts including failures
         if: always()
         uses: actions/upload-artifact@v4
