@@ -122,7 +122,7 @@ def policy_solve_joint_rescue(full, joint, start, *, checkpoint=None, work_budge
 def experiment(*, train_seeds=range(16), test_seeds=range(26000, 26010),
                train_lengths=(2, 3, 4, 5, 6),
                test_lengths=(3, 4, 5, 6, 20), epochs=2, output=None,
-               work_budget=24):
+               work_budget=128):
     train_seeds, test_seeds = tuple(train_seeds), tuple(test_seeds)
     if (not train_seeds or not test_seeds
             or len(set(train_seeds)) != len(train_seeds)
@@ -249,7 +249,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--test-seed-start', type=int, default=26000)
     parser.add_argument('--test-count', type=int, default=10)
-    parser.add_argument('--work-budget', type=int, default=24)
+    parser.add_argument('--work-budget', type=int, default=128)
     parser.add_argument('--output', default='cognitive-gauntlet-results/rubiks3-rescue-26000.json')
     args = parser.parse_args()
     if args.test_count < 1:
