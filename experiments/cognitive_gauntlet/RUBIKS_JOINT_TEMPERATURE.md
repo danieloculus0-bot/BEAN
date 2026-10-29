@@ -17,7 +17,9 @@ The goal is to test whether denser feedback improves independent full-cube
 solves without teaching inverse scrambles.
 
 The local potential is `1/(1 + corner_distance + edge_distance)`, with
-the pair's terminal successor potential set to zero. The shaping term is
+the pair's terminal successor potential set to zero. Preserving a
+already completed pair is explicitly neutral; disturbing it is penalized.
+The shaping term is
 `0.5 * (gamma * successor_potential - current_potential)`. A completed
 pair earns the original +1 only on first completion; simply remaining
 completed does not repeatedly earn +1. Learned joint action values are
