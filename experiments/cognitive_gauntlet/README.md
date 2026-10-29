@@ -71,3 +71,37 @@ evaluation budgets, compare with the unchanged main baseline, run held-out
 tasks and verify across restarts. A win on the synthetic pilot is **not**
 a win against any external AI system. Do not merge while external competitions
 are described as completed unless their original receipts exist.
+
+
+## Adaptive volatility pilot (experimental)
+
+`adaptive.py` reuses the existing `RevisableBelief` receipts. It detects
+recent disagreement between noisy observations and chooses either the original
+source-aware revision estimate or the original newest-only estimate. The
+switching rule does **not** receive ground truth, scenario names, or future
+observations. This is a small heuristic, not a new general-purpose neural
+architecture, and it does not run OpenNARS or any other external system.
+
+`adaptive_benchmark.py` chooses a single volatility threshold from a fixed
+five-value grid using only seeds 0 through 19. It freezes that threshold and
+evaluates unseen seeds 20 through 79 across stationary, seven-step drift, and
+alternating rapid-drift environments. Each arm receives the same observation
+stream. The scorer preserves all 24,000 cases, including 18,000 held-out cases,
+per-case failures, predictions, mode decisions, the original arena digest and
+a canonical SHA-256 receipt. The CI artifact is gzip-compressed and checked
+for exact round-trip recovery.
+
+Reproduce locally with:
+
+    python -m unittest bean.tests.test_cognitive_gauntlet bean.tests.test_cognitive_adaptive -v
+    python -m experiments.cognitive_gauntlet.adaptive_benchmark --seeds 80 --training-seeds 20 --rounds 100
+
+Initial **local** replay selected threshold 0.75 on training seeds. Held-out
+aggregate mean squared error (lower is better) was 0.153899 adaptive versus
+0.180541 fixed revision and 0.222833 newest-only. Adaptive lost narrowly
+to revision on stationary (0.126681 vs 0.124714) and slower drift
+(0.221637 vs 0.218435), while improving rapid drift (0.113379 vs
+0.198473). These are seeded synthetic tasks, not a comparison with an
+installed external AI, not a deployed BEAN Core improvement, and not proof
+of AGI. Results are conditional on the preselected environment families;
+additional unseen families and a real Core adapter remain necessary.
