@@ -55,6 +55,32 @@ class JointGoalTests(unittest.TestCase):
             finally:
                 learner.close()
 
+    def test_compute_slice_checkpoint_resumes_without_move_limit(self):
+        state = rubiks3.turn(rubiks3.SOLVED, 'R')
+        with TemporaryDirectory() as tmp:
+            learner = SpongeTD(Path(tmp) / 'pairs.db', actions=rubiks3.MOVES,
+                               alpha=1, gamma=.9, epsilon=0, seed=19)
+            try:
+                # Synthetic positive learned values are for checkpoint
+                # mechanics only, not evidence of a trained solving policy.
+                for pair_id, config, _ in pair_features(state):
+                    learner.values((pair_id, config))[0] = 0.1
+                first, info = policy_solve_pairs(learner, state, work_budget=1)
+                self.assertEqual(len(first), 1)
+                self.assertTrue(info['paused'] or info['solved'])
+                if info['paused']:
+                    with self.assertRaises(ValueError):
+                        policy_solve_pairs(learner, rubiks3.SOLVED,
+                                           checkpoint=info['checkpoint'])
+                    resumed, after = policy_solve_pairs(
+                        learner, state, checkpoint=info['checkpoint'],
+                        work_budget=1)
+                    self.assertGreaterEqual(len(resumed), len(first))
+                    self.assertEqual(after['solved'],
+                                     rubiks3.apply(state, resumed) == rubiks3.SOLVED)
+            finally:
+                learner.close()
+
     def test_reject_illegal_states(self):
         with TemporaryDirectory() as tmp:
             learner = SpongeTD(Path(tmp) / 'pairs.db', actions=rubiks3.MOVES)
@@ -82,6 +108,10 @@ class JointGoalTests(unittest.TestCase):
             self.assertEqual(row['candidate_move_count'], len(row['candidate_moves']))
             self.assertTrue(0 <= row['joint_features_covered'] <= 96)
             self.assertFalse(row['optimality_proven'])
+            if row['candidate_paused']:
+                self.assertEqual(row['candidate_failure'], 'paused_compute_budget')
+                self.assertEqual(row['candidate_pause_checkpoint']['route'],
+                                 row['candidate_moves'])
 
     def test_overlap_rejected(self):
         with self.assertRaises(ValueError):
