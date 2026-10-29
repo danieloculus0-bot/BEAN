@@ -6,9 +6,11 @@ on:
       - 'experiments/cognitive_gauntlet/rubiks3.py'
       - 'experiments/cognitive_gauntlet/rubiks3_sponge.py'
       - 'experiments/cognitive_gauntlet/rubiks3_symmetry.py'
+      - 'experiments/cognitive_gauntlet/rubiks3_legality.py'
       - 'bean/tests/test_cognitive_rubiks3.py'
       - 'bean/tests/test_cognitive_rubiks_sponge.py'
       - 'bean/tests/test_cognitive_rubiks_symmetry.py'
+      - 'bean/tests/test_cognitive_rubiks_legality.py'
       - '.github/workflows/bean-cube-td.yml'
   pull_request:
     branches: [main]
@@ -16,9 +18,11 @@ on:
       - 'experiments/cognitive_gauntlet/rubiks3.py'
       - 'experiments/cognitive_gauntlet/rubiks3_sponge.py'
       - 'experiments/cognitive_gauntlet/rubiks3_symmetry.py'
+      - 'experiments/cognitive_gauntlet/rubiks3_legality.py'
       - 'bean/tests/test_cognitive_rubiks3.py'
       - 'bean/tests/test_cognitive_rubiks_sponge.py'
       - 'bean/tests/test_cognitive_rubiks_symmetry.py'
+      - 'bean/tests/test_cognitive_rubiks_legality.py'
       - '.github/workflows/bean-cube-td.yml'
   workflow_dispatch:
 permissions:
@@ -40,7 +44,7 @@ jobs:
         with:
           python-version: ${{ matrix.python }}
       - name: Independent cube geometry, TD learning, heldout and restart tests
-        run: python -m unittest bean.tests.test_cognitive_rubiks3 bean.tests.test_cognitive_rubiks_sponge bean.tests.test_cognitive_rubiks_symmetry -v
+        run: python -m unittest bean.tests.test_cognitive_rubiks3 bean.tests.test_cognitive_rubiks_sponge bean.tests.test_cognitive_rubiks_symmetry bean.tests.test_cognitive_rubiks_legality -v
       - name: Run frozen BEAN-native policy and preserve all heldout failures
         run: python -m experiments.cognitive_gauntlet.rubiks3_sponge
       - name: Replay symmetry-aware learned policy with every heldout failure
