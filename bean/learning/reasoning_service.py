@@ -294,6 +294,146 @@ class NativeReasoningService:
                     "independent_validation": False}
         raise ValueError("Unknown active hypothesis receipt")
 
+    def transfer_discovered_analogy(self, *, source_receipt_id, target_domain,
+                                    task_ref, source_ref, probe_ids, observe,
+                                    reward, margin=0.0):
+        """Test a saved self-discovered rule in another domain against no-op.
+
+        Candidate comes from BEAN's journal, not the host. Both policies face
+        identical resettable target probes, with one reward per distinct action.
+        Transfer is provisional; separate blind target cases are required to
+        establish generalization. No model weights, actions or hardware change.
+        """
+        from .active_hypothesis import _vector
+        if self.closed:
+            raise ValueError("Reasoning memory is closed")
+        source_receipt_id = _required(source_receipt_id, "source_receipt_id", 64)
+        target_domain = _required(target_domain, "target_domain", 100).casefold()
+        task_ref = _required(task_ref, "task_ref", 200)
+        source_ref = _required(source_ref, "source_ref", 500)
+        trials = [e["data"] for e in self.bank.journal.events()
+                  if e["kind"] == "trial"]
+        sources = {sha256(canonical(t)).hexdigest(): t for t in trials
+                   if t.get("experiment") == "bean.native.active_hypothesis.v1"}
+        if source_receipt_id not in sources:
+            raise ValueError("Unknown self-discovered source receipt")
+        parent = sources[source_receipt_id]
+        if parent["domain"] == target_domain:
+            raise ValueError("Transfer requires a different target domain")
+        learned = parent["decision"]
+        if learned.get("status") != "provisional_rule" or not learned.get("selected_rule"):
+            raise ValueError("Source receipt has no selected hypothesis")
+        if (not isinstance(probe_ids, (list, tuple)) or
+                not 3 <= len(probe_ids) <= 16 or
+                any(not isinstance(p, str) or not 0 < len(p) <= 128
+                    for p in probe_ids) or len(set(probe_ids)) != len(probe_ids)):
+            raise ValueError("Require 3..16 unique target probe IDs")
+        if not callable(observe) or not callable(reward):
+            raise ValueError("Observation and host reward callbacks required")
+
+        prior_seen = set()
+        complete_source_history = True
+        seen_receipts = set()
+        cursor = source_receipt_id
+        while cursor:
+            if cursor in seen_receipts or cursor not in sources:
+                raise ValueError("Invalid source hypothesis ancestry")
+            seen_receipts.add(cursor)
+            previous = sources[cursor]["decision"]
+            observed = previous.get("observed_probe_ids")
+            if observed is None:
+                complete_source_history = False
+                observed = [row["probe_id"] for row in previous["records"]]
+            prior_seen.update(observed)
+            cursor = previous.get("parent_receipt_id")
+        for previous in trials:
+            if (previous.get("experiment") == "bean.native.discovered_transfer.v1"
+                    and previous.get("decision", {}).get("source_receipt_id")
+                    == source_receipt_id
+                    and previous.get("domain") == target_domain):
+                prior_seen.update(previous["decision"]["observed_probe_ids"])
+        if set(probe_ids) & prior_seen:
+            raise ValueError("Transfer requires fresh target probe IDs")
+
+        dimensions = len(learned["records"][0]["sensors"])
+        views = {p: _vector(observe(p), dimensions=dimensions) for p in probe_ids}
+        source_rule = learned["selected_rule"]
+        action_cache = {}
+        measured = {}
+        def paired_reward(policy, case):
+            action = act(source_rule, views[case]) if policy == "source_rule" else 0
+            key = (case, action)
+            if key not in measured:
+                measured[key] = reward(case, action)
+            action_cache.setdefault(case, {})[policy] = action
+            return measured[key]
+
+        result = evaluate_transfer(
+            retained="source_rule", alternative="stay_0", probe_ids=probe_ids,
+            reward=paired_reward, margin=margin)
+        result.update({
+            "schema": "bean.native.discovered_transfer.v1",
+            "candidate_generator": "recovered_native_hypothesis",
+            "source_receipt_id": source_receipt_id,
+            "source_domain": parent["domain"],
+            "target_domain": target_domain,
+            "source_hypothesis": source_rule,
+            "sensor_dimensions": dimensions,
+            "observed_probe_ids": list(probe_ids),
+            "observations": [{"probe_id": p, "sensors": views[p],
+                              "policy_actions": action_cache[p]}
+                             for p in probe_ids],
+            "reward_calls": len(measured),
+            "source_ancestry_observation_coverage": (
+                "complete" if complete_source_history else "legacy_partial"),
+            "final_heldout_used": False,
+            "independently_authenticated": False,
+        })
+        result.pop("evidence_sha256", None)
+        result["evidence_sha256"] = sha256(json.dumps(
+            result, sort_keys=True, separators=(",", ":"),
+            allow_nan=False).encode()).hexdigest()
+        entry = {
+            "schema": "bean.adaptive_lab026.v1",
+            "experiment": "bean.native.discovered_transfer.v1",
+            "domain": target_domain, "task_ref": task_ref, "source_ref": source_ref,
+            "decision": result, "outcome_origin": "host_measured",
+            "independently_authenticated": False,
+        }
+        receipt_id = sha256(canonical(entry)).hexdigest()
+        tip = self.bank.record_trial(entry)
+        return {**result, "receipt_id": receipt_id, "journal_tip": tip,
+                "evidence_retained": True, "external_model_invoked": False}
+
+    def use_tested_transfer(self, *, transfer_receipt_id, sensors):
+        """Apply only the policy selected in an auditable transfer receipt."""
+        from .active_hypothesis import _vector
+        if self.closed:
+            raise ValueError("Reasoning memory is closed")
+        transfers = [e["data"] for e in self.bank.journal.events()
+                     if e["kind"] == "trial" and e["data"].get(
+                         "experiment") == "bean.native.discovered_transfer.v1"]
+        for entry in reversed(transfers):
+            if sha256(canonical(entry)).hexdigest() != transfer_receipt_id:
+                continue
+            decision = entry["decision"]
+            numbers = _vector(sensors, dimensions=decision["sensor_dimensions"])
+            chosen = decision["selected"]
+            if chosen is None:
+                return {"status": "abstain", "reason": "unproven_transfer",
+                        "receipt_id": transfer_receipt_id}
+            if chosen not in ("source_rule", "stay_0"):
+                raise ValueError("Unknown tested transfer policy")
+            return {
+                "status": "provisional_action",
+                "action": (act(decision["source_hypothesis"], numbers)
+                           if chosen == "source_rule" else 0),
+                "policy_origin": chosen,
+                "receipt_id": transfer_receipt_id,
+                "independent_validation": False,
+            }
+        raise ValueError("Unknown transfer receipt")
+
     def test_analogy(self, *, domain, task_ref, source_ref, retained,
                      alternative, probe_ids, reward, margin=0.0):
         """Use local paired interventions to accept or reject a proposed transfer.
