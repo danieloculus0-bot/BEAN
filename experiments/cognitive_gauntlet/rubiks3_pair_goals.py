@@ -71,23 +71,43 @@ def train_pairs(learner, edges, *, epochs=2, seed=19):
             'reference_solver_used': False}
 
 
-def policy_solve_pairs(learner, start):
-    """Use learned joint Q values to select moves, stopping on cycles or no value.
+def policy_solve_pairs(learner, start, *, checkpoint=None, work_budget=128):
+    """Use learned joint Q to select moves; pause with a resumable receipt.
 
-    No maximum number of solution moves is imposed. There is no search,
-    external teacher, inverse scramble, or handwritten cube-solving recipe.
+    work_budget bounds computation *per invocation*, not solution length.
+    A paused attempt is NOT a solved or a definitively failed puzzle.
+    The checkpoint stores only the initial state and legal route so replay
+    reconstructs visited states without trusting serialized derived values.
     """
     validate_legal_cube(start)
-    state, route, visited = start, [], set()
-    while state != SOLVED:
+    if type(work_budget) is not int or work_budget < 1:
+        raise ValueError('work budget must be a positive integer')
+    route = []
+    state, visited = start, set()
+    if checkpoint is not None:
+        if (not isinstance(checkpoint, dict) or checkpoint.get('start') != start
+                or not isinstance(checkpoint.get('route'), list)):
+            raise ValueError('invalid or mismatched checkpoint')
+        for move in checkpoint['route']:
+            if move not in MOVES or state in visited or state == SOLVED:
+                raise ValueError('invalid checkpoint route')
+            visited.add(state)
+            route.append(move)
+            state = turn(state, move)
+    for _ in range(work_budget):
+        if state == SOLVED:
+            return route, {'solved': True, 'failure': None, 'paused': False,
+                           'checkpoint': None}
         if state in visited:
-            return route, {'solved': False, 'failure': 'cycle'}
+            return route, {'solved': False, 'failure': 'cycle', 'paused': False,
+                           'checkpoint': None}
         visited.add(state)
         features = pair_features(state)
         rows = [learner.q.get(learner.key((pair_id, config)))
                 for pair_id, config, _ in features]
         if not any(row is not None for row in rows):
-            return route, {'solved': False, 'failure': 'no_joint_values'}
+            return route, {'solved': False, 'failure': 'no_joint_values',
+                           'paused': False, 'checkpoint': None}
         choices = []
         for action, move in enumerate(MOVES):
             score = sum(row[action] for row in rows if row is not None) / 96.0
@@ -97,10 +117,16 @@ def policy_solve_pairs(learner, start):
             if nxt not in visited:
                 choices.append((score, -action, move, nxt))
         if not choices:
-            return route, {'solved': False, 'failure': 'no_positive_unvisited_joint_action'}
+            return route, {'solved': False,
+                           'failure': 'no_positive_unvisited_joint_action',
+                           'paused': False, 'checkpoint': None}
         _, _, move, state = max(choices)
         route.append(move)
-    return route, {'solved': True, 'failure': None}
+    if state == SOLVED:
+        return route, {'solved': True, 'failure': None, 'paused': False,
+                       'checkpoint': None}
+    return route, {'solved': False, 'failure': 'paused_compute_budget',
+                   'paused': True, 'checkpoint': {'start': start, 'route': route}}
 
 
 def experiment(*, train_seeds=range(16), test_seeds=range(22000, 22010),
@@ -162,6 +188,8 @@ def experiment(*, train_seeds=range(16), test_seeds=range(22000, 22010),
                         'baseline_solved': bok, 'baseline_failure': bi['failure'],
                         'candidate_moves': cm, 'candidate_move_count': len(cm),
                         'candidate_solved': cok, 'candidate_failure': ci['failure'],
+                        'candidate_paused': ci['paused'],
+                        'candidate_pause_checkpoint': ci['checkpoint'],
                         'candidate_better': cok and not bok,
                         'candidate_worse': bok and not cok,
                         'candidate_shorter': bok and cok and len(cm) < len(bm),
@@ -185,6 +213,8 @@ def experiment(*, train_seeds=range(16), test_seeds=range(22000, 22010),
                 'eligible_cases': len(cases), 'excluded_count': len(excluded),
                 'baseline_solved': sum(c['baseline_solved'] for c in cases),
                 'candidate_solved': sum(c['candidate_solved'] for c in cases),
+                'candidate_paused': sum(c['candidate_paused'] for c in cases),
+                'policy_work_budget_per_invocation': 128,
                 'candidate_better': sum(c['candidate_better'] for c in cases),
                 'candidate_worse': sum(c['candidate_worse'] for c in cases),
                 'candidate_shorter': sum(c['candidate_shorter'] for c in cases),
@@ -218,4 +248,4 @@ if __name__ == '__main__':
     print(json.dumps({k: result[k] for k in
                       ('eligible_cases', 'excluded_count', 'baseline_solved',
                        'candidate_solved', 'candidate_better', 'candidate_worse',
-                       'twenty_turn_cases', 'twenty_turn_solved', 'sha256')}, indent=2))
+                       'twenty_turn_cases', 'twenty_turn_solved', 'candidate_paused', 'sha256')}, indent=2))
