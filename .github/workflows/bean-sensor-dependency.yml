@@ -5,6 +5,7 @@ on:
     paths:
       - 'experiments/cognitive_gauntlet/sensor_dependency.py'
       - 'experiments/cognitive_gauntlet/sensor_dependency_benchmark.py'
+      - 'experiments/cognitive_gauntlet/sensor_dependency_absence_benchmark.py'
       - 'experiments/cognitive_gauntlet/sensor_reliability.py'
       - 'bean/tests/test_cognitive_sensor_dependency.py'
       - '.github/workflows/bean-sensor-dependency.yml'
@@ -13,6 +14,7 @@ on:
     paths:
       - 'experiments/cognitive_gauntlet/sensor_dependency.py'
       - 'experiments/cognitive_gauntlet/sensor_dependency_benchmark.py'
+      - 'experiments/cognitive_gauntlet/sensor_dependency_absence_benchmark.py'
       - 'experiments/cognitive_gauntlet/sensor_reliability.py'
       - 'bean/tests/test_cognitive_sensor_dependency.py'
       - '.github/workflows/bean-sensor-dependency.yml'
@@ -33,8 +35,12 @@ jobs:
         run: python -m unittest bean.tests.test_cognitive_sensor_dependency -v
       - name: Independent synthetic heldout with all cases
         run: python -m experiments.cognitive_gauntlet.sensor_dependency_benchmark
+      - name: Independent source-absence and negative-control heldout
+        run: python -m experiments.cognitive_gauntlet.sensor_dependency_absence_benchmark
       - uses: actions/upload-artifact@v4
         with:
           name: sensor-dependency-${{ matrix.os }}-py${{ matrix.python-version }}
-          path: cognitive-gauntlet-results/sensor-dependency.json.gz
+          path: |
+            cognitive-gauntlet-results/sensor-dependency.json.gz
+            cognitive-gauntlet-results/sensor-dependency-absence.json.gz
           if-no-files-found: error

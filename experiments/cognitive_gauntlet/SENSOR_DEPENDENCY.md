@@ -21,3 +21,25 @@ Exploratory local run using a minimal API-compatible sensor stub (not full GitHu
 ## Restart-safe learning state (2026-10-29)
 
 `OnlineDependencyLearner.state()` now snapshots a closed feedback boundary, the existing `OnlineSensorTrust` receipt history, learned pairwise co-error statistics, configuration and latest inferred grouping. `restore()` rejects malformed, duplicate, non-finite, out-of-budget and internally inconsistent pair data, and delegates underlying receipt integrity checks to the existing sensor trust restorer. No checkpoint is allowed while feedback is pending. Two additional regressions compare uninterrupted and restarted forecasts over a 90-step deterministic heldout with missing outcomes, and exercise tamper rejection. The original six-regime synthetic benchmark remains unchanged. This is restart continuity, **not** new predictive improvement or cryptographic provenance authentication; pair counts cannot be independently rebuilt from trust receipts because those receipts omit raw sensor values.
+
+## Verified-time decay across source absence (2026-10-29)
+
+The former per-observed-pair decay rule left relationships frozen while one
+source was absent, even if hundreds of **other verified outcomes** arrived.
+Now each verified outcome ages all known pair statistics; only jointly
+observed pairs receive a new sample. Missing feedback never ages any pair.
+This keeps the original bounded state and checkpoint schema, and does not
+invent an outcome or assert authenticated common-source provenance.
+
+The independent heldout is
+`python -m experiments.cognitive_gauntlet.sensor_dependency_absence_benchmark`.
+It compares the frozen exact original update rule with the revised learner
+under identical observations, outcome labels and compute budgets. Disjoint
+seeds 71000..71011 each include 90 shared-source training steps, 120
+verified outcomes while the original two sources are absent, and 100 return
+steps. Return conditions: newly independent reliable sources, unchanged
+shared source (negative control), or a wholly unlabeled absence (negative
+control). Original observations, prediction-time groups, outcomes, losses,
+missingness and source revision are archived as case-level gzip receipts.
+The original six-regime benchmark remains unchanged. A synthetic advantage
+cannot establish real-world causality or Core integration.

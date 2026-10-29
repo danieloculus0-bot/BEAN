@@ -126,6 +126,79 @@ class SensorDependencyTests(unittest.TestCase):
                     OnlineDependencyLearner.restore(snapshot)
         self.assertEqual(model.state(), original)
 
+
+    def test_verified_unrelated_feedback_ages_stale_pairs(self):
+        model = OnlineDependencyLearner(decay=.9, min_samples=5,
+                                        min_coerrors=2, min_excess=.10)
+        for step in range(60):
+            truth = step % 2
+            wrong = step % 3 == 0
+            obs = [SensorObservation(f"warm:{step}:{i}", f"s{i}",
+                                     1 - truth if wrong and i < 2 else truth)
+                   for i in range(3)]
+            model.forecast(obs)
+            model.learn(truth)
+        self.assertEqual(model.inferred_groups(["s0", "s1"])["s0"],
+                         model.inferred_groups(["s0", "s1"])["s1"])
+        before = model.pairs[("s0", "s1")].n
+        for step in range(60, 120):
+            truth = step % 2
+            obs = [SensorObservation(f"gap:{step}:{i}", f"s{i}", truth)
+                   for i in (2, 3)]
+            model.forecast(obs)
+            model.learn(truth)
+            if step == 89:
+                model = OnlineDependencyLearner.restore(model.state())
+        self.assertLess(model.pairs[("s0", "s1")].n, before * .01)
+        groups = model.inferred_groups(["s0", "s1"])
+        self.assertNotEqual(groups["s0"], groups["s1"])
+
+    def test_missing_feedback_does_not_age_absent_pairs(self):
+        model = OnlineDependencyLearner(decay=.9, min_samples=5,
+                                        min_coerrors=2, min_excess=.10)
+        for step in range(60):
+            truth = step % 2
+            obs = [SensorObservation(f"label:{step}:{i}", f"s{i}",
+                                     1 - truth if step % 3 == 0 else truth)
+                   for i in (0, 1)]
+            model.forecast(obs)
+            model.learn(truth)
+        original = copy.deepcopy(model.state()["pairs"])
+        for step in range(60, 120):
+            model.forecast([SensorObservation(f"missing:{step}:{i}",
+                                              f"s{i}", step % 2)
+                            for i in (2, 3)])
+            model.skip_feedback(reason="no_attested_outcome")
+        self.assertEqual(model.state()["pairs"], original)
+
+    def test_absence_shift_heldout_receipts_and_controls(self):
+        from experiments.cognitive_gauntlet.sensor_dependency_absence_benchmark import (
+            benchmark as absence_benchmark, REGIMES as absence_regimes)
+        report = absence_benchmark(seeds=2, warmup=60, absence=60,
+                                   return_steps=60)
+        self.assertEqual(report, absence_benchmark(
+            seeds=2, warmup=60, absence=60, return_steps=60))
+        self.assertEqual(len(report["cases"]), 3 * 2 * 180)
+        payload = {k: v for k, v in report.items() if k != "digest"}
+        self.assertEqual(report["digest"], hashlib.sha256(json.dumps(
+            payload, sort_keys=True, separators=(",", ":"), allow_nan=False
+        ).encode()).hexdigest())
+        for regime in absence_regimes:
+            for phase in ("training", "absence", "return"):
+                rows = [r for r in report["cases"]
+                        if r["regime"] == regime and r["phase"] == phase]
+                score = report["scores"][regime][phase]
+                self.assertEqual(score["n"], len(rows))
+                self.assertEqual(score["missing"], sum(
+                    not r["feedback_available"] for r in rows))
+                for arm in ("frozen_pair_only", "global_verified_decay"):
+                    self.assertAlmostEqual(score["mse"][arm], sum(
+                        r["losses"][arm] for r in rows) / len(rows))
+                if phase == "training" or regime == "unlabeled_absence":
+                    for row in rows:
+                        self.assertEqual(row["predictions"]["frozen_pair_only"],
+                                         row["predictions"]["global_verified_decay"])
+
     def test_heldout_receipts_and_negative_controls(self):
         report = benchmark(seeds=2, rounds=45)
         self.assertEqual(report, benchmark(seeds=2, rounds=45))

@@ -84,12 +84,19 @@ class OnlineDependencyLearner:
         if type(outcome) is not int or outcome not in (0, 1):
             raise ValueError("binary verified outcome required")
         wrong = {o.origin: int(o.value != outcome) for o in self._pending}
+        # Advance all known pairs on every verified outcome, even when
+        # one source is absent. Missing feedback never ages statistics.
+        for p in self.pairs.values():
+            p.n *= self.decay
+            p.a_wrong *= self.decay
+            p.b_wrong *= self.decay
+            p.both_wrong *= self.decay
         for a, b in combinations(sorted(wrong), 2):
             p = self.pairs.setdefault((a, b), _Pair())
-            p.n = self.decay * p.n + 1
-            p.a_wrong = self.decay * p.a_wrong + wrong[a]
-            p.b_wrong = self.decay * p.b_wrong + wrong[b]
-            p.both_wrong = self.decay * p.both_wrong + wrong[a] * wrong[b]
+            p.n += 1
+            p.a_wrong += wrong[a]
+            p.b_wrong += wrong[b]
+            p.both_wrong += wrong[a] * wrong[b]
         self.trust.learn(outcome)
         self._pending = None
 
