@@ -321,7 +321,10 @@ class WebResearchService:
                 item["new_source_count"] = len(new_hashes)
                 seen_source_hashes.update(item["source_refs"])
                 attempts.append(item)
-                answer = last.get("answer")
+                # A repeated-source retry cannot erase the first candidate;
+                # it only adds the reason no stronger answer was established.
+                if last.get("answer") is not None:
+                    answer = last["answer"]
                 if not last["source_count"]:
                     status = "no_retrieved_sources"
                     break
@@ -389,10 +392,12 @@ class WebResearchService:
             "source_count": last["source_count"] if last is not None else 0,
             "sources": last["sources"] if last is not None else [],
             "independently_authenticated": False,
-            "human_review_required": status != "locally_solved",
+            "human_review_required": True,
             "journal_tip": tip, "evidence_retained": True,
-            "external_model_invoked": any(a.get("inference_receipt")
-                                          for a in attempts),
+            "external_model_invoked": any(
+                a.get("inference_receipt") or
+                a.get("status") in ("unverified_model_answer", "provider_failed")
+                for a in attempts),
         }
         return result
 
