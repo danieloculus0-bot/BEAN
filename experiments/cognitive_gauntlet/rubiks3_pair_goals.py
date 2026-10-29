@@ -43,9 +43,9 @@ def pair_features(state):
                  for edge_id, edge_config, edge_dist in edges)
 
 
-def joint_reward(next_solved):
-    """Reward a completed *joint* subgoal, not a lone piece."""
-    return 1.0 if next_solved == (True, True) else 0.0
+def joint_reward(before_solved, after_solved):
+    """Reward newly completing BOTH pieces, not preserving an already solved pair."""
+    return 1.0 if after_solved == (True, True) and before_solved != (True, True) else 0.0
 
 
 def train_pairs(learner, edges, *, epochs=2, seed=19):
@@ -59,15 +59,15 @@ def train_pairs(learner, edges, *, epochs=2, seed=19):
         for state, action, nxt in order:
             before = pair_features(state)
             after = pair_features(nxt)
-            for (pair_id, config, _), (next_id, next_config, solved) in zip(before, after):
+            for (pair_id, config, was_solved), (next_id, next_config, solved) in zip(before, after):
                 if pair_id != next_id:
                     raise AssertionError('pair identity changed under a legal turn')
                 terminal = solved == (True, True)
-                learner.learn((pair_id, config), action, joint_reward(solved),
+                learner.learn((pair_id, config), action, joint_reward(was_solved, solved),
                               (pair_id, next_config), terminal)
     return {'observed_edges': len(edges), 'pairs_per_transition': 96,
             'epochs': epochs, 'td_updates': learner.steps,
-            'reward': '1 only when corner and edge are both solved',
+            'reward': '1 only when corner and edge become jointly solved',
             'reference_solver_used': False}
 
 
