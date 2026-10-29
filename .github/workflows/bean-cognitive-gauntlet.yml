@@ -9,6 +9,7 @@ on:
       - 'bean/tests/test_cognitive_stress.py'
       - 'bean/tests/test_cognitive_pattern.py'
       - 'bean/tests/test_cognitive_sensor.py'
+      - 'bean/tests/test_cognitive_schrodinger.py'
       - '.github/workflows/bean-cognitive-gauntlet.yml'
   pull_request:
     branches: [main]
@@ -19,6 +20,7 @@ on:
       - 'bean/tests/test_cognitive_stress.py'
       - 'bean/tests/test_cognitive_pattern.py'
       - 'bean/tests/test_cognitive_sensor.py'
+      - 'bean/tests/test_cognitive_schrodinger.py'
       - '.github/workflows/bean-cognitive-gauntlet.yml'
   workflow_dispatch:
 permissions:
@@ -40,7 +42,7 @@ jobs:
         with:
           python-version: ${{ matrix.python }}
       - name: Verify test assumptions and complete receipts
-        run: python -m unittest bean.tests.test_cognitive_gauntlet bean.tests.test_cognitive_adaptive bean.tests.test_cognitive_stress bean.tests.test_cognitive_pattern bean.tests.test_cognitive_sensor -v
+        run: python -m unittest bean.tests.test_cognitive_gauntlet bean.tests.test_cognitive_adaptive bean.tests.test_cognitive_stress bean.tests.test_cognitive_pattern bean.tests.test_cognitive_sensor bean.tests.test_cognitive_schrodinger -v
       - name: Execute exact paired evidence comparisons
         run: python -m experiments.cognitive_gauntlet.runner
       - name: Tune on training seeds and evaluate held-out adaptive predictions
@@ -51,6 +53,8 @@ jobs:
         run: python -m experiments.cognitive_gauntlet.pattern_benchmark
       - name: Online sensor reliability, frozen comparator and complete delayed feedback receipts
         run: python -m experiments.cognitive_gauntlet.sensor_benchmark
+      - name: Schrodinger's Logic chaos-only parallel-state versus unchanged controls
+        run: python -m experiments.cognitive_gauntlet.schrodinger_benchmark
       - name: Retain full positive and negative receipts
         if: always()
         uses: actions/upload-artifact@v4
