@@ -189,7 +189,7 @@ def experiment(*, train_seeds=range(20), test_seeds=range(18000, 18010),
             result = {
                 'schema': 'bean.rubiks3.piece-subgoal.v1',
                 'source_revision': os.environ.get('GITHUB_SHA', 'local_unverified'),
-                'module_sha256': hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
+                'module_sha256': hashlib.sha256(Path(__file__).read_text(encoding='utf-8').encode('utf-8')).hexdigest(),
                 'mechanism': 'BEAN SpongeTD per-cubie learned action values aggregated for full cube',
                 'reference_solver_used': False, 'inverse_scramble_used': False,
                 'not_general_solver': True, 'optimality_unproven': True,
