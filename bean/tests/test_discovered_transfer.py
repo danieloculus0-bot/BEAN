@@ -218,6 +218,43 @@ class DiscoveredTransferTests(unittest.TestCase):
         self.assertEqual(len(decisions), 1)
         self.assertEqual(decisions[0]["reward_calls"], 48)
 
+    def test_relabelled_development_states_rejected_without_validation(self):
+        # The legacy no-validation path must not reward two IDs for one
+        # observation, even when all case identifiers are distinct.
+        measured = []
+        def repeated(case):
+            return self.target_sensors("1000" if case == "1001" else case)
+        def feedback(case, action):
+            measured.append((case, action))
+            return self.world.feedback(case, action)
+        with self.assertRaisesRegex(
+                ValueError, "Target development requires distinct observed sensor states"):
+            self.transfer(observe=repeated, reward=feedback)
+        self.assertEqual(measured, [])
+        self.assertEqual(len([e for e in self.core.bank.journal.events()
+            if e["kind"] == "trial" and e["data"].get("experiment") ==
+            "bean.native.discovered_transfer.v1"]), 0)
+
+    def test_recycled_target_state_rejected_without_validation(self):
+        first = self.transfer()
+        self.assertTrue(first["evidence_retained"])
+        measured = []
+        def repeated(case):
+            return self.target_sensors("1000" if case == "4000" else case)
+        def feedback(case, action):
+            measured.append((case, action))
+            return self.world.feedback(case, action)
+        with self.assertRaisesRegex(
+                ValueError, "Target development requires fresh observed sensor states"):
+            self.transfer(probes=[str(4000+i) for i in range(12)],
+                          observe=repeated, reward=feedback)
+        self.assertEqual(measured, [])
+        retained = [e["data"]["decision"] for e in self.core.bank.journal.events()
+                    if e["kind"] == "trial" and e["data"].get("experiment")
+                    == "bean.native.discovered_transfer.v1"]
+        self.assertEqual(len(retained), 1)
+        self.assertEqual(retained[0]["evidence_sha256"], first["evidence_sha256"])
+
     def test_failed_development_reward_abstains_and_persists_partial_evidence(self):
         attempts = []
         def failing_reward(case, action):

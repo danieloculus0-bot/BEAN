@@ -408,30 +408,32 @@ class NativeReasoningService:
         dimensions = len(learned["records"][0]["sensors"])
         views = {p: _vector(observe(p), dimensions=dimensions)
                  for p in all_probe_ids}
-        if validation_probe_ids is not None:
-            # Different IDs are not independent evidence when the host
-            # presents the same numeric observation under another label.
-            # Enforce this before any target reward is requested.
-            def sensor_digest(sensors):
-                return sha256(canonical(sensors)).hexdigest()
+        # A different ID does not establish a new observation. Apply the
+        # same exact-state anti-recycling gate to *all* target trials, even
+        # when optional validation is omitted. Otherwise the legacy path
+        # can earn transfer credit from relabelled development observations.
+        # This is not a claim of statistical or hidden-state independence.
+        def sensor_digest(sensors):
+            return sha256(canonical(sensors)).hexdigest()
 
-            current_states = [sensor_digest(views[p]) for p in all_probe_ids]
-            if len(set(current_states)) != len(current_states):
-                raise ValueError(
-                    "Target validation requires distinct observed sensor states")
-            previous_states = set()
-            for previous in trials:
-                if (previous.get("experiment") !=
-                        "bean.native.discovered_transfer.v1"
-                        or previous.get("domain") != target_domain):
-                    continue
-                for observation in previous.get("decision", {}).get(
-                        "observations", ()):
-                    if "sensors" in observation:
-                        previous_states.add(sensor_digest(observation["sensors"]))
-            if set(current_states) & previous_states:
-                raise ValueError(
-                    "Target validation requires fresh observed sensor states")
+        current_states = [sensor_digest(views[p]) for p in all_probe_ids]
+        stage = "validation" if validation_probe_ids is not None else "development"
+        if len(set(current_states)) != len(current_states):
+            raise ValueError(
+                "Target " + stage + " requires distinct observed sensor states")
+        previous_states = set()
+        for previous in trials:
+            if (previous.get("experiment") !=
+                    "bean.native.discovered_transfer.v1"
+                    or previous.get("domain") != target_domain):
+                continue
+            for observation in previous.get("decision", {}).get(
+                    "observations", ()):
+                if "sensors" in observation:
+                    previous_states.add(sensor_digest(observation["sensors"]))
+        if set(current_states) & previous_states:
+            raise ValueError(
+                "Target " + stage + " requires fresh observed sensor states")
         source_rule = learned["selected_rule"]
         action_cache = {}
         measured = {}

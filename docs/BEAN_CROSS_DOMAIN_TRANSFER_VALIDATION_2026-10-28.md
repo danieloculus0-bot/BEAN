@@ -172,3 +172,26 @@ Targeted command:
 ```sh
 python -m unittest bean.tests.test_active_hypothesis -v
 ```
+
+
+## Development-only target anti-recycling (2026-10-29)
+
+The earlier exact-state check ran only when callers supplied optional
+target validation cases. A caller using the default development-only
+transfer path could therefore relabel duplicate numeric sensor states,
+or recycle states from a previous target-domain trial, and earn apparent
+new transfer evidence. The same existing fingerprint check now runs
+**before host reward calls on both paths**, preserving the validation
+option and its stricter disjoint-split requirements.
+
+Two new synthetic regressions require zero reward calls and zero new
+trial receipts for relabelled duplicates within a development pool and
+for a repeated state from a prior persisted target trial. The original
+positive and negative transfer controls remain unchanged. The targeted
+GitHub workflow now includes the discovered-transfer suite; its exact
+source run must be checked before reporting tests as passed.
+
+This is exact numeric-state anti-recycling, not proof of independent
+sampling, unseen hidden state, out-of-distribution generalization,
+consciousness or AGI. Existing SHA-chained receipts are not rewritten.
+Gauntlet PR #199 and its experiment branch were not modified.
