@@ -107,6 +107,22 @@ def discover(*, probe_ids, observe, reward, budget=12, method="disagreement",
     n = len(next(iter(views.values())))
     if any(len(v) != n for v in views.values()):
         raise ValueError("Sensor vectors changed length")
+    validation_views = {}
+    if validation_probe_ids is not None:
+        # IDs alone do not prove independent validation: a host may relabel
+        # a previously observed state. Collect withheld observations before
+        # reward probes, without exposing them to candidate selection.
+        validation_views = {
+            pid: _vector(observe(pid), dimensions=n)
+            for pid in validation_probe_ids
+        }
+        training_states = set(views.values())
+        validation_states = list(validation_views.values())
+        if (len(set(validation_states)) != len(validation_states)
+                or any(state in training_states for state in validation_states)):
+            raise ValueError(
+                "Validation requires sensor states unseen in training and "
+                "distinct within validation")
     rules = generate(n)
     losses = [0.0] * len(rules)
     remaining = list(probe_ids)
@@ -152,7 +168,7 @@ def discover(*, probe_ids, observe, reward, budget=12, method="disagreement",
     if validation_probe_ids is not None:
         validation_records = []
         for pid in validation_probe_ids:
-            sensors = _vector(observe(pid), dimensions=n)
+            sensors = validation_views[pid]
             scores = []
             for action in ACTIONS:
                 measurement = reward(pid, action)
