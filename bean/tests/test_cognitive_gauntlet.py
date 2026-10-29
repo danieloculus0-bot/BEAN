@@ -39,8 +39,9 @@ class TestPaired(unittest.TestCase):
     def test_arena_seeded_replay_and_digest(self):
         first = run(seeds=2, rounds=9)
         self.assertEqual(first, run(seeds=2, rounds=9))
-        self.assertEqual(len(first["cases"]), 36)
+        self.assertEqual(len(first["cases"]), 54)
         self.assertEqual(first["external_runtimes_executed"], [])
+        self.assertIn("rapid_drift", first["scoreboard"])
         payload = {k: v for k, v in first.items() if k != "evidence_sha256"}
         serial = json.dumps(payload, sort_keys=True, separators=(",", ":"), allow_nan=False)
         self.assertEqual(first["evidence_sha256"], hashlib.sha256(serial.encode()).hexdigest())
