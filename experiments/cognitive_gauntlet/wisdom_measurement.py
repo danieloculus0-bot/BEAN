@@ -100,8 +100,8 @@ def measure(report):
             "chaos_parallel_decisions": stats["chaos_cases"],
             "mean_posthoc_regret_vs_best_branch": _average(stats["hindsight_regret"]),
         }
-        decision[regime] = audit["overall" if regime == "all" else "by_regime"][regime if regime != "all" else "overall"] if False else (
-            audit["overall"] if regime == "all" else audit["by_regime"][regime])
+        decision[regime] = (audit["overall"] if regime == "all"
+                            else audit["by_regime"][regime])
         first = [row for row in rows if row["step"] < report["rounds"]//4]
         last = [row for row in rows if row["step"] >= 3*report["rounds"]//4]
         def losses(batch):
