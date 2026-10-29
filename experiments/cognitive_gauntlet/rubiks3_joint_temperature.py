@@ -52,6 +52,10 @@ def joint_temperature_reward(before_dist, after_dist, before_solved,
             or any(type(d) is not int or d < 0
                    for d in (*before_dist, *after_dist))):
         raise ValueError("invalid cubie distances")
+    # Preserving an already solved pair is neutral, not a fresh success or
+    # a penalty. Otherwise the controller is taught to break good subgoals.
+    if before_solved == after_solved == (True, True):
+        return 0.0
     before = 1.0 / (1 + sum(before_dist))
     after = (0.0 if after_solved == (True, True)
              else 1.0 / (1 + sum(after_dist)))
