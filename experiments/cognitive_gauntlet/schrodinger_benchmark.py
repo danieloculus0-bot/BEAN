@@ -13,6 +13,7 @@ from pathlib import Path
 from .sensor_benchmark import benchmark as reference_benchmark, REGIMES
 from .sensor_reliability import SensorObservation
 from .schrodingers_logic import SchrodingersLogic
+from .decision_audit import audit_cases
 
 ARMS = ("fixed_prior", "long_memory", "forgetful", "unweighted", "schrodingers_logic")
 
@@ -78,6 +79,7 @@ def benchmark(*, first_seed=8000, seeds=30, rounds=120):
         "truth_given_only_after_forecast": True,
         "interpretation": "synthetic parallel-state hypothesis experiment, not quantum mechanics or AGI",
         "scores": score, "cases": cases,
+        "decision_quality": audit_cases(cases, ARMS, source_digest=reference["digest"]),
     }
     canonical = json.dumps(report, sort_keys=True, separators=(",", ":"), allow_nan=False)
     report["digest"] = hashlib.sha256(canonical.encode()).hexdigest()
