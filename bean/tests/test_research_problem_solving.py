@@ -10,7 +10,7 @@ from pathlib import Path
 from bean.learning import NativeReasoningService
 from bean.research import PublicWebSources, WebResearchService, register_web_research_handlers
 from bean.tests.test_native_web_research import (
-    FakeInternet, FakeInbox, ReasoningFixture, resolver,
+    FakeInternet, FakeHTTPResponse, FakeInbox, ReasoningFixture, resolver,
 )
 
 
@@ -96,7 +96,48 @@ class ResearchSolveTests(unittest.TestCase):
         self.assertFalse(answer["external_model_invoked"])
         self.assertEqual(len(self.trials()), 1)
 
-    def test_host_feedback_can_request_one_bounded_second_search(self):
+    def test_second_search_reusing_same_evidence_skips_model(self):
+        verdicts = []
+        def host_check(*, answer, question, sources):
+            verdicts.append((answer, question, len(sources)))
+            return {"passed": False, "public_gap": "calibration certificate"}
+        service = WebResearchService(
+            self.core, sources=self.sources, trusted_verifier=host_check)
+        answer = service.solve_task(
+            domain="inspection", task_ref="feedback-loop",
+            question="target inspection", provider="brave", max_pages=2,
+            max_attempts=2, allow_external=True)
+        self.assertEqual(answer["status"], "no_new_research_evidence")
+        self.assertEqual(answer["network_requests"], 6)
+        self.assertEqual(len(answer["research_attempts"]), 2)
+        self.assertEqual(answer["research_attempts"][1]["new_source_count"], 0)
+        self.assertEqual(len(verdicts), 1)
+        self.assertEqual(len(self.core.model.calls), 1)
+        self.assertTrue(any("calibration" in url for url in self.internet.calls))
+        self.assertEqual(len([e for e in self.core.bank.journal.events()
+                              if e["kind"] == "research"]), 2)
+        self.assertFalse(self.trials()[0]["final_answer_verified"])
+
+    def test_new_public_evidence_can_support_second_host_check(self):
+        class ChangingInternet(FakeInternet):
+            def __call__(self, request, timeout=8):
+                url = request.full_url
+                if "/api.search.brave.com/" in url and "calibration" in url:
+                    self.calls.append(url)
+                    return FakeHTTPResponse(
+                        '{"web":{"results":[{"title":"Calibration certificate",'
+                        '"url":"https://fresh.example.net/certificate",'
+                        '"description":"Fresh documented observation"}]}}')
+                if "fresh.example.net" in url:
+                    self.calls.append(url)
+                    return FakeHTTPResponse(
+                        "<html><body>Independent certificate measurement.</body></html>",
+                        "text/html")
+                return super().__call__(request, timeout)
+        self.internet = ChangingInternet()
+        self.sources = PublicWebSources(
+            brave_key="synthetic-fixture-key", request_fn=self.internet,
+            resolver=resolver)
         verdicts = []
         def host_check(*, answer, question, sources):
             verdicts.append((answer, question, len(sources)))
@@ -105,18 +146,17 @@ class ResearchSolveTests(unittest.TestCase):
         service = WebResearchService(
             self.core, sources=self.sources, trusted_verifier=host_check)
         answer = service.solve_task(
-            domain="inspection", task_ref="feedback-loop",
+            domain="inspection", task_ref="novel-feedback",
             question="target inspection", provider="brave", max_pages=2,
             max_attempts=2, allow_external=True)
         self.assertEqual(answer["status"], "host_reported_pass")
-        self.assertEqual(answer["network_requests"], 6)
-        self.assertEqual(len(answer["research_attempts"]), 2)
+        self.assertEqual(answer["network_requests"], 5)
+        self.assertEqual([x["new_source_count"]
+                          for x in answer["research_attempts"]], [2, 1])
         self.assertEqual([x["host_feedback"] for x in answer["research_attempts"]],
                          ["failed", "passed"])
         self.assertEqual(len(verdicts), 2)
-        self.assertTrue(any("calibration" in url for url in self.internet.calls))
-        self.assertEqual(len([e for e in self.core.bank.journal.events()
-                              if e["kind"] == "research"]), 2)
+        self.assertEqual(len(self.core.model.calls), 2)
         self.assertFalse(self.trials()[0]["final_answer_verified"])
         self.assertFalse(answer["independently_authenticated"])
 
