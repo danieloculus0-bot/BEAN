@@ -83,6 +83,65 @@ class MissingFeedbackTests(unittest.TestCase):
                     self.assertEqual(row["trust_counts_before_feedback"],
                                      row["trust_counts_after_feedback"])
 
+    def test_checkpoint_rejects_inconsistent_evidence_identity(self):
+        model = OnlineSensorTrust()
+        model.forecast([SensorObservation("a", "s0", 1)])
+        model.learn(1)
+        model.forecast([SensorObservation("b", "s0", 0)])
+        model.skip_feedback(reason="unavailable")
+        original = model.state()
+        corrupted = []
+        variant = copy.deepcopy(original)
+        variant["seen_ids"].append("fabricated")
+        corrupted.append(variant)
+        variant = copy.deepcopy(original)
+        variant["seen_ids"].pop()
+        corrupted.append(variant)
+        variant = copy.deepcopy(original)
+        variant["seen_ids"][0] = 1
+        corrupted.append(variant)
+        variant = copy.deepcopy(original)
+        variant["receipts"][0]["evidence_ids"] = ["a", "a"]
+        corrupted.append(variant)
+        variant = copy.deepcopy(original)
+        variant["receipts"][1]["evidence_ids"] = ["a"]
+        corrupted.append(variant)
+        variant = copy.deepcopy(original)
+        variant["receipts"][0]["evidence_ids"] = []
+        corrupted.append(variant)
+        variant = copy.deepcopy(original)
+        variant["receipts"] = {"not": "a list"}
+        corrupted.append(variant)
+        for state in corrupted:
+            with self.subTest(state=state):
+                with self.assertRaises(ValueError):
+                    OnlineSensorTrust.restore(state)
+        self.assertEqual(OnlineSensorTrust.restore(original).state(), original)
+
+    def test_checkpoint_and_restored_receipts_do_not_alias(self):
+        model = OnlineSensorTrust()
+        model.forecast([SensorObservation("original", "s0", 1)])
+        model.learn(1)
+        snapshot = model.state()
+        snapshot["receipts"][0]["evidence_ids"][0] = "altered"
+        self.assertEqual(model.state()["receipts"][0]["evidence_ids"], ["original"])
+        original = model.state()
+        restored = OnlineSensorTrust.restore(original)
+        original["receipts"][0]["evidence_ids"][0] = "mutated_after_restore"
+        self.assertEqual(restored.state()["receipts"][0]["evidence_ids"], ["original"])
+        self.assertEqual(model.state(), restored.state())
+
+    def test_forecast_rejects_nonstring_identity_before_consuming(self):
+        model = OnlineSensorTrust()
+        for observation in (SensorObservation(7, "s0", 1),
+                            SensorObservation("valid", 7, 1),
+                            SensorObservation("", "s0", 1)):
+            with self.assertRaises(ValueError):
+                model.forecast([observation])
+        model.forecast([SensorObservation("valid", "s0", 1)])
+        model.learn(1)
+        self.assertEqual(model.state()["seen_ids"], ["valid"])
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -7,6 +7,7 @@ No BEAN Core policy or weights are changed by this module.
 """
 from __future__ import annotations
 from dataclasses import dataclass
+import copy
 import math
 
 
@@ -45,7 +46,8 @@ class OnlineSensorTrust:
         seen = set()
         ids = set()
         for item in observations:
-            if not isinstance(item, SensorObservation) or not item.origin or not item.evidence_id:
+            if (not isinstance(item, SensorObservation) or not isinstance(item.origin, str)
+                    or not item.origin or type(item.evidence_id) is not str or not item.evidence_id):
                 raise ValueError("invalid source receipt")
             if type(item.value) is not int or item.value not in (0, 1):
                 raise ValueError("binary observations required")
@@ -105,7 +107,7 @@ class OnlineSensorTrust:
                 "alpha": self.alpha, "beta": self.beta, "decay": self.decay,
                 "max_log_odds": self.max_log_odds,
                 "counts": {key: list(self.counts[key]) for key in sorted(self.counts)},
-                "seen_ids": sorted(self._ids), "receipts": list(self.receipts)}
+                "seen_ids": sorted(self._ids), "receipts": copy.deepcopy(self.receipts)}
 
     @classmethod
     def restore(cls, state: dict):
@@ -122,11 +124,23 @@ class OnlineSensorTrust:
                 raise ValueError("invalid checkpoint counter")
         result.counts = {k: tuple(v) for k, v in counts.items()}
         ids = state["seen_ids"]
-        if not isinstance(ids, list) or len(ids) != len(set(ids)):
+        if (not isinstance(ids, list) or any(type(e) is not str or not e for e in ids)
+                or len(ids) != len(set(ids))):
             raise ValueError("invalid checkpoint evidence ids")
         result._ids = set(ids)
-        result.receipts = list(state["receipts"])
+        receipts = state["receipts"]
+        if not isinstance(receipts, list):
+            raise ValueError("invalid checkpoint receipts")
+        result.receipts = copy.deepcopy(receipts)
+        receipt_ids = set()
         for row in result.receipts:
+            row_ids = row.get("evidence_ids") if isinstance(row, dict) else None
+            if not isinstance(row_ids, list) or not row_ids:
+                raise ValueError("invalid feedback evidence ids")
+            for evidence_id in row_ids:
+                if type(evidence_id) is not str or not evidence_id or evidence_id in receipt_ids:
+                    raise ValueError("duplicate or invalid feedback evidence id")
+                receipt_ids.add(evidence_id)
             if not isinstance(row, dict) or row.get("feedback_after_prediction") is not True:
                 raise ValueError("invalid feedback receipt")
             if row.get("feedback_status") == "missing":
@@ -138,4 +152,6 @@ class OnlineSensorTrust:
                   or type(row.get("outcome")) is not int
                   or row["outcome"] not in (0, 1)):
                 raise ValueError("invalid observed-feedback receipt")
+        if receipt_ids != result._ids:
+            raise ValueError("checkpoint receipts and seen evidence ids disagree")
         return result

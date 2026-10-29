@@ -136,3 +136,16 @@ python -m experiments.cognitive_gauntlet.sensor_missing_feedback
 This is a safe continuation and evidence-integrity improvement, **not**
 a demonstrated cross-domain generalization gain, real-world sensor
 authentication, consciousness, AGI or a production Core integration.
+
+## Checkpoint evidence identity hardening (2026-10-29)
+
+The existing learner now rejects checkpoints with malformed, duplicated or
+unaccounted evidence IDs: every consumed ID must occur exactly once in an
+observed or explicitly missing-feedback receipt. Non-string IDs and origins
+are rejected before a forecast can consume them. Returned checkpoint receipts
+and restored receipts are deep-copied, so modifying a caller's snapshot cannot
+silently rewrite the live model's history. Targeted negative regression tests
+cover forged IDs, dropped IDs, duplicate receipts, invalid types and snapshot
+aliasing. This does **not** authenticate host-provided outcomes or detect a
+malicious caller who directly edits the model's public in-memory attributes.
+Prediction mathematics and existing frozen benchmark parameters are unchanged.
