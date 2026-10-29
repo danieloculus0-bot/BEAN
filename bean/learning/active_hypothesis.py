@@ -30,6 +30,13 @@ def _vector(value, *, dimensions=None):
     return tuple(float(x) for x in value)
 
 
+def _sensor_fingerprint(value):
+    """Stable fingerprint for a complete, validated numeric observation."""
+    state = _vector(value)
+    return sha256(json.dumps(
+        state, separators=(",", ":"), allow_nan=False).encode()).hexdigest()
+
+
 def generate(dimensions):
     """Compose candidate actions from channels, differences and constants."""
     if type(dimensions) is not int or not 2 <= dimensions <= 8:
@@ -216,6 +223,15 @@ def discover(*, probe_ids, observe, reward, budget=12, method="disagreement",
         "observed_probe_ids": (list(probe_ids) +
                                (list(validation_probe_ids)
                                 if validation_probe_ids is not None else [])),
+        # Every observation, not only rewarded probes, is fingerprinted so
+        # later revisions can reject the same sensor state under a new ID.
+        # This is a local evidence identity check, not a claim that two
+        # distinct states are statistically independent.
+        "observed_sensor_fingerprints": {
+            pid: _sensor_fingerprint(state)
+            for pid, state in (*views.items(), *validation_views.items())
+        },
+        "sensor_fingerprint_coverage": "all_observed_probe_ids",
         "sensor_observations": len(views) + (
             len(validation_probe_ids) if validation_probe_ids is not None else 0),
         "records": records,
