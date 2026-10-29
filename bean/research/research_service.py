@@ -549,6 +549,5 @@ def register_web_research_handlers(inbox, service):
     inbox.register("research_needed", lambda m, _: service.research_needed(**m.args))
     inbox.register("research_investigate", lambda m, _: service.investigate(**m.args))
     inbox.register("research_solve", lambda m, _: service.solve_task(**m.args))
-    inbox.register("research_solve", lambda m, _: service.solve_open_question(**m.args))
     inbox.register("research_pending_goal", lambda m, _: service.investigate_pending_goal(**m.args))
     return inbox
