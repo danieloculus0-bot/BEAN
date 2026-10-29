@@ -279,7 +279,7 @@ class WebResearchTests(unittest.TestCase):
         inbox = FakeInbox()
         register_web_research_handlers(inbox, self.research)
         self.assertEqual(set(inbox.commands),
-                         {"research_investigate", "research_needed", "research_pending_goal"})
+                         {"research_investigate", "research_needed", "research_pending_goal", "research_solve"})
         from types import SimpleNamespace
         msg = SimpleNamespace(args={
             "domain": "lab", "task_ref": "t1", "question": "target inspection",
@@ -349,6 +349,74 @@ class WebResearchTests(unittest.TestCase):
             request_fn=TooLarge(), resolver=resolver, brave_key="fake")
         with self.assertRaises(ResearchTransportError):
             huge.read("https://a.example.org/too_large")
+
+
+    def test_local_first_cached_research_reuses_unverified_receipt(self):
+        first = self.research.solve_open_question(
+            domain="inspection", task_ref="cache-first",
+            question="target inspection", allow_external=True,
+            provider="brave", max_pages=2)
+        self.assertEqual(first["status"], "researched_unverified_answer")
+        self.assertEqual(first["answer"], "RED")
+        self.assertEqual(first["network_requests"], 3)
+        self.assertEqual(first["source_count"], 2)
+        self.assertFalse(first["facts_verified"])
+        self.assertEqual(len(self.model.calls), 1)
+        again = self.research.solve_open_question(
+            domain="inspection", task_ref="cache-second",
+            question="target inspection", allow_external=True,
+            provider="brave", max_pages=2)
+        self.assertEqual(again["status"], "cached_unverified_answer")
+        self.assertEqual(again["network_requests"], 0)
+        self.assertEqual(again["inference_receipt"], first["inference_receipt"])
+        self.assertEqual(again["source_refs"], first["source_refs"])
+        self.assertEqual(len(self.model.calls), 1)
+        self.core.close()
+        recovered = NativeReasoningService(self.db)
+        try:
+            def no_network(*_args, **_kwargs):
+                raise AssertionError("Cached receipt unexpectedly accessed network")
+            research = WebResearchService(
+                recovered, sources=PublicWebSources(
+                    brave_key="fixture-brave", request_fn=no_network,
+                    resolver=resolver))
+            persisted = research.solve_open_question(
+                domain="inspection", task_ref="cache-restart",
+                question="target inspection", allow_external=True,
+                provider="brave")
+            self.assertEqual(persisted["status"], "cached_unverified_answer")
+            self.assertEqual(persisted["network_requests"], 0)
+            self.assertEqual(persisted["inference_receipt"],
+                             first["inference_receipt"])
+            self.assertFalse(persisted["facts_verified"])
+        finally:
+            recovered.close()
+
+    def test_local_first_solver_no_consent_and_evidence_only_are_honest(self):
+        denied = self.research.solve_open_question(
+            domain="inspection", task_ref="denied",
+            question="target inspection", allow_external=False)
+        self.assertEqual(denied["status"],
+                         "needs_external_research_authorization")
+        self.assertEqual(denied["network_requests"], 0)
+        self.assertIsNone(denied["answer"])
+        evidence = self.research.solve_open_question(
+            domain="other-inspection", task_ref="evidence-only",
+            question="target inspection", allow_external=True,
+            provider="brave", max_pages=1, answer_with_model=False)
+        self.assertEqual(evidence["status"], "research_unresolved")
+        self.assertEqual(evidence["source_count"], 1)
+        self.assertEqual(evidence["network_requests"], 2)
+        self.assertFalse(evidence["model_attempted"])
+        self.assertIsNone(evidence["inference_receipt"])
+        cached = self.research.solve_open_question(
+            domain="other-inspection", task_ref="evidence-cached",
+            question="target inspection", allow_external=True,
+            provider="brave", max_pages=1, answer_with_model=False)
+        self.assertEqual(cached["status"], "cached_sources_unanswered")
+        self.assertEqual(cached["network_requests"], 0)
+        self.assertIsNone(cached["answer"])
+        self.assertEqual(len(self.model.calls), 0)
 
 
 if __name__ == "__main__":
