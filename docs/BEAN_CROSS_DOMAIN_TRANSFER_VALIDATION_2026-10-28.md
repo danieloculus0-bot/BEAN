@@ -61,3 +61,33 @@ python -m unittest bean.tests.test_discovered_transfer -v
 
 This test also belongs to the broader Core test suite. Record the exact
 source commit and GitHub Actions run before reporting green CI.
+
+
+## Duplicate-observation leakage check (2026-10-29)
+
+A later Core update closes a narrower evidence-integrity gap: **fresh probe
+identifiers do not guarantee fresh evidence**. With disjoint target validation
+enabled, Core now fingerprints the observed numeric sensor vectors for both
+development and validation. It refuses a split containing repeated sensor
+states, even when the host relabels those observations with different IDs.
+It also rejects states already used by earlier transfer trials in the same
+target domain, regardless of their original source rule. The checks happen
+before any new host reward call. The original source and target receipts
+remain untouched.
+
+Two synthetic regressions in `bean/tests/test_discovered_transfer.py` cover
+same-state/different-ID leakage within a split and across persisted target
+trials, including zero reward calls on rejected inputs. The existing stable
+and reversed target tests still specify the positive and negative baselines.
+This changes only the opt-in target-validation path; the legacy path without
+validation retains its previous behavior. Equal numeric observations in
+different real contexts may legitimately be distinct tasks, so this is a
+conservative **sensor-state independence check**, not proof of statistical
+independence or an authenticated environment. It does not detect
+near-duplicates, hidden state, or falsified host observations.
+
+Exact-head CI execution for this update must be checked separately. Do not
+count committed tests as passed without runner output. The separate Gauntlet
+symmetry experiment at PR #199 reported 33/118 held-out cube successes against
+6/118 unchanged SpongeTD, with 0/30 twenty-turn successes, in local
+synthetic evidence; no Gauntlet branch files were edited here.
