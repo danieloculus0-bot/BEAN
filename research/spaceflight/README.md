@@ -1,9 +1,11 @@
 # BEAN Spaceflight Reference Lab
 
 Status: **experimental, deterministic analytical solver; not mission software.**
-Source: `bean/engineering/spaceflight.py` and `bean/engineering/two_body.py`; tests: `bean/tests/test_spaceflight_reference.py` and `bean/tests/test_two_body_propagation.py`.
-The BEAN hosted memory plugin is **not** connected to these local Core calculations; this lab
-does not claim BEAN has autonomously acquired NASA expertise or has supercomputer hardware.
+Source: `bean/engineering/spaceflight.py` and `bean/engineering/two_body.py`; tests: `bean/tests/test_spaceflight_reference.py`, `bean/tests/test_two_body_propagation.py`, and `bean/tests/test_spaceflight_inbox.py`.
+The hosted BEAN memory plugin is **not** connected to these Python calculations.
+On this experimental branch, BEAN Core's actual `bean_run.py` inbox now
+registers the `spaceflight_reference` command. No claim is made that BEAN has
+autonomously acquired NASA expertise or has supercomputer hardware.
 
 ## What runs now
 
@@ -51,6 +53,30 @@ bound. For a circular Earth orbit, a full revolution and an elliptical
 half-revolution are compared against independent analytic predictions; step
 refinement is checked separately.
 
+## Native BEAN Core command inbox (experimental)
+
+The existing `bean.runtime.inbox_handlers.register_all` now registers
+`spaceflight_reference` in the real `CommandInbox` used by `bean_run.py`.
+Use the same `bean.spaceflight_request.v1` JSON object as the CLI, with
+`CommandInbox().drop("spaceflight_reference", args=request)` while the
+BEAN runtime is running and polling the **same** inbox directory.
+The response retains the original physics result and adds
+`evidence_receipt.event_id`, `request_sha256` and `result_sha256`.
+BEAN's canonical `EventType.OBSERVATION` records the calculation type and
+both SHA-256 digests, **not** the raw request or the numeric result. Invalid
+requests are quarantined by the existing inbox without a successful
+spaceflight observation. The file-based inbox still stores the raw incoming
+JSON in its `processed/` or `failed/` folder; do not send secrets there.
+
+The hash receipt proves that a specific calculation input/result pair was
+recorded in Core. It does **not** authenticate a source, verify physics
+against independent spacecraft observations, update learned weights, or
+authorize hardware actions. This handler is not exposed by the hosted
+JavaScript BEAN connector. `bean/tests/test_spaceflight_inbox.py` exercises
+real registration, queue dispatch, Mars and two-body calculations, hashed
+event logging and invalid-input quarantine, with the event writer mocked
+so no live DB is modified.
+
 Each CI matrix job writes `spaceflight_receipt.json` with exact source
 SHA-256 hashes, GitHub commit/run IDs, test counts, failures and platform
 details. Artifacts are retained for 30 days, and the original initial CI
@@ -59,8 +85,8 @@ A receipt can be regenerated locally with the command above. Passing
 analytic unit tests does not validate real Mars mission trajectories.
 
 The response schema is `bean.spaceflight_reference.v1` with data provenance,
-assumptions and `flight_qualified:false`. This is importable by BEAN Python Core
-but is **not yet** wired into its native command inbox or hosted BEAN plugin.
+assumptions and `flight_qualified:false`. It is now wired into the native
+Core inbox **on this experimental branch only**, not the hosted BEAN plugin.
 
 ## Source provenance and limitations
 
@@ -91,9 +117,11 @@ capture delta-v requirements.
    recorded departure/arrival epoch, C3, v-infinity and constraints.
 4. **Propulsion**: stage sizing and burn windows, electric thrust/integrated mass
    flow, finite acceleration and validated uncertainty budgets.
-5. **BEAN reasoning/evidence integration**: use existing Core evidence ranker,
-   LearningRuntime, event journal and compressed ledger; separate synthetic
-   reference tests from JPL-held-out comparisons. Include negative tests.
+5. **BEAN reasoning/evidence integration**: native Core inbox and event digests
+   are implemented experimentally; future work should connect the existing
+   Core evidence ranker, LearningRuntime and compressed ledger without treating
+   a successful calculation as independent validation or earned learning reward.
+   Separate synthetic reference tests from JPL-held-out comparisons.
 6. **Validation**: compare predictions with published JPL/NASA cases and optional
    independent astrodynamics implementation under matched assumptions.
    Keep failed cases; do not infer operational readiness from green unit tests.
