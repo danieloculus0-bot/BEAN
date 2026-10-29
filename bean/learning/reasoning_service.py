@@ -206,6 +206,29 @@ class NativeReasoningService:
             selected = None
             change = "abstained_insufficient_fresh_support"
 
+        # Validation originally measures the newly proposed candidate.
+        # If revision retains the parent instead, do not report the
+        # candidate's rejection as the final selected policy's performance.
+        # Keep both measurements intact for honest evidence reconstruction.
+        if validation_probe_ids is not None:
+            selected_validation_regret = None
+            if selected is not None:
+                checks = fresh["validation"]["records"]
+                selected_validation_regret = sum(
+                    max(dict(row["rewards_by_action"]).values()) -
+                    dict(row["rewards_by_action"])[act(selected, row["sensors"])]
+                    for row in checks) / len(checks)
+            fresh["validation"].update({
+                "selected_policy_origin": (
+                    "parent" if change == "retained_after_fresh_feedback"
+                    else "candidate" if change == "updated_from_fresh_feedback"
+                    else "abstain"),
+                "selected_policy_mean_regret": selected_validation_regret,
+                "selected_policy_passed": (
+                    selected_validation_regret is not None and
+                    selected_validation_regret <= fresh["validation"]["tolerance"]),
+            })
+
         fresh.update({
             "parent_receipt_id": parent_receipt_id,
             "revision_decision": change,
