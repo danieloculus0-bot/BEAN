@@ -286,3 +286,34 @@ jobs:
           name: bean-joint-cube-${{ matrix.os }}-py${{ matrix.python }}
           path: cognitive-gauntlet-results/
           if-no-files-found: warn
+
+  cube-joint-rescue:
+    # Frozen BEAN full-state policy, with separately learned joint-cubie rescue.
+    # This is a native learned-policy microbenchmark, not reference solving.
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        python: ['3.11', '3.12']
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Verify rescue policy, frozen Q, checkpoints and matched budgets
+        run: python -m unittest bean.tests.test_cognitive_rubiks_joint_rescue -v
+      - name: New independent native-rescue holdout 26000, all failures
+        run: python -m experiments.cognitive_gauntlet.rubiks3_joint_rescue --test-seed-start 26000 --output cognitive-gauntlet-results/rubiks3-rescue-26000.json
+      - name: Disjoint native-rescue holdout 27000, all failures
+        run: python -m experiments.cognitive_gauntlet.rubiks3_joint_rescue --test-seed-start 27000 --output cognitive-gauntlet-results/rubiks3-rescue-27000.json
+      - name: Archive baseline, matched and rescue routes including pauses
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bean-rescue-cube-${{ matrix.os }}-py${{ matrix.python }}
+          path: cognitive-gauntlet-results/
+          if-no-files-found: warn
