@@ -1,0 +1,61 @@
+name: BEAN native cube joint-value transfer regression
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'experiments/cognitive_gauntlet/rubiks3_temperature.py'
+      - 'experiments/cognitive_gauntlet/rubiks3_pieces.py'
+      - 'experiments/cognitive_gauntlet/rubiks3_pair_goals.py'
+      - 'experiments/cognitive_gauntlet/rubiks3_joint_rescue.py'
+      - 'experiments/cognitive_gauntlet/rubiks3_joint_rescue_verify.py'
+      - 'bean/tests/test_cognitive_rubiks_temperature.py'
+      - 'bean/tests/test_cognitive_rubiks_pieces.py'
+      - 'bean/tests/test_cognitive_rubiks_pair_goals.py'
+      - 'bean/tests/test_cognitive_rubiks_joint_rescue.py'
+      - '.github/workflows/bean-native-cube-joint-transfer.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'experiments/cognitive_gauntlet/rubiks3_temperature.py'
+      - 'experiments/cognitive_gauntlet/rubiks3_pieces.py'
+      - 'experiments/cognitive_gauntlet/rubiks3_pair_goals.py'
+      - 'experiments/cognitive_gauntlet/rubiks3_joint_rescue.py'
+      - 'experiments/cognitive_gauntlet/rubiks3_joint_rescue_verify.py'
+      - 'bean/tests/test_cognitive_rubiks_temperature.py'
+      - 'bean/tests/test_cognitive_rubiks_pieces.py'
+      - 'bean/tests/test_cognitive_rubiks_pair_goals.py'
+      - 'bean/tests/test_cognitive_rubiks_joint_rescue.py'
+      - '.github/workflows/bean-native-cube-joint-transfer.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  frozen-joint-backup:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Verify existing temperature, piece, pair and joint-rescue contracts
+        run: python -m unittest bean.tests.test_cognitive_rubiks_temperature bean.tests.test_cognitive_rubiks_pieces bean.tests.test_cognitive_rubiks_pair_goals bean.tests.test_cognitive_rubiks_joint_rescue -v
+      - name: Frozen learned-value transfer heldout cohort 29000
+        run: python -m experiments.cognitive_gauntlet.rubiks3_joint_rescue --rescue-backup --test-seed-start 29000 --test-count 5 --work-budget 64 --output cognitive-gauntlet-results/rubiks3-rescue-backup-29000.json
+      - name: Independent heldout cohort 30000
+        run: python -m experiments.cognitive_gauntlet.rubiks3_joint_rescue --rescue-backup --test-seed-start 30000 --test-count 5 --work-budget 64 --output cognitive-gauntlet-results/rubiks3-rescue-backup-30000.json
+      - name: Replay all routes, failures and controls without policy inference
+        run: python -m experiments.cognitive_gauntlet.rubiks3_joint_rescue_verify cognitive-gauntlet-results/rubiks3-rescue-backup-29000.json cognitive-gauntlet-results/rubiks3-rescue-backup-30000.json
+      - name: Preserve full case receipts including exclusions and pauses
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bean-main-joint-transfer-${{ matrix.os }}
+          path: cognitive-gauntlet-results/
+          if-no-files-found: warn
