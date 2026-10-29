@@ -205,9 +205,10 @@ def experiment(*, train_seeds=range(250), test_seeds=range(1000, 1010),
             after = (_digest(baseline.q), _digest(candidate.q))
             if before != after:
                 raise AssertionError('frozen policies mutated during holdout')
-            result = {'schema': 'bean.rubiks3.sponge-td-symmetry.v1',
+            result = {'schema': 'bean.rubiks3.sponge-td-symmetry.v2',
                       'evidence': 'synthetic legal 3x3, frozen heldout policy comparison',
                       'mechanism': '24 global rotations share SpongeTD Q values; no solution teacher',
+                      'holdout_independence_unit': 'canonical state under 24 proper cube rotations',
                       'checkout_revision': os.environ.get('GITHUB_SHA', 'local_unverified'),
                       'module_sha256': hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
                       'train_seeds': list(train_seeds), 'test_seeds': list(test_seeds),
@@ -216,6 +217,10 @@ def experiment(*, train_seeds=range(250), test_seeds=range(1000, 1010),
                       'baseline_training': base_training,
                       'candidate_training': candidate_training,
                       'baseline_q_sha256': after[0], 'candidate_q_sha256': after[1],
+                      'eligible_cases': len(cases), 'excluded_count': len(excluded),
+                      'twenty_turn_cases': sum(c['scramble_length'] == 20 for c in cases),
+                      'twenty_turn_solved': sum(c['candidate_solved'] for c in cases
+                                                if c['scramble_length'] == 20),
                       'untrained_solved': sum(c['untrained_solved'] for c in cases),
                       'baseline_solved': sum(c['baseline_solved'] for c in cases),
                       'candidate_solved': sum(c['candidate_solved'] for c in cases),
@@ -251,5 +256,6 @@ if __name__ == '__main__':
                                          args.test_seed_start + args.test_count),
                         output=args.output)
     print(json.dumps({k: result[k] for k in
-                      ('untrained_solved', 'baseline_solved', 'candidate_solved', 'candidate_better',
+                      ('eligible_cases', 'excluded_count', 'twenty_turn_cases', 'twenty_turn_solved',
+                       'untrained_solved', 'baseline_solved', 'candidate_solved', 'candidate_better',
                        'candidate_worse', 'candidate_shorter', 'sha256')}, indent=2))
