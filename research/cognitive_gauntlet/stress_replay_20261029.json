@@ -1,0 +1,38 @@
+{
+  "schema": "bean.cognitive_gauntlet.stress_replay_receipt.v1",
+  "date_utc": "2026-10-29",
+  "environment": "local Python 3.13.5 x86_64 CPU",
+  "source_branch": "experiment/agi-cognitive-gauntlet-20261028",
+  "arena_blob_sha": "881ac314ab523e9554d33e87d5ee6fba90fcdef8",
+  "cognition_blob_sha": "c125ff5afaa8dd3fa1e651da6cb81e12065e3cdb",
+  "command": "python -m experiments.cognitive_gauntlet.runner --seeds 100 --rounds 200 --output cognitive-gauntlet-results/duel-100x200.json.gz",
+  "case_count": 60000,
+  "seeds": 100,
+  "rounds": 200,
+  "scenarios": {
+    "stationary": {
+      "revision_mse": 0.12265677962031529,
+      "latest_mse": 0.27605,
+      "revision_better_cases": 5521,
+      "revision_worse_cases": 14479
+    },
+    "drifting": {
+      "revision_mse": 0.2191156978835612,
+      "latest_mse": 0.27905,
+      "revision_better_cases": 5581,
+      "revision_worse_cases": 14419
+    },
+    "rapid_drift": {
+      "revision_mse": 0.19798167536179423,
+      "latest_mse": 0.10105,
+      "revision_better_cases": 2021,
+      "revision_worse_cases": 17979
+    }
+  },
+  "evidence_sha256": "0008f1204ef1eea0c9b2521258130bc35921e110e5aabdf3587fc86443ca3513",
+  "compressed_archive_sha256": "c377ecdec41416b5e3887dd620c212e8f84cb4fd66e222cabfb18446f198d691",
+  "archive_size_bytes": 494496,
+  "archive_status": "Local full case-level gzip generated and roundtrip verified; regenerate from exact source blobs and command. CI artifact run pending.",
+  "external_opponents_executed": [],
+  "interpretation": "Evidence revision wins mean-squared error on stationary and slower drift; loses rapid drift. Synthetic microbenchmark, not BEAN Core or OpenNARS runtime and not learned model weights."
+}
