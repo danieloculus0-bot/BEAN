@@ -15,10 +15,12 @@ from experiments.cognitive_gauntlet.rubiks3_sponge import _digest, collect_state
 
 class JointGoalTests(unittest.TestCase):
     def test_joint_goal_not_single_piece_reward(self):
-        self.assertEqual(joint_reward((True, True)), 1.0)
-        self.assertEqual(joint_reward((True, False)), 0.0)
-        self.assertEqual(joint_reward((False, True)), 0.0)
-        self.assertEqual(joint_reward((False, False)), 0.0)
+        self.assertEqual(joint_reward((False, False), (True, True)), 1.0)
+        self.assertEqual(joint_reward((True, False), (True, True)), 1.0)
+        self.assertEqual(joint_reward((True, True), (True, True)), 0.0)
+        self.assertEqual(joint_reward((True, False), (True, False)), 0.0)
+        self.assertEqual(joint_reward((False, False), (False, True)), 0.0)
+        self.assertEqual(joint_reward((True, True), (False, True)), 0.0)
 
     def test_joint_features_have_stable_identity_and_legal_configs(self):
         home = pair_features(rubiks3.SOLVED)
