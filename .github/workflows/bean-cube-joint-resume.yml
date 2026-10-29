@@ -1,0 +1,44 @@
+name: BEAN frozen joint-cube continuation
+on:
+  push:
+    branches: [experiment/agi-cognitive-gauntlet-20261028]
+    paths:
+      - 'experiments/cognitive_gauntlet/rubiks3_joint_resume.py'
+      - 'experiments/cognitive_gauntlet/RUBIKS_JOINT_RESUME.md'
+      - 'bean/tests/test_cognitive_rubiks_joint_resume.py'
+      - '.github/workflows/bean-cube-joint-resume.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  frozen-resume:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Verify Q restoration, legal continuation and tamper rejection
+        run: python -m unittest bean.tests.test_cognitive_rubiks_joint_resume -v
+      - name: Original unseen holdout 31000
+        run: python -m experiments.cognitive_gauntlet.rubiks3_joint_rescue --rescue-backup --test-seed-start 31000 --test-count 3 --work-budget 16 --output cognitive-gauntlet-results/joint-original-31000.json
+      - name: Continue frozen policy and independently replay cohort 31000
+        run: python -m experiments.cognitive_gauntlet.rubiks3_joint_resume --source cognitive-gauntlet-results/joint-original-31000.json --output cognitive-gauntlet-results/joint-resume-31000.json --slices 2 --work-budget 32
+      - name: Verify original and continuation 31000
+        run: python -m experiments.cognitive_gauntlet.rubiks3_joint_resume --verify --source cognitive-gauntlet-results/joint-original-31000.json --output cognitive-gauntlet-results/joint-resume-31000.json
+      - name: Original independent unseen holdout 32000
+        run: python -m experiments.cognitive_gauntlet.rubiks3_joint_rescue --rescue-backup --test-seed-start 32000 --test-count 3 --work-budget 16 --output cognitive-gauntlet-results/joint-original-32000.json
+      - name: Continue frozen policy and independently replay cohort 32000
+        run: python -m experiments.cognitive_gauntlet.rubiks3_joint_resume --source cognitive-gauntlet-results/joint-original-32000.json --output cognitive-gauntlet-results/joint-resume-32000.json --slices 2 --work-budget 32
+      - name: Verify original and continuation 32000
+        run: python -m experiments.cognitive_gauntlet.rubiks3_joint_resume --verify --source cognitive-gauntlet-results/joint-original-32000.json --output cognitive-gauntlet-results/joint-resume-32000.json
+      - name: Archive originals, continuations, pauses, failures and exclusions
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bean-cube-joint-resume-ubuntu311
+          path: cognitive-gauntlet-results/
+          if-no-files-found: warn
