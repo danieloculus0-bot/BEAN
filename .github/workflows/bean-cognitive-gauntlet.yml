@@ -16,6 +16,7 @@ on:
       - 'bean/tests/test_cognitive_rubiks_memory.py'
       - 'bean/tests/test_cognitive_rubiks_sponge.py'
       - 'bean/tests/test_cognitive_rubiks_symmetry.py'
+      - 'bean/tests/test_cognitive_rubiks_legality.py'
       - '.github/workflows/bean-cognitive-gauntlet.yml'
   pull_request:
     branches: [main]
@@ -33,6 +34,7 @@ on:
       - 'bean/tests/test_cognitive_rubiks_memory.py'
       - 'bean/tests/test_cognitive_rubiks_sponge.py'
       - 'bean/tests/test_cognitive_rubiks_symmetry.py'
+      - 'bean/tests/test_cognitive_rubiks_legality.py'
       - '.github/workflows/bean-cognitive-gauntlet.yml'
   workflow_dispatch:
 permissions:
@@ -105,6 +107,8 @@ jobs:
         run: python -m unittest bean.tests.test_cognitive_rubiks_sponge -v
       - name: Run frozen BEAN-native cube policy and archive all failures
         run: python -m experiments.cognitive_gauntlet.rubiks3_sponge
+      - name: Reject physically impossible cubes in BEAN-native policies
+        run: python -m unittest bean.tests.test_cognitive_rubiks_legality -v
       - name: Verify rotation-equivariant learned TD policy and exact replay
         run: python -m unittest bean.tests.test_cognitive_rubiks_symmetry -v
       - name: Frozen cube symmetry holdout cohort 1000 with every failure
