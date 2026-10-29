@@ -69,7 +69,8 @@ class NativeReasoningService:
 
     def discover_analogy(self, *, domain, task_ref, source_ref,
                          probe_ids, observe, reward, budget=12,
-                         method="disagreement", seed=0):
+                         method="disagreement", seed=0,
+                         validation_probe_ids=None):
         """Generate numeric control hypotheses and seek distinguishing evidence.
 
         No source policy or expert candidate is supplied. The callbacks are
@@ -83,7 +84,8 @@ class NativeReasoningService:
         source_ref = _required(source_ref, "source_ref", 500)
         result = discover(
             probe_ids=probe_ids, observe=observe, reward=reward,
-            budget=budget, method=method, seed=seed)
+            budget=budget, method=method, seed=seed,
+            validation_probe_ids=validation_probe_ids)
         entry = {
             "schema": "bean.adaptive_lab026.v1",
             "experiment": "bean.native.active_hypothesis.v1",
@@ -101,7 +103,7 @@ class NativeReasoningService:
     def revise_discovered_analogy(self, *, parent_receipt_id, domain, task_ref,
                                   source_ref, probe_ids, observe, reward,
                                   budget=12, method="disagreement", seed=0,
-                                  min_gain=0.08):
+                                  min_gain=0.08, validation_probe_ids=None):
         """Reevaluate a saved numeric rule using fresh matched host feedback.
 
         The new decision is separately journaled; the parent decision and
@@ -152,11 +154,16 @@ class NativeReasoningService:
                 any(not isinstance(pid, str) for pid in probe_ids) or
                 set(probe_ids) & used_probes):
             raise ValueError("Revision requires unseen probe IDs")
+        if (validation_probe_ids is not None and
+                isinstance(validation_probe_ids, (tuple, list)) and
+                set(validation_probe_ids) & used_probes):
+            raise ValueError("Revision requires unseen validation probe IDs")
 
         parent = by_receipt[parent_receipt_id]["decision"]
         dimensions = len(parent["records"][0]["sensors"])
         fresh = discover(probe_ids=probe_ids, observe=observe, reward=reward,
-                         budget=budget, method=method, seed=seed)
+                         budget=budget, method=method, seed=seed,
+                         validation_probe_ids=validation_probe_ids)
         if any(len(row["sensors"]) != dimensions for row in fresh["records"]):
             raise ValueError("Sensor layout changed across revisions")
 
@@ -172,11 +179,27 @@ class NativeReasoningService:
         advantage = (None if prior_regret is None
                      else prior_regret - fresh["best_loss_per_probe"])
 
+        prior_validation_regret = None
+        validation_advantage = None
+        if validation_probe_ids is not None and prior is not None:
+            checks = fresh["validation"]["records"]
+            prior_validation_regret = sum(
+                max(dict(row["rewards_by_action"]).values()) -
+                dict(row["rewards_by_action"])[act(prior, row["sensors"])]
+                for row in checks) / len(checks)
+            if fresh["validation"]["mean_regret"] is not None:
+                validation_advantage = (
+                    prior_validation_regret - fresh["validation"]["mean_regret"])
         if fresh["selected_rule"] is not None and (
-                prior is None or advantage > min_gain):
+                prior is None or advantage > min_gain) and (
+                validation_probe_ids is None or prior is None or
+                validation_advantage > min_gain):
             selected = fresh["selected_rule"]
             change = "updated_from_fresh_feedback"
-        elif prior is not None and prior_regret <= 0.12:
+        elif prior is not None and (
+                (prior_validation_regret <= 0.12)
+                if validation_probe_ids is not None
+                else (prior_regret <= 0.12)):
             selected = prior
             change = "retained_after_fresh_feedback"
         else:
@@ -188,6 +211,8 @@ class NativeReasoningService:
             "revision_decision": change,
             "prior_regret_per_probe": prior_regret,
             "fresh_advantage_per_probe": advantage,
+            "prior_validation_regret": prior_validation_regret,
+            "validation_advantage": validation_advantage,
             "minimum_change_advantage": float(min_gain),
             "previous_evidence_preserved": True,
             "ancestry_observation_coverage": (
