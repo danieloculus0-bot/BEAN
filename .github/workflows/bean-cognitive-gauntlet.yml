@@ -20,6 +20,7 @@ on:
       - 'bean/tests/test_cognitive_rubiks_value_rollout.py'
       - 'bean/tests/test_cognitive_rubiks_curriculum.py'
       - 'bean/tests/test_cognitive_rubiks_prioritized_td.py'
+      - 'bean/tests/test_cognitive_rubiks_temperature.py'
       - '.github/workflows/bean-cognitive-gauntlet.yml'
   pull_request:
     branches: [main]
@@ -41,6 +42,7 @@ on:
       - 'bean/tests/test_cognitive_rubiks_value_rollout.py'
       - 'bean/tests/test_cognitive_rubiks_curriculum.py'
       - 'bean/tests/test_cognitive_rubiks_prioritized_td.py'
+      - 'bean/tests/test_cognitive_rubiks_temperature.py'
       - '.github/workflows/bean-cognitive-gauntlet.yml'
   workflow_dispatch:
 permissions:
@@ -184,5 +186,35 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: bean-prioritized-cube-${{ matrix.os }}-py${{ matrix.python }}
+          path: cognitive-gauntlet-results/
+          if-no-files-found: warn
+
+  cube-temperature:
+    # Isolated potential-based reward comparison, not a reference solver.
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        python: ['3.11', '3.12']
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Verify legal cubie temperatures, discounted reward and frozen paired replay
+        run: python -m unittest bean.tests.test_cognitive_rubiks_temperature -v
+      - name: Matched SpongeTD hotter-colder reward versus terminal-only 13000
+        run: python -m experiments.cognitive_gauntlet.rubiks3_temperature --test-seed-start 13000 --output cognitive-gauntlet-results/rubiks3-temperature-13000.json
+      - name: Independent hotter-colder holdout 14000
+        run: python -m experiments.cognitive_gauntlet.rubiks3_temperature --test-seed-start 14000 --output cognitive-gauntlet-results/rubiks3-temperature-14000.json
+      - name: Archive all temperature experiments including failed cases
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bean-temperature-cube-${{ matrix.os }}-py${{ matrix.python }}
           path: cognitive-gauntlet-results/
           if-no-files-found: warn
