@@ -21,14 +21,18 @@ import unittest
 FILES = (
     "bean/engineering/spaceflight.py",
     "bean/engineering/two_body.py",
+    "bean/runtime/inbox_handlers.py",
+    "bean/runtime/inbox.py",
     "bean/tests/test_spaceflight_reference.py",
     "bean/tests/test_two_body_propagation.py",
+    "bean/tests/test_spaceflight_inbox.py",
     "research/spaceflight/ci_receipt.py",
     ".github/workflows/bean-spaceflight-reference.yml",
 )
 TEST_MODULES = (
     "bean.tests.test_spaceflight_reference",
     "bean.tests.test_two_body_propagation",
+    "bean.tests.test_spaceflight_inbox",
 )
 
 
