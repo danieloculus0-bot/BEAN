@@ -1,0 +1,52 @@
+name: One-time portfolio confidentiality scan
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/one-time-portfolio-scan.yml
+permissions:
+  contents: read
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Inspect public default-branch source
+        env:
+          REPOSITORIES: 'ForgeVault,EZ-FAIR,venvWin,BEAN,ForgeQC,PM-Tracker,MFGForge,SuperForge_Unofficial,EZ_Expedite,Axiom_Beta,AIscend,64-,BEAN-AI-Bridge-,FUN,EZ-FEA,EZstimate,JET-ERP,BEAN-Rider,EZ-Office,EZ-Attendance'
+          TERMS_B64: 'RVogRmFicmljYXRpbmd8RVogRmFifEVaLUZhYnxFWi1XTUZ8V2FzaGluZ3RvbiBNZXRhbCBGYWJyaWNhdG9yc3xXTUZ8V2lzY29uc2luIE1ldGFsIEZhYnJpY2F0b3JzfENoYXRmaWVsZHxFWkZBQnxFWkZhYnJpY2F0aW5n'
+        shell: bash
+        run: |
+          python - <<'PY'
+          import os, base64, io, zipfile, urllib.request, re, json
+          terms = [re.sub(r'[^a-z0-9]', '', s.lower()) for s in base64.b64decode(os.environ['TERMS_B64']).decode().split('|')]
+          names = os.environ['REPOSITORIES'].split(',')
+          for name in names:
+              url = 'https://codeload.github.com/danieloculus0-bot/' + name + '/zip/refs/heads/main'
+              try:
+                  with urllib.request.urlopen(urllib.request.Request(url, headers={'User-Agent': 'Repository-Content-Audit'}), timeout=60) as response:
+                      archive = zipfile.ZipFile(io.BytesIO(response.read()))
+                  found = []
+                  blobs = 0
+                  for item in archive.infolist():
+                      if item.is_dir(): continue
+                      blobs += 1
+                      path = item.filename.split('/', 1)[1] if '/' in item.filename else item.filename
+                      if item.file_size > 2500000:
+                          if re.search(r'\.(csv|xlsx?|pdf|db|sqlite|zip)$', path, re.I):
+                              found.append({'file':path,'kind':'review_large_binary','size':item.file_size})
+                          continue
+                      raw = archive.read(item)
+                      if b'\x00' in raw[:8192]:
+                          if re.search(r'\.(csv|xlsx?|pdf|db|sqlite|zip)$', path, re.I):
+                              found.append({'file':path,'kind':'review_binary','size':item.file_size})
+                          continue
+                      decoded = raw.decode('utf-8','replace')
+                      norm = re.sub(r'[^a-z0-9]', '', (path + ' ' + decoded).lower())
+                      matches = [len(term) for term in set(terms) if term in norm]
+                      if matches: found.append({'file':path,'kind':'identifier','hits':len(matches)})
+                      elif re.search(r'\.(csv|xlsx?|pdf|db|sqlite)$', path, re.I):
+                          found.append({'file':path,'kind':'review_data_file','size':item.file_size})
+                  print('CONFIDENTIALITY_SCAN '+json.dumps({'repository':name,'files_checked':blobs,'flagged_files':found},separators=(',',':')),flush=True)
+              except Exception as exc:
+                  print('CONFIDENTIALITY_SCAN_ERROR '+json.dumps({'repository':name,'error':type(exc).__name__}),flush=True)
+          PY
