@@ -9,6 +9,7 @@ evaluation; the gate only sees its paired probe rewards.
 from __future__ import annotations
 
 from hashlib import sha256
+from copy import deepcopy
 import json
 import math
 
@@ -111,7 +112,7 @@ def reconsider_transfer(*, prior: dict, probe_ids, reward, margin=None) -> dict:
              "uncertain_now" if after is None else "revised")
     record = {
         "schema": RECONSIDERATION_SCHEMA,
-        "initial_receipt": prior, "initial_receipt_sha256": claimed_digest,
+        "initial_receipt": deepcopy(prior), "initial_receipt_sha256": claimed_digest,
         "previous_method": before, "reconsidered_method": after,
         "outcome": state, "decision_changed": before != after,
         "fresh_review": revised, "new_evidence_used_for_selection": True,
