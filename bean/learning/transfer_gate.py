@@ -9,6 +9,7 @@ evaluation; the gate only sees its paired probe rewards.
 from __future__ import annotations
 
 from hashlib import sha256
+from copy import deepcopy
 import json
 import math
 
@@ -69,6 +70,54 @@ def evaluate_transfer(*, retained, alternative, probe_ids, reward,
         "oracle_labels_used": False,
         "heldout_data_used": False,
         "independent_verification": False,
+    }
+    record["evidence_sha256"] = sha256(json.dumps(
+        record, sort_keys=True, separators=(",", ":"), allow_nan=False
+    ).encode()).hexdigest()
+    return record
+
+RECONSIDERATION_SCHEMA = "bean.native.transfer_reconsideration.v1"
+
+
+def reconsider_transfer(*, prior: dict, probe_ids, reward, margin=None) -> dict:
+    """Revisit a prior method with fresh paired evidence, retaining both receipts.
+
+    This compares host-supplied policies; it does not invent new ones or verify
+    the provenance of either receipt. The hash detects accidental alteration,
+    not fabrication. Do not reuse this review's probes as final held-out cases.
+    """
+    if not isinstance(prior, dict) or prior.get("schema") != SCHEMA:
+        raise ValueError("Original selective-transfer receipt required")
+    claimed_digest = prior.get("evidence_sha256")
+    earlier = {key: value for key, value in prior.items()
+               if key != "evidence_sha256"}
+    digest = sha256(json.dumps(earlier, sort_keys=True, separators=(",", ":"),
+                               allow_nan=False).encode()).hexdigest()
+    if claimed_digest != digest:
+        raise ValueError("Original receipt has changed")
+    previous_ids = [row.get("probe_id") for row in prior.get("pairs", [])]
+    if (not previous_ids or len(previous_ids) != prior.get("number_of_pairs")
+            or len(set(previous_ids)) != len(previous_ids)):
+        raise ValueError("Original probe list is incomplete")
+    if (not isinstance(probe_ids, (tuple, list)) or
+            any(case in previous_ids for case in probe_ids)):
+        raise ValueError("Fresh probes must not reuse original evidence")
+    revised = evaluate_transfer(
+        retained=prior["retained"], alternative=prior["alternative"],
+        probe_ids=probe_ids, reward=reward,
+        margin=prior["required_margin"] if margin is None else margin)
+    before, after = prior["selected"], revised["selected"]
+    state = ("confirmed" if before == after and after is not None else
+             "still_uncertain" if before == after else
+             "uncertain_now" if after is None else "revised")
+    record = {
+        "schema": RECONSIDERATION_SCHEMA,
+        "initial_receipt": deepcopy(prior), "initial_receipt_sha256": claimed_digest,
+        "previous_method": before, "reconsidered_method": after,
+        "outcome": state, "decision_changed": before != after,
+        "fresh_review": revised, "new_evidence_used_for_selection": True,
+        "independent_verification": False,
+        "candidate_generator": "supplied_by_host",
     }
     record["evidence_sha256"] = sha256(json.dumps(
         record, sort_keys=True, separators=(",", ":"), allow_nan=False
