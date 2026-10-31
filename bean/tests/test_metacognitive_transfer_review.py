@@ -23,6 +23,8 @@ class ReconsiderationTests(unittest.TestCase):
         self.assertEqual(report["initial_receipt"], original)
         self.assertEqual(self.earlier, original)
         self.assertEqual(len(report["fresh_review"]["pairs"]), 2)
+        self.earlier["pairs"][0]["retained_reward"] = -99
+        self.assertEqual(report["initial_receipt"], original)
 
     def test_still_good_method_is_retained(self):
         report = reconsider_transfer(
