@@ -154,7 +154,8 @@ The development installer now includes a separate read-only audio diagnostics st
 ## What is verified versus next
 
 - **Verified locally:** Core runs on actual Jetson with persistent cognition events; CUDA llama.cpp binary compiled successfully; original face launcher and tracker arrangement documented from the previous Jetson setup.
-- **Needs a fresh run result:** the original face/tracker re-launched alongside the new Core, Qwen download completion, CUDA model load/GPU offload, LLM completion, and Core-to-LLM/native speech/vision interoperability.
+- **Confirmed again November 1, 2026:** the original Rev 1 face and manual-target CSRT tracker are working on the Jetson together (operator-reported). Tracking uses Space, drag target ROI, then Enter. This confirms the original face/tracker pairing, not automatic integration with the new Python Core.
+- **Needs a fresh run result:** Qwen download completion, CUDA model load/GPU offload, LLM completion, and Core-to-LLM/native speech/vision interoperability.
 - **Preserve current work:** Do not replace `~/BEAN`, stop a working Core to launch the face, launch duplicate SQLite writers, or change audio/servo controls just to test display.
 
 ## Future installer work
