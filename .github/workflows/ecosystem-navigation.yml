@@ -14,6 +14,8 @@ on:
       - "tests/test_ecosystem_navigation.py"
       - ".github/workflows/ecosystem-navigation.yml"
   workflow_dispatch:
+  schedule:
+    - cron: "35 11 * * *"
 permissions:
   contents: read
 jobs:
@@ -27,3 +29,14 @@ jobs:
           python-version: "3.12"
       - name: Validate canonical Axiom and BEAN routes offline
         run: python -m unittest discover -s tests -p 'test_ecosystem_navigation.py' -v
+  published-site-smoke:
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Check published pages and cross-site navigation
+        run: python scripts/verify_ecosystem_live.py
