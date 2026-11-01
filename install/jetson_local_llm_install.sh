@@ -15,7 +15,21 @@ BEAN_DATA_DIR="${BEAN_DATA_DIR:-$USER_HOME/bean_core_data}"
 BEAN_LOG_DIR="${BEAN_LOG_DIR:-$USER_HOME/bean_logs}"
 BEAN_ENV_FILE="${ENV_FILE:-/etc/bean/bean.env}"
 LLAMA_CPP_DIR="${BEAN_LLAMA_CPP_DIR:-$USER_HOME/llama.cpp}"
-LLAMA_BUILD_DIR="${BEAN_LLAMA_BUILD_DIR:-$LLAMA_CPP_DIR/build-bean-cuda}"
+# Prefer an existing, *successfully configured* CUDA build so an interrupted
+# compile resumes from completed object files rather than rebuilding from zero.
+# A failed/incomplete CMake configure has no generated build-system files and
+# falls back to a separate clean build directory without deleting anything.
+if [[ -n "${BEAN_LLAMA_BUILD_DIR:-}" ]]; then
+  LLAMA_BUILD_DIR="$BEAN_LLAMA_BUILD_DIR"
+elif [[ -f "$LLAMA_CPP_DIR/build/CMakeCache.txt" ]] &&
+     { [[ -f "$LLAMA_CPP_DIR/build/Makefile" ]] ||
+       [[ -f "$LLAMA_CPP_DIR/build/build.ninja" ]]; } &&
+     grep -qxE 'GGML_CUDA:(BOOL|UNINITIALIZED)=ON' "$LLAMA_CPP_DIR/build/CMakeCache.txt" &&
+     grep -qxF "CMAKE_HOME_DIRECTORY:INTERNAL=$LLAMA_CPP_DIR" "$LLAMA_CPP_DIR/build/CMakeCache.txt"; then
+  LLAMA_BUILD_DIR="$LLAMA_CPP_DIR/build"
+else
+  LLAMA_BUILD_DIR="$LLAMA_CPP_DIR/build-bean-cuda"
+fi
 LLAMA_SERVER="$LLAMA_BUILD_DIR/bin/llama-server"
 MODEL_PATH="${BEAN_GGUF_PATH:-$BEAN_DATA_DIR/models/qwen2.5-1.5b-instruct-q4_k_m.gguf}"
 MODEL_URL="${BEAN_GGUF_URL:-https://huggingface.co/Qwen/Qwen2.5-1.5B-Instruct-GGUF/resolve/main/qwen2.5-1.5b-instruct-q4_k_m.gguf}"
@@ -75,12 +89,13 @@ else
   git clone --depth 1 https://github.com/ggml-org/llama.cpp.git "$LLAMA_CPP_DIR"
 fi
 
+say "llama.cpp build directory: $LLAMA_BUILD_DIR"
 if [[ -x "$LLAMA_SERVER" && "${BEAN_LLM_REBUILD:-0}" != 1 ]]; then
   say "Existing CUDA server found; skipping rebuild: $LLAMA_SERVER"
 else
   say "Configure CUDA llama.cpp for Jetson Orin (arch $CUDA_ARCH)"
-  # This is a *separate* build directory. Existing failed builds under
-  # llama.cpp/build are never deleted or used.
+  # Reuse a previously configured CUDA build, including partially compiled
+  # object files. For a failed configure, use build-bean-cuda instead.
   cmake -S "$LLAMA_CPP_DIR" -B "$LLAMA_BUILD_DIR" \
     -DGGML_CUDA=ON \
     "-DCMAKE_CUDA_COMPILER=$NVCC" \
