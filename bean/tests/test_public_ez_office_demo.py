@@ -52,9 +52,9 @@ def test_workshop_and_bean_home_link_working_suite():
     homepage = (PAGES / "index.html").read_text(encoding="utf-8")
     assert workshop.count('href="ez-office/"') >= 3
     assert "EZ-Office" in workshop
-    assert '<strong>19</strong><span>Catalogued projects</span>' in workshop
-    assert 'n===19?' in workshop
-    assert 'Showing all 19 projects' in workshop
+    assert '<strong id="catalog-total">22</strong><span>Catalogued projects</span>' in workshop
+    assert "n===cards.length?" in workshop
+    assert 'Showing all 22 projects' in workshop
     assert "data-category=\"platform\" data-search=\"ez office" in workshop
     assert 'href="./portfolio/"' in homepage  # Suite linked from Workshop
     readme = (ROOT / "README.md").read_text(encoding="utf-8")
