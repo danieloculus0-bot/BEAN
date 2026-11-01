@@ -107,7 +107,10 @@ def main():
     report = {"audit": "BEAN Jetson live inventory", "repo_present": (root / "bean_run.py").is_file(),
               "system": platform.system(), "architecture": platform.machine(),
               "jetson_l4t_detected": Path("/etc/nv_tegra_release").exists(),
-              "tegrastats_found": shutil.which("tegrastats") is not None}
+              "tegrastats_found": shutil.which("tegrastats") is not None,
+              "device_nodes": {"cameras": sorted(str(p) for p in Path("/dev").glob("video[0-9]*")),
+                               "usb_serial": sorted(str(p) for pattern in ("ttyACM*", "ttyUSB*")
+                                                    for p in Path("/dev").glob(pattern))}}
     if not report["repo_present"]:
         report["next_step"] = "Run from your BEAN source directory or pass --root /path/to/BEAN"
         print(json.dumps(report, indent=2))
