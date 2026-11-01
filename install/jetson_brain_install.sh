@@ -1,68 +1,67 @@
 #!/usr/bin/env bash
-# BEAN Jetson install helper.
-# Run from the repository root on the Jetson.
-
+# Package BEAN's existing Jetson runtime; preserve its memory and model files.
 set -euo pipefail
 
-BEAN_USER="${BEAN_USER:-bean}"
-BEAN_HOME="${BEAN_HOME:-/home/bean/BEAN}"
-BEAN_DATA_DIR="${BEAN_DATA_DIR:-/home/bean/bean_data}"
-BEAN_LOG_DIR="${BEAN_LOG_DIR:-/home/bean/bean_logs}"
-ENV_DIR="${ENV_DIR:-/etc/bean}"
+BEAN_USER="${BEAN_USER:-${SUDO_USER:-$(id -un)}}"
+BEAN_GROUP="${BEAN_GROUP:-$(id -gn "$BEAN_USER")}"
+BEAN_HOME="${BEAN_HOME:-$(pwd -P)}"
+USER_HOME="$(getent passwd "$BEAN_USER" | cut -d: -f6)"
+if [[ -z "$USER_HOME" ]]; then
+  echo "Unable to resolve home for $BEAN_USER" >&2
+  exit 1
+fi
+BEAN_DATA_DIR="${BEAN_DATA_DIR:-$USER_HOME/bean_data}"
+BEAN_LOG_DIR="${BEAN_LOG_DIR:-$USER_HOME/bean_logs}"
 ENV_FILE="${ENV_FILE:-/etc/bean/bean.env}"
 SERVICE_FILE="${SERVICE_FILE:-/etc/systemd/system/bean.service}"
 
-if [[ ! -f "bean_run.py" ]]; then
-  echo "Run this script from the BEAN repository root."
+if [[ ! -f "$BEAN_HOME/bean_run.py" || ! -f "$BEAN_HOME/install/jetson_render.py" ]]; then
+  echo "Run from BEAN repository root or set BEAN_HOME to your clone path." >&2
   exit 1
 fi
-
-echo "==> Checking Jetson / JetPack platform"
+cd "$BEAN_HOME"
+echo "==> Check Jetson / JetPack environment"
 python3 install/jetson_platform_check.py --require-jetson
 
-echo "==> Creating BEAN data directories"
-mkdir -p "$BEAN_DATA_DIR" "$BEAN_LOG_DIR" "$BEAN_DATA_DIR/inbox"
-sudo mkdir -p "$ENV_DIR"
-
-if [[ ! -f "$ENV_FILE" ]]; then
-  sudo cp install/bean.env.example "$ENV_FILE"
-  sudo sed -i "s|^BEAN_HOME=.*|BEAN_HOME=$BEAN_HOME|" "$ENV_FILE"
-  sudo sed -i "s|^BEAN_DATA_DIR=.*|BEAN_DATA_DIR=$BEAN_DATA_DIR|" "$ENV_FILE"
-  sudo sed -i "s|^BEAN_LOG_DIR=.*|BEAN_LOG_DIR=$BEAN_LOG_DIR|" "$ENV_FILE"
-  sudo sed -i "s|^BEAN_DB_PATH=.*|BEAN_DB_PATH=$BEAN_DATA_DIR/bean_memory.db|" "$ENV_FILE"
-  sudo sed -i "s|^BEAN_INBOX_DIR=.*|BEAN_INBOX_DIR=$BEAN_DATA_DIR/inbox|" "$ENV_FILE"
-  echo "Created $ENV_FILE"
-else
-  echo "$ENV_FILE already exists. Leaving it unchanged."
-fi
-
-echo "==> Preparing Python virtual environment"
-if [[ ! -d ".venv" ]]; then
+if [[ ! -x .venv/bin/python3 ]]; then
+  echo "==> Create local Python virtual environment"
   python3 -m venv .venv
 fi
+if [[ ! -x .venv/bin/python3 ]]; then
+  echo "Python venv is incomplete. Check python3-venv." >&2
+  exit 1
+fi
+.venv/bin/python3 -m pip install psutil pytest
 
-. .venv/bin/activate
-python3 -m pip install --upgrade pip
-python3 -m pip install psutil
+echo "==> Check BEAN Core with disposable SQLite"
+.venv/bin/python3 -m bean.runtime.boot_readiness --temp
 
-echo "==> Running temporary boot readiness check"
-python3 -m bean.runtime.boot_readiness --temp
+echo "==> Create persistent data directories"
+sudo install -d -m 0750 -o "$BEAN_USER" -g "$BEAN_GROUP" \
+  "$BEAN_DATA_DIR" "$BEAN_LOG_DIR" "$BEAN_DATA_DIR/inbox"
+sudo mkdir -p "$(dirname "$ENV_FILE")" "$(dirname "$SERVICE_FILE")"
 
-echo "==> Installing systemd service"
-sudo cp install/bean.service "$SERVICE_FILE"
+RENDER_ARGS=(--user "$BEAN_USER" --group "$BEAN_GROUP" --home "$BEAN_HOME" \
+  --data-dir "$BEAN_DATA_DIR" --log-dir "$BEAN_LOG_DIR" --env-file "$ENV_FILE")
+
+if [[ ! -e "$ENV_FILE" ]]; then
+  .venv/bin/python3 install/jetson_render.py env "${RENDER_ARGS[@]}" | sudo tee "$ENV_FILE" >/dev/null
+  sudo chmod 0640 "$ENV_FILE"
+  echo "Created $ENV_FILE"
+else
+  echo "Preserved existing $ENV_FILE; check that its BEAN_HOME and data paths match."
+fi
+.venv/bin/python3 install/jetson_render.py service "${RENDER_ARGS[@]}" | sudo tee "$SERVICE_FILE" >/dev/null
+sudo chmod 0644 "$SERVICE_FILE"
 sudo systemctl daemon-reload
 
-echo
 cat <<'MSG'
-BEAN install files are in place.
-
-Next commands:
-  source /etc/bean/bean.env
-  bash scripts/bean_doctor.sh
-  bash scripts/bean_boot_ready.sh --db "$BEAN_DB_PATH"
-  sudo systemctl enable bean.service
-  sudo systemctl start bean.service
-  sudo systemctl status bean.service
-
-Physical output hardware is not enabled by this installer.
+BEAN's existing brain is packaged. This installer does not start or restart it.
+Audit from your BEAN directory:
+  .venv/bin/python3 scripts/jetson_runtime_audit.py --smoke
+After reviewing runtime results:
+  sudo systemctl enable --now bean.service
+  journalctl -u bean.service -n 50 --no-pager
+Your existing local llama.cpp model server must run separately.
+Physical servo and motor outputs are not activated by this installer.
 MSG
