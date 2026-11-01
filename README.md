@@ -12,9 +12,9 @@ Persistent reasoning and evidence infrastructure. BEAN Core maintains SQLite-bac
 
 ## Jetson Orin Nano Super deployment (November 1, 2026)
 
-**BEAN Core v0.13.1 is confirmed running on actual NVIDIA Jetson Orin Nano Super ARM64 hardware**, rather than only in x86 CI. The operator reported a 10/10 successful boot-readiness run, a clean 310-tick runtime execution, and a continuously running instance with persistent SQLite storage that recorded world-model updates, reflections and consolidation without logged errors at the time of inspection. The deployed cognitive Core records memory and scheduled reasoning activity. Local LLM inference, Rev 1 voice/vision integration and physical control are separate integration milestones. The CUDA llama.cpp installer and Qwen model setup are being completed separately in [Jetson packaging PR #205](https://github.com/danieloculus0-bot/BEAN/pull/205).
+**BEAN Core v0.13.1 has now run local Qwen inference and persisted a live cognition receipt on actual NVIDIA Jetson Orin Nano Super ARM64 hardware.** On November 1, 2026 the operator verified 10/10 boot checks, 310 ticks, persistent SQLite recovery across boots, local Qwen2.5 1.5B Instruct through CUDA-enabled llama.cpp, and a live `cognition_reason` result (`BEAN CORE ONLINE`) recovered from the Core's own reasoning journal. A real chat completion returned HTTP 200 while GPU utilization reached 99%. Exact layer offloading remains unmeasured. **The legacy face/tracker are separate; end-to-end microphone, speech, face and motor integration is not yet deployed.** The automated installer remains draft [PR #205](https://github.com/danieloculus0-bot/BEAN/pull/205), not a released on-device-tested package.
 
-[On-device test evidence, scope and remaining gaps](docs/JETSON_ON_DEVICE_BRINGUP_2026-11-01.md) · [Jetson launch and recovery runbook (Core, CUDA, face, tracker)](docs/JETSON_LOCAL_STARTUP_RUNBOOK.md)
+[**Verified Jetson deployment milestone and integration boundary**](docs/JETSON_DEPLOYMENT_MILESTONE_2026-11-01.md) · [Original bring-up evidence](docs/JETSON_ON_DEVICE_BRINGUP_2026-11-01.md) · [Jetson launch and recovery runbook](docs/JETSON_LOCAL_STARTUP_RUNBOOK.md)
 
 ## Current Python Core status (October 25, 2026)
 

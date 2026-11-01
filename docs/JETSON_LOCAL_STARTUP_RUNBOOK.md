@@ -14,7 +14,7 @@
 | Original interface Python venv | `/home/bean/beanenv` | Pygame, camera and legacy media dependencies already used by Rev 1. |
 | Official llama.cpp source | `/home/bean/llama.cpp` | Local checkout, compiled with CUDA support. |
 | Compiled llama-server | `/home/bean/llama.cpp/build/bin/llama-server` | 100% `Built target llama-server` observed Nov 1, 2026. |
-| GGUF download | `/home/bean/bean_core_data/models/qwen2.5-1.5b-instruct-q4_k_m.gguf` | Qwen2.5 1.5B Instruct Q4_K_M; download initiated. |
+| GGUF download | `/home/bean/bean_core_data/models/qwen2.5-1.5b-instruct-q4_k_m.gguf` | Qwen2.5 1.5B Instruct Q4_K_M; download completed and tested. |
 
 All paths here are from the original `bean` Linux login and may be adjusted for other users. No existing binary/model installation should be deleted in order to follow this document.
 
@@ -70,7 +70,7 @@ Inspect its startup logs for the CUDA backend, GPU layer offload and model-load 
 - The OpenAI-compatible chat completion request with model alias `bean-local` and message `Reply with exactly: BEAN ONLINE` returned `"content":"BEAN ONLINE"`, `"finish_reason":"stop"`, and actual token timings.
 - Reported inference timing from that **very short** four-token response: prompt prefill 262.6 tokens/sec (36 tokens), generation approximately 15.48 tokens/sec (4 tokens). Do not treat the four-token speed as a sustained benchmark.
 - `free -h` during the running server showed ~3.0 GiB available Linux RAM and `llama-server` around 1.5 GiB resident, with desktop applications/Chrome also consuming RAM. The remaining free/available Linux memory did not prove how many transformer layers had offloaded to GPU.
-- Actual provider API success is verified; **BEAN Core's native local_llamacpp provider, reasoning handlers, persistent lessons and spoken conversation have not yet been separately exercised** against this server.
+- **Later on November 1:** BEAN's local provider, native reasoning persistence and running Core's live `cognition_reason` were separately verified against Qwen. The Rev 1 microphone-to-Core-to-Piper path remains unintegrated. See the [deployment milestone](JETSON_DEPLOYMENT_MILESTONE_2026-11-01.md).
 
 **Reproduce the exact inference probe from a separate terminal while the model server remains running:**
 
@@ -92,7 +92,15 @@ Reproduce the isolated native-reasoning + durable-memory test:
 cd ~/BEAN-Core && python3 -c 'from pathlib import Path; from bean.learning.reasoning_service import NativeReasoningService; from bean.reasoning.local_llamacpp_provider import LocalLlamaCppProvider; p=Path.home()/"bean_core_data"/"bean_reasoning_smoke.sqlite3"; s=NativeReasoningService(p,model=LocalLlamaCppProvider(max_tokens=64)); r=s.reason(domain="jetson_inference",task_ref="cuda_smoke",query="Reply with exactly: BEAN MEMORY ONLINE"); print("Answer:",r["answer"]); print("Receipt:",r["receipt_id"]); s.close(); t=NativeReasoningService(p); print("Persisted inference receipts:",t.status()["inference_receipts"]); t.close()'
 ```
 
-The model service and BEAN Core are separate processes. Loading a model alone does not prove that a native reasoning inbox command has invoked it.
+The model server and BEAN Core are separate processes. The subsequent live Core inbox test did verify an inference and persisted a receipt; this still does not prove end-to-end spoken conversation.
+
+## Later verified Core and CUDA checkpoint (November 1, 2026)
+
+- After controlled restart, Core Boot #3 recovered 2,566 persistent events and recorded the prior keyboard-interrupt shutdown. Avoid starting a duplicate Core.
+- A live `cognition_reason` request (`task_ref=live_core_test`) produced `BEAN CORE ONLINE`; a read-only query recovered its persisted inference receipt from the main reasoning journal.
+- The llama-server process had the CUDA backend, CUDA runtime, cuBLAS and driver libraries loaded and requested `--n-gpu-layers 99`. During a successful local completion, `tegrastats` reported 92–99% GPU utilization, then near idle. Exact layer count was not captured from the model-load log.
+- The original voice script still uses Ollama. The Core inbox returns answers internally but its tick handler discards those return values. The request-response voice bridge is **not yet implemented**.
+- For complete evidence and limitations see [the dated verified milestone](JETSON_DEPLOYMENT_MILESTONE_2026-11-01.md).
 
 ## Terminal 3: original Pygame face
 
