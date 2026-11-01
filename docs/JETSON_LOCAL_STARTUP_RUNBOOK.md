@@ -84,6 +84,14 @@ curl -sS --max-time 90 http://127.0.0.1:8080/v1/chat/completions -H "Content-Typ
 cd ~/BEAN-Core && python3 -c 'from bean.reasoning.local_llamacpp_provider import LocalLlamaCppProvider; print(LocalLlamaCppProvider(max_tokens=64).complete("Reply with exactly: BEAN ADAPTER ONLINE"))'
 ```
 
+**Verified November 1, 2026: BEAN's actual `NativeReasoningService` invoked the working local Qwen model, returned `BEAN MEMORY ONLINE`, created a SHA-256 inference receipt, and reopened its SQLite journal with `inference_receipts: 1`.** The operator tested this against a **separate persistent test database** at `~/bean_core_data/bean_reasoning_smoke.sqlite3`, not the main running Core's reasoning database. The successful test exercised model response, native service, durable inference storage and journal reopen, but it did not yet prove that a command sent to the long-running Core's inbox was processed.
+
+Reproduce the isolated native-reasoning + durable-memory test:
+
+```bash
+cd ~/BEAN-Core && python3 -c 'from pathlib import Path; from bean.learning.reasoning_service import NativeReasoningService; from bean.reasoning.local_llamacpp_provider import LocalLlamaCppProvider; p=Path.home()/"bean_core_data"/"bean_reasoning_smoke.sqlite3"; s=NativeReasoningService(p,model=LocalLlamaCppProvider(max_tokens=64)); r=s.reason(domain="jetson_inference",task_ref="cuda_smoke",query="Reply with exactly: BEAN MEMORY ONLINE"); print("Answer:",r["answer"]); print("Receipt:",r["receipt_id"]); s.close(); t=NativeReasoningService(p); print("Persisted inference receipts:",t.status()["inference_receipts"]); t.close()'
+```
+
 The model service and BEAN Core are separate processes. Loading a model alone does not prove that a native reasoning inbox command has invoked it.
 
 ## Terminal 3: original Pygame face
@@ -178,7 +186,8 @@ The development installer now includes a separate read-only audio diagnostics st
 - **Confirmed again November 1, 2026:** the original Rev 1 face and manual-target CSRT tracker are working on the Jetson together (operator-reported). Tracking uses Space, drag target ROI, then Enter. This confirms the original face/tracker pairing, not automatic integration with the new Python Core.
 - **Confirmed November 1, 2026:** Qwen GGUF download complete; CUDA-enabled llama-server ready on loopback; a real `bean-local` chat completion returned `BEAN ONLINE` with timing data.
 - **Confirmed November 1, 2026:** the native Python `LocalLlamaCppProvider` adapter returned the exact expected text using the local server and model alias.
-- **Needs a fresh run result:** CUDA layer offload verification, persistent `NativeReasoningService` receipt validation, full Core inbox/handler invocation, native spoken language, and Core-to-vision interoperability.
+- **Confirmed November 1, 2026:** isolated `NativeReasoningService` correctly invoked local Qwen and persisted its inference receipt in separate SQLite memory across reopen.
+- **Needs a fresh run result:** CUDA layer offload verification, long-running Core inbox/handler invocation (and its own persistent journal), native spoken language, and Core-to-vision interoperability.
 - **Preserve current work:** Do not replace `~/BEAN`, stop a working Core to launch the face, launch duplicate SQLite writers, or change audio/servo controls just to test display.
 
 ## Future installer work
