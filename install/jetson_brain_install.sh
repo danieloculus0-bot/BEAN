@@ -52,6 +52,15 @@ fi
 echo "==> Check BEAN Core with disposable SQLite"
 .venv/bin/python3 -m bean.runtime.boot_readiness --temp
 
+# Preserve the earlier USB webcam/Vosk and HDMI/espeak audio setup.
+# System audio packages and read-only discovery do not alter ALSA defaults.
+if [[ "${BEAN_AUDIO_SETUP:-1}" == "1" ]]; then
+  echo "==> Check Jetson audio prerequisites and devices"
+  bash install/jetson_audio_install.sh
+else
+  echo "Skipping Jetson audio package checks (BEAN_AUDIO_SETUP=0)."
+fi
+
 echo "==> Create persistent data directories"
 sudo install -d -m 0750 -o "$BEAN_USER" -g "$BEAN_GROUP" \
   "$BEAN_DATA_DIR" "$BEAN_LOG_DIR" "$BEAN_DATA_DIR/inbox"
