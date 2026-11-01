@@ -8,11 +8,11 @@
 
 **[BEAN Workshop — Projects and demonstrations](https://danieloculus0-bot.github.io/BEAN/portfolio/)** · Browse 19 catalogued projects and nine featured browser experiences, with published source code, development status and available test evidence.
 
-Persistent experimental reasoning and evidence system. BEAN Core maintains SQLite-backed observations, source-aware claims, revision history, recovery and repeatable research tests. It is not a production-grade autonomous software engineer.
+Persistent reasoning and evidence infrastructure. BEAN Core maintains SQLite-backed observations, source-aware claims, revision history, recovery and repeatable research tests.
 
 ## Jetson Orin Nano Super deployment (November 1, 2026)
 
-**BEAN Core v0.13.1 is confirmed running on actual NVIDIA Jetson Orin Nano Super ARM64 hardware**, rather than only in x86 CI. The operator reported a 10/10 successful boot-readiness run, a clean 310-tick runtime execution, and a continuously running instance with persistent SQLite storage that recorded world-model updates, reflections and consolidation without logged errors at the time of inspection. This is an on-device **cognitive Core deployment**, not a claim that local LLM inference, Rev 1 voice/vision integration, or physical actuators are working in the new runtime. The CUDA llama.cpp installer and Qwen model setup are being completed separately in [Jetson packaging PR #205](https://github.com/danieloculus0-bot/BEAN/pull/205).
+**BEAN Core v0.13.1 is confirmed running on actual NVIDIA Jetson Orin Nano Super ARM64 hardware**, rather than only in x86 CI. The operator reported a 10/10 successful boot-readiness run, a clean 310-tick runtime execution, and a continuously running instance with persistent SQLite storage that recorded world-model updates, reflections and consolidation without logged errors at the time of inspection. The deployed cognitive Core records memory and scheduled reasoning activity. Local LLM inference, Rev 1 voice/vision integration and physical control are separate integration milestones. The CUDA llama.cpp installer and Qwen model setup are being completed separately in [Jetson packaging PR #205](https://github.com/danieloculus0-bot/BEAN/pull/205).
 
 [On-device test evidence, scope and remaining gaps](docs/JETSON_ON_DEVICE_BRINGUP_2026-11-01.md)
 
@@ -22,7 +22,7 @@ Persistent experimental reasoning and evidence system. BEAN Core maintains SQLit
 
 **Judgment and counsel:** The [knowledge sufficiency policy](docs/BEAN_JUDGMENT_POLICY_2026-10-25.md) can prefer an adequate existing answer, select supported expert counsel, defer on insufficient evidence, or investigate when reliable guidance is unavailable. It reuses the current native reasoning inbox and SHA journal, not another brain. Source expertise and confidence are host-attested rather than independently authenticated; judgment feedback persists but does not yet retrain trust or model weights. This policy is a new Core integration with unit/CI acceptance, not independently validated expertise.
 
-**Still unproven or not automatically connected:** general intelligence, independent cross-domain transfer, real-world expert authentication, autonomous truth grading, production deployment, trading profitability, and full synchronization of the hosted connector, Bridge, AIscend and Axiom. GitHub source integration alone does not imply those applications invoke every Core capability.
+**Integration roadmap:** Connect the Jetson's local model runtime, existing voice/vision interfaces, and optional hosted/Bridge/Axiom integrations to the same BEAN Core services. Track each integration with its implementation and test record.
 
 For reproducible evidence and boundaries see the [native reasoning contract](docs/BEAN_NATIVE_REASONING_CORE_2026-10-25.md), [mainline audit](docs/BEAN_MAINLINE_CONSOLIDATION_AUDIT_2026-10-25.md), and [judgment policy](docs/BEAN_JUDGMENT_POLICY_2026-10-25.md).
 
@@ -68,7 +68,7 @@ Run `winget install llama.cpp`, then `llama-server -hf ggml-org/Qwen3-1.7B-GGUF:
 
 [Merged PR #186](https://github.com/danieloculus0-bot/BEAN/pull/186) adds BEAN's own local **hypothesis generation, example-based falsification, rule retention, traced inference and explicit abstention** over a limited symbolic task grammar. It runs without a language-model dependency and persists learned rule candidates in the *existing SHA-chained Core journal*. Commands `reasoning_learn_local`, `reasoning_local`, and `reasoning_auto` are registered on standard Python startup. `reasoning_auto` tries local rules first and **never incurs model charges by default**; fallback requires `allow_provider=true` and an actual configured, measured provider strategy.
 
-The default **cloud provider when explicitly selected** remains free Nemotron; the Core's new default reasoning provider is local llama.cpp. A cheaper **paid** optional model, Qwen3.5-Flash (`qwen/qwen3.5-flash-02-23`), is available ONLY when explicitly enabled with `BEAN_OPENROUTER_PAID_ENABLED=1`, `BEAN_OPENROUTER_MODEL`, an API key and a positive per-process `BEAN_OPENROUTER_PAID_CALL_LIMIT`. No paid calls or credit purchases are activated by BEAN's merge. **[Cost, setup, native reasoning limits and tests](docs/BEAN_LOCAL_REASONING_CHEAP_PROVIDER_2026-10-25.md).** This is a functional, limited program-induction subsystem—not a general standalone neural reasoning model.
+The default **cloud provider when explicitly selected** remains free Nemotron; the Core's new default reasoning provider is local llama.cpp. A cheaper **paid** optional model, Qwen3.5-Flash (`qwen/qwen3.5-flash-02-23`), is available ONLY when explicitly enabled with `BEAN_OPENROUTER_PAID_ENABLED=1`, `BEAN_OPENROUTER_MODEL`, an API key and a positive per-process `BEAN_OPENROUTER_PAID_CALL_LIMIT`. No paid calls or credit purchases are activated by BEAN's merge. **[Cost, setup, native reasoning limits and tests](docs/BEAN_LOCAL_REASONING_CHEAP_PROVIDER_2026-10-25.md).** This program-induction subsystem retains local rules and testable inference traces alongside BEAN's model adapters.
 
 ## Native source-grounded web research (October 25, 2026)
 
@@ -131,7 +131,7 @@ Some assets above remain **distinct research branches and draft PRs**; SpongeTD 
 
 ## Current build state
 
-**Reviewed:** 2026-10-22 · **Merged learning Core:** `a9c945b19e11` · **Type:** working experimental/beta code; not automatically production-certified.
+**Reviewed:** 2026-10-22 · **Merged learning Core:** `a9c945b19e11` · **Type:** working experimental/beta code, with linked test evidence.
 
 - [BEAN AIscend public demo checks](https://github.com/danieloculus0-bot/BEAN/actions/runs/39503225654) — **Passed** on an earlier `main` revision; the static demo has a separate check.
 - [BEAN full Core regression](https://github.com/danieloculus0-bot/BEAN/actions/runs/39865857419) — **Passed** across Windows/Linux and Python 3.10/3.12 at integration PR head; merge includes the unchanged tested files.
