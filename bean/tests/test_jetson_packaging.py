@@ -174,6 +174,7 @@ def test_mocked_cuda_package_install_reuses_source_and_writes_service(tmp_path, 
     assert f"ExecStart={expected_dir}/bin/llama-server" in service
 
 
+@pytest.mark.skipif(os.name != "posix", reason="Fake shell interpreter is POSIX only")
 def test_audio_inspector_reports_existing_legacy_stack(monkeypatch, tmp_path):
     """Audio inventory must be read-only and keep device indices informational."""
     from install import jetson_audio_preflight as audio
