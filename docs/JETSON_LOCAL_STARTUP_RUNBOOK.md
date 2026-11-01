@@ -78,7 +78,7 @@ Inspect its startup logs for the CUDA backend, GPU layer offload and model-load 
 curl -sS --max-time 90 http://127.0.0.1:8080/v1/chat/completions -H "Content-Type: application/json" -d '{"model":"bean-local","messages":[{"role":"user","content":"Reply with exactly: BEAN ONLINE"}],"max_tokens":32,"stream":false}'
 ```
 
-**Next isolated integration check, using BEAN's real local language adapter without starting a duplicate Core process:**
+**Verified November 1, 2026: BEAN's actual Python `LocalLlamaCppProvider` successfully returned `BEAN ADAPTER ONLINE` via the running Qwen model server**, with `ok=True`, `adapter_name=local_llamacpp`, `model_name=bean-local`, `local_inference=True`, and `external_cost_usd=0`. The command that produced this result (no duplicate Core process):
 
 ```bash
 cd ~/BEAN-Core && python3 -c 'from bean.reasoning.local_llamacpp_provider import LocalLlamaCppProvider; print(LocalLlamaCppProvider(max_tokens=64).complete("Reply with exactly: BEAN ADAPTER ONLINE"))'
@@ -177,7 +177,8 @@ The development installer now includes a separate read-only audio diagnostics st
 - **Verified locally:** Core runs on actual Jetson with persistent cognition events; CUDA llama.cpp binary compiled successfully; original face launcher and tracker arrangement documented from the previous Jetson setup.
 - **Confirmed again November 1, 2026:** the original Rev 1 face and manual-target CSRT tracker are working on the Jetson together (operator-reported). Tracking uses Space, drag target ROI, then Enter. This confirms the original face/tracker pairing, not automatic integration with the new Python Core.
 - **Confirmed November 1, 2026:** Qwen GGUF download complete; CUDA-enabled llama-server ready on loopback; a real `bean-local` chat completion returned `BEAN ONLINE` with timing data.
-- **Needs a fresh run result:** CUDA layer offload verification and native Core adapter/handler integration, native spoken language, and Core-to-vision interoperability.
+- **Confirmed November 1, 2026:** the native Python `LocalLlamaCppProvider` adapter returned the exact expected text using the local server and model alias.
+- **Needs a fresh run result:** CUDA layer offload verification, persistent `NativeReasoningService` receipt validation, full Core inbox/handler invocation, native spoken language, and Core-to-vision interoperability.
 - **Preserve current work:** Do not replace `~/BEAN`, stop a working Core to launch the face, launch duplicate SQLite writers, or change audio/servo controls just to test display.
 
 ## Future installer work
