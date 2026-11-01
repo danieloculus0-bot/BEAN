@@ -35,6 +35,24 @@ The install script automatically searches `/usr/local/cuda/bin/nvcc` and `/usr/l
 
 The installer reuses existing llama.cpp source and an existing GGUF model instead of redownloading them. It builds `llama-server`, downloads the official Qwen2.5 1.5B Instruct GGUF only when needed, creates a `bean-llamacpp.service` bound to `127.0.0.1:8080`, and starts it. The server advertises `--alias bean-local` for BEAN's existing local reasoning adapter. After startup, `install/jetson_llm_smoke.py` checks the model server's `/health` endpoint and requests a real completion using BEAN's expected alias. A successful result verifies the local inference provider, but not yet BEAN's reasoning handler or long-term learning. This remains unverified until it is run on the Jetson.
 
+## Audio and speech setup
+
+The previous Jetson Rev 1 voice configuration is documented in the [Jetson startup runbook](https://github.com/danieloculus0-bot/BEAN/blob/main/docs/JETSON_LOCAL_STARTUP_RUNBOOK.md#audio-and-speech-recovery-known-jetson-hardware). It used a USB webcam microphone, mono 16 kHz Vosk recognition, and HDMI speaker output through ALSA and espeak-ng.
+
+The **one-command installer now runs** `install/jetson_audio_install.sh` to install *missing* `alsa-utils`, `libportaudio2`, and `espeak-ng` userspace prerequisites. `install/jetson_audio_preflight.py` then performs a **read-only** inventory of `arecord -l`, `aplay -l`, existing Vosk model directory, old voice environment and sounddevice indices. The installer does not record or play audio, change the default output device, overwrite old media scripts, or start a second Ollama/BEAN process.
+
+**Why detect rather than hard-code device numbers:** Earlier working microphone configurations appeared as `hw:0,0`, `hw:1,0` and `hw:2,0`; HDMI playback also changed its card number. The most recently saved working settings were `CAPTURE_DEVICE=plughw:0,0`, `PLAYBACK_DEVICE=plughw:1,3`, Vosk model `/home/bean/vosk-model-small-en-us-0.15`. Inspect the current card list before selecting either route; a reboot can change them.
+
+JetPack supplies the platform audio/kernel drivers. Installing ALSA/PortAudio userspace prerequisites is not a replacement for missing kernel drivers, HDMI physical routing or USB device recognition. **Piper** can be retained if already configured, but the previously verified speech route used `espeak-ng` and `aplay`.
+
+Run the inspector independently without modifying any settings:
+
+```bash
+python3 install/jetson_audio_preflight.py
+```
+
+Set `BEAN_AUDIO_SETUP=0` to skip the entire audio step; `BEAN_AUDIO_INSTALL=0` to inspect devices without installing packages; or `BEAN_AUDIO_SCAN=0` to install missing packages without running the inventory.
+
 **Configuration switches:** `BEAN_LLM_INSTALL=0` skips the inference compiler step; `BEAN_LLM_START=0` installs without starting; `BEAN_LLM_DOWNLOAD=0` builds but does not download a model; `BEAN_LLM_SMOKE=0` skips the live completion check; `BEAN_GGUF_PATH=/absolute/path/model.gguf` uses an existing GGUF; `BEAN_BUILD_JOBS=2` controls compilation parallelism; `BEAN_NVCC=/path/to/nvcc` overrides compiler discovery; `BEAN_LLM_REBUILD=1` forces rebuild. Existing `/etc/bean/bean.env` and memory records are retained without being overwritten.
 
 No automatic physical actuation: existing BEAN Core uses MotionSimulator and the real Arduino motion bridge remains in separate PR #204. Existing hardware-specific body calibration and voice/camera modules require separate confirmation on the installed Jetson.
