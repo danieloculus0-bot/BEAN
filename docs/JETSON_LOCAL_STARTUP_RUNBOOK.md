@@ -55,13 +55,34 @@ mkdir -p ~/bean_core_data/models
 curl -fL --retry 3 -C - -o ~/bean_core_data/models/qwen2.5-1.5b-instruct-q4_k_m.gguf https://huggingface.co/Qwen/Qwen2.5-1.5B-Instruct-GGUF/resolve/main/qwen2.5-1.5b-instruct-q4_k_m.gguf
 ```
 
-When the download is complete, launch the CUDA model server in its own terminal. **This exact inference invocation is a next-step procedure; successful model response and GPU offload have not yet been confirmed on the operator's Jetson:**
+**Confirmed on the Jetson, November 1, 2026:** the Qwen2.5 1.5B Instruct Q4_K_M download completed, and the CUDA-enabled `llama-server` successfully loaded the model and served a real completion. GPU *layer offloading* has not yet been directly confirmed from the server's model-load logs. The actual server launch command is:
 
 ```bash
 ~/llama.cpp/build/bin/llama-server --model ~/bean_core_data/models/qwen2.5-1.5b-instruct-q4_k_m.gguf --host 127.0.0.1 --port 8080 --alias bean-local --ctx-size 2048 --n-gpu-layers 99
 ```
 
 Inspect its startup logs for the CUDA backend, GPU layer offload and model-load result. Once running, test the local HTTP interface with `python3 install/jetson_llm_smoke.py --port 8080` from a checkout that contains that script (Jetson packaging PR #205). The Python Core's existing `local_llamacpp` adapter expects `http://127.0.0.1:8080/v1/chat/completions` and model alias `bean-local`.
+
+**Observed real on-device acceptance, November 1, 2026:**
+
+- First model load logged an NVIDIA `cudaMalloc`/NvMap out-of-memory warning and returned an error. On the next attempt, the server continued running, accepted a readiness probe, and generated a correct response; do **not** mistake an early NvMap warning for definitive failure while the process remains alive.
+- `curl -i http://127.0.0.1:8080/health` returned `HTTP/1.1 200 OK`, `{"status":"ok"}`.
+- The OpenAI-compatible chat completion request with model alias `bean-local` and message `Reply with exactly: BEAN ONLINE` returned `"content":"BEAN ONLINE"`, `"finish_reason":"stop"`, and actual token timings.
+- Reported inference timing from that **very short** four-token response: prompt prefill 262.6 tokens/sec (36 tokens), generation approximately 15.48 tokens/sec (4 tokens). Do not treat the four-token speed as a sustained benchmark.
+- `free -h` during the running server showed ~3.0 GiB available Linux RAM and `llama-server` around 1.5 GiB resident, with desktop applications/Chrome also consuming RAM. The remaining free/available Linux memory did not prove how many transformer layers had offloaded to GPU.
+- Actual provider API success is verified; **BEAN Core's native local_llamacpp provider, reasoning handlers, persistent lessons and spoken conversation have not yet been separately exercised** against this server.
+
+**Reproduce the exact inference probe from a separate terminal while the model server remains running:**
+
+```bash
+curl -sS --max-time 90 http://127.0.0.1:8080/v1/chat/completions -H "Content-Type: application/json" -d '{"model":"bean-local","messages":[{"role":"user","content":"Reply with exactly: BEAN ONLINE"}],"max_tokens":32,"stream":false}'
+```
+
+**Next isolated integration check, using BEAN's real local language adapter without starting a duplicate Core process:**
+
+```bash
+cd ~/BEAN-Core && python3 -c 'from bean.reasoning.local_llamacpp_provider import LocalLlamaCppProvider; print(LocalLlamaCppProvider(max_tokens=64).complete("Reply with exactly: BEAN ADAPTER ONLINE"))'
+```
 
 The model service and BEAN Core are separate processes. Loading a model alone does not prove that a native reasoning inbox command has invoked it.
 
@@ -155,7 +176,8 @@ The development installer now includes a separate read-only audio diagnostics st
 
 - **Verified locally:** Core runs on actual Jetson with persistent cognition events; CUDA llama.cpp binary compiled successfully; original face launcher and tracker arrangement documented from the previous Jetson setup.
 - **Confirmed again November 1, 2026:** the original Rev 1 face and manual-target CSRT tracker are working on the Jetson together (operator-reported). Tracking uses Space, drag target ROI, then Enter. This confirms the original face/tracker pairing, not automatic integration with the new Python Core.
-- **Needs a fresh run result:** Qwen download completion, CUDA model load/GPU offload, LLM completion, and Core-to-LLM/native speech/vision interoperability.
+- **Confirmed November 1, 2026:** Qwen GGUF download complete; CUDA-enabled llama-server ready on loopback; a real `bean-local` chat completion returned `BEAN ONLINE` with timing data.
+- **Needs a fresh run result:** CUDA layer offload verification and native Core adapter/handler integration, native spoken language, and Core-to-vision interoperability.
 - **Preserve current work:** Do not replace `~/BEAN`, stop a working Core to launch the face, launch duplicate SQLite writers, or change audio/servo controls just to test display.
 
 ## Future installer work
