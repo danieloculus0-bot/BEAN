@@ -14,7 +14,7 @@ Persistent reasoning and evidence infrastructure. BEAN Core maintains SQLite-bac
 
 **BEAN Core v0.13.1 is confirmed running on actual NVIDIA Jetson Orin Nano Super ARM64 hardware**, rather than only in x86 CI. The operator reported a 10/10 successful boot-readiness run, a clean 310-tick runtime execution, and a continuously running instance with persistent SQLite storage that recorded world-model updates, reflections and consolidation without logged errors at the time of inspection. The deployed cognitive Core records memory and scheduled reasoning activity. Local LLM inference, Rev 1 voice/vision integration and physical control are separate integration milestones. The CUDA llama.cpp installer and Qwen model setup are being completed separately in [Jetson packaging PR #205](https://github.com/danieloculus0-bot/BEAN/pull/205).
 
-[On-device test evidence, scope and remaining gaps](docs/JETSON_ON_DEVICE_BRINGUP_2026-11-01.md)
+[On-device test evidence, scope and remaining gaps](docs/JETSON_ON_DEVICE_BRINGUP_2026-11-01.md) · [Jetson launch and recovery runbook (Core, CUDA, face, tracker)](docs/JETSON_LOCAL_STARTUP_RUNBOOK.md)
 
 ## Current Python Core status (October 25, 2026)
 
