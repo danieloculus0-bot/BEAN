@@ -35,7 +35,13 @@ python3 install/jetson_platform_check.py --require-jetson
 
 if [[ ! -x .venv/bin/python3 ]]; then
   echo "==> Create local Python virtual environment"
-  python3 -m venv .venv
+  if ! python3 -m venv .venv; then
+    echo "Python virtual environment creation failed. Checking python3-venv package."
+    command -v apt-get >/dev/null 2>&1 || exit 1
+    sudo apt-get update
+    sudo apt-get install -y python3-venv
+    python3 -m venv .venv
+  fi
 fi
 if [[ ! -x .venv/bin/python3 ]]; then
   echo "Python venv is incomplete. Check python3-venv." >&2
@@ -82,6 +88,7 @@ Audit from your BEAN directory:
 After reviewing runtime results:
   sudo systemctl enable --now bean.service
   journalctl -u bean.service -n 50 --no-pager
-The local CUDA model service is installed and started unless BEAN_LLM_START=0.\nCheck journalctl -u bean-llamacpp.service for readiness.
+The local CUDA model service is installed and started unless BEAN_LLM_START=0.
+Check journalctl -u bean-llamacpp.service for readiness.
 Physical servo and motor outputs are not activated by this installer.
 MSG
