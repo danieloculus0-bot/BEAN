@@ -10,7 +10,17 @@ if [[ -z "$USER_HOME" ]]; then
   echo "Unable to resolve home for $BEAN_USER" >&2
   exit 1
 fi
-BEAN_DATA_DIR="${BEAN_DATA_DIR:-$USER_HOME/bean_data}"
+# Retain BEAN's existing persistent Jetson memory from earlier Core boots.
+if [[ -z "${BEAN_DATA_DIR:-}" ]]; then
+  if [[ -f "$USER_HOME/bean_core_data/bean_memory.db" ]]; then
+    BEAN_DATA_DIR="$USER_HOME/bean_core_data"
+  elif [[ -f "$USER_HOME/bean_data/bean_memory.db" ]]; then
+    BEAN_DATA_DIR="$USER_HOME/bean_data"
+  else
+    BEAN_DATA_DIR="$USER_HOME/bean_core_data"
+  fi
+fi
+export BEAN_USER BEAN_GROUP BEAN_HOME BEAN_DATA_DIR
 BEAN_LOG_DIR="${BEAN_LOG_DIR:-$USER_HOME/bean_logs}"
 ENV_FILE="${ENV_FILE:-/etc/bean/bean.env}"
 SERVICE_FILE="${SERVICE_FILE:-/etc/systemd/system/bean.service}"
@@ -55,6 +65,16 @@ fi
 sudo chmod 0644 "$SERVICE_FILE"
 sudo systemctl daemon-reload
 
+# This installs the missing native language inference backend, including
+# JetPack CUDA compiler discovery, llama.cpp compilation and local GGUF model.
+# Reuses existing sources and never restarts an already running BEAN process.
+if [[ "${BEAN_LLM_INSTALL:-1}" == "1" ]]; then
+  echo "==> Install local CUDA reasoning backend"
+  bash install/jetson_local_llm_install.sh
+else
+  echo "Skipping local inference installation (BEAN_LLM_INSTALL=0)."
+fi
+
 cat <<'MSG'
 BEAN's existing brain is packaged. This installer does not start or restart it.
 Audit from your BEAN directory:
@@ -62,6 +82,6 @@ Audit from your BEAN directory:
 After reviewing runtime results:
   sudo systemctl enable --now bean.service
   journalctl -u bean.service -n 50 --no-pager
-Your existing local llama.cpp model server must run separately.
+The local CUDA model service is installed and started unless BEAN_LLM_START=0.\nCheck journalctl -u bean-llamacpp.service for readiness.
 Physical servo and motor outputs are not activated by this installer.
 MSG
