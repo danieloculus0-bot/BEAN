@@ -94,7 +94,8 @@ def test_scrub_does_not_publish_credentials():
 
 
 @pytest.mark.skipif(os.name != "posix", reason="Jetson shell integration only runs on POSIX hosts")
-def test_mocked_cuda_package_install_reuses_source_and_writes_service(tmp_path):
+@pytest.mark.parametrize("prior_build", ("none", "cuda_partial", "failed_configure", "cpu_build"))
+def test_mocked_cuda_package_install_reuses_source_and_writes_service(tmp_path, prior_build):
     """Exercise the real shell orchestration with fake nvcc/cmake/systemctl.
 
     Proves compiler path propagation and correct service rendering without
@@ -105,6 +106,18 @@ def test_mocked_cuda_package_install_reuses_source_and_writes_service(tmp_path):
     binaries.mkdir()
     llama_root = tmp_path / "llama.cpp"
     (llama_root / ".git").mkdir(parents=True)
+    # Match the Jetson user's real situation: a build interrupted at 38%.
+    prior = llama_root / "build"
+    if prior_build != "none":
+        prior.mkdir()
+        cache = (
+            f"CMAKE_HOME_DIRECTORY:INTERNAL={llama_root}\n"
+            f"GGML_CUDA:BOOL={'OFF' if prior_build == 'cpu_build' else 'ON'}\n"
+        )
+        (prior / "CMakeCache.txt").write_text(cache)
+        if prior_build != "failed_configure":
+            (prior / "Makefile").write_text("# previous partial CUDA build\n")
+    expected_dir = prior if prior_build == "cuda_partial" else llama_root / "build-bean-cuda"
     cuda_bin = tmp_path / "cuda/bin"
     cuda_bin.mkdir(parents=True)
     nvcc = cuda_bin / "nvcc"
@@ -138,7 +151,6 @@ def test_mocked_cuda_package_install_reuses_source_and_writes_service(tmp_path):
         "BEAN_LOG_DIR": str(tmp_path / "logs"),
         "ENV_FILE": str(tmp_path / "bean.env"),
         "BEAN_LLAMA_CPP_DIR": str(llama_root),
-        "BEAN_LLAMA_BUILD_DIR": str(llama_root / "build-bean-cuda"),
         "BEAN_GGUF_PATH": str(model),
         "BEAN_LLM_SERVICE_FILE": str(tmp_path / "bean-llamacpp.service"),
         "BEAN_NVCC": str(nvcc),
@@ -155,8 +167,8 @@ def test_mocked_cuda_package_install_reuses_source_and_writes_service(tmp_path):
     assert "-DGGML_CUDA=ON" in calls
     assert f"-DCMAKE_CUDA_COMPILER={nvcc.resolve()}" in calls
     assert "-DCMAKE_CUDA_ARCHITECTURES=87" in calls
-    assert "build-bean-cuda" in calls
+    assert str(expected_dir) in calls
     service = (tmp_path / "bean-llamacpp.service").read_text()
     assert "--alias bean-local" in service
     assert f"--model {model}" in service
-    assert f"ExecStart={llama_root}/build-bean-cuda/bin/llama-server" in service
+    assert f"ExecStart={expected_dir}/bin/llama-server" in service
