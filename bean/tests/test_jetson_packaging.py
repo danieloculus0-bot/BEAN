@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import getpass
-import grp
 import os
 import shutil
 import subprocess
@@ -94,12 +93,14 @@ def test_scrub_does_not_publish_credentials():
 
 
 
+@pytest.mark.skipif(os.name != "posix", reason="Jetson shell integration only runs on POSIX hosts")
 def test_mocked_cuda_package_install_reuses_source_and_writes_service(tmp_path):
     """Exercise the real shell orchestration with fake nvcc/cmake/systemctl.
 
     Proves compiler path propagation and correct service rendering without
     touching actual Jetson hardware, sudo, model downloads or real services.
     """
+    import grp
     binaries = tmp_path / "bin"
     binaries.mkdir()
     llama_root = tmp_path / "llama.cpp"
