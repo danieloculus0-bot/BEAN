@@ -50,7 +50,10 @@ void process(char* input) {
   }
   // 50 Hz = 20,000 us per 4096 ticks; use 32-bit arithmetic.
   uint16_t ticks = (uint32_t(pulse) * 4096UL + 10000UL) / 20000UL;
-  pwm.setPWM(uint8_t(ch), 0, ticks);
+  if (pwm.setPWM(uint8_t(ch), 0, ticks) != 0) {
+    error(seq, "I2C");
+    return;
+  }
   Serial.print(F("ACK,"));
   Serial.println(seq);
 }
