@@ -87,6 +87,66 @@ Run only after the face is up and confirm camera/device permissions in its conso
 
 **Avoid running `~/BEAN/run_bean.sh` at the same time as `~/BEAN-Core/bean_run.py`** without reviewing the legacy master process: that launcher starts a separate old `bean.py` and can duplicate audio or brain processes. Run face and tracker individually first.
 
+## Audio and speech recovery: known Jetson hardware
+
+The earlier Jetson Rev 1 installation **did** capture speech and produce audible output. This matters because audio is often configured differently after device re-enumeration.
+
+**Previously working equipment and settings (March-April 2026):**
+
+| Component | Verified earlier | Notes |
+| --- | --- | --- |
+| Microphone | USB webcam named `web cam 1080p: USB Audio` | Worked as ALSA `plughw:0,0` in the final saved voice configuration. Earlier boots enumerated it as `hw:1,0` and `hw:2,0`. |
+| Speech recognition | Offline Vosk | Model directory `/home/bean/vosk-model-small-en-us-0.15`; 16,000 Hz, mono (`CHANNELS=1`). |
+| Speaker output | Jetson HDMI | Working final playback `plughw:1,3` using `espeak-ng --stdout` piped to `aplay`. Earlier successful HDMI tests also used `plughw:0,3`; numbering can change. |
+| Rev 1 voice source | `/home/bean/BEAN/bean_voice.py` | Run using `/home/bean/beanenv/bin/python`. The prior script combined Vosk, speech output and **Ollama conversational requests**, so starting it alongside the new llama.cpp setup may produce two conversation paths. |
+| Face speaking indicator | UDP `TALKFOR:<duration>` | Legacy voice signaled the face; UDP talk port 5005 was used in the saved voice script. Camera tracker coordinates are separate on port 5006. |
+
+**These device numbers are past working values, not permanent hardware IDs or proof of today's routing.** Linux/JetPack supplies the audio kernel drivers; the userspace requirements include ALSA utilities, PortAudio for `sounddevice`, and a speech synthesizer such as `espeak-ng`. Installing an ALSA package alone does not guarantee the HDMI sink or microphone is selected.
+
+Check which sound devices the current Jetson exposes, without stopping BEAN Core:
+
+```bash
+arecord -l
+aplay -l
+cat /proc/asound/cards
+```
+
+Also inspect the Python microphone list if the old `beanenv` exists:
+
+```bash
+~/beanenv/bin/python -c 'import sounddevice as sd; print(sd.query_devices())'
+```
+
+Test the webcam microphone using the **currently displayed** ALSA card/device pair. On the final previously working setup this was:
+
+```bash
+arecord -D plughw:0,0 -f S16_LE -r 16000 -c 1 -d 5 /tmp/bean_audio_test.wav
+```
+
+Listen back through the **currently listed** HDMI playback route. In the last known working configuration:
+
+```bash
+aplay -D plughw:1,3 /tmp/bean_audio_test.wav
+```
+
+If playback is silent, confirm HDMI audio is enabled and the correct output device is selected in the desktop/system audio settings. With the proper device from `aplay -l`, the prior working synthesized speech check was:
+
+```bash
+espeak-ng -v en-gb --stdout "BEAN audio check" | aplay -D plughw:1,3
+```
+
+**Rev 1 speech launch (separate process):**
+
+```bash
+~/beanenv/bin/python ~/BEAN/bean_voice.py
+```
+
+Launch this only when you intend to use the old voice pipeline. Its historical version talked to **Ollama** and would not automatically use the new CUDA llama.cpp model or Core memory. Verify the current source and route before treating speech as connected to the new Core.
+
+**Piper** was part of older BEAN text-to-speech experiments, but the last *verified* complete microphone/speaker route used **Vosk + espeak-ng + ALSA**, not a documented working Piper configuration. Preserve any current Piper voices/settings; don't replace or rename them just to run the audio diagnostic.
+
+The development installer now includes a separate read-only audio diagnostics step on its packaging branch, with optional installation of missing ALSA/PortAudio/espeak-ng userspace prerequisites. It does **not** reconfigure kernel drivers, force a default sound card, or start the legacy Ollama voice process.
+
 ## What is verified versus next
 
 - **Verified locally:** Core runs on actual Jetson with persistent cognition events; CUDA llama.cpp binary compiled successfully; original face launcher and tracker arrangement documented from the previous Jetson setup.
