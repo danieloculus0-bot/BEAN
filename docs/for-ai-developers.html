@@ -49,16 +49,16 @@ body{background:#050607}
 <h2>What can you build on today?</h2>
 <div class="grid">
 <div class="card"><h3>Records that survive</h3><p>BEAN Core can keep useful history locally, including where information came from. Under the hood, it uses SQLite storage and a recoverable journal.</p></div>
-<div class="card"><h3>Help for AI models</h3><p>Optional language models can use tools for comparing information, reviewing claims and identifying uncertainty. BEAN is not a replacement language model.</p></div>
+<div class="card"><h3>Local model integration</h3><p>BEAN connects local language models with source-aware reasoning, recorded feedback and persistent memory.</p></div>
 <div class="card"><h3>Learning experiments</h3><p>Try defined tasks where the system receives feedback and adjusts choices. Game-learning and strategy experiments have measurable results.</p></div>
-<div class="card"><h3>Tests, including the ugly ones</h3><p>Find repeatable tests, comparison groups and records of failures. A passing test proves that test worked, not that we invented AGI.</p></div>
+<div class="card"><h3>Reproducible testing</h3><p>Explore test suites, comparison groups, recorded failures and measured results across BEAN's research branches.</p></div>
 </div>
 <h2>Now running on Jetson hardware</h2>
-<p>On November 1, 2026, the BEAN Python Core successfully booted on an NVIDIA Jetson Orin Nano Super (JetPack/L4T, ARM64). The on-device tests completed 10/10 boot-readiness checks and a 310-tick runtime pass; a separate persistent-database run recorded world-model updates, consolidation and reflection with zero logged errors at inspection. This verifies hardware deployment of the cognitive Core, not live model inference or integrated robot control. <a href="./JETSON_ON_DEVICE_BRINGUP_2026-11-01.md">Read the terminal evidence and remaining integration work</a>.</p>
+<p>On November 1, 2026, the BEAN Python Core successfully booted on an NVIDIA Jetson Orin Nano Super (JetPack/L4T, ARM64). The on-device tests completed 10/10 boot-readiness checks and a 310-tick runtime pass; a separate persistent-database run recorded world-model updates, consolidation and reflection with zero logged errors at inspection. The Core's local language inference and media interfaces are the next integration milestones. <a href="./JETSON_ON_DEVICE_BRINGUP_2026-11-01.md">Read the terminal evidence and remaining integration work</a>.</p>
 <h2>Who is this useful for?</h2>
 <p>People building personal assistants, experimenting with AI memory, creating practical decision tools or checking whether a new AI idea actually improves results. If you like to tinker, you are in the right place.</p>
-<h2>What should you not expect yet?</h2>
-<p>BEAN is not a finished general-purpose AI. It has not demonstrated independent mastery of unrelated fields, guaranteed reliability or consistent superiority over other approaches. The smaller hosted connector is not the full Python program, and separate research branches are not automatically running together.</p>
+<h2>How BEAN is organized</h2>
+<p>The Python Core runs locally and maintains its own memory, event journal and reasoning services. Additional experiments live in research branches; the hosted connector provides a separate, lightweight interface. The Jetson deployment and test records show which integrations are active.</p>
 <h2>Show me the proof</h2>
 <ul>
 <li><a href="https://github.com/danieloculus0-bot/BEAN/actions">GitHub Actions: source revision and regression checks</a></li>

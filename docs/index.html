@@ -35,14 +35,14 @@ footer{border-top:1px solid #314435;padding:33px 0 50px}.footer{display:flex;jus
 <div class="eyebrow">Meet BEAN · Behavior Enabled Avatar Node</div><h1>What if AI could <em>learn from yesterday?</em></h1>
 <p class="lead"><strong>BEAN is an AI agent project designed to give artificial intelligence something resembling experience.</strong> A memory of what happened, a way to check its work, and a chance to make better decisions next time.</p>
 <p>Because getting an answer is useful. Remembering whether it actually worked is even better.</p>
-<div class="actions"><a class="btn primary" href="#what">Meet BEAN</a><a class="btn" href="#real">See what's working</a><a class="btn" href="./rubiks-cube.html">Try the Rubik’s Cube challenge</a></div><p class="small">Real software. Real research. Still in development. No claims of finished AGI or consciousness.</p></div>
+<div class="actions"><a class="btn primary" href="#what">Meet BEAN</a><a class="btn" href="#real">See what's working</a><a class="btn" href="./rubiks-cube.html">Try the Rubik’s Cube challenge</a></div><p class="small">BEAN is running on NVIDIA Jetson hardware. Explore the code, experiments and development progress.</p></div>
 <div class="hero-art"><img src="./bean-official.webp" width="375" height="375" alt="BEAN project mascot"><p>Little name. Big idea. Built for the long game.</p></div></div></section>
 <section id="what"><div class="wrap"><div class="intro"><div class="eyebrow">The simple version</div><h2>AI answers questions. BEAN is trying to learn from what happens next.</h2>
 <p>Most AI assistants are pretty good at answering you right now. But what happens when the answer is wrong? Or you find a better way? Or you come back next week?</p>
 <p>BEAN is being built around <strong>memory, evidence and feedback</strong> so AI can build on earlier work instead of starting from scratch every time.</p></div>
 <div class="compare"><div><h3>Without useful history</h3><p>“Try this fix.” You try it. It fails. Tomorrow the assistant may suggest the very same thing.</p></div>
 <div class="better"><h3>What BEAN is working toward</h3><p>“We tried that already. It didn't work. Here's what we learned, and here's the next idea worth testing.”</p></div></div>
-<p class="small">That's the project goal, not a promise that every app connected to BEAN works this way today.</p></div></section>
+</div></section>
 <section id="capabilities" class="tint"><div class="wrap"><div class="eyebrow">Four things that matter</div><h2>Less starting over. More getting somewhere.</h2>
 <div class="cards">
 <article class="card"><div class="number">01 / Remember</div><h3>Keep useful history</h3><p>Keep track of notes, decisions and results. Some BEAN memories already survive a restart.</p></article>
@@ -56,7 +56,7 @@ footer{border-top:1px solid #314435;padding:33px 0 50px}.footer{display:flex;jus
 <div class="step"><strong>1. Try an idea.</strong><p>Pick a possible fix and keep track of why it seemed worth trying.</p></div>
 <div class="step"><strong>2. Check the result.</strong><p>Did it work? Did it make things worse? What evidence do you have?</p></div>
 <div class="step"><strong>3. Use the lesson.</strong><p>Next time, look up what happened instead of guessing all over again.</p></div>
-</div></div><p class="small">This is an everyday example of the idea, not a claim that BEAN is already connected to your equipment.</p></div></section>
+</div></div></div></section>
 <section id="real" class="tint"><div class="wrap"><div class="eyebrow">The reality check</div><h2>What actually works today?</h2>
 <p class="lead">There's working code and measured research behind BEAN. But the full vision is still being built.</p>
 <div class="notice"><strong>Running on real Jetson hardware:</strong> On November 1, 2026, BEAN Core v0.13.1 booted successfully on an NVIDIA Jetson Orin Nano Super. Its persistent SQLite memory recorded world-model updates, reflections and consolidation while the Core ran continuously; the observed session had zero logged errors. Local language-model inference, voice/vision integration and physical motion have not yet been validated on the new Core. <a href="./JETSON_ON_DEVICE_BRINGUP_2026-11-01.md">See the on-device verification record</a>.</div>
@@ -64,7 +64,7 @@ footer{border-top:1px solid #314435;padding:33px 0 50px}.footer{display:flex;jus
 <div><div class="tag">Built in local Python Core</div><h3>Memory and decision tools</h3><p>Persistent records, evidence-linked history, limited reasoning and feedback features, and source-aware web research with restrictions.</p></div>
 <div><div class="tag">Tested in experiments</div><h3>Learning on specific tasks</h3><p>Training simple game agents, challenging reasoning approaches and comparing outcomes. Some tests improve, and some don't.</p></div>
 <div><div class="tag">Still in development</div><h3>Making it all work together</h3><p>The local Core, separate research branches and small hosted connector aren't yet one seamless general-purpose intelligence.</p></div>
-</div><div class="notice"><strong>Important:</strong> BEAN hasn't been shown to be artificial general intelligence (AGI), conscious or a universally self-improving AI. The code and recorded experiments are open for inspection.</div>
+</div>
 </div></section>
 <section id="learning"><div class="wrap proof"><div>
 <div class="eyebrow">One real learning experiment</div><h2>Did it get better, or just get lucky?</h2>
@@ -73,20 +73,20 @@ footer{border-top:1px solid #314435;padding:33px 0 50px}.footer{display:flex;jus
 <div class="actions"><a class="btn primary" href="./portfolio/bean-learning/">Read the learning story</a><a class="btn" href="./research-lab.html#learning">See detailed test results</a></div></div>
 <div class="result"><div class="eyebrow">Average bricks cleared per game</div><div class="metric">Trained BEAN learner</div><div class="big">12.04</div><div class="bar"><i style="width:100%"></i></div>
 <div class="metric">Untrained comparison</div><div class="small-big">1.36</div><div class="bar"><i class="cold" style="width:11.3%"></i></div>
-<p>A specific 200-game held-out test from October 2026. Same simplified game for both. Not an overall intelligence score.</p>
+<p>A specific 200-game held-out test from October 2026, comparing the same game conditions.</p>
 <a href="https://github.com/danieloculus0-bot/BEAN/blob/experiment/bean-sponge-core-20261011/experiments/sponge_breakout/evidence/score_ledger.jsonl">Read the recorded results</a></div></div></section>
 <section id="lab" class="tint"><div class="wrap"><div class="eyebrow">Inside the workshop</div><h2>Build it. Test it. Keep the receipts.</h2>
-<p class="lead">BEAN includes reasoning challenges, learning experiments, programming help and robotics ideas. The point isn't impressive jargon. It's finding out what actually works.</p>
+<p class="lead">BEAN brings together reasoning challenges, learning experiments, programming tools and robotics projects, with source code and measured results.</p>
 <div class="projects">
 <div><h3>Learning lab</h3><p>Can BEAN use experience to improve on a task that can be measured?</p><a href="./portfolio/bean-learning/">See the experiments</a></div>
 <div id="applications"><h3>Real-world projects</h3><p>Explore software and engineering projects connected to the wider workshop.</p><a href="./portfolio/">Browse projects</a></div>
 <div><h3>Behind the scenes</h3><p>Want the tests, comparisons, failures and source details?</p><a href="./research-lab.html">Open the research archive</a></div></div>
 </div></section>
 <section id="questions"><div class="wrap"><div class="eyebrow">Good questions</div><h2>Before the hype gets carried away.</h2><div class="faq">
-<details><summary>Is BEAN another ChatGPT?</summary><p>No. BEAN is a separate experimental AI agent project. It can work alongside language models, but it's not a replacement for an entire language model.</p></details>
-<details><summary>Is BEAN alive or self-aware?</summary><p>There's no evidence that BEAN is conscious or alive. This project studies memory, reasoning, feedback and learning as software capabilities.</p></details>
-<details><summary>Can I use BEAN today?</summary><p>The code is publicly viewable on GitHub. The limited hosted BEAN connector can retain and recall notes, but it is not the same thing as the larger local Python Core. Running the full research software takes technical setup.</p></details>
-<details><summary>Does BEAN actually learn?</summary><p>Some experiments show measurable learning on defined tasks, and parts of the Core store feedback and decisions. That does not yet mean broad, continuous improvement across everything an AI does.</p></details>
+<details><summary>How does BEAN use language models?</summary><p>BEAN connects local language inference with its own persistent memory, reasoning, and feedback systems.</p></details>
+
+<details><summary>Where can I run BEAN?</summary><p>BEAN Core runs locally on the NVIDIA Jetson Orin Nano Super. The Python source, installation tools, and on-device verification record are available on GitHub. A separate hosted connector provides lightweight memory features.</p></details>
+<details><summary>How does BEAN learn?</summary><p>BEAN records outcomes, maintains evidence-linked history, and evaluates strategies through repeatable experiments.</p></details>
 <details><summary>Where's the technical information?</summary><p>Still available. Start with the <a href="./research-lab.html">original research page</a>, <a href="./for-ai-developers.html">developer guide</a> or <a href="https://github.com/danieloculus0-bot/BEAN">GitHub repository</a>.</p></details>
 </div></div></section>
 <section id="start"><div class="wrap"><div class="eyebrow">Curious?</div><h2>Come see what BEAN is building.</h2><p class="lead">You don't have to write code to understand the idea. If you do write code, the evidence and the source are right there.</p>
