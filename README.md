@@ -10,6 +10,12 @@
 
 Persistent experimental reasoning and evidence system. BEAN Core maintains SQLite-backed observations, source-aware claims, revision history, recovery and repeatable research tests. It is not a production-grade autonomous software engineer.
 
+## Jetson Orin Nano Super deployment (November 1, 2026)
+
+**BEAN Core v0.13.1 is confirmed running on actual NVIDIA Jetson Orin Nano Super ARM64 hardware**, rather than only in x86 CI. The operator reported a 10/10 successful boot-readiness run, a clean 310-tick runtime execution, and a continuously running instance with persistent SQLite storage that recorded world-model updates, reflections and consolidation without logged errors at the time of inspection. This is an on-device **cognitive Core deployment**, not a claim that local LLM inference, Rev 1 voice/vision integration, or physical actuators are working in the new runtime. The CUDA llama.cpp installer and Qwen model setup are being completed separately in [Jetson packaging PR #205](https://github.com/danieloculus0-bot/BEAN/pull/205).
+
+[On-device test evidence, scope and remaining gaps](docs/JETSON_ON_DEVICE_BRINGUP_2026-11-01.md)
+
 ## Current Python Core status (October 25, 2026)
 
 **Implemented in Core:** one native reasoning service with BEAN-owned SQLite/SHA memory, source-linked error reflection, reusable procedures, measured contextual strategy choice, real-model provider adapters, Q-learning, neural checkpoint recovery, and host-reported positive/negative outcome receipts. Merged PRs #170–#179 recovered formerly isolated cognition and research. Software tests demonstrate interfaces, not general intelligence.
