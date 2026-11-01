@@ -75,7 +75,7 @@ def test_render_rejects_unrecognized_username():
 def test_jetson_installer_shell_syntax():
     if not shutil.which("bash"):
         pytest.skip("bash unavailable on this test host")
-    for filename in ("jetson_brain_install.sh", "jetson_local_llm_install.sh"):
+    for filename in ("jetson_brain_install.sh", "jetson_local_llm_install.sh", "jetson_audio_install.sh"):
         subprocess.run(["bash", "-n", str(ROOT / "install" / filename)], check=True)
 
 
@@ -172,3 +172,43 @@ def test_mocked_cuda_package_install_reuses_source_and_writes_service(tmp_path, 
     assert "--alias bean-local" in service
     assert f"--model {model}" in service
     assert f"ExecStart={expected_dir}/bin/llama-server" in service
+
+
+def test_audio_inspector_reports_existing_legacy_stack(monkeypatch, tmp_path):
+    """Audio inventory must be read-only and keep device indices informational."""
+    from install import jetson_audio_preflight as audio
+
+    root = tmp_path / "home"
+    (root / "BEAN").mkdir(parents=True)
+    (root / "BEAN" / "bean_voice.py").write_text("# legacy voice")
+    (root / "beanenv" / "bin").mkdir(parents=True)
+    python = root / "beanenv" / "bin" / "python"
+    python.write_text("#!/bin/sh\necho '[{\"index\":0,\"name\":\"web cam 1080p\",\"inputs\":1,\"outputs\":0}]'\n")
+    python.chmod(0o755)
+    (root / "vosk-model-small-en-us-0.15").mkdir()
+
+    seen = []
+    def fake_run(argv, **_):
+        seen.append(argv)
+        return {"available": True, "returncode": 0, "output": "card 0: webcam"}
+
+    monkeypatch.setattr(audio, "run", fake_run)
+    monkeypatch.setattr(audio.shutil, "which", lambda binary: "/usr/bin/" + binary)
+    result = audio.inspect(user_home=root)
+    assert result["mode"] == "read_only_no_audio_recorded_or_played"
+    assert result["legacy"]["voice_script"] == str(root / "BEAN" / "bean_voice.py")
+    assert result["legacy"]["vosk_model"] == str(root / "vosk-model-small-en-us-0.15")
+    assert result["python_audio"]["devices"][0]["inputs"] == 1
+    assert seen == [["arecord", "-l"], ["aplay", "-l"]]
+    assert "plughw:0,0" in result["hints"][2]
+
+
+def test_audio_inspector_handles_absent_legacy_tree(monkeypatch, tmp_path):
+    from install import jetson_audio_preflight as audio
+    monkeypatch.setattr(audio, "run", lambda argv, **_: {
+        "available": False, "returncode": None, "output": "not installed"})
+    result = audio.inspect(user_home=tmp_path)
+    assert result["legacy"]["python_venv"] is None
+    assert result["legacy"]["vosk_model"] is None
+    assert result["python_audio"]["available"] is False
+    assert result["capture"]["available"] is False
