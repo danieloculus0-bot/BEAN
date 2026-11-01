@@ -138,6 +138,11 @@ if [[ "$LLM_START" == 1 ]]; then
   say "Enable local llama.cpp server"
   sudo systemctl enable --now "$(basename "$SERVICE_FILE")"
   sudo systemctl is-active "$(basename "$SERVICE_FILE")" || fail "Local inference service did not become active"
+  if [[ "${BEAN_LLM_SMOKE:-1}" == "1" ]]; then
+    say "Verify Qwen model readiness and a real local inference response"
+    python3 "$BEAN_HOME/install/jetson_llm_smoke.py" --port "$LLM_PORT" ||
+      fail "llama-server started, but did not pass a local model response check. See journalctl -u bean-llamacpp.service."
+  fi
 else
   echo "LLM_START=0: service configured but not started"
 fi
