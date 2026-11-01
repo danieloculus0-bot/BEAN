@@ -83,6 +83,10 @@ The known original camera tracker script is `~/BEAN/bean_tracker.py`. It sends n
 ~/beanenv/bin/python ~/BEAN/bean_tracker.py
 ```
 
+**Manual tracker activation (confirmed working on this Jetson in March 2026):** In the tracker window, press **Space**, drag a rectangle around the target (face or object), then press **Enter** to confirm the ROI. Tracking begins after confirmation; press **Q** to quit. Simply launching the tracker does not select a target.
+
+Earlier working implementation used OpenCV 4.13/contrib `cv2.legacy.TrackerCSRT_create`. The webcam was identified as `web cam 1080p` with `/dev/video0` and `/dev/video1` enumerated; device selection can change after a reboot. If the tracker crashes, run it from a terminal with the command above and inspect the traceback before changing dependencies. The previously successful Python environment was `~/beanenv`, with `opencv-contrib-python` installed.
+
 Run only after the face is up and confirm camera/device permissions in its console output. The voice side uses `bean_voice.py` and sends `TALKFOR` updates to the face, but its automatic launch behavior has **not** been verified during this new Core installation.
 
 **Avoid running `~/BEAN/run_bean.sh` at the same time as `~/BEAN-Core/bean_run.py`** without reviewing the legacy master process: that launcher starts a separate old `bean.py` and can duplicate audio or brain processes. Run face and tracker individually first.
