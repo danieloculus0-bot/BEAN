@@ -282,6 +282,7 @@ class TwoRoleControls(unittest.TestCase):
             "glide": "I_GLIDE", "hop": "I_HOP", "skip": "I_SKIP",
             "glide and hop": "I_GLIDE I_HOP",
             "hop and glide": "I_GLIDE I_HOP",
+            "glide twice": "I_GLIDE I_GLIDE",
         }
         model = TwoRoleSlots(train, "fictional-source")
         result = model.predict("skip and glide")
@@ -293,6 +294,7 @@ class TwoRoleControls(unittest.TestCase):
         train = {
             "glide": "I_GLIDE", "hop": "I_HOP", "skip": "I_SKIP",
             "glide and hop": "I_GLIDE I_HOP",
+            "glide twice": "I_GLIDE I_GLIDE",
         }
         model = TwoRoleSlots(train, "fictional-source")
         state = json.loads(json.dumps(model.state()))
