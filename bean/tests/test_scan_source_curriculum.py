@@ -246,17 +246,17 @@ class CurriculumControls(unittest.TestCase):
             "hop twice": "I_HOP I_HOP",
             "skip thrice": "I_SKIP I_SKIP I_SKIP",
         }
-        original = _curriculum_commands(train, budget=5)
-        self.assertEqual(len(original), 5)
+        original = _curriculum_commands(train, budget=6)
+        self.assertEqual(len(original), 6)
         self.assertEqual(original[:3], ["glide", "hop", "skip"])
         self.assertEqual(sum(" and " in c or " after " in c for c in original), 2)
         mutated = dict(train)
         for command in train:
             if command not in original:
                 mutated[command] = "UNOBSERVED_OUTCOME_CHANGED"
-        self.assertEqual(original, _curriculum_commands(mutated, budget=5))
+        self.assertEqual(original, _curriculum_commands(mutated, budget=6))
         self.assertEqual(original, _curriculum_commands(
-            dict(reversed(list(train.items()))), budget=5))
+            dict(reversed(list(train.items()))), budget=6))
 
     def test_curriculum_state_survives_restart_and_detects_tampering(self):
         train = {
@@ -265,7 +265,7 @@ class CurriculumControls(unittest.TestCase):
             "hop after glide": "I_GLIDE I_HOP",
             "glide twice": "I_GLIDE I_GLIDE",
         }
-        model = TwoRoleSlots(_curriculum_training(train, budget=5),
+        model = TwoRoleSlots(_curriculum_training(train, budget=6),
                              "fictional-source")
         restored, state = _restore_snapshot(model)
         self.assertEqual(model.predict("skip and hop"),
@@ -281,9 +281,9 @@ class CurriculumControls(unittest.TestCase):
             "hop after glide": "I_GLIDE I_HOP",
             "glide twice": "I_GLIDE I_GLIDE",
         }
-        model = TwoRoleSlots(_curriculum_training(train, budget=5),
+        model = TwoRoleSlots(_curriculum_training(train, budget=6),
                              "fictional-source")
-        self.assertIsNone(model.predict("skip twice")["prediction"])
+        self.assertIsNone(model.predict("skip thrice")["prediction"])
         self.assertIsNotNone(model.predict("skip and glide")["prediction"])
 
     @unittest.skipUnless(os.environ.get("BEAN_EXTERNAL_SCAN") == "1",
