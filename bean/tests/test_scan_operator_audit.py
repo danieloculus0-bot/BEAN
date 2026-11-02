@@ -204,6 +204,15 @@ class OperatorAuditControls(unittest.TestCase):
     def test_digest_mutation(self):
         self.assertNotEqual(digest({"v": 1}), digest({"v": 2}))
 
+    def test_reverse_order_and_conflict_are_independently_detected(self):
+        source = {
+            "glide": "I_GLIDE", "hop": "I_HOP",
+            "glide before hop": "I_HOP I_GLIDE",
+        }
+        self.assertEqual(independent_rules(source)["before"]["order"], "rl")
+        source["hop before glide"] = "I_HOP I_GLIDE"
+        self.assertIsNone(independent_rules(source)["before"]["order"])
+
     def test_missing_archive_rejected(self):
         with self.assertRaises(ValueError):
             audit({"case_receipts": []}, {"case_receipts": []})
