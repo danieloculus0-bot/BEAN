@@ -678,6 +678,10 @@ class NativeReasoningService:
         return self.skills.recall(domain=domain, query=query,
                                   strategy=strategy, limit=limit)
 
+    def recall_analogies(self, *, domain, query, limit=3):
+        """Find unverified similarities across existing domain-tagged lessons."""
+        return self.skills.recall_analogies(domain=domain, query=query, limit=limit)
+
     def learn_local(self, *, domain, task_ref, examples, evidence_refs):
         """Generate/test/retain a symbolic rule locally, without model tokens."""
         return self.local.learn(domain=domain, task_ref=task_ref,
@@ -923,8 +927,11 @@ class NativeReasoningService:
         return self.skills.decide(domain=domain, task_ref=task_ref, query=query)
 
     def reason(self, *, domain, task_ref, query, model=None, candidates=None,
-               stakes="normal", conflicting_evidence=False):
-        """Use BEAN's *selected* memory then invoke exactly one actual model."""
+               stakes="normal", conflicting_evidence=False,
+               include_analogies=False):
+        """Use selected memory; optionally offer source-linked cross-domain clues."""
+        if type(include_analogies) is not bool:
+            raise ValueError("include_analogies must be a boolean")
         judgment = None
         if candidates is not None:
             judgment = self.judge(
@@ -958,6 +965,24 @@ class NativeReasoningService:
             }
         context = material_for(self.bank, packet["selected_strategy"],
                                packet["domain"], query=query)
+        analogies = (self.recall_analogies(domain=packet["domain"], query=query)
+                     if include_analogies else [])
+        if analogies:
+            # Bounded, opt-in hints. They are NOT instructions, validated policy
+            # transfer, a machine action, or additional scored observations.
+            excerpt = [{
+                "lesson_id": row["lesson_id"],
+                "source_domain": row["source_domain"],
+                "observed_outcome": row["observed_outcome"],
+                "matched_terms": row["matched_terms"],
+                "evidence_refs": [ref[:120] for ref in row["evidence_refs"][:3]],
+                "excerpt": row["text"][:480],
+                "text_truncated": len(row["text"]) > 480,
+            } for row in analogies]
+            context += (
+                "\nPOSSIBLE_OTHER_DOMAIN_PRECEDENTS (UNVERIFIED; do not "
+                "apply without target evidence):\n" +
+                json.dumps(excerpt, ensure_ascii=False, sort_keys=True))
         try:
             answer, model_id, provider_kind, provider_id = _model_response(
                 selected_model, query, context)
@@ -987,6 +1012,11 @@ class NativeReasoningService:
             "verified_outcome": False,
             "event_sequence": len(self.bank.journal.events()) + 1,
         }
+        if include_analogies:
+            record["cross_domain_candidate_ids"] = [
+                row["lesson_id"] for row in analogies]
+            record["cross_domain_recall_opt_in"] = True
+            record["cross_domain_transfer_verified"] = False
         record["receipt_id"] = sha256(canonical(record)).hexdigest()
         tip = self.bank.record_inference(record)
         return {"schema": record["schema"], "answer": answer,
@@ -1086,6 +1116,7 @@ def register_native_reasoning_handlers(inbox, service):
     inbox.register("reasoning_local", lambda m, _: service.reason_local(**m.args))
     inbox.register("reasoning_auto", lambda m, _: service.reason_auto(**m.args))
     inbox.register("reasoning_recall", lambda m, _: service.recall(**m.args))
+    inbox.register("reasoning_analogies", lambda m, _: service.recall_analogies(**m.args))
     inbox.register("reasoning_reflect", lambda m, _: service.reflect(**m.args))
     inbox.register("reasoning_skill", lambda m, _: service.retain_skill(**m.args))
     inbox.register("reasoning_instruction", lambda m, _: service.propose_instruction(**m.args))
