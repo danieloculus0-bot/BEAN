@@ -12,6 +12,7 @@ on:
       - "bean/tests/test_cross_domain_stochastic_drift.py"
       - "bean/tests/test_cross_domain_oracle_firewall.py"
       - "bean/tests/test_cross_domain_budget_matched.py"
+      - "bean/tests/test_external_elec2_transfer.py"
       - ".github/workflows/bean-negative-transfer-controls.yml"
   workflow_dispatch:
 
@@ -31,7 +32,12 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - name: Native paired baseline, counterfactual, feedback and stochastic drift tests
-        run: python -m unittest -v bean.tests.test_cross_domain_negative_transfer bean.tests.test_cross_domain_counterfactual_twins bean.tests.test_cross_domain_feedback_gate bean.tests.test_cross_domain_drift_probes bean.tests.test_cross_domain_stochastic_drift bean.tests.test_cross_domain_oracle_firewall bean.tests.test_cross_domain_budget_matched
+        run: python -m unittest -v bean.tests.test_cross_domain_negative_transfer bean.tests.test_cross_domain_counterfactual_twins bean.tests.test_cross_domain_feedback_gate bean.tests.test_cross_domain_drift_probes bean.tests.test_cross_domain_stochastic_drift bean.tests.test_cross_domain_oracle_firewall bean.tests.test_cross_domain_budget_matched bean.tests.test_external_elec2_transfer
+      - name: Independent Elec2 stream probe (external public data, Ubuntu 3.12 only)
+        if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.12'
+        env:
+          BEAN_EXTERNAL_STREAM: "1"
+        run: python -m unittest -v bean.tests.test_external_elec2_transfer.ExternalElec2Controls.test_independent_elec2_stream
       - name: Save full synthetic case-level receipts
         shell: bash
         run: |
@@ -42,6 +48,9 @@ jobs:
           python -m bean.tests.test_cross_domain_stochastic_drift --report > stochastic-drift-receipt.json
           python -m bean.tests.test_cross_domain_oracle_firewall --report > oracle-firewall-receipt.json
           python -m bean.tests.test_cross_domain_budget_matched --report > budget-matched-receipt.json
+          if [[ "$RUNNER_OS" == "Linux" && "${{ matrix.python-version }}" == "3.12" ]]; then
+            python -m bean.tests.test_external_elec2_transfer --report > external-elec2-receipt.json
+          fi
       - uses: actions/upload-artifact@v4
         with:
           name: negative-transfer-${{ matrix.os }}-py${{ matrix.python-version }}
@@ -53,4 +62,5 @@ jobs:
             stochastic-drift-receipt.json
             oracle-firewall-receipt.json
             budget-matched-receipt.json
+            external-elec2-receipt.json
           retention-days: 14
