@@ -90,7 +90,7 @@ def _select(mapping, count, tag):
 
 
 def _train_subset(train):
-    if "jump" not in train or train["jump"] != "JUMP":
+    if "jump" not in train or train["jump"] != "I_JUMP":
         raise ValueError("SCAN jump primitive missing from training")
     # Preserve the atomic primitive, without using held-out queries or labels.
     other = {command: output for command, output in train.items()
@@ -106,12 +106,12 @@ def _surrogates(command):
         return ()
     # Avoid replacing an existing second verb's actions.
     return tuple((command.replace("jump", primitive),
-                  primitive.upper()) for primitive in PRIMITIVES
+                  "I_" + primitive.upper()) for primitive in PRIMITIVES
                  if primitive not in command.split())
 
 
 def _transfer(source_output, source_action):
-    return " ".join("JUMP" if token == source_action else token
+    return " ".join("I_JUMP" if token == source_action else token
                     for token in source_output.split())
 
 
@@ -137,7 +137,7 @@ def _predict(command, hits, by_id, selected, full_train):
     matched, matched_command = _template(command, selected)
     full, full_command = _template(command, full_train)
     return {
-        "primitive_jump": "JUMP",
+        "primitive_jump": "I_JUMP",
         "native_copy": native_copy,
         "native_template": native_template,
         "matched_template": matched,
@@ -180,9 +180,9 @@ def run_report(train, test, hashes):
         by_id = {}
         for command, output in selected.items():
             ref = "scan:train:" + sha256(command.encode()).hexdigest()[:24]
-            lesson = core.retain_skill(
-                domain="scan-training", name=command,
-                steps=["Execute " + output], passed=True,
+            lesson = core.propose_instruction(
+                domain="scan-training",
+                instruction="SCAN training command " + command + " => " + output,
                 evidence_refs=[ref, "scan:gitblob:" + FILES["train"][1]])
             by_id[lesson["lesson_id"]] = (command, output)
         original_hits = []
@@ -252,32 +252,32 @@ def run_report(train, test, hashes):
 
 class ScanCompositionControls(unittest.TestCase):
     def test_parser_blob_pin_and_rejections(self):
-        raw = b"IN: jump OUT: JUMP\nIN: walk twice OUT: WALK WALK\n"
-        self.assertEqual(_parse(raw)["jump"], "JUMP")
+        raw = b"IN: jump OUT: I_JUMP\nIN: walk twice OUT: I_WALK I_WALK\n"
+        self.assertEqual(_parse(raw)["jump"], "I_JUMP")
         self.assertEqual(len(_git_blob(raw)), 40)
         with self.assertRaises(ValueError):
-            _parse(b"IN: jump OUT: JUMP\nIN: jump OUT: WALK\n")
+            _parse(b"IN: jump OUT: I_JUMP\nIN: jump OUT: I_WALK\n")
 
     def test_structural_transfer_and_hidden_label_firewall(self):
-        source = {"walk around right": "RTURN WALK RTURN WALK RTURN WALK RTURN WALK",
-                  "run and walk": "RUN WALK"}
+        source = {"walk around right": "I_TURN_RIGHT I_WALK I_TURN_RIGHT I_WALK I_TURN_RIGHT I_WALK I_TURN_RIGHT I_WALK",
+                  "run and walk": "I_RUN I_WALK"}
         expected, ref = _template("jump around right", source)
         self.assertEqual(ref, "walk around right")
-        self.assertEqual(expected, "RTURN JUMP RTURN JUMP RTURN JUMP RTURN JUMP")
+        self.assertEqual(expected, "I_TURN_RIGHT I_JUMP I_TURN_RIGHT I_JUMP I_TURN_RIGHT I_JUMP I_TURN_RIGHT I_JUMP")
         self.assertEqual(_template("jump and walk", source), (None, None))
         fake_hits = []
-        first = _case("jump around right", "JUMP", fake_hits, {}, source, source)
-        changed = _case("jump around right", "RTURN JUMP", fake_hits, {}, source, source)
+        first = _case("jump around right", "I_JUMP", fake_hits, {}, source, source)
+        changed = _case("jump around right", "I_TURN_RIGHT I_JUMP", fake_hits, {}, source, source)
         self.assertEqual(first["predictions"], changed["predictions"])
         self.assertNotEqual(first["correct"], changed["correct"])
 
     def test_train_selection_does_not_depend_on_test_labels(self):
-        train = {"jump": "JUMP", **{
-            "walk " + str(i): "WALK" for i in range(1200)}}
+        train = {"jump": "I_JUMP", **{
+            "walk " + str(i): "I_WALK" for i in range(1200)}}
         chosen = _train_subset(train)
         self.assertEqual(len(chosen), LESSON_BUDGET)
         self.assertEqual(chosen, _train_subset(dict(reversed(list(train.items())))))
-        self.assertEqual(chosen["jump"], "JUMP")
+        self.assertEqual(chosen["jump"], "I_JUMP")
 
     @unittest.skipUnless(os.environ.get("BEAN_EXTERNAL_SCAN") == "1",
                          "public SCAN download opt-in")
