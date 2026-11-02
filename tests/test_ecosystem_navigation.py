@@ -56,15 +56,21 @@ class EcosystemNavigationTests(unittest.TestCase):
         self.assertIn("../", directory)
         self.assertIn(ERP, directory)
 
-    def test_stale_axiom_lab_redirects_instead_of_repeating_the_application(self):
-        obsolete = self.page("portfolio/axiom/index.html")
-        self.assertIn('content="0;url=' + ERP + '"', obsolete)
-        self.assertIn('window.location.replace(', obsolete)
-        self.assertNotIn("quoteTotal", obsolete)
-        self.assertNotIn("inspectionSummary", obsolete)
+    def test_user_approved_axiom_lab_is_preserved_and_connected(self):
+        lab = self.page("portfolio/axiom/index.html")
+        self.assertNotIn('http-equiv="refresh"', lab)
+        self.assertNotIn("window.location.replace(", lab)
+        self.assertIn("Command Center", lab)
+        self.assertIn("Job Passport", lab)
+        self.assertIn("Cost / Estimate", lab)
+        self.assertIn("Inspection / FAI", lab)
+        self.assertIn("Evidence Ledger", lab)
+        self.assertIn('class="shell"', lab)
+        self.assertIn('class="side"', lab)
+        self.assertIn(ERP, self.links("portfolio/axiom/index.html").links)
         self.assertIn(WORKSHOP, self.links("portfolio/axiom/index.html").links)
-        self.assertNotIn('href="./axiom/"', self.page("portfolio/index.html"))
-        self.assertNotIn('href="./portfolio/axiom/"', self.page("axiom.html"))
+        self.assertIn('axiom/', self.links("portfolio/index.html").links)
+        self.assertIn('./portfolio/axiom/', self.links("axiom.html").links)
 
     def test_navigation_does_not_steal_record_specific_routes(self):
         # External ecosystem links must be ordinary anchors, never an ERP
