@@ -29,7 +29,7 @@ def audit(candidate, previous):
         raise ValueError("Candidate reused prior heldout commands")
     if candidate["source_hashes"] != previous["source_hashes"]:
         raise ValueError("Source dataset changed")
-    if candidate["training_budget"] != previous["training_budget"] != 1024:
+    if candidate["training_budget"] != 1024 or previous["training_budget"] != 1024:
         raise ValueError("Source budget mismatch")
     if candidate["holdout_offset"] != 1 or previous["holdout_offset"] != 0:
         raise ValueError("Unexpected cohort offset")
