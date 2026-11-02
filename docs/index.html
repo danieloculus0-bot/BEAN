@@ -32,10 +32,10 @@ footer{border-top:1px solid #314435;padding:33px 0 50px}.footer{display:flex;jus
 <header><nav class="wrap" aria-label="Main navigation"><a class="brand" href="./"><img src="./bean-official.webp" alt="" width="45" height="49">BEAN</a><div class="menu"><a href="#what">What is BEAN?</a><a href="#how">How it works</a><a href="#real">What's real?</a><a href="#questions">Questions</a><a href="#start">Explore</a></div></nav></header>
 <main id="main">
 <section class="hero"><div class="wrap hero-grid"><div>
-<div class="eyebrow">Meet BEAN · Behavior Enabled Avatar Node</div><h1>What if AI could <em>learn from yesterday?</em></h1>
-<p class="lead"><strong>BEAN is an AI agent project designed to give artificial intelligence something resembling experience.</strong> A memory of what happened, a way to check its work, and a chance to make better decisions next time.</p>
-<p>Because getting an answer is useful. Remembering whether it actually worked is even better.</p>
-<div class="actions"><a class="btn primary" href="#what">Meet BEAN</a><a class="btn" href="#real">See what's working</a><a class="btn" href="./rubiks-cube.html">Try the Rubik’s Cube challenge</a></div><p class="small">BEAN is running on NVIDIA Jetson hardware. Explore the code, experiments and development progress.</p></div>
+<div class="eyebrow">Meet BEAN · Behavior Enabled Avatar Node</div><h1>BEAN is <em>running on Jetson.</em></h1>
+<p class="lead"><strong>BEAN Core is running locally on an NVIDIA Jetson Orin Nano Super.</strong> It uses Qwen2.5 for language reasoning, NVIDIA GPU acceleration, and memory that survives restarts.</p>
+<p>That is working on real hardware today. The next job is connecting the original voice, face and robotic hardware to Core.</p>
+<div class="actions"><a class="btn primary" href="#real">See what works</a><a class="btn" href="#what">Meet BEAN</a><a class="btn" href="./rubiks-cube.html">Try the Rubik’s Cube challenge</a></div><p class="small">Built on real hardware. The source, tests and deployment record are on GitHub.</p></div>
 <div class="hero-art"><img src="./bean-official.webp" width="375" height="375" alt="BEAN project mascot"><p>Little name. Big idea. Built for the long game.</p></div></div></section>
 <section id="what"><div class="wrap"><div class="intro"><div class="eyebrow">The simple version</div><h2>AI answers questions. BEAN is trying to learn from what happens next.</h2>
 <p>Most AI assistants are pretty good at answering you right now. But what happens when the answer is wrong? Or you find a better way? Or you come back next week?</p>
@@ -57,9 +57,9 @@ footer{border-top:1px solid #314435;padding:33px 0 50px}.footer{display:flex;jus
 <div class="step"><strong>2. Check the result.</strong><p>Did it work? Did it make things worse? What evidence do you have?</p></div>
 <div class="step"><strong>3. Use the lesson.</strong><p>Next time, look up what happened instead of guessing all over again.</p></div>
 </div></div></div></section>
-<section id="real" class="tint"><div class="wrap"><div class="eyebrow">The reality check</div><h2>What actually works today?</h2>
-<p class="lead">There's working code and measured research behind BEAN. But the full vision is still being built.</p>
-<div class="notice"><strong>Verified Jetson cognition milestone, November 1, 2026:</strong> BEAN Core v0.13.1 passed 10/10 boot checks on NVIDIA Jetson Orin Nano Super, recovered persistent SQLite memory, and completed a live reasoning request using local Qwen2.5 through CUDA-enabled llama.cpp. The answer was recovered from the Core reasoning journal; a separate inference test reached 99% GPU utilization. The legacy face/tracker work separately, but voice-to-Core dialogue and motor control are not yet integrated. <a href="./JETSON_DEPLOYMENT_MILESTONE_2026-11-01.md">Read the verified deployment evidence</a>.</div>
+<section id="real" class="tint"><div class="wrap"><div class="eyebrow">Built and running</div><h2>BEAN has a working local AI Core.</h2>
+<p class="lead">On the Jetson, BEAN has completed real language reasoning with local Qwen2.5, recovered its persistent memory, and recorded a retrievable result. That is the current working foundation.</p>
+<p><strong>November 1, 2026 milestone:</strong> BEAN Core v0.13.1 passed its on-device startup checks and used CUDA-accelerated Qwen2.5 to complete a live reasoning request. Face and camera have worked separately; voice-to-Core and motor integration are next. <a href="./JETSON_DEPLOYMENT_MILESTONE_2026-11-01.md">Technical details and test record</a>.</p>
 <div class="status-grid">
 <div><div class="tag">Built in local Python Core</div><h3>Memory and decision tools</h3><p>Persistent records, evidence-linked history, limited reasoning and feedback features, and source-aware web research with restrictions.</p></div>
 <div><div class="tag">Tested in experiments</div><h3>Learning on specific tasks</h3><p>Training simple game agents, challenging reasoning approaches and comparing outcomes. Some tests improve, and some don't.</p></div>
