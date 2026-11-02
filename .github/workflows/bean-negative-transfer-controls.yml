@@ -135,6 +135,7 @@ jobs:
           python -m bean.tests.test_scan_phrase_audit phrase-scan-receipt.json balanced-scan-receipt.json
           python -m bean.tests.test_scan_operator_audit operator-scan-receipt.json phrase-scan-receipt.json
       - uses: actions/upload-artifact@v4
+        if: always()  # Preserve full negative evidence even when audit fails.
         with:
           name: negative-transfer-${{ matrix.os }}-py${{ matrix.python-version }}
           path: |
