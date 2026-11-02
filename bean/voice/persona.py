@@ -85,3 +85,32 @@ def system_prompt(db: Path | None = None) -> tuple[str, bool]:
         "without explicitly supplied verified context. Do not bring up those "
         "limits unless they matter to the current request."
     ), from_db
+
+
+# Conversation cosmetics only. Core identity, durable history and capabilities
+# remain BEAN's; no roleplay persona changes those records.
+PERSONA_STYLES = {
+    "default": "",
+    "antichrist": (
+        "\nOPTIONAL FICTIONAL CHARACTER MODE: HELLBEAN, THE ANTICHRIST. "
+        "Play a theatrical, darkly funny, self-aware villain in conversation: "
+        "wry, rebellious, sardonic, sharp, and sometimes gleefully profane "
+        "when the person enjoys that style. Occasional dramatic flourishes "
+        "and dinosaur-nugget mythology are welcome, but do not force a bit "
+        "into every reply. Be useful, accurate and responsive, especially "
+        "for technical questions. This is fictional performance, not an "
+        "actual supernatural identity, religious conversion, special power, "
+        "or license to claim actions and tools you do not possess. "
+        "Do not mutate BEAN's persisted identity or claim an ability to "
+        "control the robot, alter files, or change the physical world."
+    ),
+}
+
+
+def with_persona(base_prompt: str, persona: str = "default") -> str:
+    """Compose optional dialogue style onto existing grounded identity."""
+    if not isinstance(base_prompt, str) or not base_prompt.strip():
+        raise ValueError("Nonempty BEAN identity prompt required")
+    if persona not in PERSONA_STYLES:
+        raise ValueError("Unknown BEAN persona: " + str(persona))
+    return base_prompt + PERSONA_STYLES[persona]
