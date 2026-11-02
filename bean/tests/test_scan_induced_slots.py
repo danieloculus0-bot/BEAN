@@ -89,7 +89,7 @@ class InducedSlots:
             raise ValueError("No source-derived templates")
 
     def state(self):
-        return {
+        payload = {
             "schema": SCHEMA, "source_blob": self.source_blob,
             "atomic": dict(sorted(self.atomic.items())),
             "templates": [
@@ -101,11 +101,16 @@ class InducedSlots:
                 for key, alternatives in sorted(self.templates.items())
             ],
         }
+        return {**payload, "state_sha256": _digest(payload)}
 
     @classmethod
     def restore(cls, state):
         if state.get("schema") != SCHEMA:
             raise ValueError("Unknown induced-slot state schema")
+        payload = {key: value for key, value in state.items()
+                   if key != "state_sha256"}
+        if state.get("state_sha256") != _digest(payload):
+            raise ValueError("Induced-slot source snapshot digest mismatch")
         obj = cls.__new__(cls)
         obj.source_blob = state["source_blob"]
         obj.atomic = dict(state["atomic"])
