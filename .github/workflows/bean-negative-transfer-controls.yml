@@ -16,6 +16,7 @@ on:
       - "bean/tests/test_external_elec2_conditional_baseline.py"
       - "bean/tests/test_external_elec2_source_blind.py"
       - "bean/tests/test_external_occupancy_transfer.py"
+      - "bean/tests/test_external_scan_composition.py"
       - ".github/workflows/bean-negative-transfer-controls.yml"
   workflow_dispatch:
 
@@ -35,7 +36,7 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - name: Native paired baseline, counterfactual, feedback and stochastic drift tests
-        run: python -m unittest -v bean.tests.test_cross_domain_negative_transfer bean.tests.test_cross_domain_counterfactual_twins bean.tests.test_cross_domain_feedback_gate bean.tests.test_cross_domain_drift_probes bean.tests.test_cross_domain_stochastic_drift bean.tests.test_cross_domain_oracle_firewall bean.tests.test_cross_domain_budget_matched bean.tests.test_external_elec2_transfer bean.tests.test_external_elec2_conditional_baseline bean.tests.test_external_elec2_source_blind bean.tests.test_external_occupancy_transfer
+        run: python -m unittest -v bean.tests.test_cross_domain_negative_transfer bean.tests.test_cross_domain_counterfactual_twins bean.tests.test_cross_domain_feedback_gate bean.tests.test_cross_domain_drift_probes bean.tests.test_cross_domain_stochastic_drift bean.tests.test_cross_domain_oracle_firewall bean.tests.test_cross_domain_budget_matched bean.tests.test_external_elec2_transfer bean.tests.test_external_elec2_conditional_baseline bean.tests.test_external_elec2_source_blind bean.tests.test_external_occupancy_transfer bean.tests.test_external_scan_composition
       - name: Independent Elec2 stream probe (external public data, Ubuntu 3.12 only)
         if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.12'
         env:
@@ -56,6 +57,11 @@ jobs:
         env:
           BEAN_EXTERNAL_OCCUPANCY: "1"
         run: python -m unittest -v bean.tests.test_external_occupancy_transfer.ExternalOccupancySecondDomain.test_independent_occupancy_segments
+      - name: Independent SCAN compositional holdout (Ubuntu 3.12 only)
+        if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.12'
+        env:
+          BEAN_EXTERNAL_SCAN: "1"
+        run: python -m unittest -v bean.tests.test_external_scan_composition.ScanCompositionControls.test_external_scan_heldout
       - name: Save full synthetic case-level receipts
         shell: bash
         run: |
@@ -71,6 +77,7 @@ jobs:
             python -m bean.tests.test_external_elec2_conditional_baseline --report > conditional-elec2-receipt.json
             python -m bean.tests.test_external_elec2_source_blind --report > source-blind-elec2-receipt.json
             python -m bean.tests.test_external_occupancy_transfer --report > external-occupancy-receipt.json
+            python -m bean.tests.test_external_scan_composition --report > external-scan-receipt.json
           fi
       - uses: actions/upload-artifact@v4
         with:
@@ -87,4 +94,5 @@ jobs:
             conditional-elec2-receipt.json
             source-blind-elec2-receipt.json
             external-occupancy-receipt.json
+            external-scan-receipt.json
           retention-days: 14
