@@ -264,7 +264,8 @@ class ScanCompositionControls(unittest.TestCase):
         expected, ref = _template("jump around right", source)
         self.assertEqual(ref, "walk around right")
         self.assertEqual(expected, "I_TURN_RIGHT I_JUMP I_TURN_RIGHT I_JUMP I_TURN_RIGHT I_JUMP I_TURN_RIGHT I_JUMP")
-        self.assertEqual(_template("jump and walk", source), (None, None))
+        self.assertEqual(_template("jump and walk", source),
+                         ("I_JUMP I_WALK", "run and walk"))
         fake_hits = []
         first = _case("jump around right", "I_JUMP", fake_hits, {}, source, source)
         changed = _case("jump around right", "I_TURN_RIGHT I_JUMP", fake_hits, {}, source, source)
