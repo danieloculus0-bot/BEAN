@@ -45,9 +45,9 @@ class PublicSkillsPageTests(unittest.TestCase):
         self.assertRegex(self.html, r"</body>\s*</html>\s*\Z")
 
     def test_plain_language_and_claim_boundaries(self):
-        for phrase in ("What if AI could", "learn from yesterday?",
+        for phrase in ("BEAN is", "running on Jetson.",
                        "memory, evidence and feedback", "Still in development",
-                       "the full vision is still being built",
+                       "The next job is connecting",
                        "aren't yet one seamless general-purpose intelligence"):
             self.assertIn(phrase.casefold(), self.html.casefold())
         self.assertNotIn("BEAN has achieved AGI", self.html)
