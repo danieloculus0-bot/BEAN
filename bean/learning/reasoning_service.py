@@ -975,6 +975,7 @@ class NativeReasoningService:
                 "source_domain": row["source_domain"],
                 "observed_outcome": row["observed_outcome"],
                 "matched_terms": row["matched_terms"],
+                "lexical_tie_count": row["lexical_tie_count"],
                 "evidence_refs": [ref[:120] for ref in row["evidence_refs"][:3]],
                 "excerpt": row["text"][:480],
                 "text_truncated": len(row["text"]) > 480,
@@ -1017,6 +1018,8 @@ class NativeReasoningService:
                 row["lesson_id"] for row in analogies]
             record["cross_domain_recall_opt_in"] = True
             record["cross_domain_transfer_verified"] = False
+            record["cross_domain_lexical_tie_present"] = any(
+                row["lexical_tie_count"] > 1 for row in analogies)
         record["receipt_id"] = sha256(canonical(record)).hexdigest()
         tip = self.bank.record_inference(record)
         return {"schema": record["schema"], "answer": answer,
