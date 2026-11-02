@@ -26,6 +26,38 @@ Defaults: `http://127.0.0.1:8000/mcp`, streamable HTTP with stateless JSON respo
 
 Use the [MCP Inspector](https://github.com/modelcontextprotocol/inspector) to connect over Streamable HTTP to `http://127.0.0.1:8000/mcp`. Check initialization, the four tools, read-only/open-world annotations, successful example calls, size limits and rejection of attempts to supply a `verified` property. The plugin is **not yet available in ChatGPT** because it lacks a production HTTPS endpoint and submission approval.
 
+## Experimental direct-memory bridge: one-time connection, no copy/paste
+
+**Status:** isolated research branch, not a hosted/approved public connector. BEAN's four default MCP tools remain read-only/stateless. A **separately opt-in** localhost-only extension registers:
+
+| Tool | Actual action |
+| --- | --- |
+| `bean_remember_local(topic, note)` | Explicitly store a caller-supplied, UNVERIFIED note as a canonical event in BEAN Core's own SQLite database and reconciled JSONL audit mirror. |
+| `bean_recall_local(query, limit=10)` | Search the most recent 48 hours of notes, return exact attributed matches, disclose differing statements and abstain on no match. |
+| `bean_local_memory_status()` | Report durable BEAN session count, active-note count, retrieval window and limits. |
+
+These tools let a **properly connected, authorized MCP client** send or retrieve notes in a normal conversation without copying/pasting text. They do not read a GitHub Pages tab's localStorage and do not magically connect ChatGPT to an open port. The 48-hour window affects *retrieval*, **not deletion**: the single-user SQLite file remains on disk until the local operator deletes its DB, WAL files and event mirror. The default off state is intentional.
+
+### Local-only PowerShell setup for development
+
+```powershell
+cd D:\BEAN\core
+python -m pip install psutil "mcp>=2,<3"
+$env:BEAN_LOCAL_MEMORY_ENABLED="1"
+$env:BEAN_LOCAL_MEMORY_DB="$env:USERPROFILE\.bean\mcp-memory.sqlite3"
+$env:BEAN_MCP_HOST="127.0.0.1"
+$env:BEAN_MCP_PORT="8000"
+python -m integrations.chatgpt.server
+```
+
+The running service is locally reachable at `http://127.0.0.1:8000/mcp` by a suitable MCP inspector or client. Leave localhost-only; starting the memory-enabled server with a public bind is blocked in code. The extra tools are **not** turned on by the default server install.
+
+For ChatGPT, **do not expect automatic port discovery or a website-triggered connection**. If your plan/workspace permits custom MCP apps, an authorized user must add and approve BEAN as a custom MCP server once. OpenAI documents [custom MCP server setup](https://developers.openai.com/api/docs/guides/custom-mcp-server) and the [Secure MCP Tunnel](https://developers.openai.com/api/docs/guides/secure-mcp-tunnels) for private/localhost services. Availability and write-tool permissions depend on the plan and workspace; installing or configuring any connection requires the user's explicit action. GitHub Actions are short-lived batch runners, **not persistent chat endpoints**.
+
+**Single-user only, by design:** this local DB has no visitor identity isolation, server authentication or safe anonymous write-sharing. Never expose the memory tools as a public no-login endpoint or claim cross-user isolation. Don't store credentials, medical or private account information. Call `bean_remember_local` only after the user expressly asks to save a note; recalled notes are not independently verified facts. The Core process-wide singleton is serialized using the same lock as the four default MCP evidence tools.
+
+The existing `docs/try-bean.html` is an independently labeled browser-local simulation. Direct MCP calls cannot read that page's browser storage; a trustworthy public real-memory service would require a separate privacy-reviewed hosted design.
+
 ## Example calls
 
 **Evidence disagreement**
