@@ -30,7 +30,7 @@ from bean.tests.test_external_elec2_source_blind import (
     _window as _blind_window, _replay as _blind_replay,
 )
 
-SCHEMA = "bean.external_occupancy_second_domain.v1"
+SCHEMA = "bean.external_occupancy_second_domain.v2"
 DATA_URL = "https://archive.ics.uci.edu/static/public/357/occupancy+detection.zip"
 DATA_CITATION = "Candanedo (2016), UCI Occupancy Detection, doi:10.24432/C5X01N"
 DATA_LICENSE = "CC BY 4.0"
@@ -168,8 +168,13 @@ def _report(data, member_hashes, archive_hash):
     periods = {}
     for name in REQUIRED:
         stream = data[name]
-        starts = [len(stream) // 3 + i * SIZE for i in range(WINDOWS)]
-        if starts[-1] + SIZE > len(stream):
+        # Time/length-based coverage only. V1 middle-third windows accidentally
+        # sampled an all-empty regime in datatest2; keep its CI artifact as a
+        # negative result. This v2 change is explicitly post-hoc diagnostic.
+        starts = [(len(stream) - SIZE) * i // (WINDOWS - 1)
+                  for i in range(WINDOWS)]
+        if starts[0] < 0 or starts[-1] + SIZE > len(stream) or any(
+                b < a + SIZE for a, b in zip(starts, starts[1:])):
             raise ValueError("insufficient observations for disjoint windows")
         windows = [_window(stream, start) for start in starts]
         summary = {
@@ -193,6 +198,7 @@ def _report(data, member_hashes, archive_hash):
         "license": DATA_LICENSE, "archive_sha256": archive_hash,
         "light_proxy": "occupied iff Light >= 100 lux (fixed, not tuned)",
         "windows_per_segment": WINDOWS,
+        "window_selection": "16 equally spaced, nonoverlapping starts by stream length; no labels used",
         "calibration_labels": 4, "probe_labels": len(PROBE_INDICES),
         "probe_indices": list(PROBE_INDICES), "scored_cases_per_window": 16,
         "periods": periods,
@@ -201,7 +207,8 @@ def _report(data, member_hashes, archive_hash):
             "UCI test segments are independently collected, not independent novel tasks",
             "Light threshold is a hand-coded feature proxy, not semantic BEAN recall",
             "No online model weights, autonomous task discovery or policy deployment",
-            "No source-data revision pin before first independently observed download",
+            "Source archive revision observed in v1 CI; digest retained in this report",
+            "V2 window coverage is a post-hoc correction after uninformative v1 sampling",
             "Only serialized experimental replay, not actual Jetson process restart",
             "Fixed proxies use zero feedback; adaptive controls use eight labels",
         ],
