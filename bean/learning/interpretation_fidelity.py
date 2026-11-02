@@ -9,7 +9,7 @@ import re
 
 
 _CORRECTION_PATTERNS = (
-    re.compile(r"\b(?:you|u)\s+(?:do\s+not|don't|did\s+not|didn't)\s+(?:get|understand|hear)\s+me\b", re.I),
+    re.compile(r"\b(?:you|u)\s+(?:do\s+not|don't|did\s+not|didn't)\s+(?:even\s+)?(?:get|understand|hear)\s+me\b", re.I),
     re.compile(r"\b(?:that's|that is)\s+not\s+what\s+i\s+(?:meant|said)\b", re.I),
     re.compile(r"\byou(?:'re| are)\s+missing\s+(?:my|the)\s+point\b", re.I),
 )
