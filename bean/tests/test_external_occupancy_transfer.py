@@ -34,6 +34,7 @@ SCHEMA = "bean.external_occupancy_second_domain.v2"
 DATA_URL = "https://archive.ics.uci.edu/static/public/357/occupancy+detection.zip"
 DATA_CITATION = "Candanedo (2016), UCI Occupancy Detection, doi:10.24432/C5X01N"
 DATA_LICENSE = "CC BY 4.0"
+EXPECTED_ARCHIVE_SHA = "4ae3f46aa98eedff564a9f6924d1635173e2fd2c816004342a9be93076d3a81a"
 MAX_DOWNLOAD_BYTES = 3_000_000
 MAX_MEMBER_BYTES = 2_000_000
 REQUIRED = ("datatest.txt", "datatest2.txt")
@@ -51,6 +52,8 @@ def _fetch():
         raw = response.read(MAX_DOWNLOAD_BYTES + 1)
     if len(raw) > MAX_DOWNLOAD_BYTES:
         raise ValueError("occupancy archive exceeds download budget")
+    if sha256(raw).hexdigest() != EXPECTED_ARCHIVE_SHA:
+        raise ValueError("UCI occupancy archive revision differs from observed v1 CI")
     return raw
 
 
@@ -207,7 +210,7 @@ def _report(data, member_hashes, archive_hash):
             "UCI test segments are independently collected, not independent novel tasks",
             "Light threshold is a hand-coded feature proxy, not semantic BEAN recall",
             "No online model weights, autonomous task discovery or policy deployment",
-            "Source archive revision observed in v1 CI; digest retained in this report",
+            "Source archive pinned to digest observed in v1 CI; future changes fail",
             "V2 window coverage is a post-hoc correction after uninformative v1 sampling",
             "Only serialized experimental replay, not actual Jetson process restart",
             "Fixed proxies use zero feedback; adaptive controls use eight labels",
