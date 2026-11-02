@@ -43,7 +43,7 @@ body{background:#050607}
 <main>
 <p class="eyebrow">For builders, tinkerers and developers</p>
 <h1>Want to build with BEAN?</h1>
-<p class="lead">BEAN is a Python AI project built to give other AI systems something useful: a record of what happened, a way to check their work and a chance to make better decisions next time.</p><p>The <a href="./">main website</a> explains the idea in everyday language. This page is for people who want to get under the hood.</p>
+<p class="lead"><strong>BEAN Core is running locally on NVIDIA Jetson Orin Nano Super.</strong> It combines memory that survives restarts with local Qwen2.5 reasoning accelerated by NVIDIA CUDA. The Core processes tasks and records retrievable inference results.</p><p>The <a href="./">main website</a> shows what works. This page links to the source, deployment notes and engineering details.</p>
 <a class="button" href="https://github.com/danieloculus0-bot/BEAN">See the actual source</a>
 <a class="button alt" href="./portfolio/bean-learning/">See a learning experiment</a>
 <h2>What can you build on today?</h2>
@@ -54,7 +54,7 @@ body{background:#050607}
 <div class="card"><h3>Reproducible testing</h3><p>Explore test suites, comparison groups, recorded failures and measured results across BEAN's research branches.</p></div>
 </div>
 <h2>Now running on Jetson hardware</h2>
-<p>On November 1, 2026, BEAN Core v0.13.1 passed 10/10 boot checks and a 310-tick test on real Jetson Orin Nano Super hardware. It recovered persistent SQLite memory, completed a live <code>cognition_reason</code> request through local Qwen2.5 via CUDA-enabled llama.cpp, and retained a retrievable inference receipt. Concurrent GPU telemetry during a separate HTTP 200 completion reached 99%. Exact GPU layer count and end-to-end voice/face integration remain unverified. <a href="./JETSON_DEPLOYMENT_MILESTONE_2026-11-01.md">Read the on-device deployment evidence and open integration steps</a>.</p>
+<p>On November 1, 2026, BEAN Core v0.13.1 passed its on-device boot checks, recovered persistent SQLite events, and completed a live Qwen2.5 reasoning task with a retrievable receipt. CUDA GPU activity was measured during a separate generation test. The original face and camera have worked separately; the voice bridge and robot actuation are not yet connected end to end. <a href="./JETSON_DEPLOYMENT_MILESTONE_2026-11-01.md">On-device test record and remaining integration steps</a>.</p>
 <h2>Who is this useful for?</h2>
 <p>People building personal assistants, experimenting with AI memory, creating practical decision tools or checking whether a new AI idea actually improves results. If you like to tinker, you are in the right place.</p>
 <h2>How BEAN is organized</h2>
