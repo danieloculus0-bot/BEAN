@@ -44,6 +44,10 @@ input:focus{outline:2px solid var(--accent);outline-offset:1px}.fields{display:g
 /* Portfolio-wide black canvas; preserve project accent colors and working widgets. */
 html{background:#050607}
 body{background:#050607}
+
+/* Cross-project links retain the original dashboard, layout, and green accents. */
+.ecosystem-links{display:grid;gap:7px;margin:19px 0 80px}.ecosystem-links a{display:block;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--text);font-weight:750;padding:8px 12px;text-decoration:none;font-size:12px}.ecosystem-links a:hover,.ecosystem-links a:focus-visible{border-color:var(--accent);color:var(--accent)}.top .chip{text-decoration:none}
+@media(max-width:700px){.ecosystem-links{display:flex;flex-wrap:wrap;margin:13px 0 0}.ecosystem-links a{padding:7px 10px}}
 </style>
 </head>
 <body>
@@ -57,10 +61,11 @@ body{background:#050607}
     <button data-view="inspection">Inspection / FAI</button>
     <button data-view="ledger">Evidence Ledger</button>
   </nav>
+  <div class="ecosystem-links" aria-label="Connected project navigation"><a href="https://danieloculus0-bot.github.io/Axiom_Beta/erp/">Open Axiom ERP</a><a href="https://danieloculus0-bot.github.io/BEAN/portfolio/">All projects</a><a href="https://danieloculus0-bot.github.io/BEAN/">BEAN home</a></div>
   <div class="foot">PUBLIC BROWSER LAB · SYNTHETIC DATA<br>Local calculations. No server, actual ERP write, connected BEAN agent or hardware control.</div>
 </aside>
 <main class="main">
-  <div class="top"><span class="eyebrow">Manufacturing intelligence / Axiom Beta</span><span class="chip warning">Interactive sample, not live ERP</span></div>
+  <div class="top"><span class="eyebrow">Manufacturing intelligence / Axiom Beta</span><span><a class="chip" href="https://danieloculus0-bot.github.io/Axiom_Beta/erp/">Open current ERP</a> <span class="chip warning">Interactive sample, not live ERP</span></span></div>
   <section class="section active" id="view-overview">
     <span class="eyebrow">One job. Shared context. Verifiable evidence.</span>
     <h1>Manufacturing,<br>with the receipts.</h1>

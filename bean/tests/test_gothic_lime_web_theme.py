@@ -1,4 +1,4 @@
-"""Protect the current charcoal-green BEAN homepage palette and mascot."""
+"""Protect the approved black/charcoal BEAN homepage palette and mascot."""
 from pathlib import Path
 
 
@@ -6,7 +6,7 @@ def test_public_theme_and_mascot_are_present():
     html = (Path(__file__).resolve().parents[2] / "docs" / "index.html").read_text(
         encoding="utf-8"
     )
-    for token in ("--bg:#0b100e", "--card:#152019", "--green:#a6ed75",
+    for token in ("--bg:#050607", "--card:#111417", "--green:#a6ed75",
                   "color-scheme:dark", "a:focus-visible",
                   "prefers-reduced-motion:reduce"):
         assert token in html

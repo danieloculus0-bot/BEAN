@@ -55,12 +55,12 @@ jobs:
           git clone --depth 1 --branch v0.7.0 https://github.com/ggml-org/llama.cpp.git /tmp/bean-llama-cpp
           cmake -S /tmp/bean-llama-cpp -B /tmp/bean-llama-cpp/build -DGGML_CUDA=OFF -DLLAMA_BUILD_TESTS=OFF -DLLAMA_CURL=ON -DCMAKE_BUILD_TYPE=Release
           cmake --build /tmp/bean-llama-cpp/build --config Release --target llama-server -j 4
-      - name: Start actual local Qwen3-0.6B Q4 and test BEAN Core
+      - name: Start actual local Qwen3-0.6B Q8 and test BEAN Core
         shell: bash
         run: |
           set -euo pipefail
           mkdir -p /tmp/bean-local-qwen-test
-          /tmp/bean-llama-cpp/build/bin/llama-server -hf Qwen/Qwen3-0.6B-GGUF:Q4_K_M --host 127.0.0.1 --port 18080 --alias bean-local -c 2048 -n 256 > /tmp/bean-local-qwen-test/llama.log 2>&1 &
+          /tmp/bean-llama-cpp/build/bin/llama-server -hf Qwen/Qwen3-0.6B-GGUF:Q8_0 --host 127.0.0.1 --port 18080 --alias bean-local -c 2048 -n 256 > /tmp/bean-local-qwen-test/llama.log 2>&1 &
           SERVER_PID=$!
           trap 'kill "$SERVER_PID" 2>/dev/null || true' EXIT
           python - <<'PY'
@@ -90,7 +90,7 @@ jobs:
           finally:
               core.close()
           evidence = {
-              "model": "Qwen/Qwen3-0.6B-GGUF:Q4_K_M",
+              "model": "Qwen/Qwen3-0.6B-GGUF:Q8_0",
               "engine": "llama.cpp v0.7.0 CPU",
               "adapter": "local_llamacpp",
               "status": result.get("status", "real_model_answer"),
