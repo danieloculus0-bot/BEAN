@@ -79,7 +79,7 @@ def audit(candidate, previous):
     for phrase, output in phrase_anchors.items():
         if phrase not in candidate["training_commands"][policies[0]]:
             raise ValueError("Phrase anchor was not labeled")
-        if len(phrase.split()) != 2 or not re.fullmatch(r"I_[A-Z]+", output):
+        if len(phrase.split()) != 2 or not re.fullmatch(r"I_[A-Z_]+", output):
             raise ValueError("Phrase anchor is not minimal atomic output")
 
     audited = {}
