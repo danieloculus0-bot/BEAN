@@ -123,7 +123,13 @@ class BEANReasoningSkills:
                 continue
             ranked.append((len(terms), index, item, terms))
         ranked.sort(key=lambda match: (-match[0], -match[1], match[2].lesson_id))
+        # Count ties BEFORE applying limit: even a single displayed hit can
+        # conceal an equally ranked, conflicting source precedent.
+        tie_counts = {}
+        for score, _, _, _ in ranked:
+            tie_counts[score] = tie_counts.get(score, 0) + 1
         return [{
+            "lexical_tie_count": tie_counts[score],
             "lesson_id": item.lesson_id,
             "source_domain": item.domain,
             "strategy": item.strategy,
