@@ -91,9 +91,21 @@ class PhraseRoleSlots:
             for command, output in self.training.items()
             if len(command.split()) == 2 and
             all(re.fullmatch(r"[a-z]+", word) for word in command.split()) and
-            re.fullmatch(r"I_[A-Z]+", output)
+            re.fullmatch(r"I_[A-Z_]+", output)
         }
         self.tokens = {phrase: _phrase_token(phrase) for phrase in self.phrases}
+        self.action_tokens = {
+            output: "I_" + _phrase_token(output).upper()
+            for output in sorted(set(self.phrases.values()))
+        }
+        self.reverse_actions = {encoded: raw
+                                for raw, encoded in self.action_tokens.items()}
+        if len(self.reverse_actions) != len(self.action_tokens):
+            raise ValueError("Encoded output action collision")
+        if any(encoded in output.split()
+               for output in self.training.values()
+               for encoded in self.reverse_actions):
+            raise ValueError("Encoded output conflicts with source token")
         if len(set(self.tokens.values())) != len(self.tokens):
             raise ValueError("Phrase token collision")
         if set(self.tokens.values()) & set(self.training):
@@ -105,7 +117,9 @@ class PhraseRoleSlots:
             key, _ = self._normalize(command)
             if key in normalized:
                 raise ValueError("Non-injective source normalization")
-            normalized[key] = output
+            normalized[key] = " ".join(
+                self.action_tokens.get(token, token)
+                for token in output.split())
             self.original_by_normalized[key] = command
             self.ref_map["scan:train:" + sha256(key.encode()).hexdigest()[:24]] = (
                 "scan:train:" + sha256(command.encode()).hexdigest()[:24])
@@ -133,6 +147,7 @@ class PhraseRoleSlots:
             "training_rows": [[command, output]
                               for command, output in self.training.items()],
             "phrase_anchors": dict(sorted(self.phrases.items())),
+            "output_action_tokens": dict(sorted(self.action_tokens.items())),
             "inner_state": self.inner.state(),
         }
         return {**payload, "state_sha256": _digest(payload)}
@@ -161,6 +176,10 @@ class PhraseRoleSlots:
         refs.update("scan:train:" + sha256(phrase.encode()).hexdigest()[:24]
                     for phrase in phrases)
         result = dict(inner)
+        if inner["prediction"] is not None:
+            result["prediction"] = " ".join(
+                self.reverse_actions.get(token, token)
+                for token in inner["prediction"].split())
         result["evidence_refs"] = sorted(refs)
         if "source_commands" in inner:
             result["source_commands"] = sorted(
