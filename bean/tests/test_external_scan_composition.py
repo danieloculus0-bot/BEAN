@@ -47,7 +47,7 @@ def _digest(value):
 
 
 def _git_blob(raw):
-    return sha1(b"blob " + str(len(raw)).encode() + b"\\0" + raw).hexdigest()
+    return sha1(b"blob " + str(len(raw)).encode() + b"\0" + raw).hexdigest()
 
 
 def _fetch():
@@ -252,11 +252,11 @@ def run_report(train, test, hashes):
 
 class ScanCompositionControls(unittest.TestCase):
     def test_parser_blob_pin_and_rejections(self):
-        raw = b"IN: jump OUT: JUMP\\nIN: walk twice OUT: WALK WALK\\n"
+        raw = b"IN: jump OUT: JUMP\nIN: walk twice OUT: WALK WALK\n"
         self.assertEqual(_parse(raw)["jump"], "JUMP")
         self.assertEqual(len(_git_blob(raw)), 40)
         with self.assertRaises(ValueError):
-            _parse(b"IN: jump OUT: JUMP\\nIN: jump OUT: WALK\\n")
+            _parse(b"IN: jump OUT: JUMP\nIN: jump OUT: WALK\n")
 
     def test_structural_transfer_and_hidden_label_firewall(self):
         source = {"walk around right": "RTURN WALK RTURN WALK RTURN WALK RTURN WALK",
