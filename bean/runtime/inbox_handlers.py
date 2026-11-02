@@ -73,6 +73,51 @@ def make_handlers(
         from ..engineering.stress_solver import solve_stress_reference
         return solve_stress_reference(msg.args)
 
+    def spaceflight_reference(msg: InboxMessage, session_uuid: str) -> dict:
+        """Run the existing deterministic physics solver through BEAN Core.
+
+        This records an actual canonical BEAN observation with digests only.
+        It does not authenticate a NASA source, update weights, operate
+        hardware, or claim independent mission/trajectory validation.
+        """
+        import hashlib
+        import json
+
+        from ..engineering.spaceflight import solve_spaceflight_reference
+
+        # Solve first. Invalid requests raise and CommandInbox quarantines
+        # them without recording a misleading successful observation.
+        result = solve_spaceflight_reference(msg.args)
+
+        def digest(payload):
+            canonical = json.dumps(payload, sort_keys=True, separators=(",", ":"),
+                                   ensure_ascii=False, allow_nan=False)
+            return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
+
+        request_sha = digest(msg.args)
+        result_sha = digest(result)
+        event_id = log_event(
+            session_uuid, EventType.OBSERVATION,
+            "BEAN calculated an idealized spaceflight physics reference.",
+            Source.SYSTEM, subtype="spaceflight_idealized_reference",
+            data={
+                "calculation": result["calculation"],
+                "request_sha256": request_sha,
+                "result_sha256": result_sha,
+                "source_kind": "caller_supplied_input",
+                "source_authenticated": False,
+                "independently_validated": False,
+                "flight_qualified": False,
+                "learning_weights_updated": False,
+            },
+        )
+        return {**result, "evidence_receipt": {
+            "event_id": event_id,
+            "request_sha256": request_sha,
+            "result_sha256": result_sha,
+            "receipt_type": "bean_core_event_log_observation_not_source_verification",
+        }}
+
     def engineering_jobsite(msg: InboxMessage, session_uuid: str) -> dict:
         """Bounded field calculation: lumber takeoff or weak-beam screening.
 
@@ -330,6 +375,7 @@ def make_handlers(
         "watcher_recheck": watcher_recheck,
         "log_note": log_note,
         "fea_stress_reference": fea_stress_reference,
+        "spaceflight_reference": spaceflight_reference,
         "engineering_jobsite": engineering_jobsite,
         "engineering_fea_evidence_review": engineering_fea_evidence_review,
         "shutdown": shutdown,
