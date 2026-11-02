@@ -26,6 +26,8 @@ on:
       - "bean/tests/test_scan_balanced_audit.py"
       - "bean/tests/test_scan_phrase_roles.py"
       - "bean/tests/test_scan_phrase_audit.py"
+      - "bean/tests/test_scan_operator_composition.py"
+      - "bean/tests/test_scan_operator_audit.py"
       - ".github/workflows/bean-negative-transfer-controls.yml"
   workflow_dispatch:
 
@@ -45,7 +47,7 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - name: Native paired baseline, counterfactual, feedback and stochastic drift tests
-        run: python -m unittest -v bean.tests.test_cross_domain_negative_transfer bean.tests.test_cross_domain_counterfactual_twins bean.tests.test_cross_domain_feedback_gate bean.tests.test_cross_domain_drift_probes bean.tests.test_cross_domain_stochastic_drift bean.tests.test_cross_domain_oracle_firewall bean.tests.test_cross_domain_budget_matched bean.tests.test_external_elec2_transfer bean.tests.test_external_elec2_conditional_baseline bean.tests.test_external_elec2_source_blind bean.tests.test_external_occupancy_transfer bean.tests.test_external_scan_composition bean.tests.test_scan_induced_slots bean.tests.test_scan_two_role_slots bean.tests.test_scan_two_role_audit bean.tests.test_scan_source_curriculum bean.tests.test_scan_curriculum_audit bean.tests.test_scan_balanced_curriculum bean.tests.test_scan_balanced_audit bean.tests.test_scan_phrase_roles bean.tests.test_scan_phrase_audit
+        run: python -m unittest -v bean.tests.test_cross_domain_negative_transfer bean.tests.test_cross_domain_counterfactual_twins bean.tests.test_cross_domain_feedback_gate bean.tests.test_cross_domain_drift_probes bean.tests.test_cross_domain_stochastic_drift bean.tests.test_cross_domain_oracle_firewall bean.tests.test_cross_domain_budget_matched bean.tests.test_external_elec2_transfer bean.tests.test_external_elec2_conditional_baseline bean.tests.test_external_elec2_source_blind bean.tests.test_external_occupancy_transfer bean.tests.test_external_scan_composition bean.tests.test_scan_induced_slots bean.tests.test_scan_two_role_slots bean.tests.test_scan_two_role_audit bean.tests.test_scan_source_curriculum bean.tests.test_scan_curriculum_audit bean.tests.test_scan_balanced_curriculum bean.tests.test_scan_balanced_audit bean.tests.test_scan_phrase_roles bean.tests.test_scan_phrase_audit bean.tests.test_scan_operator_composition bean.tests.test_scan_operator_audit
       - name: Independent Elec2 stream probe (external public data, Ubuntu 3.12 only)
         if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.12'
         env:
@@ -96,6 +98,11 @@ jobs:
         env:
           BEAN_EXTERNAL_SCAN: "1"
         run: python -m unittest -v bean.tests.test_scan_phrase_roles.PhraseRoleControls.test_fresh_phrase_role_evaluation
+      - name: Fresh source-induced binary operator composition versus same-label and blind-order controls (Ubuntu 3.12 only)
+        if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.12'
+        env:
+          BEAN_EXTERNAL_SCAN: "1"
+        run: python -m unittest -v bean.tests.test_scan_operator_composition.OperatorCompositionControls.test_fresh_operator_composition_evaluation
       - name: Save full synthetic case-level receipts
         shell: bash
         run: |
@@ -117,6 +124,7 @@ jobs:
             python -m bean.tests.test_scan_source_curriculum --report > curriculum-scan-receipt.json
             python -m bean.tests.test_scan_balanced_curriculum --report > balanced-scan-receipt.json
             python -m bean.tests.test_scan_phrase_roles --report > phrase-scan-receipt.json
+            python -m bean.tests.test_scan_operator_composition --report > operator-scan-receipt.json
           fi
       - name: Independently verify all fresh SCAN receipts and print paired scores
         if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.12'
@@ -125,6 +133,7 @@ jobs:
           python -m bean.tests.test_scan_curriculum_audit curriculum-scan-receipt.json two-role-scan-receipt.json
           python -m bean.tests.test_scan_balanced_audit balanced-scan-receipt.json curriculum-scan-receipt.json
           python -m bean.tests.test_scan_phrase_audit phrase-scan-receipt.json balanced-scan-receipt.json
+          python -m bean.tests.test_scan_operator_audit operator-scan-receipt.json phrase-scan-receipt.json
       - uses: actions/upload-artifact@v4
         with:
           name: negative-transfer-${{ matrix.os }}-py${{ matrix.python-version }}
@@ -146,4 +155,5 @@ jobs:
             curriculum-scan-receipt.json
             balanced-scan-receipt.json
             phrase-scan-receipt.json
+            operator-scan-receipt.json
           retention-days: 14
