@@ -19,7 +19,7 @@ ROUTES = {
     BEAN: (ERP, "Project directory"),
     HUB: (ERP, "EZ CAM", "EZ Attendance"),
     BEAN + "axiom.html": (ERP, "Axiom"),
-    BEAN + "portfolio/axiom/": ("0;url=" + ERP, "Project directory"),
+    BEAN + "portfolio/axiom/": (ERP, HUB, "Command Center", "Job Passport"),
     BEAN + "portfolio/ez-office/": (ERP, "EZ-Office"),
     BEAN + "portfolio/ez-fair/": (ERP, "EZ-FAIR"),
     BEAN + "portfolio/bean-learning/": (ERP, "BEAN"),
