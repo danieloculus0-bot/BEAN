@@ -183,6 +183,23 @@ class ExternalElec2Controls(unittest.TestCase):
         self.assertEqual(first, _window(data, 0))
         self.assertEqual(sum(r["is_feedback_probe"] for r in first["receipts"]), 4)
 
+    def test_hidden_scoring_labels_cannot_change_decisions(self):
+        data = [("flip" if i % 2 else "hold", "flip" if i % 3 else "hold")
+                for i in range(24)]
+        changed = list(data)
+        for i in range(20):
+            if i not in PROBE_INDICES:
+                source, label = changed[4 + i]
+                changed[4 + i] = (source, "hold" if label == "flip" else "flip")
+        original, flipped = _window(data, 0), _window(changed, 0)
+        for a, b in zip(original["receipts"], flipped["receipts"]):
+            self.assertEqual(a["predictions"], b["predictions"])
+            self.assertEqual(a["orientation_before"], b["orientation_before"])
+            self.assertEqual(a["orientation_after"], b["orientation_after"])
+            self.assertEqual(a["feedback_observed"], b["feedback_observed"])
+        for policy in POLICIES:
+            self.assertEqual(original["scores"][policy] + flipped["scores"][policy], 16)
+
     @unittest.skipUnless(os.environ.get("BEAN_EXTERNAL_STREAM") == "1", "external data opt-in")
     def test_independent_elec2_stream(self):
         raw = _fetch()
