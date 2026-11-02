@@ -50,7 +50,7 @@ def independent_rules(training):
         word: {
             "order": next((order for order in ("lr", "rl")
                            if support[order] and not support[
-                               "rl" if order == "lr" else "rl"]), None),
+                               "rl" if order == "lr" else "lr"]), None),
             "support": support,
         }
         for word, support in sorted(votes.items())
