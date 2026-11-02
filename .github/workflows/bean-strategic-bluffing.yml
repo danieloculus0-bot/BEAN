@@ -1,0 +1,38 @@
+name: BEAN strategic bluffing lab
+
+on:
+  push:
+    branches:
+      - experiment/strategic-bluffing-20261028
+  pull_request:
+    paths:
+      - experiments/strategic_bluffing/**
+      - bean/tests/test_strategic_bluffing.py
+      - .github/workflows/bean-strategic-bluffing.yml
+
+jobs:
+  strategy-lab:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        python-version: ['3.11', '3.12']
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Run real SpongeTD strategy experiments and truth checks
+        run: python -m unittest bean.tests.test_strategic_bluffing -v
+      - name: Frozen holdout and audit-shift receipt
+        run: python -m experiments.strategic_bluffing.lab --output strategic-bluffing-results
+      - name: Upload full synthetic case receipts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: strategic-bluffing-${{ matrix.os }}-py${{ matrix.python-version }}
+          path: |
+            strategic-bluffing-results/scoreboard.json
+            strategic-bluffing-results/events.jsonl.gz
+          if-no-files-found: ignore
