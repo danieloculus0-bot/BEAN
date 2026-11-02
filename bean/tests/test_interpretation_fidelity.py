@@ -35,6 +35,7 @@ class InterpretationFidelityTests(unittest.TestCase):
     def test_feedback_variants_do_not_imply_intent(self):
         for request in (
             "You don't get me.",
+            "You don't even get me.",
             "You do not understand me",
             "That's not what I meant",
             "You're missing my point.",
@@ -53,7 +54,7 @@ class InterpretationFidelityTests(unittest.TestCase):
             provider = OfflineProvider()
             core = NativeReasoningService(path, model=provider)
             try:
-                request = "You don't get me. You're substituting your own example."
+                request = "You don't even get me. You're substituting your own example."
                 result = core.reason(
                     domain="conversation", task_ref="intent-correction",
                     query=request,
