@@ -16,6 +16,7 @@ from .experimental import ExperienceBank, TrialCase, material_for
 from .native_skills import BEANReasoningSkills
 from .judgment import choose_counsel
 from .local_reasoner import LocalReasoner
+from .interpretation_fidelity import context_for_interpretation
 from .transfer_gate import evaluate_transfer
 from .active_hypothesis import discover, act
 from .composition import CompositionLearner
@@ -958,6 +959,7 @@ class NativeReasoningService:
             }
         context = material_for(self.bank, packet["selected_strategy"],
                                packet["domain"], query=query)
+        context = context_for_interpretation(query, context)
         try:
             answer, model_id, provider_kind, provider_id = _model_response(
                 selected_model, query, context)
