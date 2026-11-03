@@ -53,8 +53,8 @@ def source_data():
             if not match:
                 raise ValueError("Malformed SCAN line")
             command, output = match.groups()
-            if command in parsed:
-                raise ValueError("Repeated source command")
+            if command in parsed and parsed[command] != output:
+                raise ValueError("Conflicting source labels")
             parsed[command] = output
         sources[key] = parsed
         hashes[key] = {
