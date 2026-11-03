@@ -37,9 +37,9 @@ def poses():
         PoseCandidate(
             candidate_id=f"pose-{i}",
             commands=tuple(MotionCommand.move_to(
-                jid, 21.0 if i < 4 else 22.0, 10.0,
+                jid, 20.0 + (i + 1) * 0.35 * (1 if index in (0, 2) else -1), 10.0,
                 source=CommandSource.TEST,
-            ) for jid in JOINTS),
+            ) for index, jid in enumerate(JOINTS)),
             signals=(1.0, 0.0) if i < 4 else (0.0, 1.0),
         ) for i in range(8)
     )
@@ -67,6 +67,23 @@ def test_eight_possibilities_become_four_coordinated_micro_positions():
     assert preview["selected_ids"] == ["pose-0", "pose-1", "pose-2", "pose-3"]
     assert {v["reason"] for v in preview["withheld"]} == {"not_selected_unobserved"}
     assert preview["physical_feedback"] == "none"
+
+
+def test_four_right_four_wrong_is_hidden_from_selector_until_observed():
+    registry = init_registry_from_dict(synthetic_body())
+    model = FourOfEightSelector(MotionSafety(registry))
+    labeled_oracle = {
+        option.candidate_id: (-1 if index < 4 else +1)
+        for index, option in enumerate(poses())
+    }
+    assert list(labeled_oracle.values()).count(-1) == 4
+    assert list(labeled_oracle.values()).count(+1) == 4
+    chosen = plan(model)
+    assert all(labeled_oracle[option.candidate_id] == -1 for option in chosen.chosen)
+    assert all(candidate_id not in [x.candidate_id for x in chosen.chosen]
+               for candidate_id in [f"pose-{i}" for i in range(4,8)])
+    assert all("right" not in str(reason) and "wrong" not in str(reason)
+               for _, reason in chosen.withheld)
 
 
 def test_excluded_moves_are_not_mislabeled_and_unsafe_poses_cannot_be_selected():
@@ -107,7 +124,7 @@ def test_four_positions_simulate_only_and_revalidate_joints():
             verdict = safety.check(command, current_pos=body.get_joint(command.joint_id).position)
             assert verdict.approved
             assert simulation.execute(command, verdict).success
-    assert all(body.get_joint(jid).position == 21.0 for jid in JOINTS)
+    assert [body.get_joint(jid).position for jid in JOINTS] == [21.4, 18.6, 21.4, 18.6]
     assert all(body.get_joint(jid).kind.value == "estimated" for jid in JOINTS)
 
 
