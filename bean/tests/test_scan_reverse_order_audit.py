@@ -102,6 +102,36 @@ def paired_exact_test(deltas):
             "candidate_superiority_at_0_05": wins > losses and p < 0.05}
 
 
+
+def paired_family_sensitivity(commands, deltas):
+    """Exploratory sign test at unordered operand-pair granularity.
+
+    Swapped operand orders share the same underlying actions. They must not
+    automatically count as independent evidence. A family contributes only
+    the sign of its summed paired difference. This is a sensitivity check,
+    not a proof that different families are statistically independent.
+    """
+    if len(commands) != len(deltas):
+        raise ValueError("Commands and paired deltas must align")
+    if any(type(x) is not int or x not in (-1, 0, 1) for x in deltas):
+        raise ValueError("Invalid paired delta")
+    groups = {}
+    for command, delta in zip(commands, deltas):
+        if not isinstance(command, str) or command.count(" after ") != 1:
+            raise ValueError("Expected one after operator")
+        left, right = command.split(" after ")
+        if not left or not right:
+            raise ValueError("Empty operand")
+        key = tuple(sorted((left, right)))
+        groups[key] = groups.get(key, 0) + delta
+    family_deltas = [int(value > 0) - int(value < 0)
+                     for _, value in sorted(groups.items())]
+    return {"family_count": len(groups),
+            "case_count": len(commands),
+            "method": "unordered_operand_pair_sensitivity_not_independence_proof",
+            **paired_exact_test(family_deltas)}
+
+
 def audit(report, sources, hashes):
     if report.get("schema") != SCHEMA or report.get("selection_seed") != SEED:
         raise ValueError("Schema or selection seed changed")
@@ -180,7 +210,9 @@ def audit(report, sources, hashes):
             or paired_phrase != report["paired_learned_minus_phrase"]
             or failures != report["candidate_failures"]):
         raise ValueError("Aggregate scores or negative evidence mismatch")
-    return {"paired_learned_vs_blind": paired_exact_test(paired_blind),
+    return {"family_sensitivity_vs_blind": paired_family_sensitivity(commands, paired_blind),
+            "family_sensitivity_vs_phrase": paired_family_sensitivity(commands, paired_phrase),
+            "paired_learned_vs_blind": paired_exact_test(paired_blind),
             "paired_learned_vs_phrase": paired_exact_test(paired_phrase),
             "cases_verified": len(rows), "eligible_pool": len(candidates),
             "scores": scores, "coverage": coverage,
@@ -208,6 +240,24 @@ class IndependentAuditControls(unittest.TestCase):
         self.assertFalse(paired_exact_test([-1] * 8)["candidate_superiority_at_0_05"])
         with self.assertRaises(ValueError):
             paired_exact_test([True])
+
+    def test_family_sensitivity_prevents_swapped_order_pseudoreplication(self):
+        commands = ["walk after run", "run after walk"] * 8
+        deltas = [1] * 16
+        naive = paired_exact_test(deltas)
+        grouped = paired_family_sensitivity(commands, deltas)
+        self.assertTrue(naive["candidate_superiority_at_0_05"])
+        self.assertEqual(grouped["family_count"], 1)
+        self.assertEqual(grouped["wins"], 1)
+        self.assertFalse(grouped["candidate_superiority_at_0_05"])
+        self.assertEqual(grouped["exact_two_sided_p"], 1.0)
+        cancellation = paired_family_sensitivity(commands, [1, -1] * 8)
+        self.assertEqual(cancellation["ties"], 1)
+        self.assertFalse(cancellation["candidate_superiority_at_0_05"])
+        with self.assertRaises(ValueError):
+            paired_family_sensitivity(commands, [1])
+        with self.assertRaises(ValueError):
+            paired_family_sensitivity(["malformed"], [1])
 
     def test_digest_detects_mutation(self):
         row = {"command": "walk after run", "correct": {"learned": True}}
