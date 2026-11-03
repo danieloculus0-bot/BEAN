@@ -72,6 +72,20 @@ class EcosystemNavigationTests(unittest.TestCase):
         self.assertIn('axiom/', self.links("portfolio/index.html").links)
         self.assertIn('./portfolio/axiom/', self.links("axiom.html").links)
 
+    def test_showcase_uses_maintained_browser_suite_and_attendance(self):
+        html = self.page("portfolio/index.html")
+        showcase = html.split('<section id="demos" class="wrap">', 1)[1].split("</section>", 1)[0]
+        self.assertEqual(showcase.count('class="demo"'), 4)
+        for marker in ("Open Axiom ERP", "Open EZ CAM workbench", "Open EZ-Office suite",
+                       "Open EZ Attendance", "https://danieloculus0-bot.github.io/EZ-Attendance/",
+                       "https://danieloculus0-bot.github.io/EZ-CAM/", 'href="ez-office/"'):
+            self.assertIn(marker, showcase)
+        for retired in ('href="ez-fair/"', 'href="../aiscend.html"',
+                        "https://danieloculus0-bot.github.io/EZstimate/",
+                        "https://danieloculus0-bot.github.io/64-/", "https://danieloculus0-bot.github.io/FUN/"):
+            self.assertNotIn(retired, showcase)
+        self.assertNotIn('href="https://danieloculus0-bot.github.io/64-/"', html)
+
     def test_navigation_does_not_steal_record_specific_routes(self):
         # External ecosystem links must be ordinary anchors, never an ERP
         # hash route or a script that touches the browser-local record store.
