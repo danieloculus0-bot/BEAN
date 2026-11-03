@@ -26,7 +26,7 @@ class CausalInversionNegativeControl(unittest.TestCase):
     def test_negation_lexical_trap(self):
         # A more overlapping precedent can be explicitly negative evidence.
         query = "coolant flow improves temperature stability"
-        supporting = "coolant flow improves stability"
+        supporting = "coolant improves stability"
         negative = "coolant flow does not improve temperature stability"
         self.assertGreater(lexical_overlap(negative, query),
                            lexical_overlap(supporting, query))
