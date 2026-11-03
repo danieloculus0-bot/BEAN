@@ -51,7 +51,7 @@ class ActualAnalogyCausalInversionTests(unittest.TestCase):
             finally:
                 restarted.close()
 
-    def test_lexical_rank_can_prefer_a_negated_precedent(self):
+    def test_lexical_tie_can_rank_contradictory_precedent_first(self):
         with tempfile.TemporaryDirectory() as folder:
             core = NativeReasoningService(Path(folder) / "native.sqlite",
                                           model=None)
@@ -68,9 +68,11 @@ class ActualAnalogyCausalInversionTests(unittest.TestCase):
                 )["lesson_id"]
                 hits = core.recall_analogies(
                     domain="target",
-                    query="High pressure does not increase flow")
-                self.assertEqual(hits[0]["lesson_id"], negative)
-                self.assertIn(positive, [h["lesson_id"] for h in hits])
+                    query="High pressure increases flow")
+                self.assertEqual([h["lesson_id"] for h in hits], [negative, positive])
+                self.assertEqual(hits[0]["matched_terms"], hits[1]["matched_terms"])
+                self.assertNotIn("not", hits[0]["matched_terms"])
+                self.assertEqual(hits[0]["evidence_refs"], ["synthetic:negative"])
                 self.assertFalse(hits[0]["safe_to_apply_without_target_test"])
             finally:
                 core.close()
