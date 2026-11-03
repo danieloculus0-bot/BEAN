@@ -45,7 +45,7 @@ def source_data():
                 "User-Agent": "BEAN-independent-SCAN-audit/1.0"}), timeout=30) as r:
             raw = r.read(8_000_001)
         if len(raw) > 8_000_000 or sha1(
-                b"blob " + str(len(raw)).encode() + b"\\0" + raw).hexdigest() != blob:
+                b"blob " + str(len(raw)).encode() + b"\0" + raw).hexdigest() != blob:
             raise ValueError("Source blob mismatch: " + key)
         parsed = {}
         for line in raw.decode("utf-8").splitlines():
