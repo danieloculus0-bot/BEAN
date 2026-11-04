@@ -64,6 +64,58 @@ def run(seed=20261104, n=200):
     }
 
 
+
+def select_by_independent_unit(observations):
+    """Conservative paired sign test over declared independent units.
+
+    Input: iterable of (unit_id, causal_correct, proxy_correct).
+    Within-unit mixed evidence is a tie; repeated rows cannot manufacture
+    extra independent trials. Unit IDs are assertions, not authenticated.
+    """
+    from math import comb
+    units = {}
+    for unit_id, causal, proxy in observations:
+        if not isinstance(unit_id, str) or not unit_id.strip():
+            raise ValueError("nonempty independent unit ID required")
+        if type(causal) is not bool or type(proxy) is not bool:
+            raise ValueError("correctness must be boolean")
+        units.setdefault(unit_id, set()).add(int(causal) - int(proxy))
+    directions = []
+    for values in units.values():
+        directions.append(next(iter(values)) if len(values) == 1 else 0)
+    wins = directions.count(1)
+    losses = directions.count(-1)
+    n = wins + losses
+    if n == 0:
+        return None
+    tail = sum(comb(n, k) for k in range(max(wins, losses), n + 1)) / (2 ** n)
+    return (0 if wins > losses else 1) if tail <= 0.05 else None
+
+
+class TestIndependentUnitSelection(unittest.TestCase):
+    def test_repeated_same_unit_never_inflates_significance(self):
+        self.assertIsNone(select_by_independent_unit([("trial-1", True, False)] * 100))
+
+    def test_five_distinct_units_support_selection(self):
+        self.assertEqual(select_by_independent_unit(
+            [(f"trial-{i}", True, False) for i in range(5)]), 0)
+
+    def test_mixed_within_unit_is_conservative_tie(self):
+        rows = [(f"trial-{i}", True, False) for i in range(4)]
+        rows += [("mixed", True, False), ("mixed", False, True)]
+        self.assertIsNone(select_by_independent_unit(rows))
+
+    def test_negative_evidence_preserved(self):
+        rows = [(f"trial-{i}", True, False) for i in range(5)]
+        rows += [("loss", False, True)]
+        self.assertIsNone(select_by_independent_unit(rows))
+
+    def test_invalid_provenance_rejected(self):
+        with self.assertRaises(ValueError):
+            select_by_independent_unit([("", True, False)])
+        with self.assertRaises(ValueError):
+            select_by_independent_unit([("a", 1, 0)])
+
 class TestSelection(unittest.TestCase):
     def test_observational_tie_cannot_identify_cause(self):
         self.assertIsNone(select(cohort(1, 200, "observational")))
