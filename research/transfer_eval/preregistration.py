@@ -52,6 +52,10 @@ def audit_preregistration(plan, anchor_digest, outcomes):
     if not isinstance(anchor_digest, str) or digest != anchor_digest:
         return {"valid": False, "reason": "plan_digest_mismatch", "digest": digest}
     expected = {c["case_id"] for c in plan["cases"] if c["split"] in ("heldout", "ood")}
+    if not expected:
+        return {"valid": False, "reason": "no_heldout_or_ood_cases",
+                "digest": digest, "expected_cases": 0, "observed_cases": 0,
+                "claim": "plan_integrity_only_anchor_timing_unverified"}
     observed = set()
     if not isinstance(outcomes, list):
         raise ValueError("outcomes must be a list")
