@@ -79,7 +79,7 @@ def select_by_independent_unit(observations, *, hypotheses_tested=1):
     from math import comb
     units = {}
     for unit_id, causal, proxy in observations:
-        if not isinstance(unit_id, str) or not unit_id.strip():
+        if not isinstance(unit_id, str) or not unit_id.strip() or unit_id != unit_id.strip():
             raise ValueError("nonempty independent unit ID required")
         if type(causal) is not bool or type(proxy) is not bool:
             raise ValueError("correctness must be boolean")
@@ -131,6 +131,12 @@ class TestIndependentUnitSelection(unittest.TestCase):
     def test_negative_direction_still_reported(self):
         rows = [(f"trial-{i}", False, True) for i in range(7)]
         self.assertEqual(select_by_independent_unit(rows, hypotheses_tested=4), 1)
+
+    def test_whitespace_aliases_cannot_inflate_independent_units(self):
+        rows = [(f"trial-{i}", True, False) for i in range(4)]
+        rows.append((" trial-0 ", True, False))
+        with self.assertRaises(ValueError):
+            select_by_independent_unit(rows)
 
     def test_invalid_provenance_rejected(self):
         with self.assertRaises(ValueError):
