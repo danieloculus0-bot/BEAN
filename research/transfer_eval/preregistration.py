@@ -35,6 +35,10 @@ def canonical_digest(plan):
         if any(not isinstance(case[k], str) or not case[k].strip()
                for k in CASE_KEYS):
             raise ValueError("invalid case label")
+        # Reject ambiguous labels before hashing: whitespace variants can
+        # represent the same underlying trial under different case IDs.
+        if any(case[k] != case[k].strip() for k in CASE_KEYS):
+            raise ValueError("noncanonical case label")
         if case["case_id"] in seen:
             raise ValueError("duplicate case")
         seen.add(case["case_id"])
