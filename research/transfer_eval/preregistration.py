@@ -16,6 +16,8 @@ def canonical_digest(plan):
         raise ValueError("invalid plan fields")
     if not all(isinstance(plan[k], str) and plan[k].strip() for k in ("baseline_sha", "candidate_sha")):
         raise ValueError("missing revisions")
+    if plan["baseline_sha"].strip() == plan["candidate_sha"].strip():
+        raise ValueError("identical baseline and candidate revisions")
     if type(plan["seed"]) is not int or plan["seed"] < 0:
         raise ValueError("invalid seed")
     if not isinstance(plan["budget"], dict) or not plan["budget"]:
