@@ -73,7 +73,7 @@ def audit_preregistration(plan, anchor_digest, outcomes):
     losses = sum(o["baseline"] and not o["candidate"] for o in paired)
     ties = len(paired) - wins - losses
     return {"paired_wins": wins, "paired_losses": losses, "paired_ties": ties,
-            "paired_net_gain": wins - losses,
+            "paired_net_gain": (wins - losses) if observed == expected else None,
             "valid": observed == expected, "reason": (
         "complete_frozen_eval" if observed == expected else "missing_or_extra_cases"),
         "digest": digest, "expected_cases": len(expected), "observed_cases": len(observed),
