@@ -169,13 +169,26 @@ def get_events_by_type(event_type: EventType, limit: int = 100) -> list[dict]:
 
 
 def supersede_event(event_id: int, replacement_id: int):
+    """Link an original event to a later correction exactly once.
+
+    The single conditional UPDATE is atomic: concurrent corrections cannot
+    silently overwrite one another. Requiring a later row id prevents cycles
+    without walking the graph. Neither event row is deleted.
     """
-    Mark an event as superseded by a later correction.
-    The original row is never deleted — only annotated.
-    """
+    if (type(event_id) is not int or type(replacement_id) is not int
+            or event_id < 1 or replacement_id <= event_id):
+        raise ValueError("Correction must point from a positive event id to a later id")
+
     store = get_store()
-    store.execute(
-        "UPDATE events SET superseded_by = ? WHERE id = ?",
-        (replacement_id, event_id),
+    cursor = store.execute(
+        """
+        UPDATE events SET superseded_by = ?
+        WHERE id = ? AND superseded_by IS NULL
+          AND EXISTS (SELECT 1 FROM events WHERE id = ?)
+        """,
+        (replacement_id, event_id, replacement_id),
     )
+    if cursor.rowcount != 1:
+        # Do not commit a failed correction attempt or overwrite an existing link.
+        raise ValueError("Missing event, missing replacement, or already superseded")
     store.commit()
