@@ -29,11 +29,23 @@ def accuracy(rows, feature):
 
 
 def select(validation):
-    """Return unresolved on ties; do not prefer the causal feature by fiat."""
-    scores = (accuracy(validation, 0), accuracy(validation, 1))
-    if scores[0] == scores[1]:
+    """Select only with one-sided exact paired evidence, otherwise abstain.
+
+    Discordant rows are the independent Bernoulli trials under a tied
+    predictor null. This is a research diagnostic, not causal identification.
+    """
+    if not validation:
         return None
-    return 0 if scores[0] > scores[1] else 1
+    wins = sum(row[0] == row[2] and row[1] != row[2] for row in validation)
+    losses = sum(row[1] == row[2] and row[0] != row[2] for row in validation)
+    n = wins + losses
+    if not n:
+        return None
+    from math import comb
+    tail = sum(comb(n, k) for k in range(max(wins, losses), n + 1)) / (2 ** n)
+    if tail > 0.05:
+        return None
+    return 0 if wins > losses else 1
 
 
 def run(seed=20261104, n=200):
@@ -73,6 +85,22 @@ class TestSelection(unittest.TestCase):
         before = select(validation)
         _ = cohort(5, 200, "reversed")
         self.assertEqual(before, select(validation))
+
+    def test_single_discordance_is_not_evidence(self):
+        self.assertIsNone(select([(1, 0, 1)]))
+
+    def test_empty_validation_abstains(self):
+        self.assertIsNone(select([]))
+
+    def test_five_discordances_are_significant(self):
+        self.assertEqual(select([(1, 0, 1)] * 5), 0)
+
+    def test_four_discordances_are_insufficient(self):
+        self.assertIsNone(select([(1, 0, 1)] * 4))
+
+    def test_opposite_direction_and_negative_evidence(self):
+        self.assertEqual(select([(0, 1, 1)] * 6), 1)
+        self.assertIsNone(select([(1, 0, 1)] * 6 + [(0, 1, 1)] * 6))
 
     def test_invalid_regime_rejected(self):
         with self.assertRaises(ValueError):
