@@ -68,7 +68,13 @@ def audit_preregistration(plan, anchor_digest, outcomes):
         if any(type(outcome[k]) is not bool for k in ("baseline", "candidate")):
             raise ValueError("outcomes must be boolean")
         observed.add(cid)
-    return {"valid": observed == expected, "reason": (
+    paired = [o for o in outcomes if o["case_id"] in expected]
+    wins = sum(o["candidate"] and not o["baseline"] for o in paired)
+    losses = sum(o["baseline"] and not o["candidate"] for o in paired)
+    ties = len(paired) - wins - losses
+    return {"paired_wins": wins, "paired_losses": losses, "paired_ties": ties,
+            "paired_net_gain": (wins - losses) if observed == expected else None,
+            "valid": observed == expected, "reason": (
         "complete_frozen_eval" if observed == expected else "missing_or_extra_cases"),
         "digest": digest, "expected_cases": len(expected), "observed_cases": len(observed),
         "claim": "plan_integrity_only_anchor_timing_unverified"}
