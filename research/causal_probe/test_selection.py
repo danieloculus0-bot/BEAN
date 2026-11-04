@@ -29,11 +29,23 @@ def accuracy(rows, feature):
 
 
 def select(validation):
-    """Return unresolved on ties; do not prefer the causal feature by fiat."""
-    scores = (accuracy(validation, 0), accuracy(validation, 1))
-    if scores[0] == scores[1]:
+    """Select only with one-sided exact paired evidence, otherwise abstain.
+
+    Discordant rows are the independent Bernoulli trials under a tied
+    predictor null. This is a research diagnostic, not causal identification.
+    """
+    if not validation:
         return None
-    return 0 if scores[0] > scores[1] else 1
+    wins = sum(row[0] == row[2] and row[1] != row[2] for row in validation)
+    losses = sum(row[1] == row[2] and row[0] != row[2] for row in validation)
+    n = wins + losses
+    if not n:
+        return None
+    from math import comb
+    tail = sum(comb(n, k) for k in range(max(wins, losses), n + 1)) / (2 ** n)
+    if tail > 0.05:
+        return None
+    return 0 if wins > losses else 1
 
 
 def run(seed=20261104, n=200):
@@ -51,6 +63,58 @@ def run(seed=20261104, n=200):
         "heldout_regime": "reversed",
     }
 
+
+
+def select_by_independent_unit(observations):
+    """Conservative paired sign test over declared independent units.
+
+    Input: iterable of (unit_id, causal_correct, proxy_correct).
+    Within-unit mixed evidence is a tie; repeated rows cannot manufacture
+    extra independent trials. Unit IDs are assertions, not authenticated.
+    """
+    from math import comb
+    units = {}
+    for unit_id, causal, proxy in observations:
+        if not isinstance(unit_id, str) or not unit_id.strip():
+            raise ValueError("nonempty independent unit ID required")
+        if type(causal) is not bool or type(proxy) is not bool:
+            raise ValueError("correctness must be boolean")
+        units.setdefault(unit_id, set()).add(int(causal) - int(proxy))
+    directions = []
+    for values in units.values():
+        directions.append(next(iter(values)) if len(values) == 1 else 0)
+    wins = directions.count(1)
+    losses = directions.count(-1)
+    n = wins + losses
+    if n == 0:
+        return None
+    tail = sum(comb(n, k) for k in range(max(wins, losses), n + 1)) / (2 ** n)
+    return (0 if wins > losses else 1) if tail <= 0.05 else None
+
+
+class TestIndependentUnitSelection(unittest.TestCase):
+    def test_repeated_same_unit_never_inflates_significance(self):
+        self.assertIsNone(select_by_independent_unit([("trial-1", True, False)] * 100))
+
+    def test_five_distinct_units_support_selection(self):
+        self.assertEqual(select_by_independent_unit(
+            [(f"trial-{i}", True, False) for i in range(5)]), 0)
+
+    def test_mixed_within_unit_is_conservative_tie(self):
+        rows = [(f"trial-{i}", True, False) for i in range(4)]
+        rows += [("mixed", True, False), ("mixed", False, True)]
+        self.assertIsNone(select_by_independent_unit(rows))
+
+    def test_negative_evidence_preserved(self):
+        rows = [(f"trial-{i}", True, False) for i in range(5)]
+        rows += [("loss", False, True)]
+        self.assertIsNone(select_by_independent_unit(rows))
+
+    def test_invalid_provenance_rejected(self):
+        with self.assertRaises(ValueError):
+            select_by_independent_unit([("", True, False)])
+        with self.assertRaises(ValueError):
+            select_by_independent_unit([("a", 1, 0)])
 
 class TestSelection(unittest.TestCase):
     def test_observational_tie_cannot_identify_cause(self):
@@ -73,6 +137,22 @@ class TestSelection(unittest.TestCase):
         before = select(validation)
         _ = cohort(5, 200, "reversed")
         self.assertEqual(before, select(validation))
+
+    def test_single_discordance_is_not_evidence(self):
+        self.assertIsNone(select([(1, 0, 1)]))
+
+    def test_empty_validation_abstains(self):
+        self.assertIsNone(select([]))
+
+    def test_five_discordances_are_significant(self):
+        self.assertEqual(select([(1, 0, 1)] * 5), 0)
+
+    def test_four_discordances_are_insufficient(self):
+        self.assertIsNone(select([(1, 0, 1)] * 4))
+
+    def test_opposite_direction_and_negative_evidence(self):
+        self.assertEqual(select([(0, 1, 1)] * 6), 1)
+        self.assertIsNone(select([(1, 0, 1)] * 6 + [(0, 1, 1)] * 6))
 
     def test_invalid_regime_rejected(self):
         with self.assertRaises(ValueError):
