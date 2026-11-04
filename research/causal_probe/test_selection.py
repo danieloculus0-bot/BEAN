@@ -65,13 +65,17 @@ def run(seed=20261104, n=200):
 
 
 
-def select_by_independent_unit(observations):
+def select_by_independent_unit(observations, *, hypotheses_tested=1):
     """Conservative paired sign test over declared independent units.
 
     Input: iterable of (unit_id, causal_correct, proxy_correct).
     Within-unit mixed evidence is a tie; repeated rows cannot manufacture
     extra independent trials. Unit IDs are assertions, not authenticated.
+    hypotheses_tested counts all predeclared candidate comparisons, including
+    unsuccessful ones. This does not correct unreported adaptive searching.
     """
+    if type(hypotheses_tested) is not int or hypotheses_tested < 1:
+        raise ValueError("hypotheses_tested must be a positive integer")
     from math import comb
     units = {}
     for unit_id, causal, proxy in observations:
@@ -89,7 +93,8 @@ def select_by_independent_unit(observations):
     if n == 0:
         return None
     tail = sum(comb(n, k) for k in range(max(wins, losses), n + 1)) / (2 ** n)
-    return (0 if wins > losses else 1) if tail <= 0.05 else None
+    # Bonferroni family-wise control for a predeclared number of selections.
+    return (0 if wins > losses else 1) if tail <= 0.05 / hypotheses_tested else None
 
 
 class TestIndependentUnitSelection(unittest.TestCase):
@@ -109,6 +114,23 @@ class TestIndependentUnitSelection(unittest.TestCase):
         rows = [(f"trial-{i}", True, False) for i in range(5)]
         rows += [("loss", False, True)]
         self.assertIsNone(select_by_independent_unit(rows))
+
+    def test_multiple_comparisons_require_stronger_evidence(self):
+        rows = [(f"trial-{i}", True, False) for i in range(5)]
+        self.assertEqual(select_by_independent_unit(rows), 0)
+        self.assertIsNone(select_by_independent_unit(rows, hypotheses_tested=2))
+        self.assertEqual(select_by_independent_unit(
+            [(f"trial-{i}", True, False) for i in range(7)],
+            hypotheses_tested=4), 0)
+
+    def test_invalid_multiplicity_rejected(self):
+        for count in (0, -1, True, 1.5, "2"):
+            with self.assertRaises(ValueError):
+                select_by_independent_unit([], hypotheses_tested=count)
+
+    def test_negative_direction_still_reported(self):
+        rows = [(f"trial-{i}", False, True) for i in range(7)]
+        self.assertEqual(select_by_independent_unit(rows, hypotheses_tested=4), 1)
 
     def test_invalid_provenance_rejected(self):
         with self.assertRaises(ValueError):
