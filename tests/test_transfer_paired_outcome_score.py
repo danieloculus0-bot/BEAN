@@ -29,7 +29,7 @@ class TestPairedOutcomeScore(unittest.TestCase):
         result = audit_preregistration(p, canonical_digest(p),
             [{"case_id": "c0", "baseline": False, "candidate": True}])
         self.assertFalse(result["valid"])
-        self.assertEqual(result["paired_net_gain"], 1)
+        self.assertIsNone(result["paired_net_gain"])
 
     def test_negative_result_is_not_dropped(self):
         p = plan()
