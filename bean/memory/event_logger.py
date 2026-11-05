@@ -168,14 +168,30 @@ def get_events_by_type(event_type: EventType, limit: int = 100) -> list[dict]:
     return [dict(r) for r in rows]
 
 
-def supersede_event(event_id: int, replacement_id: int):
+def supersede_event(event_id: int, replacement_id: int) -> None:
+    """Link a correction once, without erasing an earlier correction.
+
+    Both IDs must already exist, and the replacement must be a later event.
+    The conditional UPDATE is atomic across concurrent SQLite connections.
+    This guards correction integrity; a durable append-only correction receipt
+    remains a separate integration requirement.
     """
-    Mark an event as superseded by a later correction.
-    The original row is never deleted — only annotated.
-    """
+    if (not isinstance(event_id, int) or isinstance(event_id, bool)
+            or not isinstance(replacement_id, int) or isinstance(replacement_id, bool)
+            or event_id < 1 or replacement_id <= event_id):
+        raise ValueError("Correction requires positive IDs and a later replacement")
+
     store = get_store()
-    store.execute(
-        "UPDATE events SET superseded_by = ? WHERE id = ?",
+    # SQLite FK enforcement depends on connection settings, so explicitly
+    # verify the target even when foreign_keys has been disabled.
+    if store.fetchone("SELECT id FROM events WHERE id = ?", (replacement_id,)) is None:
+        raise ValueError("Replacement event does not exist")
+    cursor = store.execute(
+        "UPDATE events SET superseded_by = ? "
+        "WHERE id = ? AND superseded_by IS NULL",
         (replacement_id, event_id),
     )
+    if cursor.rowcount != 1:
+        store._conn().rollback()
+        raise ValueError("Original event missing or already superseded")
     store.commit()
