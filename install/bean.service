@@ -1,23 +1,21 @@
+# BEAN runtime service template. Render using install/jetson_render.py.
+# Runs the existing brain, NOT the physical motion output interface.
 [Unit]
-Description=BEAN Brain Runtime
-After=network-online.target
-Wants=network-online.target
+Description=BEAN local brain (Jetson)
+After=network.target
 
 [Service]
 Type=simple
-User=bean
-Group=bean
-WorkingDirectory=/home/bean/BEAN
-EnvironmentFile=/etc/bean/bean.env
-ExecStart=/home/bean/BEAN/.venv/bin/python3 /home/bean/BEAN/bean_run.py
-ExecStop=/bin/kill -SIGINT $MAINPID
+User=@BEAN_USER@
+Group=@BEAN_GROUP@
+WorkingDirectory=@BEAN_HOME@
+EnvironmentFile=@BEAN_ENV_FILE@
+ExecStart=@BEAN_HOME@/.venv/bin/python3 @BEAN_HOME@/bean_run.py
 Restart=on-failure
 RestartSec=10
 TimeoutStopSec=30
 KillSignal=SIGINT
-
-# Safety posture: this service starts the brain/runtime only.
-# Motion hardware remains disabled until a verified hardware driver is added.
+UMask=0077
 
 [Install]
 WantedBy=multi-user.target
