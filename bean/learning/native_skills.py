@@ -87,6 +87,55 @@ class BEANReasoningSkills:
             "matched_terms": score, "ranking": "domain_lexical_not_semantic_proof",
         } for score, item in ranked[:limit]]
 
+    def recall_analogies(self, *, domain, query, limit=3):
+        """Retrieve *possible* parallels from other domains without copying policy.
+
+        This is a read-only, lexical candidate search over the same immutable
+        evidence-linked lessons. Similar words are NOT evidence that a procedure
+        transfers. Ignore scoped Bridge lessons outside their original concept.
+        """
+        domain = _text(domain, "domain", 100).casefold()
+        query = _text(query, "query")
+        if type(limit) is not int or not 1 <= limit <= 10:
+            raise ValueError("Invalid analogy limit")
+        # Do not let generic prose create false cross-industry equivalence.
+        stop = {"the", "a", "an", "and", "or", "for", "to", "of", "in",
+                "on", "with", "from", "what", "when", "where", "how",
+                "do", "does", "this", "that", "is", "are", "was", "be",
+                "task", "procedure", "step", "steps", "expected", "observed",
+                "unverified", "hypothesis", "candidate", "reported"}
+        wanted = _words(query) - stop
+        if len(wanted) < 2:
+            return []
+        ranked = []
+        for index, item in enumerate(self.bank.lessons()):
+            if item.domain == domain:
+                continue
+            scopes = [ref[len("bridge_concept:"):] for ref in item.evidence_refs
+                      if ref.startswith("bridge_concept:")]
+            if scopes and not any(
+                re.search(r"(?<![a-z0-9_])" + re.escape(scope.casefold()) +
+                          r"(?![a-z0-9_])", query.casefold()) for scope in scopes
+            ):
+                continue
+            terms = sorted(wanted & (_words(item.text) - stop))
+            if len(terms) < 2:
+                continue
+            ranked.append((len(terms), index, item, terms))
+        ranked.sort(key=lambda match: (-match[0], -match[1], match[2].lesson_id))
+        return [{
+            "lesson_id": item.lesson_id,
+            "source_domain": item.domain,
+            "strategy": item.strategy,
+            "text": item.text,
+            "evidence_refs": list(item.evidence_refs),
+            "observed_outcome": item.observed_outcome,
+            "matched_terms": terms,
+            "ranking": "cross_domain_lexical_candidate_not_semantic_validation",
+            "independently_verified_transfer": False,
+            "safe_to_apply_without_target_test": False,
+        } for _, _, item, terms in ranked[:limit]]
+
     def reflect(self, *, domain, task_id, observed, expected,
                 adjustment_hypothesis, evidence_refs):
         """Preserve a mistake and an explicit, unverified correction hypothesis."""
