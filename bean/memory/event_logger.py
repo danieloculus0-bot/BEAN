@@ -134,8 +134,16 @@ def log_event(
     return cursor.lastrowid
 
 
+def _checked_history_limit(limit: int) -> int:
+    """Prevent SQLite LIMIT -1 from silently exposing unbounded history."""
+    if type(limit) is not int or not 1 <= limit <= 1000:
+        raise ValueError("History limit must be an integer from 1 to 1000")
+    return limit
+
+
 def get_recent_events(session_uuid: str, limit: int = 50) -> list[dict]:
     """Return the N most recent events for a session, newest first."""
+    limit = _checked_history_limit(limit)
     store = get_store()
     rows = store.fetchall(
         """
@@ -153,6 +161,7 @@ def get_recent_events(session_uuid: str, limit: int = 50) -> list[dict]:
 
 def get_events_by_type(event_type: EventType, limit: int = 100) -> list[dict]:
     """Retrieve events of a specific type across all sessions."""
+    limit = _checked_history_limit(limit)
     store = get_store()
     rows = store.fetchall(
         """
