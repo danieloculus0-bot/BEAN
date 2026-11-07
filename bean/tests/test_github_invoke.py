@@ -119,3 +119,40 @@ def test_legacy_checkpoint_archive_names_remain_readable(tmp_path):
     restored = tmp_path / "restored"
     restored.mkdir()
     assert unpack(state, restored)["receipt_sha256"] == first["receipt_sha256"]
+
+
+def test_interrupted_generation_retry_with_changed_bytes_fails_closed(tmp_path, monkeypatch):
+    """A stale generation archive must not be silently overwritten on retry."""
+    state = tmp_path / "state"
+    runtime = tmp_path / "runtime"
+    runtime.mkdir()
+    _sqlite(runtime / "bean_memory.sqlite3", "original-core")
+    _sqlite(runtime / "bean_reasoning.sqlite3", "original-reasoning")
+    first = checkpoint(state, runtime, None, 1, 3, 2, 12)
+    original_manifest = (state / "manifest.json").read_bytes()
+
+    with sqlite3.connect(str(runtime / "bean_memory.sqlite3")) as db:
+        db.execute("INSERT INTO observations(value) VALUES ('first-attempt')")
+    original_replace = Path.replace
+
+    def interrupt_before_reasoning(self, target):
+        if str(self).endswith("bean_reasoning.sqlite3.g000002.gz.tmp"):
+            raise OSError("synthetic interruption")
+        return original_replace(self, target)
+
+    monkeypatch.setattr(Path, "replace", interrupt_before_reasoning)
+    with pytest.raises(OSError, match="synthetic interruption"):
+        checkpoint(state, runtime, first, 2, 7, 2, 12)
+    monkeypatch.setattr(Path, "replace", original_replace)
+
+    with sqlite3.connect(str(runtime / "bean_memory.sqlite3")) as db:
+        db.execute("INSERT INTO observations(value) VALUES ('changed-retry')")
+    with pytest.raises(ValueError, match="generation already exists with different contents"):
+        checkpoint(state, runtime, first, 2, 8, 2, 12)
+    assert (state / "manifest.json").read_bytes() == original_manifest
+
+    recovered_dir = tmp_path / "recovered"
+    recovered_dir.mkdir()
+    assert unpack(state, recovered_dir)["receipt_sha256"] == first["receipt_sha256"]
+    with sqlite3.connect(str(recovered_dir / "bean_memory.sqlite3")) as db:
+        assert db.execute("SELECT value FROM observations").fetchall() == [("original-core",)]
