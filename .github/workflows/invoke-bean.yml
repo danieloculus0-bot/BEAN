@@ -88,26 +88,34 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           # Stage the exact versioned archives named by the manifest, not just
           # the legacy fixed filenames. Otherwise main would publish a dangling receipt.
-          git add -A -- research/github_brain
+          # Only publish files named by the verified synthetic manifest.
           python - <<'PY'
           import json
+          import re
           import subprocess
           from pathlib import Path
 
           root = Path("research/github_brain")
           receipt = json.loads((root / "manifest.json").read_text())
-          assert receipt.get("synthetic_only") is True, "private checkpoint publication refused"
+          assert receipt.get("synthetic_only") is True
           assert receipt.get("schema") == "bean.github.invoke.v1"
+          generation = receipt.get("generation")
+          assert type(generation) is int and generation >= 1
+          allowed = [root / "manifest.json"]
           for name, legacy in (("core", "bean_memory.sqlite3.gz"),
                                ("reasoning", "bean_reasoning.sqlite3.gz")):
-              record = receipt["databases"][name]
-              archive = record.get("archive", legacy)
-              assert archive.startswith("bean_") and "/" not in archive and chr(92) not in archive
+              archive = receipt["databases"][name].get("archive", legacy)
+              expected = legacy.replace(".sqlite3.gz", f".sqlite3.g{generation:06d}.gz")
+              assert archive in (legacy, expected), "unexpected checkpoint archive"
               path = root / archive
               assert path.is_file(), f"missing checkpoint archive: {path}"
-              subprocess.run(["git", "ls-files", "--error-unmatch", "--cached", "--", str(path)],
-                             check=True, stdout=subprocess.DEVNULL)
-          print("BEAN: all manifest-referenced synthetic archives staged")
+              allowed.append(path)
+          subprocess.run(["git", "add", "--", *(str(p) for p in allowed)], check=True)
+          staged = set(subprocess.check_output(
+              ["git", "diff", "--cached", "--name-only", "--", str(root)],
+              text=True).splitlines())
+          assert staged <= {str(p) for p in allowed}, "unexpected staged checkpoint file"
+          print("BEAN: manifest and only referenced synthetic archives staged")
           PY
           if git diff --cached --quiet; then
             echo "No new BEAN memory receipt"
