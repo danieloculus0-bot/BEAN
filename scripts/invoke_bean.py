@@ -71,7 +71,10 @@ def unpack(state_dir: Path, runtime_dir: Path) -> dict | None:
         record = previous.get("databases", {}).get(name)
         if not isinstance(record, dict):
             raise ValueError("BEAN manifest missing database")
-        compressed = state_dir / archive
+        archive_name = record.get("archive", archive)
+        if not isinstance(archive_name, str) or not re.fullmatch(r"[a-z_]+\.sqlite3(?:\.g[0-9]{6})?\.gz", archive_name):
+            raise ValueError("invalid BEAN checkpoint archive name")
+        compressed = state_dir / archive_name
         if not compressed.is_file() or compressed.stat().st_size > MAX_COMPRESSED:
             raise ValueError("missing or oversized BEAN compressed checkpoint")
         with gzip.open(compressed, "rb") as source:
@@ -125,9 +128,17 @@ def checkpoint(state_dir: Path, runtime_dir: Path, prior: dict | None,
         compressed = gzip.compress(payload, mtime=0)
         if len(compressed) > MAX_COMPRESSED:
             raise ValueError("BEAN memory exceeded compressed checkpoint size limit")
-        (state_dir / (archive + ".tmp")).write_bytes(compressed)
-        (state_dir / (archive + ".tmp")).replace(state_dir / archive)
-        databases[name] = {"sha256": digest(payload), "bytes": len(payload)}
+        generation = (prior["generation"] + 1 if prior else 1)
+        archive_name = archive.replace(".sqlite3.gz", f".sqlite3.g{generation:06d}.gz")
+        destination = state_dir / archive_name
+        if destination.exists():
+            if destination.read_bytes() != compressed:
+                raise ValueError("BEAN checkpoint generation already exists with different contents")
+        else:
+            staging_archive = state_dir / (archive_name + ".tmp")
+            staging_archive.write_bytes(compressed)
+            staging_archive.replace(destination)
+        databases[name] = {"sha256": digest(payload), "bytes": len(payload), "archive": archive_name}
         backup.unlink()
     source_sha = os.environ.get("GITHUB_SHA", "local-validation")
     if not (source_sha == "local-validation" or re.fullmatch(r"[0-9a-f]{40}", source_sha)):
