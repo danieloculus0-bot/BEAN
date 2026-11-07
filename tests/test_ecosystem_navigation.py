@@ -15,6 +15,7 @@ PAGES = (
     "portfolio/ez-fair/index.html",
     "portfolio/ez-office/index.html",
     "portfolio/bean-learning/index.html",
+    "bean-demo/index.html",
     "research-lab.html",
     "for-ai-developers.html",
     "rubiks-cube.html",
@@ -80,6 +81,16 @@ class EcosystemNavigationTests(unittest.TestCase):
                 links = self.links(name).links
                 self.assertFalse(any(url.startswith(ERP + "#") for url in links))
                 self.assertFalse(any(url.startswith("javascript:") for url in links))
+
+    def test_bean_core_demo_is_reachable_without_fake_service(self):
+        self.assertIn("./bean-demo/", self.links("index.html").links)
+        self.assertIn("../bean-demo/", self.links("portfolio/index.html").links)
+        page = self.page("bean-demo/index.html")
+        self.assertIn("research/github_brain/manifest.json", page)
+        self.assertIn("bean.github.request.v1", page)
+        self.assertIn("dictionary-patch ledger", page.lower())
+        self.assertIn("https://danieloculus0-bot.github.io/Axiom_Beta/erp/",
+                      self.links("bean-demo/index.html").links)
 
     def test_canonical_app_link_is_https(self):
         self.assertEqual((urlparse(ERP).scheme, urlparse(ERP).netloc),

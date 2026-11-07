@@ -1,0 +1,122 @@
+name: BEAN - ChatGPT GitHub request bridge
+
+on:
+  issues:
+    types: [opened]
+  issue_comment:
+    types: [created]
+  pull_request:
+    branches: [main]
+    paths:
+      - 'scripts/bean_github_issue_bridge.py'
+      - 'scripts/invoke_bean.py'
+      - 'bean/tests/test_github_issue_bridge.py'
+      - '.github/workflows/bean-chatgpt-bridge.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: bean-github-memory-${{ github.event_name == 'pull_request' && github.event.pull_request.number || 'main' }}
+  cancel-in-progress: false
+
+jobs:
+  test-public-bridge:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install pytest
+      - name: Offline request validation, recovery and Core behavior
+        run: python -m pytest bean/tests/test_github_invoke.py bean/tests/test_github_issue_bridge.py -q -ra
+      - name: Two actual synthetic BEAN Core restarts
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/invoke_bean.py --state-dir "$RUNNER_TEMP/saved" --runtime-dir "$RUNNER_TEMP/core" --ticks 12
+          python scripts/invoke_bean.py --state-dir "$RUNNER_TEMP/saved" --runtime-dir "$RUNNER_TEMP/core" --ticks 12
+
+  respond-to-owner:
+    if: >-
+      (github.event_name == 'issues' || github.event_name == 'issue_comment')
+      && startsWith(github.event.issue.title, '[BEAN]')
+      && github.event.issue.user.login == 'danieloculus0-bot'
+      && github.event.sender.login == 'danieloculus0-bot'
+      && !github.event.issue.pull_request
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write
+      issues: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install pytest
+      - name: Verify request contract and checkpoint integrity
+        run: python -m pytest bean/tests/test_github_invoke.py bean/tests/test_github_issue_bridge.py -q -ra
+      - name: Validate public request and deduplicate
+        id: gate
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          python scripts/bean_github_issue_bridge.py \
+            --event "$GITHUB_EVENT_PATH" --event-name "$GITHUB_EVENT_NAME" \
+            --request-out "$RUNNER_TEMP/bean-request.json" \
+            --metadata-out "$RUNNER_TEMP/bean-metadata.json"
+          NUMBER="$(python -c 'import json,os; print(json.load(open(os.environ["RUNNER_TEMP"]+"/bean-metadata.json"))["issue_number"])')"
+          REQUEST_ID="$(python -c 'import json,os; print(json.load(open(os.environ["RUNNER_TEMP"]+"/bean-metadata.json"))["request_id"])')"
+          echo "issue_number=$NUMBER" >> "$GITHUB_OUTPUT"
+          echo "request_id=$REQUEST_ID" >> "$GITHUB_OUTPUT"
+          if gh api --paginate "repos/$GITHUB_REPOSITORY/issues/$NUMBER/comments?per_page=100" --jq '.[].body' | grep -Fq "<!-- BEAN_REPLY:$REQUEST_ID -->"; then
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            echo "Existing reply found, not reprocessing request"
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Boot real BEAN Core and run native reasoning
+        if: steps.gate.outputs.skip == 'false'
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/invoke_bean.py \
+            --state-dir research/github_brain \
+            --runtime-dir "$RUNNER_TEMP/bean-run" --ticks 12 \
+            --request-file "$RUNNER_TEMP/bean-request.json" \
+            --reply-file "$RUNNER_TEMP/bean-reply.json"
+          python scripts/bean_github_issue_bridge.py \
+            --reply "$RUNNER_TEMP/bean-reply.json" \
+            --render-out "$RUNNER_TEMP/bean-comment.md" \
+            --request-id "${{ steps.gate.outputs.request_id }}"
+      - name: Commit checked checkpoint to main
+        if: steps.gate.outputs.skip == 'false'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add research/github_brain/manifest.json research/github_brain/bean_memory.sqlite3.gz research/github_brain/bean_reasoning.sqlite3.gz
+          git commit -m "BEAN: GitHub request ${{ steps.gate.outputs.request_id }}"
+          AUTH="$(printf 'x-access-token:%s' "$GH_TOKEN" | base64 -w0)"
+          git -c http.extraheader="AUTHORIZATION: basic $AUTH" push origin HEAD:main
+      - name: Post actual Core result to the GitHub issue
+        if: steps.gate.outputs.skip == 'false'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          gh issue comment "${{ steps.gate.outputs.issue_number }}" --repo "$GITHUB_REPOSITORY" --body-file "$RUNNER_TEMP/bean-comment.md"
