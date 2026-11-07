@@ -121,7 +121,7 @@ jobs:
             echo "No new BEAN memory receipt"
             exit 0
           fi
-          git commit -m "BEAN: preserve synthetic Core digital session $GITHUB_RUN_ID" -- research/github_brain/manifest.json research/github_brain/bean_memory.sqlite3* research/github_brain/bean_reasoning.sqlite3*
+          git commit -m "BEAN: preserve synthetic Core digital session $GITHUB_RUN_ID"
           # Keep the ephemeral runtime unprivileged; token exists only in this step.
           AUTH="$(printf 'x-access-token:%s' "$GH_TOKEN" | base64 -w0)"
           git -c http.extraheader="AUTHORIZATION: basic $AUTH" push origin HEAD:main
