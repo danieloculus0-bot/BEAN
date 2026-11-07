@@ -41,6 +41,8 @@ test('BEAN page persists a note and patch timeline across reload and offline res
     browser = await chromium.launch({headless: true});
     const context = await browser.newContext({serviceWorkers: 'allow'});
     const page = await context.newPage();
+    page.on('pageerror', err => console.log('PAGE_ERROR:', err.message));
+    page.on('console', msg => { if (msg.type() === 'error') console.log('BROWSER_CONSOLE:', msg.text()); });
     await page.route('https://raw.githubusercontent.com/danieloculus0-bot/BEAN/main/research/github_brain/manifest.json**',
       route => route.fulfill({status: 200, contentType: 'application/json',
         headers: {'access-control-allow-origin': '*'}, body: JSON.stringify(payload)}));
@@ -51,7 +53,12 @@ test('BEAN page persists a note and patch timeline across reload and offline res
 
     await page.locator('#local-note').fill('Remember this on my device, not GitHub.');
     await page.locator('#save-note').click();
-    await page.waitForFunction(() => document.getElementById('note-saved').textContent.includes('Saved'));
+    await page.waitForTimeout(450);
+    const noteFeedback = await page.locator('#note-saved').textContent();
+    console.log('NOTE_SAVE_FEEDBACK:', noteFeedback);
+    console.log('DEVICE_STATUS:', await page.locator('#device-status').textContent());
+    console.log('SAVE_DISABLED:', await page.locator('#save-note').isDisabled());
+    assert.match(noteFeedback, /^Saved on this device:/);
     await page.locator('#step').click();
     await page.waitForFunction(() => document.getElementById('steps').textContent === '1');
     await page.locator('#step').click();
