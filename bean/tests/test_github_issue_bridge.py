@@ -98,3 +98,32 @@ def test_reply_is_marked_and_html_escaped():
 def test_no_fake_provider_or_arbitrary_shell(tmp_path):
     with pytest.raises(ValueError, match="Unsupported"):
         serve_public_request(tmp_path / "native.db", envelope("log_note"))
+
+
+def test_standalone_cli_responds_to_real_core_request(tmp_path):
+    """Reproduce the GitHub Actions direct-script invocation path, not a module import."""
+    import subprocess
+    import sys
+    from pathlib import Path
+
+    root = Path(__file__).resolve().parents[2]
+    request_file = tmp_path / "request.json"
+    reply_file = tmp_path / "reply.json"
+    request_file.write_text(json.dumps(envelope()), encoding="utf-8")
+    result = subprocess.run(
+        [sys.executable, str(root / "scripts" / "invoke_bean.py"),
+         "--state-dir", str(tmp_path / "checkpoint"),
+         "--runtime-dir", str(tmp_path / "runtime"),
+         "--ticks", "12",
+         "--request-file", str(request_file),
+         "--reply-file", str(reply_file)],
+        cwd=tmp_path, capture_output=True, text=True, timeout=90,
+        check=False,
+    )
+    assert result.returncode == 0, result.stderr
+    reply = json.loads(reply_file.read_text(encoding="utf-8"))
+    assert reply["schema"] == "bean.github.reply.v1"
+    assert reply["response"]["schema"] == "bean.native.reasoning.status.v1"
+    assert reply["generation"] == 1
+    assert reply["external_model_invoked"] is False
+    assert (tmp_path / "checkpoint" / "manifest.json").exists()
