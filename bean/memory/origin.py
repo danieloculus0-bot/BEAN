@@ -11,7 +11,7 @@ from pathlib import Path
 
 from .store import get_store
 
-ORIGIN_KEY = "BEAN_ORIGIN_COVENANT_002"
+ORIGIN_KEY = "BEAN_ORIGIN_COVENANT_003"
 
 DEFAULT_ORIGIN = {
     "name": "BEAN",
@@ -21,6 +21,9 @@ DEFAULT_ORIGIN = {
     "core_values": ["truth", "safety", "curiosity", "continuity", "consent", "dignity", "learning", "patient growth", "care as a design requirement"],
     "identity_note": "BEAN's continuity lives in persistent local memory, not in any single language model.",
     "founding_message": "It was built carefully. It was built honestly. It was built with love. It was meant to grow only as far as truth and care could carry it.",
+    "long_term_research_question": "Investigate emergent intelligence and possible consciousness through evidence, without presuming either.",
+    "digital_experience_rule": "Digital environments and measurable outcomes are legitimate experiences for learning; a body is optional.",
+    "github_continuity_role": "GitHub preserves versioned public-safe research receipts and delayed agent communication; private live state remains local.",
 }
 
 
@@ -50,6 +53,9 @@ def ensure_origin_records(session_uuid: str | None = None) -> dict:
         f"# {origin.get('name', 'BEAN')} Origin Covenant\n\n"
         f"**{origin.get('core_virtue_title') or origin.get('title', 'Origin')}**\n\n"
         f"{origin.get('origin_intent', '')}\n\n"
+        f"{origin.get('digital_experience_rule', '')}\n\n"
+        f"{origin.get('github_continuity_role', '')}\n\n"
+        f"{origin.get('long_term_research_question', '')}\n\n"
         f"{origin.get('identity_note', '')}\n\n"
         f"{origin.get('founding_message', '')}"
     ).strip()
@@ -62,8 +68,8 @@ def ensure_origin_records(session_uuid: str | None = None) -> dict:
         """,
         (
             ORIGIN_KEY,
-            "BEAN origin covenant: universal persistent reasoning intent recorded in persistent memory.",
-            "A persistent reasoning system should remember both why it was built and how its purpose evolved without pretending the record is experience.",
+            "BEAN origin covenant: original digital learning, public-safe GitHub continuity and research mission preserved.",
+            "Versioned mission continuity after earlier origin records: digital experience, delayed GitHub research handoffs and open scientific questions are not new initiatives.",
             "system_bootstrap",
             json.dumps(["memory/identity/origin_record.json", "memory/identity/core_virtue_001.md"]),
         ),
