@@ -156,3 +156,45 @@ def test_interrupted_generation_retry_with_changed_bytes_fails_closed(tmp_path, 
     assert unpack(state, recovered_dir)["receipt_sha256"] == first["receipt_sha256"]
     with sqlite3.connect(str(recovered_dir / "bean_memory.sqlite3")) as db:
         assert db.execute("SELECT value FROM observations").fetchall() == [("original-core",)]
+
+
+def test_manifest_publish_interruption_retries_identical_generation(tmp_path, monkeypatch):
+    """Archives staged before manifest publication must be safely reusable."""
+    state = tmp_path / "state"
+    runtime = tmp_path / "runtime"
+    runtime.mkdir()
+    _sqlite(runtime / "bean_memory.sqlite3", "initial-core")
+    _sqlite(runtime / "bean_reasoning.sqlite3", "initial-reasoning")
+    first = checkpoint(state, runtime, None, 1, 3, 2, 12)
+    original_manifest = (state / "manifest.json").read_bytes()
+
+    with sqlite3.connect(str(runtime / "bean_memory.sqlite3")) as db:
+        db.execute("INSERT INTO observations(value) VALUES ('next-generation')")
+
+    original_replace = Path.replace
+
+    def interrupt_manifest(self, target):
+        if str(self).endswith("manifest.json.tmp"):
+            raise OSError("synthetic interruption before manifest publication")
+        return original_replace(self, target)
+
+    monkeypatch.setattr(Path, "replace", interrupt_manifest)
+    with pytest.raises(OSError, match="synthetic interruption"):
+        checkpoint(state, runtime, first, 2, 7, 2, 12)
+    monkeypatch.setattr(Path, "replace", original_replace)
+
+    assert (state / "manifest.json").read_bytes() == original_manifest
+    recovered = tmp_path / "recovered"
+    recovered.mkdir()
+    assert unpack(state, recovered)["receipt_sha256"] == first["receipt_sha256"]
+
+    second = checkpoint(state, runtime, first, 2, 7, 2, 12)
+    assert second["generation"] == 2
+    assert second["previous_receipt_sha256"] == first["receipt_sha256"]
+    restarted = tmp_path / "restarted"
+    restarted.mkdir()
+    assert unpack(state, restarted)["receipt_sha256"] == second["receipt_sha256"]
+    with sqlite3.connect(str(restarted / "bean_memory.sqlite3")) as db:
+        assert db.execute("SELECT value FROM observations ORDER BY rowid").fetchall() == [
+            ("initial-core",), ("next-generation",)
+        ]
