@@ -79,6 +79,9 @@ def unpack(state_dir: Path, runtime_dir: Path) -> dict | None:
         if len(body) > MAX_UNCOMPRESSED or digest(body) != record.get("sha256"):
             raise ValueError("BEAN compressed checkpoint hash or size mismatch")
         destination = runtime_dir / restored
+        # A later boot must never replay a stale WAL sidecar from a prior process.
+        for suffix in ("-wal", "-shm"):
+            (runtime_dir / (restored + suffix)).unlink(missing_ok=True)
         destination.write_bytes(body)
         check_sqlite(destination)
     return previous
@@ -160,6 +163,7 @@ def invoke(state_dir: Path, runtime_dir: Path, ticks: int = 12, hz: int = 20) ->
         raise ValueError("uncheckpointed prior BEAN runtime found")
     inbox = runtime_dir / "inbox"
     inbox.mkdir(exist_ok=True)
+    previously_processed = len(list((inbox / "processed").glob("*.json")))
     for path in inbox.glob("*.json"):
         raise ValueError("unexpected pending inbox command")
     commands = ("run_brain_maintenance", "update_models")
@@ -194,7 +198,7 @@ def invoke(state_dir: Path, runtime_dir: Path, ticks: int = 12, hz: int = 20) ->
     if result.returncode:
         raise RuntimeError("BEAN Core invocation failed: " + result.stderr[-3500:])
     failed = list((inbox / "failed").glob("*.json"))
-    if failed or len(list((inbox / "processed").glob("*.json"))) != len(commands):
+    if failed or len(list((inbox / "processed").glob("*.json"))) != previously_processed + len(commands):
         raise RuntimeError("BEAN did not process both digital cognition commands")
     boots, events, _, processed = sqlite_stats(core)
     if processed < len(commands) or (prior and (boots != prior["boots"] + 1 or
