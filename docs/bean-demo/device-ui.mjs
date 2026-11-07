@@ -238,7 +238,7 @@ async function bootstrap() {
   await showLedger();
   showNote();
   await refreshPublicReceipt();
-  if ('serviceWorker' in navigator && location.protocol === 'https:') {
+  if ('serviceWorker' in navigator && window.isSecureContext) {
     try {
       await navigator.serviceWorker.register('./sw.js', {scope: './'});
       $('offline-status').textContent = 'Offline app shell available after first successful install.';
