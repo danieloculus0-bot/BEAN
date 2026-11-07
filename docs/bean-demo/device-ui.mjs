@@ -2,7 +2,7 @@
 // GitHub checkpoint fetch is a public, read-only request by the existing demo.
 import {
   DeviceMemory, INITIAL_STATE, freshLedger, appendDemoPatch, replayLedger,
-  jsonBytes, clone, verifyPublicManifest, MAX_PATCHES
+  jsonBytes, clone, applyPatch, verifyPublicManifest
 } from './device-memory.mjs';
 
 const $ = id => document.getElementById(id);
@@ -24,7 +24,10 @@ function byteString(n) {
 function setBusy(value) {
   busy = value;
   for (const id of ['step', 'reset', 'verify', 'save-note', 'export-device', 'import-device',
-    'copy-context', 'clear-device']) $(id).disabled = value;
+    'copy-context', 'clear-device']) {
+    const requiresDatabase = ['save-note', 'export-device', 'import-device', 'clear-device'].includes(id);
+    $(id).disabled = value || (requiresDatabase && !memory);
+  }
 }
 async function showLedger() {
   const current = await replayLedger(ledger);
@@ -32,7 +35,7 @@ async function showLedger() {
   let running = clone(ledger.base);
   const lines = [];
   for (const event of ledger.patches) {
-    running = (await import('./device-memory.mjs')).applyPatch(running, event.patch);
+    running = applyPatch(running, event.patch);
     full += jsonBytes(running);
     compact += jsonBytes(event.patch);
     lines.push('Event ' + event.sequence + ': ' + JSON.stringify(event.patch));
@@ -199,6 +202,10 @@ async function clearDevice() {
     ledger = await memory.loadLedger();
     localNote = null;
     latestReceipt = null;
+    for (const id of ['g', 'b', 'e', 'c', 'source', 'hash', 'previous', 'bytes']) {
+      $(id).textContent = '–';
+    }
+    message('receipt-status', 'Cached public receipt cleared. Use Refresh to retrieve GitHub again.');
     await showLedger();
     showNote();
     message('device-status', 'Browser-local BEAN demo storage cleared. Nothing on GitHub changed.', 'good');
