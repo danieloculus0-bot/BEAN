@@ -23,10 +23,10 @@ function byteString(n) {
 }
 function setBusy(value) {
   busy = value;
-  for (const id of ['step', 'reset', 'verify', 'save-note', 'export-device', 'import-device',
+  for (const id of ['step', 'reset', 'verify', 'save-note', 'export-device', 'import-file',
     'copy-context', 'clear-device']) {
-    const requiresDatabase = ['save-note', 'export-device', 'import-device', 'clear-device'].includes(id);
-    $(id).disabled = value || (requiresDatabase && !memory);
+    const requiresDatabase = ['save-note', 'export-device', 'import-file', 'clear-device'].includes(id);
+    if ($(id)) $(id).disabled = value || (requiresDatabase && !memory);
   }
 }
 async function showLedger() {
