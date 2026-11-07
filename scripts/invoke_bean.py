@@ -51,7 +51,8 @@ def check_sqlite(path: Path) -> None:
 def unpack(state_dir: Path, runtime_dir: Path) -> dict | None:
     manifest_path = state_dir / MANIFEST
     if not manifest_path.exists():
-        if any(state_dir.glob("*.sqlite3.g*.gz")) or any(\n                (state_dir / compressed).exists() for compressed, _ in CHECKPOINTS.values()):
+        if any(state_dir.glob("*.sqlite3.g*.gz")) or any(
+                (state_dir / compressed).exists() for compressed, _ in CHECKPOINTS.values()):
             raise ValueError("orphaned BEAN checkpoint: refusing to reset memory")
         return None
     manifest_bytes = manifest_path.read_bytes()
