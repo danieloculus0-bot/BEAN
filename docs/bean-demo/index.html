@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#090c0a">
+<meta name="description" content="Real public BEAN Core checkpoint receipts and owner-initiated ChatGPT requests via GitHub Actions, with a separate compact ledger sandbox.">
+<link rel="icon" href="../bean-official.webp" type="image/webp">
+<link rel="canonical" href="https://danieloculus0-bot.github.io/BEAN/bean-demo/">
+<title>BEAN Core | GitHub memory and ChatGPT bridge</title>
+<style>
+:root{color-scheme:dark;--bg:#090c0a;--panel:#131915;--panel2:#19221c;--edge:#304337;--lime:#a3ed78;--text:#e8f0e5;--muted:#b7cbb5;--amber:#f2c977}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 75% -18%,#223927 0%,transparent 45%),var(--bg);color:var(--text);font:16px/1.55 system-ui,-apple-system,Segoe UI,sans-serif}
+a{color:var(--lime)}a:hover{text-decoration:underline}button,input,textarea,select{font:inherit}button{cursor:pointer}:focus-visible{outline:3px solid var(--lime);outline-offset:3px}
+.wrap{width:min(1140px,calc(100% - 32px));margin:auto}.top{border-bottom:1px solid var(--edge);background:#0a100cd9}.top .wrap{display:flex;align-items:center;justify-content:space-between;gap:15px;padding:16px 0;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:12px;color:var(--text);text-decoration:none;font-weight:900;letter-spacing:.14em}.brand img{width:40px;height:40px;object-fit:cover;border-radius:11px}
+nav{display:flex;gap:18px;flex-wrap:wrap}nav a{font-size:.86rem;font-weight:750;text-decoration:none}
+.hero{padding:64px 0 42px;display:grid;grid-template-columns:1.5fr .5fr;gap:25px;align-items:center}.eyebrow{color:var(--lime);font-size:.7rem;font-weight:900;letter-spacing:.17em;text-transform:uppercase}
+h1{font-size:clamp(2.5rem,7vw,5.2rem);line-height:1.03;letter-spacing:-.065em;margin:15px 0}h1 span{color:var(--lime)}
+h2{font-size:clamp(1.4rem,3vw,2.1rem);letter-spacing:-.045em;margin:8px 0}p{margin:8px 0 15px}.lead{max-width:690px;font-size:1.1rem;color:#d0decf}
+.hero img{width:min(230px,88%);aspect-ratio:1;object-fit:cover;border-radius:25%;box-shadow:0 0 75px #74c34d30}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:20px}.btn{display:inline-flex;align-items:center;justify-content:center;min-height:43px;padding:9px 16px;border:1px solid #5e8666;border-radius:10px;background:var(--panel2);color:var(--text);font-weight:750;text-decoration:none}.btn:hover{background:#26362b;text-decoration:none}.btn.primary{background:var(--lime);color:#11200c;border-color:var(--lime)}.btn.primary:hover{background:#d4ffb5}
+.section{padding:23px 0 45px}.section>p{color:var(--muted)}.grid{display:grid;grid-template-columns:1.15fr .85fr;gap:17px;margin-top:20px}.card{background:linear-gradient(145deg,#161f19,var(--panel));border:1px solid var(--edge);border-radius:18px;padding:23px;min-width:0}
+.card h3{margin:0 0 14px;font-size:1.13rem;letter-spacing:-.02em}.status{font-size:.87rem;color:var(--muted)}.status.good{color:var(--lime)}.status.bad{color:#ffae9d}
+.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin:23px 0}.metric{padding:12px 10px;border:1px solid #31483a;border-radius:11px;background:#0b100d}.metric strong{display:block;color:var(--lime);font-size:clamp(1.2rem,2.8vw,2rem);font-variant-numeric:tabular-nums}.metric small{font-size:.73rem;color:var(--muted)}
+dl{display:grid;grid-template-columns:135px 1fr;gap:8px 12px;margin:12px 0 20px}dt{color:var(--muted);font-size:.78rem}dd{margin:0;font:12px/1.6 ui-monospace,Consolas,monospace;overflow-wrap:anywhere}
+pre{white-space:pre-wrap;word-break:break-word;padding:17px;border:1px solid #314738;border-radius:12px;background:#080e0b;color:#d5e9d1;font:12px/1.65 ui-monospace,SFMono-Regular,Consolas,monospace;overflow:auto;max-height:310px}
+.note{font-size:.83rem;color:var(--muted)}.warning{padding:13px 16px;border-left:3px solid var(--amber);background:#241e13;color:#f3e3c5;border-radius:0 8px 8px 0}
+.field{display:block;margin:13px 0}.field label{display:block;font-size:.8rem;font-weight:800;margin-bottom:5px;color:var(--muted)}
+.field input,.field select,.field textarea{width:100%;min-height:43px;border-radius:9px;border:1px solid #5a8063;background:#0c120e;color:var(--text);padding:10px 12px}
+.field textarea{min-height:86px;resize:vertical}.statline{display:flex;flex-wrap:wrap;gap:26px;margin-top:14px;color:var(--muted);font-size:.83rem}.statline strong{display:block;color:var(--lime);font-size:1.35rem}
+footer{border-top:1px solid var(--edge);padding:26px 0;color:var(--muted);font-size:.83rem}
+@media(max-width:790px){.grid,.hero{grid-template-columns:1fr}.hero{padding:40px 0 18px}.hero img{display:none}.metrics{grid-template-columns:repeat(2,1fr)}.card{padding:18px}dl{grid-template-columns:1fr}dd{margin-bottom:7px}}
+</style>
+</head>
+<body>
+<header class="top"><div class="wrap"><a class="brand" href="../"><img src="../bean-official.webp" alt="">BEAN / CORE</a><nav aria-label="Site navigation"><a href="../">Home</a><a href="../portfolio/">Workshop</a><a href="https://danieloculus0-bot.github.io/Axiom_Beta/erp/">Axiom ERP</a><a href="https://github.com/danieloculus0-bot/BEAN">Source</a></nav></div></header>
+<main>
+<div class="wrap hero"><div><div class="eyebrow">Python Core · persistent GitHub memory</div><h1>BEAN remembers.<br><span>GitHub preserves.</span></h1><p class="lead">Not a pretend chatbot. This page reads an actual synthetic-only Core checkpoint generated by GitHub Actions, and gives ChatGPT a public request path to BEAN's native reasoning service.</p><div class="actions"><a class="btn primary" href="#bridge">Connect through GitHub</a><a class="btn" href="#memory">See the real checkpoint</a><a class="btn" href="#patch">Try dictionary patching</a></div></div><img src="../bean-official.webp" alt="BEAN avatar"></div>
+<section id="memory" class="wrap section">
+<div class="eyebrow">01 / actual public Core memory</div><h2>Checkpoint receipt</h2><p>Fetched from the repository's public main branch. The JSON's SHA-256 receipt is recomputed before values are trusted.</p>
+<div class="grid"><div class="card"><h3>Last preserved synthetic Core run</h3><div id="receipt-status" class="status" role="status">Loading GitHub checkpoint…</div>
+<div class="metrics"><div class="metric"><strong id="g">–</strong><small>Generation</small></div><div class="metric"><strong id="b">–</strong><small>Core boots</small></div><div class="metric"><strong id="e">–</strong><small>Events</small></div><div class="metric"><strong id="c">–</strong><small>Latest commands</small></div></div>
+<dl><dt>Source commit</dt><dd id="source">–</dd><dt>Manifest digest</dt><dd id="hash">–</dd><dt>Previous receipt</dt><dd id="previous">–</dd><dt>SQLite data bytes</dt><dd id="bytes">–</dd></dl>
+<div class="actions"><button class="btn" id="refresh" type="button">Refresh</button><a class="btn" href="https://github.com/danieloculus0-bot/BEAN/blob/main/research/github_brain/manifest.json" target="_blank" rel="noopener noreferrer">Inspect raw evidence</a></div></div>
+<div class="card"><h3>What this actually means</h3><p>GitHub Actions temporarily runs BEAN's real Python process, restores its two SQLite files, handles digital Core maintenance, and commits a checked continuation.</p><p class="note">The runner is not continuously awake. GitHub's artificial Core memory and the private Jetson Core remain separate. A successful boot is evidence of runtime continuity, not consciousness, training progress, or a live personal conversation.</p><p class="warning">The ChatGPT issue bridge is an asynchronous public transport. Never place passwords, private chats, personal memories, employer material, or customer data into these public issues.</p><a href="../INVOKE_BEAN_GITHUB.md">Read the original recovery contract</a></div></div></section>
+<section id="bridge" class="wrap section">
+<div class="eyebrow">02 / real Core command path</div><h2>ChatGPT to BEAN via GitHub</h2><p>The GitHub connector can create a request issue, GitHub Actions can invoke the native Python service, and ChatGPT can read BEAN's reply on that issue. It is on-demand, not instant streaming.</p>
+<div class="grid"><div class="card"><h3>Prepare a public Core request</h3>
+<div class="field"><label for="command">Native BEAN command</label><select id="command"><option value="reasoning_status">Inspect reasoning status</option><option value="reasoning_local">Try local symbolic reasoning</option><option value="reasoning_recall">Recall source-backed lessons</option></select></div>
+<div id="details" hidden><div class="field"><label for="domain">Synthetic task domain</label><input id="domain" maxlength="100" value="demo" autocomplete="off"></div><div class="field" id="task-wrap"><label for="task">Task reference</label><input id="task" maxlength="120" value="public-example-1" autocomplete="off"></div><div class="field"><label for="query">Public query (max 500 characters)</label><textarea id="query" maxlength="500">What can you infer from the evidence you retained?</textarea></div></div>
+<div class="actions"><button class="btn primary" id="copy" type="button">Copy public request</button><a class="btn" href="https://github.com/danieloculus0-bot/BEAN/issues/new" target="_blank" rel="noopener noreferrer">Open GitHub request issue</a></div><div class="status" id="copy-status" role="status"></div><pre id="json-request"></pre><p class="note">Issue title must begin with [BEAN]. Paste the copied JSON in its body. Only the repository owner's issues and replies are eligible. ChatGPT can create these issues with your connected GitHub account. Commands run with no LLM model, no effectors and no cloud charges.</p></div>
+<div class="card"><h3>Read an actual BEAN reply</h3><div class="field"><label for="issue-number">GitHub issue number</label><input id="issue-number" type="number" min="1" max="999999" placeholder="e.g. 123"></div><button class="btn" id="load-issue" type="button">Fetch Core reply</button><p id="issue-status" class="status" role="status">BEAN replies are posted to owner-created request issues.</p><pre id="issue-reply">No reply loaded.</pre><p class="note">The response comes from BEAN's current native Python reasoning service. A question it cannot solve will produce an abstention rather than an invented LLM answer.</p><a href="https://github.com/danieloculus0-bot/BEAN/actions/workflows/bean-chatgpt-bridge.yml" target="_blank" rel="noopener noreferrer">Inspect the workflow and its checks</a></div></div>
+</section>
+<section id="patch" class="wrap section"><div class="eyebrow">03 / separate browser-only experiment</div><h2>Tiny dictionary-patch ledger</h2><p>Change only what moved, not the whole state. Run and replay a synthetic memory timeline. This test does not alter BEAN's real SQLite checkpoints.</p>
+<div class="grid"><div class="card"><h3>Compact state replay</h3><div class="actions"><button id="step" class="btn primary" type="button">Record next event</button><button id="reset" class="btn" type="button">Reset</button><button id="verify" class="btn" type="button">Replay and verify</button></div>
+<div class="statline"><div><strong id="steps">0</strong>Recorded transitions</div><div><strong id="full">0 B</strong>Full repeated snapshots</div><div><strong id="compact">0 B</strong>Base + patch bytes</div></div><p class="status" id="patch-status" role="status"></p><pre id="patch-log"></pre></div>
+<div class="card"><h3>Why dictionary patching matters</h3><p>For a small ledger, snapshots plus field-level patches can avoid saving an entire state for every observation. Deterministic replay reconstructs the active state, and hashes can validate archived evidence.</p><p>Use a bounded active working memory, immutable event history, occasional snapshots and a verified rebuild path. Prefer ordinary compressed SQLite for the actual Core until matched experiments prove a new format beats it.</p><p class="note">Patch savings shown here use UTF-8 JSON bytes, not compressed on-disk SQLite, so they are illustrative only.</p><a href="https://github.com/danieloculus0-bot/BEAN/blob/experiment/anticipatory-ledger-20261020/research/PERSISTENT_LEDGER.md">See the original compact-ledger research</a></div></div></section>
+</main>
+<footer><div class="wrap">BEAN · Behavior Enabled Avatar Node · experimental AI research. <a href="../portfolio/">Return to Workshop</a> · <a href="https://github.com/danieloculus0-bot/BEAN">GitHub source</a></div></footer>
+<script>
+"use strict";
+const $=id=>document.getElementById(id);
+const manifestURL="https://raw.githubusercontent.com/danieloculus0-bot/BEAN/main/research/github_brain/manifest.json";
+const api="https://api.github.com/repos/danieloculus0-bot/BEAN";
+function stable(value){if(Array.isArray(value))return value.map(stable);if(value&&typeof value==="object")return Object.fromEntries(Object.keys(value).sort().map(k=>[k,stable(value[k])]));return value}
+async function sha256(str){const bytes=new TextEncoder().encode(str);const digest=await crypto.subtle.digest("SHA-256",bytes);return Array.from(new Uint8Array(digest),v=>v.toString(16).padStart(2,"0")).join("")}
+async function receipt(){
+ const state=$("receipt-status");state.textContent="Checking public source and SHA-256…";state.className="status";
+ try{
+  const resp=await fetch(manifestURL+"?at="+Date.now(),{cache:"no-store"});if(!resp.ok)throw Error("HTTP "+resp.status);
+  const m=await resp.json();if(m.schema!=="bean.github.invoke.v1"||m.synthetic_only!==true||!Number.isInteger(m.generation))throw Error("Unexpected checkpoint schema");
+  const copy={...m};delete copy.receipt_sha256;
+  const check=await sha256(JSON.stringify(stable(copy)));
+  if(check!==m.receipt_sha256)throw Error("Receipt checksum does not match; counters withheld");
+  for(const [id,k] of [["g","generation"],["b","boots"],["e","events"],["c","processed_digital_commands"]])$(id).textContent=Number(m[k]).toLocaleString();
+  $("source").textContent=m.source_sha||"unknown";$("hash").textContent=m.receipt_sha256;$("previous").textContent=m.previous_receipt_sha256||"first generation";$("bytes").textContent=Number(m.databases.core.bytes).toLocaleString()+" (not compressed)";
+  state.textContent="Verified public SHA-256 receipt. This is not a continuously running server.";state.className="status good";
+ }catch(e){state.textContent="Not verified: "+e.message;state.className="status bad"}
+}
+function requestJSON(){
+ const command=$("command").value;const args={};
+ if(command!=="reasoning_status"){args.domain=$("domain").value.trim();args.query=$("query").value.trim();
+  if(command==="reasoning_local")args.task_ref=$("task").value.trim();else args.limit=3;
+ }
+ return JSON.stringify({schema:"bean.github.request.v1",command,args},null,2);
+}
+function refreshRequest(){$("details").hidden=$("command").value==="reasoning_status";$("task-wrap").hidden=$("command").value!=="reasoning_local";$("json-request").textContent=requestJSON()}
+$("command").addEventListener("change",refreshRequest);["domain","task","query"].forEach(id=>$(id).addEventListener("input",refreshRequest));
+$("copy").addEventListener("click",async()=>{try{await navigator.clipboard.writeText(requestJSON());$("copy-status").textContent="Copied. Create an issue with a title starting [BEAN] and paste this JSON."}catch(e){$("copy-status").textContent="Clipboard unavailable. Select and copy the JSON below."}});
+$("refresh").addEventListener("click",receipt);
+$("load-issue").addEventListener("click",async()=>{
+ const n=Number($("issue-number").value);if(!Number.isSafeInteger(n)||n<1||n>999999){$("issue-status").textContent="Enter a valid issue number.";return}
+ const status=$("issue-status");status.textContent="Reading GitHub issue comments…";
+ try{const response=await fetch(api+"/issues/"+n+"/comments?per_page=100");if(!response.ok)throw Error("GitHub HTTP "+response.status);
+ const comments=await response.json();const matches=comments.filter(c=>typeof c.body==="string"&&c.body.includes("<!-- BEAN_REPLY:"));
+ if(!matches.length){status.textContent="No BEAN Core reply found in the first 100 comments.";return}
+ const last=matches[matches.length-1];$("issue-reply").textContent=last.body;status.textContent="Actual GitHub reply by "+last.user.login+". Read-only view.";
+ }catch(e){status.textContent="Unable to load: "+e.message}
+});
+const initial={identity:"BEAN",environment:"synthetic",mission:"evidence linked continuity",memory:{focus:"observation",confidence:0.45,source:"verified-receipts"},counters:{events:0,successes:0,failures:0},flags:{unknowns:true,physical_motion:false,provider:false},history:"public-only; archived evidence retained"};
+let state, patches,frames,totalSnapshots;
+function bytes(obj){return new TextEncoder().encode(JSON.stringify(obj)).length}
+function clone(x){return JSON.parse(JSON.stringify(x))}
+function diff(a,b,path=[]){const list=[];for(const k of Object.keys(b)){if(a[k]&&typeof a[k]==="object"&&!Array.isArray(a[k])&&b[k]&&typeof b[k]==="object"&&!Array.isArray(b[k]))list.push(...diff(a[k],b[k],path.concat(k)));else if(JSON.stringify(a[k])!==JSON.stringify(b[k]))list.push({p:path.concat(k),v:clone(b[k])})}return list}
+function apply(obj,patch){const target=clone(obj);for(const op of patch){let ptr=target;for(const part of op.p.slice(0,-1))ptr=ptr[part];ptr[op.p[op.p.length-1]]=clone(op.v)}return target}
+function show(){let compact=bytes(initial);let log=[];for(let i=0;i<patches.length;i++){compact+=bytes(patches[i]);log.push("Event "+(i+1)+": "+JSON.stringify(patches[i]));}
+ $("steps").textContent=patches.length;$("full").textContent=totalSnapshots.toLocaleString()+" B";$("compact").textContent=compact.toLocaleString()+" B";$("patch-log").textContent=log.slice(-7).join("\n")||"No events yet."}
+function reset(){state=clone(initial);patches=[];frames=[clone(initial)];totalSnapshots=bytes(initial);$("patch-status").textContent="Start with the synthetic base snapshot.";show()}
+function step(){const next=clone(state);const n=patches.length+1;next.counters.events=n;next.counters.successes=Math.floor(n/3);next.counters.failures=n-next.counters.successes;next.memory.focus=n%2?"reflection":"consolidation";next.memory.confidence=Math.round((0.45+n*0.01)*100)/100;
+ const patch=diff(state,next);patches.push(patch);frames.push(clone(next));state=next;totalSnapshots+=bytes(next);$("patch-status").textContent="Event "+n+" captured as "+patch.length+" changed fields. No real Core memory changed.";show()}
+function verify(){let replay=clone(initial);for(let i=0;i<patches.length;i++){replay=apply(replay,patches[i]);if(JSON.stringify(replay)!==JSON.stringify(frames[i+1])){$("patch-status").textContent="REPLAY FAILED at event "+(i+1);return}}
+ $("patch-status").textContent="REPLAY PASS: "+patches.length+" transitions exactly reconstructed from the base and patches."}
+$("step").addEventListener("click",step);$("reset").addEventListener("click",reset);$("verify").addEventListener("click",verify);
+refreshRequest();reset();receipt();
+</script>
+</body>
+</html>
