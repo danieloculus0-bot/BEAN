@@ -113,8 +113,12 @@ def checkpoint(state_dir: Path, runtime_dir: Path, prior: dict | None,
         check_sqlite(path)
         # SQLite's backup API writes a consistent copy, never a live WAL stream.
         backup = runtime_dir / (filename + ".backup")
-        with sqlite3.connect(str(path)) as source, sqlite3.connect(str(backup)) as target:
-            source.backup(target)
+        # sqlite3.Connection's context manager commits but does not close.
+        # Explicit closure is required before reading/unlinking on Windows.
+        from contextlib import closing
+        with closing(sqlite3.connect(str(path))) as source:
+            with closing(sqlite3.connect(str(backup))) as target:
+                source.backup(target)
         payload = backup.read_bytes()
         if len(payload) > MAX_UNCOMPRESSED:
             raise ValueError("BEAN memory exceeded public checkpoint size limit")
