@@ -17,7 +17,7 @@ HUB = BEAN + "portfolio/"
 # published document and its outward navigation. A 200 alone is insufficient.
 ROUTES = {
     BEAN: (ERP, "Project directory"),
-    HUB: (ERP, "EZ CAM", "EZ Attendance"),
+    HUB: (ERP, "EZ CAM", "EZ Attendance", "Current browser suite", "https://danieloculus0-bot.github.io/EZ-CAM/"),
     BEAN + "axiom.html": (ERP, "Axiom"),
     BEAN + "portfolio/axiom/": (ERP, HUB, "Command Center", "Job Passport"),
     BEAN + "portfolio/ez-office/": (ERP, "EZ-Office"),
@@ -30,10 +30,8 @@ ROUTES = {
     "https://danieloculus0-bot.github.io/EZstimate/": (HUB, "EZ Estimate"),
     "https://danieloculus0-bot.github.io/EZ-FEA/": (HUB, "EZ-FEA"),
     "https://danieloculus0-bot.github.io/EZ-CAM/": (HUB, "EZ CAM"),
-    "https://danieloculus0-bot.github.io/FUN/": (HUB, "EMPEROR GAUNTLET"),
-    "https://danieloculus0-bot.github.io/64-/": (HUB, "64Δ"),
+    "https://danieloculus0-bot.github.io/FUN/": ("EMPEROR GAUNTLET",),
     "https://danieloculus0-bot.github.io/EZ-Attendance/": (HUB, "EZ Attendance"),
-    "https://danieloculus0-bot.github.io/EZ-Office/": (HUB, "EZ-Office"),
 }
 
 
