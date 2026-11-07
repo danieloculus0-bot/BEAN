@@ -12,6 +12,7 @@ on:
     paths:
       - 'docs/bean-demo/**'
       - 'tests/test_bean_device_memory.mjs'
+      - 'tests/test_bean_device_browser.mjs'
       - '.github/workflows/bean-device-memory.yml'
   workflow_dispatch:
 
