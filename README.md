@@ -2,6 +2,8 @@
 
 **Adaptive intelligence infrastructure for AI agents and language models.** BEAN is an experimental Python platform for persistent memory, evidence-linked reasoning, reusable strategies, model assistance, feedback-driven adaptation and independent evaluation. It aims to strengthen existing models rather than replace them with another chatbot.
 
+**Original research mission:** BEAN is a body-optional, model-independent continuity-based brain. It learns through measurable **digital as well as physical** environments, retains development and evidence across sessions, and investigates whether broader intelligence or consciousness could emerge without claiming either has been established. [Canonical origin record](memory/identity/origin_record.json) and [GitHub continuity audit](docs/BEAN_GITHUB_MEMORY_CONTINUITY_AUDIT_2026-11-06.md) distinguish durable, delayed public-safe GitHub handoffs from private live Core memory. These are longstanding requirements, not a newly proposed direction.
+
 [**BEAN technical overview and research collaboration**](https://danieloculus0-bot.github.io/BEAN/for-ai-developers.html) · [**Project website**](https://danieloculus0-bot.github.io/BEAN/) · [**Source tests and CI**](https://github.com/danieloculus0-bot/BEAN/actions)
 
 **Collaboration and licensing inquiries:** [open a GitHub issue](https://github.com/danieloculus0-bot/BEAN/issues/new). Source availability is not an open-source grant: this repository currently has no declared software license. Confirm permissions with the owner before reuse, redistribution or commercial integration.
