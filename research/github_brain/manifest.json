@@ -1,27 +1,27 @@
 {
-  "boots": 1,
+  "boots": 2,
   "consciousness_proven": false,
   "databases": {
     "core": {
-      "bytes": 786432,
-      "sha256": "9327ee08372ddd73c817a86a95da05ab1906a8c34a22d183fe4c2c5f0838b6c7"
+      "bytes": 937984,
+      "sha256": "38a3dcedd250a121c12d1e35b74681facebcba8d18a5d73ef862187e904a5ce0"
     },
     "reasoning": {
       "bytes": 16384,
       "sha256": "6f6dc2cc2d94a4b037708d1a604dda09c4ee97621fb5cf65767a5d0cdef48a55"
     }
   },
-  "events": 29,
-  "generation": 1,
+  "events": 58,
+  "generation": 2,
   "github_run_attempt": "1",
-  "github_run_id": "42335780038",
+  "github_run_id": "42366236213",
   "model_weights_trained": false,
-  "previous_receipt_sha256": null,
+  "previous_receipt_sha256": "79fba2637b6397206d7bb791bca803c910db663c8eb3e90d02e96bbd15241686",
   "processed_digital_commands": 2,
-  "receipt_sha256": "79fba2637b6397206d7bb791bca803c910db663c8eb3e90d02e96bbd15241686",
+  "receipt_sha256": "26d0e1d89b5806aa375aa3036f83f023cef20d35e5e0517ec56e3b09472c3ca8",
   "schema": "bean.github.invoke.v1",
   "scope": "synthetic digital Core runtime and restart continuity, not subjective experience",
-  "source_sha": "449a4d5415c8a9c5eda199bf8756418a7b3a2e61",
+  "source_sha": "bbafef2650348ac7efa9b9d88d517b1f6b4e29d0",
   "synthetic_only": true,
   "ticks": 12
 }
