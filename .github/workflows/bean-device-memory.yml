@@ -1,0 +1,39 @@
+name: BEAN public device-memory browser cache
+
+on:
+  pull_request:
+    paths:
+      - 'docs/bean-demo/**'
+      - 'tests/test_bean_device_memory.mjs'
+      - '.github/workflows/bean-device-memory.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'docs/bean-demo/**'
+      - 'tests/test_bean_device_memory.mjs'
+      - '.github/workflows/bean-device-memory.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  indexeddb-replay:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install pinned in-memory IndexedDB test implementation
+        run: npm install --no-save --no-package-lock --ignore-scripts fake-indexeddb@6.2.7
+      - name: Static check browser module and offline service worker syntax
+        run: |
+          node --check docs/bean-demo/device-memory.mjs
+          node --check docs/bean-demo/device-ui.mjs
+          node --check docs/bean-demo/sw.js
+      - name: Exercise actual IndexedDB semantics, ledger replay and offline receipt
+        run: node --test tests/test_bean_device_memory.mjs
+      - name: Validate public navigation and app-shell contracts
+        run: python -m unittest discover -s tests -p 'test_ecosystem_navigation.py' -v
