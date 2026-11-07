@@ -152,7 +152,42 @@ def checkpoint(state_dir: Path, runtime_dir: Path, prior: dict | None,
     return receipt
 
 
-def invoke(state_dir: Path, runtime_dir: Path, ticks: int = 12, hz: int = 20) -> dict:
+
+def serve_public_request(reasoning_db: Path, request: dict) -> dict:
+    """Use BEAN's existing native reasoning service; no model or outside effects.
+
+    This is deliberately narrower than Core's full inbox. The caller may ask
+    for status, evidence-backed recall or bounded local symbolic reasoning.
+    """
+    if (not isinstance(request, dict)
+            or set(request) != {"schema", "command", "args"}
+            or request["schema"] != "bean.github.request.v1"):
+        raise ValueError("Invalid public BEAN request envelope")
+    command, args = request["command"], request["args"]
+    if command not in {"reasoning_status", "reasoning_recall", "reasoning_local"}:
+        raise ValueError("Unsupported public BEAN command")
+    if not isinstance(args, dict):
+        raise ValueError("BEAN request args must be an object")
+    from bean.learning.reasoning_service import NativeReasoningService
+    service = NativeReasoningService(reasoning_db, model=None)
+    try:
+        if command == "reasoning_status":
+            if args:
+                raise ValueError("reasoning_status takes no arguments")
+            return service.status()
+        if command == "reasoning_recall":
+            if set(args) != {"domain", "query", "limit"}:
+                raise ValueError("reasoning_recall requires domain, query, limit")
+            return service.recall(**args)
+        if set(args) != {"domain", "task_ref", "query"}:
+            raise ValueError("reasoning_local requires domain, task_ref, query")
+        return service.reason_local(**args)
+    finally:
+        service.close()
+
+
+def invoke(state_dir: Path, runtime_dir: Path, ticks: int = 12, hz: int = 20,
+           request: dict | None = None, reply_path: Path | None = None) -> dict:
     if not 2 <= ticks <= 120 or not 1 <= hz <= 30:
         raise ValueError("ticks must be 2..120 and hz 1..30")
     runtime_dir.mkdir(parents=True, exist_ok=True)
@@ -209,7 +244,27 @@ def invoke(state_dir: Path, runtime_dir: Path, ticks: int = 12, hz: int = 20) ->
         raise RuntimeError("BEAN failed verified restart or event continuity")
     if not prior and boots != 1:
         raise RuntimeError("fresh synthetic BEAN boot was not fresh")
+    reply_result = serve_public_request(reasoning, request) if request is not None else None
     receipt = checkpoint(state_dir, runtime_dir, prior, boots, events, processed, ticks)
+    if request is not None:
+        if reply_path is None:
+            raise ValueError("Public BEAN request needs a reply destination")
+        payload = {
+            "schema": "bean.github.reply.v1",
+            "command": request["command"],
+            "response": reply_result,
+            "generation": receipt["generation"],
+            "receipt_sha256": receipt["receipt_sha256"],
+            "source_sha": receipt["source_sha"],
+            "engine": "native_python_core",
+            "external_model_invoked": False,
+            "private_jetson_connected": False,
+        }
+        encoded = json.dumps(payload, sort_keys=True, ensure_ascii=False, allow_nan=False)
+        if len(encoded.encode("utf-8")) > 14000:
+            raise ValueError("BEAN response exceeds public limit")
+        reply_path.parent.mkdir(parents=True, exist_ok=True)
+        reply_path.write_text(encoded + "\n", encoding="utf-8")
     print(json.dumps(receipt, sort_keys=True))
     return receipt
 
@@ -220,8 +275,14 @@ def main() -> None:
     parser.add_argument("--runtime-dir", type=Path, default=Path(".bean-github-runtime"))
     parser.add_argument("--ticks", type=int, default=12)
     parser.add_argument("--hz", type=int, default=20)
+    parser.add_argument("--request-file", type=Path)
+    parser.add_argument("--reply-file", type=Path)
     args = parser.parse_args()
-    invoke(args.state_dir, args.runtime_dir, args.ticks, args.hz)
+    if bool(args.request_file) != bool(args.reply_file):
+        parser.error("--request-file and --reply-file must be provided together")
+    request = json.loads(args.request_file.read_text(encoding="utf-8")) if args.request_file else None
+    invoke(args.state_dir, args.runtime_dir, args.ticks, args.hz,
+           request=request, reply_path=args.reply_file)
 
 
 if __name__ == "__main__":
