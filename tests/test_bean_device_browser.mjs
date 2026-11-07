@@ -70,6 +70,7 @@ test('BEAN page persists a note and patch timeline across reload and offline res
           'controllerchange', resolve, {once: true}));
       }
     });
+    await page.unrouteAll();
     await context.setOffline(true);
     await page.reload({waitUntil: 'load'});
     await page.waitForFunction(() => document.getElementById('device-status').textContent.includes('IndexedDB active'));
