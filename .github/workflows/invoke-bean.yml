@@ -102,7 +102,7 @@ jobs:
                                ("reasoning", "bean_reasoning.sqlite3.gz")):
               record = receipt["databases"][name]
               archive = record.get("archive", legacy)
-              assert archive.startswith("bean_") and "/" not in archive and "\\\\" not in archive
+              assert archive.startswith("bean_") and "/" not in archive and chr(92) not in archive
               path = root / archive
               assert path.is_file(), f"missing checkpoint archive: {path}"
               subprocess.run(["git", "ls-files", "--error-unmatch", "--cached", "--", str(path)],
