@@ -24,7 +24,12 @@ self.addEventListener('fetch', event => {
   const request = event.request;
   if (request.method !== 'GET') return;
   const url = new URL(request.url);
-  if (url.origin !== self.location.origin || !url.pathname.startsWith('/BEAN/bean-demo/')) return;
+  if (url.origin !== self.location.origin) return;
+  if (url.pathname === '/BEAN/bean-official.webp') {
+    event.respondWith(caches.match(request).then(found => found || fetch(request)));
+    return;
+  }
+  if (!url.pathname.startsWith('/BEAN/bean-demo/')) return;
   if (request.mode === 'navigate') {
     event.respondWith(
       fetch(request).then(response => {
