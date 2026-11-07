@@ -20,6 +20,10 @@ import subprocess
 import sys
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
+# Direct CLI invocation adds scripts/ rather than repository root to sys.path.
+# Restore native BEAN package imports for GitHub Issue workflow runs.
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
 CHECKPOINTS = {
     "core": ("bean_memory.sqlite3.gz", "bean_memory.sqlite3"),
     "reasoning": ("bean_reasoning.sqlite3.gz", "bean_reasoning.sqlite3"),
