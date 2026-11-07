@@ -1,0 +1,18 @@
+{
+  "name": "BEAN | Local Memory Lab",
+  "short_name": "BEAN Memory",
+  "description": "BEAN Core public checkpoint and private device-local research cache",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#090c0a",
+  "theme_color": "#090c0a",
+  "icons": [
+    {
+      "src": "../bean-official.webp",
+      "sizes": "any",
+      "type": "image/webp",
+      "purpose": "any"
+    }
+  ]
+}
