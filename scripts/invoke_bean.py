@@ -51,7 +51,8 @@ def check_sqlite(path: Path) -> None:
 def unpack(state_dir: Path, runtime_dir: Path) -> dict | None:
     manifest_path = state_dir / MANIFEST
     if not manifest_path.exists():
-        if any((state_dir / compressed).exists() for compressed, _ in CHECKPOINTS.values()):
+        if any(state_dir.glob("*.sqlite3.g*.gz")) or any(
+                (state_dir / compressed).exists() for compressed, _ in CHECKPOINTS.values()):
             raise ValueError("orphaned BEAN checkpoint: refusing to reset memory")
         return None
     manifest_bytes = manifest_path.read_bytes()
@@ -71,7 +72,10 @@ def unpack(state_dir: Path, runtime_dir: Path) -> dict | None:
         record = previous.get("databases", {}).get(name)
         if not isinstance(record, dict):
             raise ValueError("BEAN manifest missing database")
-        compressed = state_dir / archive
+        archive_name = record.get("archive", archive)
+        if not isinstance(archive_name, str) or not re.fullmatch(r"[a-z_]+\.sqlite3(?:\.g[0-9]{6})?\.gz", archive_name):
+            raise ValueError("invalid BEAN checkpoint archive name")
+        compressed = state_dir / archive_name
         if not compressed.is_file() or compressed.stat().st_size > MAX_COMPRESSED:
             raise ValueError("missing or oversized BEAN compressed checkpoint")
         with gzip.open(compressed, "rb") as source:
@@ -113,17 +117,29 @@ def checkpoint(state_dir: Path, runtime_dir: Path, prior: dict | None,
         check_sqlite(path)
         # SQLite's backup API writes a consistent copy, never a live WAL stream.
         backup = runtime_dir / (filename + ".backup")
-        with sqlite3.connect(str(path)) as source, sqlite3.connect(str(backup)) as target:
-            source.backup(target)
+        # sqlite3.Connection's context manager commits but does not close.
+        # Explicit closure is required before reading/unlinking on Windows.
+        from contextlib import closing
+        with closing(sqlite3.connect(str(path))) as source:
+            with closing(sqlite3.connect(str(backup))) as target:
+                source.backup(target)
         payload = backup.read_bytes()
         if len(payload) > MAX_UNCOMPRESSED:
             raise ValueError("BEAN memory exceeded public checkpoint size limit")
         compressed = gzip.compress(payload, mtime=0)
         if len(compressed) > MAX_COMPRESSED:
             raise ValueError("BEAN memory exceeded compressed checkpoint size limit")
-        (state_dir / (archive + ".tmp")).write_bytes(compressed)
-        (state_dir / (archive + ".tmp")).replace(state_dir / archive)
-        databases[name] = {"sha256": digest(payload), "bytes": len(payload)}
+        generation = (prior["generation"] + 1 if prior else 1)
+        archive_name = archive.replace(".sqlite3.gz", f".sqlite3.g{generation:06d}.gz")
+        destination = state_dir / archive_name
+        if destination.exists():
+            if destination.read_bytes() != compressed:
+                raise ValueError("BEAN checkpoint generation already exists with different contents")
+        else:
+            staging_archive = state_dir / (archive_name + ".tmp")
+            staging_archive.write_bytes(compressed)
+            staging_archive.replace(destination)
+        databases[name] = {"sha256": digest(payload), "bytes": len(payload), "archive": archive_name}
         backup.unlink()
     source_sha = os.environ.get("GITHUB_SHA", "local-validation")
     if not (source_sha == "local-validation" or re.fullmatch(r"[0-9a-f]{40}", source_sha)):
