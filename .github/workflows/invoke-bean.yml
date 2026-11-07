@@ -1,0 +1,104 @@
+name: Invoke BEAN - GitHub persistent Core
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '7 * * * *'
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/invoke_bean.py'
+      - 'bean/tests/test_github_invoke.py'
+      - '.github/workflows/invoke-bean.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'scripts/invoke_bean.py'
+      - 'bean/tests/test_github_invoke.py'
+      - '.github/workflows/invoke-bean.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: bean-github-memory-${{ github.event_name == 'pull_request' && github.event.pull_request.number || 'main' }}
+  cancel-in-progress: false
+
+jobs:
+  verify-invocation:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install pytest
+      - name: Test checkpoint integrity and fail-closed recovery
+        run: python -m pytest bean/tests/test_github_invoke.py -q -ra
+      - name: Actually boot Python BEAN Core in a digital environment
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/invoke_bean.py --state-dir "$RUNNER_TEMP/bean-state" --runtime-dir "$RUNNER_TEMP/bean-run" --ticks 12
+          python scripts/invoke_bean.py --state-dir "$RUNNER_TEMP/bean-state" --runtime-dir "$RUNNER_TEMP/bean-run" --ticks 12
+          python - <<'PY'
+          import json, os
+          from pathlib import Path
+          p = Path(os.environ["RUNNER_TEMP"]) / "bean-state" / "manifest.json"
+          receipt = json.loads(p.read_text())
+          assert receipt["generation"] == receipt["boots"] == 2, receipt
+          assert receipt["events"] > 0 and receipt["processed_digital_commands"] >= 2
+          assert receipt["previous_receipt_sha256"], receipt
+          assert receipt["model_weights_trained"] is False
+          print("BEAN CORE: two independent boots with persistent checkpoint replay verified")
+          PY
+
+  invoke-on-main:
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install pytest
+      - name: Verify synthetic checkpoint, tamper and restart contracts
+        run: python -m pytest bean/tests/test_github_invoke.py -q -ra
+      - name: Invoke real BEAN Core and resume checked-in memory
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/invoke_bean.py --state-dir research/github_brain --runtime-dir "$RUNNER_TEMP/bean-run" --ticks 12
+      - name: Save synthetic BEAN brain checkpoint to GitHub main
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add research/github_brain/manifest.json research/github_brain/bean_memory.sqlite3.gz research/github_brain/bean_reasoning.sqlite3.gz
+          if git diff --cached --quiet; then
+            echo "No new BEAN memory receipt"
+            exit 0
+          fi
+          git commit -m "BEAN: preserve synthetic Core digital session $GITHUB_RUN_ID"
+          # Keep the ephemeral runtime unprivileged; token exists only in this step.
+          AUTH="$(printf 'x-access-token:%s' "$GH_TOKEN" | base64 -w0)"
+          git -c http.extraheader="AUTHORIZATION: basic $AUTH" push origin HEAD:main
+      - name: Preserve verifiable public receipt as a workflow artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bean-github-core-invocation-${{ github.run_id }}
+          path: research/github_brain/manifest.json
+          if-no-files-found: ignore
