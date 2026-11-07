@@ -86,7 +86,14 @@ jobs:
           set -euo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          # A repository-wide commit must never inherit unrelated staged files.\n          # Fail closed before staging the three public-safe checkpoint paths.\n          if ! git diff --cached --quiet; then\n            echo "Refusing BEAN checkpoint publication: index was already staged" >&2\n            git diff --cached --name-only >&2\n            exit 1\n          fi\n          # Stage the exact versioned archives named by the manifest, not just
+          # A repository-wide commit must never inherit unrelated staged files.
+          # Fail closed before staging the three public-safe checkpoint paths.
+          if ! git diff --cached --quiet; then
+            echo "Refusing BEAN checkpoint publication: index was already staged" >&2
+            git diff --cached --name-only >&2
+            exit 1
+          fi
+          # Stage the exact versioned archives named by the manifest, not just
           # the legacy fixed filenames. Otherwise main would publish a dangling receipt.
           # Only publish files named by the verified synthetic manifest.
           python - <<'PY'
