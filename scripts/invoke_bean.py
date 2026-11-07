@@ -168,8 +168,11 @@ def invoke(state_dir: Path, runtime_dir: Path, ticks: int = 12, hz: int = 20) ->
         raise ValueError("unexpected pending inbox command")
     commands = ("run_brain_maintenance", "update_models")
     arguments = ({"review_uncertainties": True}, {"trigger": "github_digital_tick"})
+    generation = prior["generation"] + 1 if prior else 1
     for number, (command, args) in enumerate(zip(commands, arguments), 1):
-        (inbox / f"{number:02d}.json").write_text(
+        # Distinct filenames are necessary when the same runtime directory
+        # is reused after restoring an earlier GitHub memory checkpoint.
+        (inbox / f"{generation:05d}_{number:02d}.json").write_text(
             json.dumps({"command": command, "args": args, "from": "github_synthetic_run"}),
             encoding="utf-8",
         )
