@@ -139,3 +139,14 @@ test('bounded active cache refuses to silently discard patches', async () => {
 test('IndexedDB absence fails honestly', async () => {
   await assert.rejects(() => DeviceMemory.open(null), /unavailable/);
 });
+
+
+test('all busy-state control IDs exist in the published page', async () => {
+  const {readFileSync} = await import('node:fs');
+  const ui = readFileSync(new URL('../docs/bean-demo/device-ui.mjs', import.meta.url), 'utf8');
+  const html = readFileSync(new URL('../docs/bean-demo/index.html', import.meta.url), 'utf8');
+  const section = ui.slice(ui.indexOf('function setBusy'), ui.indexOf('async function showLedger'));
+  const ids = new Set([...section.matchAll(/'([a-z]+(?:-[a-z]+)*)'/g)].map(x => x[1]));
+  assert.ok(ids.size >= 8, 'Expected real local-memory controls');
+  for (const id of ids) assert.ok(html.includes('id="' + id + '"'), 'Missing HTML control: ' + id);
+});
