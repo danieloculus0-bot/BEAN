@@ -57,6 +57,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
+          # Issues event SHAs can predate a just-committed Core checkpoint.
+          # Start from current main, then keep non-fast-forward push fail-closed.
+          ref: main
           persist-credentials: false
       - uses: actions/setup-python@v5
         with:
