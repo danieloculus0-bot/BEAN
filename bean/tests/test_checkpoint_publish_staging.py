@@ -59,15 +59,20 @@ def test_workflow_publication_rejects_missing_archive(tmp_path):
     assert not git(tmp_path, "diff", "--cached", "--name-only").strip()
 
 def test_workflow_publication_rejects_dirty_index(tmp_path):
+    """Run the actual workflow preflight, not a hand-written imitation."""
     setup(tmp_path)
     (tmp_path / "unrelated.txt").write_text("pre-staged")
     git(tmp_path, "add", "unrelated.txt")
     workflow = WORKFLOW.read_text()
     section = workflow.split("      - name: Save synthetic BEAN brain checkpoint to GitHub main", 1)[1]
-    assert "if ! git diff --cached --quiet; then" in section
-    precondition = section.split("if ! git diff --cached --quiet; then", 1)[1].split("fi", 1)[0]
-    assert "exit 1" in precondition
-    result = subprocess.run(["bash", "-euc", "if ! git diff --cached --quiet; then exit 1; fi"],
+    section = section.split("      - name: Preserve verifiable public receipt", 1)[0]
+    # Extract the real Bash preflight preceding the Python staging heredoc.
+    script = section.split("          python - <<'PY'", 1)[0]
+    lines = [line[10:] for line in script.splitlines() if line.startswith("          ")]
+    assert "if ! git diff --cached --quiet; then" in lines
+    assert "exit 1" in lines
+    result = subprocess.run(["bash", "-euo", "pipefail", "-c", "\n".join(lines)],
                             cwd=tmp_path, capture_output=True, text=True)
     assert result.returncode != 0
+    assert "index was already staged" in result.stderr
     assert git(tmp_path, "diff", "--cached", "--name-only").strip() == "unrelated.txt"
