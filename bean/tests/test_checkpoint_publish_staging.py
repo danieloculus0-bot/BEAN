@@ -1,5 +1,6 @@
 """Exercise the actual GitHub Actions checkpoint staging code in an isolated Git repo."""
 import json
+import os
 from pathlib import Path
 import re
 import subprocess
@@ -52,8 +53,9 @@ def setup(tmp_path, *, missing=False, rogue=False):
         (root / "unrelated.txt").write_text("not-for-publication")
 
 def execute(tmp_path):
+    env = dict(os.environ, PYTHONPATH=str(WORKFLOW.parents[2]))
     return subprocess.run([sys.executable, "-c", snippet()], cwd=tmp_path,
-                          capture_output=True, text=True)
+                          env=env, capture_output=True, text=True)
 
 def test_workflow_publication_stages_exact_allowlist(tmp_path):
     setup(tmp_path, rogue=True)
