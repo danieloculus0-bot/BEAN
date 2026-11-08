@@ -29,13 +29,25 @@ def setup(tmp_path, *, missing=False, rogue=False):
     root.mkdir(parents=True)
     core = "bean_memory.sqlite3.g000002.gz"
     reasoning = "bean_reasoning.sqlite3.g000002.gz"
+    import gzip
+    import hashlib
+    import sqlite3
+    from scripts.invoke_bean import canonical
+    databases = {}
+    for name, archive in (("core", core), ("reasoning", reasoning)):
+        db = tmp_path / (name + ".sqlite3")
+        with sqlite3.connect(db) as conn:
+            conn.execute("CREATE TABLE receipt (value TEXT)")
+            conn.execute("INSERT INTO receipt VALUES ('synthetic')")
+        payload = db.read_bytes()
+        (root / archive).write_bytes(gzip.compress(payload, mtime=0))
+        databases[name] = {"archive": archive, "sha256": hashlib.sha256(payload).hexdigest(), "bytes": len(payload)}
     receipt = {"schema": "bean.github.invoke.v1", "synthetic_only": True,
-               "generation": 2, "databases": {
-                   "core": {"archive": core}, "reasoning": {"archive": reasoning}}}
+               "generation": 2, "databases": databases}
+    receipt["receipt_sha256"] = hashlib.sha256(canonical(receipt)).hexdigest()
     (root / "manifest.json").write_text(json.dumps(receipt))
-    (root / core).write_bytes(b"synthetic-core")
-    if not missing:
-        (root / reasoning).write_bytes(b"synthetic-reasoning")
+    if missing:
+        (root / reasoning).unlink()
     if rogue:
         (root / "unrelated.txt").write_text("not-for-publication")
 
@@ -113,4 +125,24 @@ def test_workflow_publication_rejects_symlink_archive(tmp_path):
     result = execute(tmp_path)
     assert result.returncode != 0
     assert "symlink checkpoint archive forbidden" in result.stderr
+    assert not git(tmp_path, "diff", "--cached", "--name-only").strip()
+
+
+def test_workflow_publication_rejects_corrupt_archive(tmp_path):
+    setup(tmp_path)
+    archive = tmp_path / "research/github_brain/bean_memory.sqlite3.g000002.gz"
+    archive.write_bytes(b"not a gzip SQLite archive")
+    result = execute(tmp_path)
+    assert result.returncode != 0
+    assert not git(tmp_path, "diff", "--cached", "--name-only").strip()
+
+
+def test_workflow_publication_rejects_forged_receipt(tmp_path):
+    setup(tmp_path)
+    manifest = tmp_path / "research/github_brain/manifest.json"
+    receipt = json.loads(manifest.read_text())
+    receipt["events"] = 999999
+    manifest.write_text(json.dumps(receipt))
+    result = execute(tmp_path)
+    assert result.returncode != 0
     assert not git(tmp_path, "diff", "--cached", "--name-only").strip()
