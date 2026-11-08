@@ -115,6 +115,7 @@ jobs:
               expected = legacy.replace(".sqlite3.gz", f".sqlite3.g{generation:06d}.gz")
               assert archive in (legacy, expected), "unexpected checkpoint archive"
               path = root / archive
+              assert not path.is_symlink(), f"symlink checkpoint archive forbidden: {path}"
               assert path.is_file(), f"missing checkpoint archive: {path}"
               allowed.append(path)
           subprocess.run(["git", "add", "--", *(str(p) for p in allowed)], check=True)
