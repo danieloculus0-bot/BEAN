@@ -198,6 +198,9 @@ def invoke(state_dir: Path, runtime_dir: Path, ticks: int = 12, hz: int = 20,
            request: dict | None = None, reply_path: Path | None = None) -> dict:
     if not 2 <= ticks <= 120 or not 1 <= hz <= 30:
         raise ValueError("ticks must be 2..120 and hz 1..30")
+    # Reject invalid request wiring before restoring or mutating Core state.
+    if request is not None and reply_path is None:
+        raise ValueError("Public BEAN request needs a reply destination")
     runtime_dir.mkdir(parents=True, exist_ok=True)
     prior = unpack(state_dir, runtime_dir)
     core = runtime_dir / "bean_memory.sqlite3"
