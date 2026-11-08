@@ -118,6 +118,12 @@ jobs:
               assert not path.is_symlink(), f"symlink checkpoint archive forbidden: {path}"
               assert path.is_file(), f"missing checkpoint archive: {path}"
               allowed.append(path)
+          # Reuse Core's receipt/hash/gzip/SQLite recovery verifier before any git add.
+          # A staging allowlist alone does not authenticate a recoverable checkpoint.
+          import tempfile
+          from scripts.invoke_bean import unpack
+          with tempfile.TemporaryDirectory(prefix="bean-publish-verify-") as scratch:
+              unpack(root, Path(scratch))
           subprocess.run(["git", "add", "--", *(str(p) for p in allowed)], check=True)
           staged = set(subprocess.check_output(
               ["git", "diff", "--cached", "--name-only", "--", str(root)],
