@@ -101,3 +101,16 @@ def test_workflow_publication_rejects_non_synthetic_manifest(tmp_path):
     result = execute(tmp_path)
     assert result.returncode != 0
     assert not git(tmp_path, "diff", "--cached", "--name-only").strip()
+
+
+def test_workflow_publication_rejects_symlink_archive(tmp_path):
+    """A referenced archive must be a real file, never a Git symlink pointer."""
+    setup(tmp_path)
+    root = tmp_path / "research/github_brain"
+    archive = root / "bean_memory.sqlite3.g000002.gz"
+    archive.unlink()
+    archive.symlink_to(tmp_path / "README.md")
+    result = execute(tmp_path)
+    assert result.returncode != 0
+    assert "symlink checkpoint archive forbidden" in result.stderr
+    assert not git(tmp_path, "diff", "--cached", "--name-only").strip()
