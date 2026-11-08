@@ -76,3 +76,28 @@ def test_workflow_publication_rejects_dirty_index(tmp_path):
     assert result.returncode != 0
     assert "index was already staged" in result.stderr
     assert git(tmp_path, "diff", "--cached", "--name-only").strip() == "unrelated.txt"
+
+
+def test_workflow_publication_rejects_archive_path_escape(tmp_path):
+    """A forged manifest must not make git stage paths outside the brain directory."""
+    setup(tmp_path)
+    manifest = tmp_path / "research/github_brain/manifest.json"
+    receipt = json.loads(manifest.read_text())
+    receipt["databases"]["core"]["archive"] = "../../README.md"
+    manifest.write_text(json.dumps(receipt))
+    result = execute(tmp_path)
+    assert result.returncode != 0
+    assert "unexpected checkpoint archive" in result.stderr
+    assert not git(tmp_path, "diff", "--cached", "--name-only").strip()
+
+
+def test_workflow_publication_rejects_non_synthetic_manifest(tmp_path):
+    """Public staging must refuse an explicitly non-synthetic checkpoint."""
+    setup(tmp_path)
+    manifest = tmp_path / "research/github_brain/manifest.json"
+    receipt = json.loads(manifest.read_text())
+    receipt["synthetic_only"] = False
+    manifest.write_text(json.dumps(receipt))
+    result = execute(tmp_path)
+    assert result.returncode != 0
+    assert not git(tmp_path, "diff", "--cached", "--name-only").strip()
