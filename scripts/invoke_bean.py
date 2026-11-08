@@ -20,6 +20,10 @@ import subprocess
 import sys
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
+# Direct script invocation places scripts/ on sys.path, not necessarily the repo root.
+# Keep native BEAN imports available without depending on caller PYTHONPATH.
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
 CHECKPOINTS = {
     "core": ("bean_memory.sqlite3.gz", "bean_memory.sqlite3"),
     "reasoning": ("bean_reasoning.sqlite3.gz", "bean_reasoning.sqlite3"),
