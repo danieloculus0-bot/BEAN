@@ -5,7 +5,7 @@ import sqlite3
 
 import pytest
 
-from scripts.invoke_bean import checkpoint, digest, unpack
+from scripts.invoke_bean import checkpoint, digest, unpack, prepare_public_reply
 
 
 def _sqlite(path: Path, text: str) -> None:
@@ -66,3 +66,22 @@ def test_fail_closed_if_manifest_missing_or_forged(tmp_path):
                     "synthetic_only": True, "receipt_sha256": digest(b"fake")}))
     with pytest.raises(ValueError, match="receipt mismatch"):
         unpack(state, tmp_path / "fresh")
+
+
+def test_public_reply_size_rejected_before_checkpoint_receipt(tmp_path):
+    request = {"command": "reasoning_local"}
+    # A 64-character placeholder must occupy exactly the same JSON width
+    # as the eventual SHA256 receipt, so sizing can precede publication.
+    small = prepare_public_reply(request, {"answer": "synthetic"}, 4,
+                                 "local-validation", "0" * 64)
+    final = prepare_public_reply(request, {"answer": "synthetic"}, 4,
+                                 "local-validation", "f" * 64)
+    assert len(small.encode("utf-8")) == len(final.encode("utf-8"))
+    assert json.loads(final)["receipt_sha256"] == "f" * 64
+    with pytest.raises(ValueError, match="response exceeds public limit"):
+        prepare_public_reply(request, {"answer": "x" * 14000}, 4,
+                             "local-validation", "0" * 64)
+    # Count bytes, not characters: a multibyte answer can exceed the limit.
+    with pytest.raises(ValueError, match="response exceeds public limit"):
+        prepare_public_reply(request, {"answer": "é" * 7000}, 4,
+                             "local-validation", "0" * 64)
