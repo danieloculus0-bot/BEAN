@@ -48,7 +48,7 @@ def test_fail_closed_on_corrupt_compressed_memory(tmp_path):
     _sqlite(runtime / "bean_memory.sqlite3", "synthetic")
     _sqlite(runtime / "bean_reasoning.sqlite3", "synthetic")
     checkpoint(saved, runtime, None, 1, 3, 2, 12)
-    blob = saved / "bean_memory.sqlite3.gz"
+    blob = saved / "bean_memory.sqlite3.gz.g00001"
     blob.write_bytes(blob.read_bytes()[:-5] + b"wrong")
     with pytest.raises((ValueError, EOFError, OSError)):
         unpack(saved, tmp_path / "fresh")
