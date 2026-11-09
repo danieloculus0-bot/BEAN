@@ -75,7 +75,9 @@ def unpack(state_dir: Path, runtime_dir: Path) -> dict | None:
         record = previous.get("databases", {}).get(name)
         if not isinstance(record, dict):
             raise ValueError("BEAN manifest missing database")
-        compressed = state_dir / archive
+        compressed = state_dir / record.get("archive", archive)
+        if (compressed.name != archive and not re.fullmatch(re.escape(archive) + r"\\.g[0-9]{5,}", compressed.name)):
+            raise ValueError("invalid BEAN generation archive reference")
         if not compressed.is_file() or compressed.stat().st_size > MAX_COMPRESSED:
             raise ValueError("missing or oversized BEAN compressed checkpoint")
         with gzip.open(compressed, "rb") as source:
@@ -112,6 +114,7 @@ def checkpoint(state_dir: Path, runtime_dir: Path, prior: dict | None,
                boots: int, events: int, processed: int, ticks: int) -> dict:
     state_dir.mkdir(parents=True, exist_ok=True)
     databases = {}
+    generation = prior["generation"] + 1 if prior else 1
     for name, (archive, filename) in CHECKPOINTS.items():
         path = runtime_dir / filename
         check_sqlite(path)
@@ -129,9 +132,16 @@ def checkpoint(state_dir: Path, runtime_dir: Path, prior: dict | None,
         compressed = gzip.compress(payload, mtime=0)
         if len(compressed) > MAX_COMPRESSED:
             raise ValueError("BEAN memory exceeded compressed checkpoint size limit")
-        (state_dir / (archive + ".tmp")).write_bytes(compressed)
-        (state_dir / (archive + ".tmp")).replace(state_dir / archive)
-        databases[name] = {"sha256": digest(payload), "bytes": len(payload)}
+        # Immutable generation archives keep the previous manifest restorable
+        # if any later archive write or manifest publication fails.
+        versioned = f"{archive}.g{generation:05d}"
+        destination = state_dir / versioned
+        if destination.exists():
+            raise ValueError("BEAN generation archive already exists")
+        staging_archive = state_dir / (versioned + ".tmp")
+        staging_archive.write_bytes(compressed)
+        staging_archive.replace(destination)
+        databases[name] = {"sha256": digest(payload), "bytes": len(payload), "archive": versioned}
         backup.unlink()
     source_sha = os.environ.get("GITHUB_SHA", "local-validation")
     if not (source_sha == "local-validation" or re.fullmatch(r"[0-9a-f]{40}", source_sha)):
@@ -139,7 +149,7 @@ def checkpoint(state_dir: Path, runtime_dir: Path, prior: dict | None,
     receipt = {
         "schema": "bean.github.invoke.v1",
         "synthetic_only": True,
-        "generation": (prior["generation"] + 1 if prior else 1),
+        "generation": generation,
         "previous_receipt_sha256": prior["receipt_sha256"] if prior else None,
         "source_sha": source_sha,
         "github_run_id": os.environ.get("GITHUB_RUN_ID") or None,
