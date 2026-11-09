@@ -95,11 +95,15 @@ def test_retry_after_interrupted_publication(tmp_path, monkeypatch):
     monkeypatch.setattr(Path, "replace", original_replace)
     orphan = state / "bean_memory.sqlite3.gz.g00002"
     saved = orphan.read_bytes()
-    assert runner.unpack(state, tmp_path / "before_retry")["generation"] == 1
+    before_retry = tmp_path / "before_retry"
+    before_retry.mkdir()
+    assert runner.unpack(state, before_retry)["generation"] == 1
     result = runner.checkpoint(state, next_runtime, prior, 2, 8, 2, 12)
     assert result["generation"] == 2
     assert orphan.read_bytes() == saved
-    assert runner.unpack(state, tmp_path / "after_retry")["generation"] == 2
+    after_retry = tmp_path / "after_retry"
+    after_retry.mkdir()
+    assert runner.unpack(state, after_retry)["generation"] == 2
 
 
 def test_conflicting_orphan_rejected_without_mutation(tmp_path):
@@ -115,4 +119,6 @@ def test_conflicting_orphan_rejected_without_mutation(tmp_path):
         runner.checkpoint(state, seed, prior, 2, 8, 2, 12)
     assert orphan.read_bytes() == b"synthetic conflict"
     assert (state / "manifest.json").read_bytes() == before
-    assert runner.unpack(state, tmp_path / "recovered")["generation"] == 1
+    recovered = tmp_path / "recovered"
+    recovered.mkdir()
+    assert runner.unpack(state, recovered)["generation"] == 1
