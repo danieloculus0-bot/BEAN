@@ -287,7 +287,7 @@ def invoke(state_dir: Path, runtime_dir: Path, ticks: int = 12, hz: int = 20,
         encoded = prepare_public_reply(request, reply_result, receipt["generation"],
                                        receipt["source_sha"], receipt["receipt_sha256"])
         reply_path.parent.mkdir(parents=True, exist_ok=True)
-        reply_path.write_text(encoded + "\\n", encoding="utf-8")
+        reply_path.write_text(encoded + "\n", encoding="utf-8")
     print(json.dumps(receipt, sort_keys=True))
     return receipt
 
