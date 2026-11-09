@@ -76,7 +76,7 @@ def unpack(state_dir: Path, runtime_dir: Path) -> dict | None:
         if not isinstance(record, dict):
             raise ValueError("BEAN manifest missing database")
         compressed = state_dir / record.get("archive", archive)
-        if (compressed.name != archive and not re.fullmatch(re.escape(archive) + r"\\.g[0-9]{5,}", compressed.name)):
+        if (compressed.name != archive and not re.fullmatch(re.escape(archive) + r"\.g[0-9]{5,}", compressed.name)):
             raise ValueError("invalid BEAN generation archive reference")
         if not compressed.is_file() or compressed.stat().st_size > MAX_COMPRESSED:
             raise ValueError("missing or oversized BEAN compressed checkpoint")
