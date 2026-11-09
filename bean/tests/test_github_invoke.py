@@ -85,3 +85,45 @@ def test_public_reply_size_rejected_before_checkpoint_receipt(tmp_path):
     with pytest.raises(ValueError, match="response exceeds public limit"):
         prepare_public_reply(request, {"answer": "é" * 7000}, 4,
                              "local-validation", "0" * 64)
+
+
+def test_oversized_reply_preserves_existing_checkpoint_end_to_end(tmp_path, monkeypatch):
+    """The actual invoke orchestration must reject overflow before publishing."""
+    from types import SimpleNamespace
+    import scripts.invoke_bean as runner
+
+    saved = tmp_path / "state"
+    seed = tmp_path / "seed"
+    seed.mkdir()
+    _sqlite(seed / "bean_memory.sqlite3", "synthetic-existing-memory")
+    _sqlite(seed / "bean_reasoning.sqlite3", "synthetic-existing-reasoning")
+    initial = checkpoint(saved, seed, None, 1, 5, 2, 12)
+    before = {p.name: p.read_bytes() for p in saved.iterdir() if p.is_file()}
+
+    def synthetic_core_boot(*args, **kwargs):
+        inbox = tmp_path / "runtime" / "inbox"
+        processed = inbox / "processed"
+        processed.mkdir(exist_ok=True)
+        for pending in inbox.glob("*.json"):
+            pending.rename(processed / pending.name)
+        return SimpleNamespace(returncode=0, stderr="")
+
+    monkeypatch.setattr(runner.subprocess, "run", synthetic_core_boot)
+    monkeypatch.setattr(runner, "sqlite_stats",
+                        lambda core: (2, 10, "synthetic-session", 2))
+    monkeypatch.setattr(runner, "serve_public_request",
+                        lambda reasoning, request: {"answer": "é" * 7000})
+    request = {"schema": "bean.github.request.v1",
+               "command": "reasoning_local",
+               "args": {"domain": "synthetic", "task_ref": "case-1",
+                        "query": "test"}}
+    reply = tmp_path / "reply.json"
+    with pytest.raises(ValueError, match="response exceeds public limit"):
+        runner.invoke(saved, tmp_path / "runtime", request=request, reply_path=reply)
+    assert not reply.exists()
+    assert {p.name: p.read_bytes() for p in saved.iterdir() if p.is_file()} == before
+    restored = tmp_path / "restart"
+    restored.mkdir()
+    recovered = unpack(saved, restored)
+    assert recovered["receipt_sha256"] == initial["receipt_sha256"]
+    assert recovered["generation"] == 1
