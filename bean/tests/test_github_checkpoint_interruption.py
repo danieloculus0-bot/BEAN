@@ -71,3 +71,48 @@ def test_successful_generation_restart(tmp_path):
     assert runner.unpack(state, recovered_dir)["generation"] == 2
     with sqlite3.connect(recovered_dir / "bean_memory.sqlite3") as conn:
         assert conn.execute("SELECT COUNT(*) FROM evidence").fetchone()[0] == 2
+
+def test_retry_after_interrupted_publication(tmp_path, monkeypatch):
+    state, seed = tmp_path / "state", tmp_path / "seed"
+    seed.mkdir()
+    for name in ("bean_memory.sqlite3", "bean_reasoning.sqlite3"):
+        _db(seed / name, "initial")
+    prior = runner.checkpoint(state, seed, None, 1, 3, 2, 12)
+    next_runtime = tmp_path / "next"
+    next_runtime.mkdir()
+    runner.unpack(state, next_runtime)
+    for name in ("bean_memory.sqlite3", "bean_reasoning.sqlite3"):
+        with sqlite3.connect(next_runtime / name) as db:
+            db.execute("INSERT INTO evidence VALUES ('updated')")
+    original_replace = Path.replace
+    def interrupt(self, target):
+        if str(target).endswith("bean_reasoning.sqlite3.gz.g00002"):
+            raise OSError("injected interruption")
+        return original_replace(self, target)
+    monkeypatch.setattr(Path, "replace", interrupt)
+    with pytest.raises(OSError, match="injected interruption"):
+        runner.checkpoint(state, next_runtime, prior, 2, 8, 2, 12)
+    monkeypatch.setattr(Path, "replace", original_replace)
+    orphan = state / "bean_memory.sqlite3.gz.g00002"
+    saved = orphan.read_bytes()
+    assert runner.unpack(state, tmp_path / "before_retry")["generation"] == 1
+    result = runner.checkpoint(state, next_runtime, prior, 2, 8, 2, 12)
+    assert result["generation"] == 2
+    assert orphan.read_bytes() == saved
+    assert runner.unpack(state, tmp_path / "after_retry")["generation"] == 2
+
+
+def test_conflicting_orphan_rejected_without_mutation(tmp_path):
+    state, seed = tmp_path / "state", tmp_path / "seed"
+    seed.mkdir()
+    for name in ("bean_memory.sqlite3", "bean_reasoning.sqlite3"):
+        _db(seed / name, "initial")
+    prior = runner.checkpoint(state, seed, None, 1, 3, 2, 12)
+    orphan = state / "bean_memory.sqlite3.gz.g00002"
+    orphan.write_bytes(b"synthetic conflict")
+    before = (state / "manifest.json").read_bytes()
+    with pytest.raises(ValueError, match="conflicts with retry"):
+        runner.checkpoint(state, seed, prior, 2, 8, 2, 12)
+    assert orphan.read_bytes() == b"synthetic conflict"
+    assert (state / "manifest.json").read_bytes() == before
+    assert runner.unpack(state, tmp_path / "recovered")["generation"] == 1
