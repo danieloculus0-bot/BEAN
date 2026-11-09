@@ -139,10 +139,14 @@ def checkpoint(state_dir: Path, runtime_dir: Path, prior: dict | None,
         versioned = f"{archive}.g{generation:05d}"
         destination = state_dir / versioned
         if destination.exists():
-            raise ValueError("BEAN generation archive already exists")
-        staging_archive = state_dir / (versioned + ".tmp")
-        staging_archive.write_bytes(compressed)
-        staging_archive.replace(destination)
+            # Preserve immutable evidence after a partial prior publication.
+            # Only an identical retry may reuse an orphaned archive.
+            if destination.read_bytes() != compressed:
+                raise ValueError("BEAN generation archive conflicts with retry")
+        else:
+            staging_archive = state_dir / (versioned + ".tmp")
+            staging_archive.write_bytes(compressed)
+            staging_archive.replace(destination)
         databases[name] = {"sha256": digest(payload), "bytes": len(payload), "archive": versioned}
         backup.unlink()
     source_sha = os.environ.get("GITHUB_SHA", "local-validation")
