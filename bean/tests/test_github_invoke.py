@@ -127,3 +127,26 @@ def test_oversized_reply_preserves_existing_checkpoint_end_to_end(tmp_path, monk
     recovered = unpack(saved, restored)
     assert recovered["receipt_sha256"] == initial["receipt_sha256"]
     assert recovered["generation"] == 1
+
+
+def test_public_reply_exact_utf8_limit_and_first_overflow():
+    """Accept the largest fitting UTF-8 payload; reject the next code point."""
+    request = {"command": "reasoning_local"}
+    for character in ("x", "é", "🧪"):
+        low, high = 0, 14001
+        while low + 1 < high:
+            mid = (low + high) // 2
+            try:
+                prepare_public_reply(request, {"answer": character * mid}, 4,
+                                     "local-validation", "0" * 64)
+            except ValueError as exc:
+                assert "response exceeds public limit" in str(exc)
+                high = mid
+            else:
+                low = mid
+        accepted = prepare_public_reply(request, {"answer": character * low}, 4,
+                                        "local-validation", "f" * 64)
+        assert len(accepted.encode("utf-8")) <= 14000
+        with pytest.raises(ValueError, match="response exceeds public limit"):
+            prepare_public_reply(request, {"answer": character * (low + 1)}, 4,
+                                 "local-validation", "f" * 64)
