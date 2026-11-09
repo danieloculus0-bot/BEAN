@@ -1,0 +1,367 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#070b09">
+  <meta name="description" content="BeanRivet is a proposed BEAN and AIscend infrastructure utility token. Explore the architecture, transparent 50/50 surplus model, and a working simulation. No token or presale is live.">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="BeanRivet | Infrastructure for Useful Intelligence">
+  <meta property="og:description" content="Proposed utility economy for BEAN and AIscend. Proof before hype. No live token or presale.">
+  <meta property="og:image" content="https://danieloculus0-bot.github.io/BEAN/bean-official.webp">
+  <meta property="og:url" content="https://danieloculus0-bot.github.io/BEAN/beanrivet/">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="canonical" href="https://danieloculus0-bot.github.io/BEAN/beanrivet/">
+  <link rel="icon" href="../bean-official.webp" type="image/webp">
+  <title>BeanRivet ($BNRVT) | BEAN Infrastructure Concept</title>
+  <style>
+    :root { color-scheme:dark; --bg:#070b09; --panel:#101814; --panel2:#141e18; --line:#34463a; --light:#edf8ee; --mute:#b6c7bb; --green:#a5ef7d; --green2:#72bd77; --ember:#edaa6e; --width:1160px }
+    * { box-sizing:border-box }
+    html { scroll-behavior:smooth; scroll-padding-top:95px }
+    body { margin:0; font:16px/1.58 system-ui,-apple-system,Segoe UI,Roboto,sans-serif; color:var(--light); background:radial-gradient(ellipse 70% 600px at 83% 2%,#203a2866,transparent 70%),var(--bg) }
+    a { color:var(--green); text-underline-offset:4px }
+    a:hover { color:white }
+    :focus-visible { outline:3px solid #c1ffa0; outline-offset:4px }
+    .wrap { width:min(var(--width),calc(100% - 40px)); margin:auto }
+    .skip { position:absolute; left:12px; top:-90px; background:var(--green); padding:10px; z-index:100; color:#09140b }
+    .skip:focus { top:12px }
+    .topbar { background:#111c13; border-bottom:1px solid #344d35; color:#cceaca; text-align:center; padding:9px 20px; font-size:.78rem; font-weight:750; letter-spacing:.065em; text-transform:uppercase }
+    header { position:sticky; top:0; z-index:30; border-bottom:1px solid #34443b; background:#080e0bed; backdrop-filter:blur(16px) }
+    .nav { display:flex; align-items:center; justify-content:space-between; min-height:78px; gap:20px }
+    .brand { display:inline-flex; align-items:center; gap:12px; text-decoration:none; color:#f6fff4; font-weight:900; font-size:1.18rem; letter-spacing:.065em }
+    .brand span { color:var(--green) }
+    .mark { display:grid; place-items:center; width:43px; height:43px; border:1px solid #76bb72; border-radius:13px; background:linear-gradient(140deg,#203829,#0b1811); flex-shrink:0 }
+    .mark svg { width:28px; height:28px }
+    .navlinks { display:flex; gap:22px; flex-wrap:wrap; align-items:center; font-size:.85rem; font-weight:760 }
+    .navlinks a { text-decoration:none; color:#dae9dc }
+    .navlinks a:hover { color:var(--green) }
+    .navlinks .parent { color:var(--green) }
+    h1,h2,h3,p { margin-top:0 }
+    h1 { font-size:clamp(3.2rem,7vw,6.6rem); line-height:1.015; letter-spacing:-.075em; margin:14px 0 24px }
+    h2 { font-size:clamp(2.15rem,4vw,3.7rem); line-height:1.09; letter-spacing:-.055em; margin:13px 0 18px }
+    h3 { font-size:1.18rem; margin:0 0 9px; line-height:1.28 }
+    p { color:var(--mute) }
+    .eyebrow { font-size:.76rem; text-transform:uppercase; letter-spacing:.18em; font-weight:850; color:var(--green) }
+    .lead { font-size:1.16rem; max-width:620px; line-height:1.6 }
+    .hero { padding:84px 0 80px; position:relative; overflow:hidden }
+    .hero-grid { display:grid; grid-template-columns:1.07fr .93fr; align-items:center; gap:60px }
+    .hero h1 em { font-style:normal; color:var(--green) }
+    .actions { display:flex; gap:12px; flex-wrap:wrap; margin:30px 0 28px }
+    .btn { display:inline-flex; align-items:center; justify-content:center; min-height:48px; border-radius:11px; padding:12px 19px; font-size:.91rem; font-weight:800; text-decoration:none; border:1px solid #5b8b62; color:#eef9ea; background:#172319; cursor:pointer }
+    .btn:hover { background:#26382b; color:#fff }
+    .btn.primary { background:var(--green); color:#102110; border-color:var(--green) }
+    .btn.primary:hover { background:#c4ff9b; color:#102110 }
+    .caption { font-size:.78rem; color:#9eb2a2; margin:0 }
+    .hero-facts { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; max-width:560px }
+    .hero-facts div { border-top:1px solid #577255; padding-top:13px }
+    .hero-facts span { display:block; color:#9fb3a4; font-size:.72rem; letter-spacing:.08em; text-transform:uppercase; font-weight:800 }
+    .hero-facts strong { display:block; font-size:.93rem; margin-top:5px; font-variant-numeric:tabular-nums; overflow-wrap:anywhere }
+    .hero-panel { min-width:0; border:1px solid #496b4e; border-radius:28px; background:radial-gradient(circle at 50% 37%,#1f3928 0%,#132119 45%,#0e1812 100%); padding:24px 24px 20px; box-shadow:0 32px 95px #0008; position:relative }
+    .panel-top { display:flex; justify-content:space-between; gap:12px; align-items:center; color:#a6c7ac; font-size:.75rem; font-weight:850; letter-spacing:.07em; text-transform:uppercase }
+    .live-dot { display:inline-block; width:8px; height:8px; background:var(--ember); border-radius:50%; margin-right:6px }
+    .orbit { position:relative; height:330px; display:grid; place-items:center; isolation:isolate }
+    .orbit:before,.orbit:after { content:""; position:absolute; border-radius:50%; border:1px solid #688a6c88 }
+    .orbit:before { width:262px; height:262px }
+    .orbit:after { width:330px; height:330px; border-style:dashed; border-color:#60856777 }
+    .core { position:relative; z-index:2; width:183px; height:183px; display:grid; place-items:center; border:2px solid #b1f58f; border-radius:50%; background:radial-gradient(circle at 36% 30%,#355e3a,#17311c 62%,#0b1810); box-shadow:0 0 90px #97e97624,inset 0 0 40px #a7ea7d1c }
+    .core:before { content:""; position:absolute; inset:12px; border:1px dashed #92cc8b; border-radius:50% }
+    .core b { font-size:4.2rem; line-height:1; font-weight:950; letter-spacing:-.08em; color:#d4fbb8; text-shadow:0 2px 25px #a5ef7d30 }
+    .bolt { position:absolute; width:17px; height:17px; border:3px solid #a5ef7d; border-radius:50%; background:#17331c; z-index:3; box-shadow:0 0 0 7px #1a302298 }
+    .bolt.n { top:13px; left:calc(50% - 8px) } .bolt.e { right:16px; top:calc(50% - 8px) } .bolt.s { bottom:13px; left:calc(50% - 8px) } .bolt.w { left:16px; top:calc(50% - 8px) }
+    .panel-bottom { display:flex; justify-content:space-between; gap:14px; border-top:1px solid #46684c; padding-top:18px; align-items:center }
+    .panel-bottom strong { font-weight:850; letter-spacing:.08em }
+    .panel-bottom span { font-size:.74rem; color:#aac6af }
+    section { padding:83px 0; border-top:1px solid #293b30 }
+    .section-head { max-width:750px; margin-bottom:34px }
+    .section-head>p { font-size:1.08rem }
+    .split { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:18px }
+    .cards { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:16px }
+    .card { min-width:0; border:1px solid var(--line); background:linear-gradient(155deg,#16221a,#0f1712); padding:27px; border-radius:19px }
+    .card p { margin-bottom:0; font-size:.92rem }
+    .card .num { color:var(--green); font-weight:900; font-size:.77rem; letter-spacing:.13em; margin-bottom:13px }
+    .card strong { color:#f2fff0 }
+    .steps { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:18px; counter-reset:step }
+    .steps>div { border-left:2px solid #7bbf78; padding:5px 8px 5px 19px; min-width:0 }
+    .steps .num { font-weight:900; font-size:.85rem; color:var(--green); display:block; margin-bottom:13px }
+    .steps p { font-size:.9rem; margin:0 }
+    .tint { background:#0a110d }
+    .lab { display:grid; grid-template-columns:.95fr 1.05fr; gap:32px; border:1px solid #648261; border-radius:24px; background:linear-gradient(130deg,#142119,#0e1712 58%,#101711); padding:32px }
+    .form-item { margin-top:20px }
+    label { display:block; color:#e3f2df; font-size:.89rem; font-weight:800; margin-bottom:7px }
+    input[type=number] { width:100%; font:inherit; font-size:1.17rem; color:#edf7e7; background:#070d09; border:1px solid #5d7d64; border-radius:10px; padding:13px 15px; appearance:textfield }
+    input[type=number]:focus-visible { border-color:var(--green) }
+    .field-note { color:#9caf9f; font-size:.75rem; margin-top:7px }
+    .meter { display:flex; width:100%; overflow:hidden; height:17px; border-radius:999px; background:#1e3025; margin:17px 0 }
+    .meter .burn { background:linear-gradient(90deg,#edb277,#d78150); width:50% }
+    .meter .treasury { background:linear-gradient(90deg,#67b87b,#a7eb7f); width:50% }
+    .result-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:11px; margin-top:14px }
+    .result { border:1px solid #3c5941; border-radius:13px; padding:18px; background:#0a120c }
+    .result .label { display:block; font-size:.72rem; text-transform:uppercase; letter-spacing:.09em; color:#b2c2b2; font-weight:800 }
+    .result output { display:block; font-size:clamp(1.35rem,3vw,2rem); font-weight:900; font-variant-numeric:tabular-nums; margin:3px 0 }
+    .result .unit { font-size:.7rem; color:#aabaaa }
+    .result.fire output { color:var(--ember) }
+    .result.grow output { color:var(--green) }
+    .math-note { color:#9daf9f; font-size:.83rem; margin:16px 0 0 }
+    .status-row { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:16px }
+    .chip { font-size:.74rem; font-weight:800; background:#17221a; border:1px solid #49604c; color:#cbe3cb; border-radius:999px; padding:6px 11px }
+    .chip.warning { border-color:#9f7153; color:#ffd3ab; background:#271c15 }
+    .status-stack { display:grid; gap:11px }
+    .status-stack div { border:1px solid #354c3a; padding:19px; border-radius:13px; background:#101b14 }
+    .status-stack h3 { font-size:1.01rem; margin-bottom:6px }
+    .status-stack p { margin:0; font-size:.86rem }
+    .roadmap { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:14px }
+    .milestone { border:1px solid #405341; background:#111a14; border-radius:16px; padding:23px }
+    .milestone .step-id { color:var(--green); font-size:.78rem; letter-spacing:.1em; font-weight:900 }
+    .milestone h3 { margin-top:15px }
+    .milestone p { margin:0; font-size:.85rem }
+    details { padding:18px 0; border-bottom:1px solid #334539 }
+    summary { cursor:pointer; font-weight:800; font-size:1.05rem }
+    details p { margin:12px 0 0; max-width:820px }
+    .callout { border:1px solid #526a55; border-radius:18px; background:#121c15; padding:23px; color:#c9e0ca }
+    .callout strong { color:var(--light) }
+    .faq { max-width:860px }
+    footer { padding:34px 0 45px; border-top:1px solid #314133 }
+    .foot { display:flex; flex-wrap:wrap; justify-content:space-between; gap:16px; align-items:flex-start; font-size:.83rem }
+    .foot a { margin-right:15px }
+    .foot p { margin:0; max-width:660px; font-size:.78rem }
+    @media (max-width:930px) {
+      .hero-grid { grid-template-columns:1fr; gap:35px }
+      .hero { padding-top:64px }
+      .hero-panel { max-width:560px; width:100%; margin:auto }
+      .cards { grid-template-columns:1fr }
+      .steps,.roadmap { grid-template-columns:repeat(2,minmax(0,1fr)) }
+      .lab { grid-template-columns:1fr }
+      .navlinks { gap:13px }
+    }
+    @media (max-width:610px) {
+      .wrap { width:calc(100% - 30px) }
+      header { position:static }
+      .nav { padding:15px 0; align-items:flex-start; flex-direction:column }
+      .navlinks { gap:13px; font-size:.78rem }
+      .hero { padding:55px 0 }
+      section { padding:64px 0 }
+      h1 { font-size:clamp(2.8rem,12vw,4.5rem) }
+      .hero-facts { grid-template-columns:1fr 1fr; gap:14px }
+      .hero-panel { padding:15px }
+      .orbit { height:300px }
+      .orbit:after { width:280px; height:280px }
+      .orbit:before { width:232px; height:232px }
+      .core { width:163px; height:163px }
+      .bolt.n { top:10px }.bolt.s { bottom:10px }.bolt.e { right:10px }.bolt.w { left:10px }
+      .steps,.roadmap,.split { grid-template-columns:1fr }
+      .lab { padding:22px 16px }
+      .result { padding:14px }
+      .result output { font-size:1.27rem }
+    }
+    @media (prefers-reduced-motion:reduce) { html { scroll-behavior:auto } }
+  </style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<div class="topbar">Concept preview &nbsp;·&nbsp; No token deployed &nbsp;·&nbsp; No presale open</div>
+<header>
+  <nav class="wrap nav" aria-label="Main navigation">
+    <a href="#home" class="brand" aria-label="BeanRivet home">
+      <span class="mark" aria-hidden="true">
+        <svg viewBox="0 0 32 32" fill="none"><circle cx="16" cy="16" r="12.5" stroke="#a5ef7d" stroke-width="2.5"/><circle cx="16" cy="16" r="5" fill="#a5ef7d"/><path d="M16 1v6M16 25v6M1 16h6M25 16h6" stroke="#a5ef7d" stroke-width="2"/></svg>
+      </span>
+      BEAN<span>RIVET</span>
+    </a>
+    <div class="navlinks">
+      <a href="#architecture">Architecture</a>
+      <a href="#economics">Tokenomics lab</a>
+      <a href="#roadmap">Roadmap</a>
+      <a href="#faq">FAQ</a>
+      <a class="parent" href="../">Back to BEAN</a>
+    </div>
+  </nav>
+</header>
+<main id="main">
+<section class="hero" id="home">
+  <div class="wrap hero-grid">
+    <div>
+      <div class="eyebrow">BEAN + AIscend infrastructure · Proposed $BNRVT</div>
+      <h1>Build the work.<br><em>Rivet the network.</em></h1>
+      <p class="lead">BeanRivet is a proposed utility economy for verifiable AI work, shared computing infrastructure, and transparent community funding. The product comes first. The token comes later.</p>
+      <div class="actions">
+        <a class="btn primary" href="#economics">Explore the 50/50 model</a>
+        <a class="btn" href="#architecture">See the architecture</a>
+      </div>
+      <div class="hero-facts" aria-label="Proposal status">
+        <div><span>Proposed ticker</span><strong>BNRVT</strong></div>
+        <div><span>Token supply</span><strong>Not set</strong></div>
+        <div><span>Blockchain</span><strong>Not selected</strong></div>
+      </div>
+    </div>
+    <div class="hero-panel" role="img" aria-label="BeanRivet concept emblem: interconnected rings surrounding an illuminated BR core with four connecting rivets">
+      <div class="panel-top"><span>Infrastructure concept</span><span><i class="live-dot"></i>Design stage</span></div>
+      <div class="orbit">
+        <span class="bolt n"></span><span class="bolt e"></span><span class="bolt s"></span><span class="bolt w"></span>
+        <div class="core"><b>BR</b></div>
+      </div>
+      <div class="panel-bottom"><strong>BEANRIVET<span style="color:#a5ef7d"> / BNRVT</span></strong><span>VERIFIABLE BY DESIGN</span></div>
+    </div>
+  </div>
+</section>
+<section id="architecture" class="tint">
+  <div class="wrap">
+    <div class="section-head">
+      <div class="eyebrow">01 / Architecture</div>
+      <h2>Real systems. Clearly separated roles.</h2>
+      <p>The existing BEAN and AIscend projects are independently developed research systems. BeanRivet would be an additional economic layer, not a claim that their software is already a decentralized token network.</p>
+    </div>
+    <div class="cards">
+      <article class="card">
+        <div class="num">01 / INTELLIGENCE</div>
+        <h3>BEAN Core</h3>
+        <p>Research into memory, evidence, reasoning continuity and learning from outcomes. Candidate work receipts could eventually support accountable service accounting.</p>
+        <p style="margin-top:15px"><a href="https://github.com/danieloculus0-bot/BEAN">Inspect the BEAN repository</a></p>
+      </article>
+      <article class="card">
+        <div class="num">02 / EXPERIMENTATION</div>
+        <h3>AIscend</h3>
+        <p>An experimental crypto-trading and strategy research application. Wallet and market adapters exist, but profitable autonomy and a tokenized compute marketplace have not been demonstrated.</p>
+        <p style="margin-top:15px"><a href="https://github.com/danieloculus0-bot/AIscend">Read AIscend's current scope</a></p>
+      </article>
+      <article class="card">
+        <div class="num">03 / PROPOSED NETWORK</div>
+        <h3>BeanRivet</h3>
+        <p>A prospective layer for service metering, verified contributor rewards, treasury accounting and public token-burn receipts. No contracts, issuance or payments are live.</p>
+        <p style="margin-top:15px"><a href="#roadmap">Follow the build sequence</a></p>
+      </article>
+    </div>
+  </div>
+</section>
+<section>
+  <div class="wrap">
+    <div class="section-head">
+      <div class="eyebrow">02 / The flow</div>
+      <h2>Utility before speculation.</h2>
+      <p>The intended accounting flow separates customer funds, service costs and actual eligible protocol surplus.</p>
+    </div>
+    <div class="steps">
+      <div><span class="num">01 · USE</span><h3>Request work</h3><p>Customers access an eventual BEAN-connected service with disclosed fees and usage terms.</p></div>
+      <div><span class="num">02 · VERIFY</span><h3>Record results</h3><p>Verified outcomes and costs become auditable receipts, rather than unverifiable performance claims.</p></div>
+      <div><span class="num">03 · RECONCILE</span><h3>Cover obligations</h3><p>Operating costs, liabilities and customer-owned balances are excluded before calculating distributable surplus.</p></div>
+      <div><span class="num">04 · ALLOCATE</span><h3>Split 50 / 50</h3><p>Under the proposed policy, half of eligible BNRVT surplus is burned and half enters a transparent community treasury.</p></div>
+    </div>
+  </div>
+</section>
+<section id="economics" class="tint">
+  <div class="wrap">
+    <div class="section-head">
+      <div class="eyebrow">03 / Tokenomics lab</div>
+      <h2>Make the math inspectable.</h2>
+      <p>Adjust illustrative token-denominated fee receipts and costs below. This is a local, hypothetical calculator, not real treasury data, token pricing or an investment forecast.</p>
+    </div>
+    <div class="lab">
+      <div>
+        <div class="eyebrow">Scenario inputs</div>
+        <h3 style="font-size:1.4rem;margin-top:10px">Model an eligible surplus</h3>
+        <p>Surplus is counted only after legitimate costs and obligations are met. No forfeiture of unspent customer credits.</p>
+        <div class="form-item">
+          <label for="fees">Eligible protocol fee receipts (hypothetical BNRVT units)</label>
+          <input id="fees" type="number" min="0" max="1000000000000" step="100" inputmode="decimal" value="10000">
+        </div>
+        <div class="form-item">
+          <label for="costs">Service costs and obligations (same units)</label>
+          <input id="costs" type="number" min="0" max="1000000000000" step="100" inputmode="decimal" value="3000">
+        </div>
+        <p class="field-note">Inputs are illustrative and calculated entirely in your browser. No wallet, purchase or remote service is involved.</p>
+      </div>
+      <div>
+        <div class="eyebrow">Live scenario output</div>
+        <div class="status-row" style="margin-top:14px"><span class="chip">50% Burn</span><span class="chip">50% Community treasury</span><span class="chip warning">Simulation only</span></div>
+        <div class="result-grid" aria-live="polite" aria-atomic="true">
+          <div class="result" style="grid-column:1 / -1"><span class="label">Eligible surplus</span><output id="surplus">7,000</output><span class="unit">illustrative token units</span></div>
+          <div class="result fire"><span class="label">Permanently burn</span><output id="burn">3,500</output><span class="unit">50% of eligible surplus</span></div>
+          <div class="result grow"><span class="label">Community treasury</span><output id="treasury">3,500</output><span class="unit">50% of eligible surplus</span></div>
+        </div>
+        <div class="meter" role="img" aria-label="Proposed equal split: 50 percent token burn and 50 percent community treasury"><span class="burn"></span><span class="treasury"></span></div>
+        <p class="math-note" id="formula">10,000 receipts minus 3,000 costs = 7,000 eligible units. Allocation: 3,500 burned; 3,500 to community treasury.</p>
+        <p class="caption">Burning reduces supply only when actual tokens are destroyed on-chain. It does not guarantee price appreciation, and a fixed 50/50 split does not imply investment returns.</p>
+      </div>
+    </div>
+  </div>
+</section>
+<section id="status">
+  <div class="wrap split">
+    <div>
+      <div class="eyebrow">04 / Build status</div>
+      <h2>No fake launch metrics.</h2>
+      <p>We're publishing the design before claiming a functioning token ecosystem. Each future milestone will need a linkable implementation, test receipt and independent review where relevant.</p>
+      <div class="actions"><a class="btn" href="https://github.com/danieloculus0-bot/BEAN">Audit the code</a><a class="btn" href="https://github.com/danieloculus0-bot/BEAN/issues">Open a public discussion</a></div>
+    </div>
+    <div class="status-stack">
+      <div><h3>Contract address: none</h3><p>No chain has been chosen, no token minted, and no verified token contract exists. Ignore unsolicited contract-address claims.</p></div>
+      <div><h3>Presale: not open</h3><p>BeanRivet is not requesting funds, deposits, signatures, seed phrases or wallet connections.</p></div>
+      <div><h3>Audit: pending implementation</h3><p>No smart-contract audit can be claimed until contracts exist and independent reviewers assess them.</p></div>
+    </div>
+  </div>
+</section>
+<section id="roadmap" class="tint">
+  <div class="wrap">
+    <div class="section-head">
+      <div class="eyebrow">05 / Roadmap</div>
+      <h2>Earn the right to launch.</h2>
+      <p>These are proposed engineering gates, not release dates or commitments to issue a token.</p>
+    </div>
+    <div class="roadmap">
+      <div class="milestone"><span class="step-id">PHASE 01 · CURRENT</span><h3>Publish the concept</h3><p>Identity, transparent accounting assumptions, use cases, disclosures and source links.</p></div>
+      <div class="milestone"><span class="step-id">PHASE 02 · PROPOSED</span><h3>Build the ledger</h3><p>Test metered services, customer credit separation, receipts and reproducible surplus calculations.</p></div>
+      <div class="milestone"><span class="step-id">PHASE 03 · PROPOSED</span><h3>Testnet + review</h3><p>Contracts, burn verification, security tests, economics stress tests, legal and trademark clearance.</p></div>
+      <div class="milestone"><span class="step-id">PHASE 04 · CONDITIONAL</span><h3>Launch utility</h3><p>Only with real services, disclosed terms, responsible custody and independently verifiable on-chain receipts.</p></div>
+    </div>
+  </div>
+</section>
+<section id="faq">
+  <div class="wrap faq">
+    <div class="eyebrow">06 / Questions</div>
+    <h2>Know what this is.<br>And what it isn't.</h2>
+    <details><summary>Can I buy BeanRivet right now?</summary><p>No. There is no issued BNRVT token, sale, presale, accepted wallet, or investment offering associated with this site.</p></details>
+    <details><summary>Will the community receive 50% of profits?</summary><p>The proposal is to allocate 50% of eligible protocol surplus token units to a community treasury, subject to documented spending rules. It is not a promise of cash distributions, passive yield or tokenholder profit sharing.</p></details>
+    <details><summary>Where do unused customer credits go?</summary><p>They remain customer balances, subject to clearly disclosed service terms. The proposed surplus calculation does not silently capture unused prepaid balances. Any round-up or fee would require advance disclosure and consent.</p></details>
+    <details><summary>Does burning tokens automatically make them more valuable?</summary><p>No. A burn can reduce supply, but token value depends on many factors including actual utility, demand, liquidity, issuance, market conditions and risk.</p></details>
+    <details><summary>Does BEAN or AIscend already run this network?</summary><p>No. BEAN has experimental continuity and learning infrastructure; AIscend has experimental crypto strategy software. BeanRivet's network accounting, treasury and token contracts are proposed future work.</p></details>
+    <details><summary>Is the ticker or name legally cleared?</summary><p>No. BNRVT and BeanRivet are working identifiers. Trademarks, relevant market conflicts, domains and regulatory obligations must be confirmed before a commercial launch.</p></details>
+    <div class="callout" style="margin-top:30px"><strong>Security reminder:</strong> No legitimate BeanRivet page will ask you to send cryptocurrency, share private keys, enter recovery phrases or approve a wallet connection at this concept stage. This is not financial advice or an invitation to invest.</div>
+  </div>
+</section>
+</main>
+<footer>
+  <div class="wrap foot">
+    <div><strong>BEANRIVET</strong><p>Experimental infrastructure design for the BEAN ecosystem. Proposed token: BNRVT. © 2026 BeanRivet project contributors.</p></div>
+    <div><a href="../">BEAN home</a><a href="../aiscend.html">AIscend</a><a href="https://github.com/danieloculus0-bot/BEAN">GitHub</a><a href="https://github.com/danieloculus0-bot/BEAN/issues">Feedback</a></div>
+  </div>
+</footer>
+<script>
+(function () {
+  "use strict";
+  var fees = document.getElementById("fees");
+  var costs = document.getElementById("costs");
+  var surplus = document.getElementById("surplus");
+  var burn = document.getElementById("burn");
+  var treasury = document.getElementById("treasury");
+  var formula = document.getElementById("formula");
+  var nf = new Intl.NumberFormat("en-US", {maximumFractionDigits: 4});
+  function boundedValue(field) {
+    var n = Number(field.value);
+    return Number.isFinite(n) ? Math.min(1000000000000, Math.max(0, n)) : 0;
+  }
+  function update() {
+    var gross = boundedValue(fees);
+    var expenses = boundedValue(costs);
+    var eligible = Math.max(0, gross - expenses);
+    var half = eligible / 2;
+    surplus.textContent = nf.format(eligible);
+    burn.textContent = nf.format(half);
+    treasury.textContent = nf.format(half);
+    formula.textContent = nf.format(gross) + " receipts minus " + nf.format(expenses) + " costs = " + nf.format(eligible) + " eligible units. Allocation: " + nf.format(half) + " burned; " + nf.format(half) + " to community treasury.";
+  }
+  fees.addEventListener("input", update);
+  costs.addEventListener("input", update);
+  update();
+}());
+</script>
+</body>
+</html>
