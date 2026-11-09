@@ -55,7 +55,7 @@ def check_sqlite(path: Path) -> None:
 def unpack(state_dir: Path, runtime_dir: Path) -> dict | None:
     manifest_path = state_dir / MANIFEST
     if not manifest_path.exists():
-        if any((state_dir / compressed).exists() for compressed, _ in CHECKPOINTS.values()):
+        if any(any(state_dir.glob(compressed + "*")) for compressed, _ in CHECKPOINTS.values()):
             raise ValueError("orphaned BEAN checkpoint: refusing to reset memory")
         return None
     manifest_bytes = manifest_path.read_bytes()
@@ -75,9 +75,11 @@ def unpack(state_dir: Path, runtime_dir: Path) -> dict | None:
         record = previous.get("databases", {}).get(name)
         if not isinstance(record, dict):
             raise ValueError("BEAN manifest missing database")
-        compressed = state_dir / record.get("archive", archive)
-        if (compressed.name != archive and not re.fullmatch(re.escape(archive) + r"\.g[0-9]{5,}", compressed.name)):
+        archive_ref = record.get("archive", archive)
+        if not isinstance(archive_ref, str) or (archive_ref != archive and
+                not re.fullmatch(re.escape(archive) + r"\.g[0-9]{5,}", archive_ref)):
             raise ValueError("invalid BEAN generation archive reference")
+        compressed = state_dir / archive_ref
         if not compressed.is_file() or compressed.stat().st_size > MAX_COMPRESSED:
             raise ValueError("missing or oversized BEAN compressed checkpoint")
         with gzip.open(compressed, "rb") as source:
