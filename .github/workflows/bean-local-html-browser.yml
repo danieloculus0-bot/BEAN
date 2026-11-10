@@ -1,0 +1,42 @@
+name: BEAN local HTML browser and MCP tools
+on:
+  pull_request:
+    paths:
+      - 'bean/integration/html_browser.py'
+      - 'integrations/chatgpt/local_html_server.py'
+      - 'bean/tests/test_html_browser.py'
+      - 'docs/BEAN_LOCAL_HTML_BROWSER.md'
+      - '.github/workflows/bean-local-html-browser.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'bean/integration/html_browser.py'
+      - 'integrations/chatgpt/local_html_server.py'
+      - 'bean/tests/test_html_browser.py'
+      - 'docs/BEAN_LOCAL_HTML_BROWSER.md'
+      - '.github/workflows/bean-local-html-browser.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  chromium-local-mcp:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      PYTHONPATH: .
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install isolated Chromium controller and local MCP SDK
+        run: |
+          python -m pip install 'playwright==1.55.0' 'mcp>=2,<3'
+          python -m playwright install --with-deps chromium
+      - name: Compile local browser integration
+        run: |
+          python -m compileall -q bean/integration/html_browser.py integrations/chatgpt/local_html_server.py bean/tests/test_html_browser.py
+      - name: Inspect HTML and execute real JS in disposable Chromium
+        run: python -m unittest bean.tests.test_html_browser -v
