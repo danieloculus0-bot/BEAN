@@ -13,7 +13,7 @@ import subprocess
 import sys
 import time
 
-import httpx2
+import httpx
 from mcp import ClientSession
 from mcp.client.streamable_http import streamable_http_client
 
@@ -34,7 +34,7 @@ def free_port():
 
 async def smoke(port):
     url = f"http://127.0.0.1:{port}/mcp"
-    async with httpx2.AsyncClient() as client:
+    async with httpx.AsyncClient() as client:
         r = await client.get(f"http://127.0.0.1:{port}/health")
         assert r.status_code == 200 and r.text == "ok", (r.status_code, r.text)
         r = await client.post(url, json={
@@ -49,7 +49,7 @@ async def smoke(port):
         })
         assert r.status_code == 401, r.status_code
 
-    async with httpx2.AsyncClient(headers={
+    async with httpx.AsyncClient(headers={
         "Authorization": "Bearer " + SECRET,
     }) as client:
         async with streamable_http_client(url, http_client=client) as (read, write):
