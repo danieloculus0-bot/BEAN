@@ -26,7 +26,7 @@ Persistent reasoning and evidence infrastructure. BEAN Core maintains SQLite-bac
 
 [**Verified Jetson deployment milestone and integration boundary**](docs/JETSON_DEPLOYMENT_MILESTONE_2026-11-01.md) · [Original bring-up evidence](docs/JETSON_ON_DEVICE_BRINGUP_2026-11-01.md) · [Jetson launch and recovery runbook](docs/JETSON_LOCAL_STARTUP_RUNBOOK.md)
 
-## Current Python Core status (October 25, 2026)
+## Python Core milestone (October 25, 2026)
 
 **Implemented in Core:** one native reasoning service with BEAN-owned SQLite/SHA memory, source-linked error reflection, reusable procedures, measured contextual strategy choice, real-model provider adapters, Q-learning, neural checkpoint recovery, and host-reported positive/negative outcome receipts. Merged PRs #170–#179 recovered formerly isolated cognition and research. Software tests demonstrate interfaces, not general intelligence.
 
