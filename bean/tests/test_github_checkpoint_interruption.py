@@ -171,3 +171,53 @@ def test_fresh_boot_after_interruption_rejects_changed_orphan(tmp_path, monkeypa
     recovery = tmp_path / "recovery"
     recovery.mkdir()
     assert runner.unpack(state, recovery)["generation"] == 1
+
+
+def test_manifest_replace_failure_preserves_prior_generation(tmp_path, monkeypatch):
+    """Fault injection at the commit point, after both archives are published."""
+    state, seed = tmp_path / "state", tmp_path / "seed"
+    seed.mkdir()
+    for name in ("bean_memory.sqlite3", "bean_reasoning.sqlite3"):
+        _db(seed / name, "initial")
+    prior = runner.checkpoint(state, seed, None, 1, 3, 2, 12)
+    old_manifest = (state / "manifest.json").read_bytes()
+
+    next_runtime = tmp_path / "next"
+    next_runtime.mkdir()
+    assert runner.unpack(state, next_runtime)["generation"] == 1
+    for name in ("bean_memory.sqlite3", "bean_reasoning.sqlite3"):
+        with sqlite3.connect(next_runtime / name) as db:
+            db.execute("INSERT INTO evidence VALUES ('updated')")
+
+    real_replace = Path.replace
+    def interrupt_manifest(self, target):
+        if str(target) == str(state / "manifest.json"):
+            raise OSError("injected manifest publication failure")
+        return real_replace(self, target)
+
+    monkeypatch.setattr(Path, "replace", interrupt_manifest)
+    with pytest.raises(OSError, match="injected manifest publication failure"):
+        runner.checkpoint(state, next_runtime, prior, 2, 8, 2, 12)
+    monkeypatch.setattr(Path, "replace", real_replace)
+
+    assert (state / "manifest.json").read_bytes() == old_manifest
+    for name in ("bean_memory.sqlite3.gz", "bean_reasoning.sqlite3.gz"):
+        assert (state / (name + ".g00002")).is_file()
+
+    fresh = tmp_path / "fresh"
+    fresh.mkdir()
+    recovered = runner.unpack(state, fresh)
+    assert recovered["receipt_sha256"] == prior["receipt_sha256"]
+    with sqlite3.connect(fresh / "bean_memory.sqlite3") as db:
+        assert db.execute("SELECT COUNT(*) FROM evidence").fetchone()[0] == 1
+
+    # Byte-identical retry may finish publication without rewriting archives.
+    archived = {name: (state / (name + ".g00002")).read_bytes()
+                for name in ("bean_memory.sqlite3.gz", "bean_reasoning.sqlite3.gz")}
+    result = runner.checkpoint(state, next_runtime, prior, 2, 8, 2, 12)
+    assert result["generation"] == 2
+    for name, original in archived.items():
+        assert (state / (name + ".g00002")).read_bytes() == original
+    final = tmp_path / "final"
+    final.mkdir()
+    assert runner.unpack(state, final)["receipt_sha256"] == result["receipt_sha256"]
