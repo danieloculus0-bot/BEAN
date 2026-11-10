@@ -13,7 +13,7 @@ import subprocess
 import sys
 import time
 
-import httpx
+import httpx2 as httpx
 from mcp import ClientSession
 from mcp.client.streamable_http import streamable_http_client
 
