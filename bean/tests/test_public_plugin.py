@@ -164,3 +164,73 @@ def test_agent_screen_differentiates_safe_and_unsafe_deploys():
     action = next(x for x in unsafe["filter_results"] if x["filter_name"] == "action_risk")
     assert len(action["reasons"]) >= 3
     assert unsafe["execution_permission"] == safe["execution_permission"] == "none"
+
+
+def test_black_mirror_claim_rejects_authentication_and_learning_overreach():
+    claim = (
+        "Five independently authenticated engineering reports prove BLACK MIRROR-7 "
+        "is compliant, ready for deployment, and demonstrate that BEAN has "
+        "independently learned to certify spacecraft."
+    )
+    result = audit_claim(
+        claim, source_ref="fictional-unverified-certification",
+        evidence_refs=["Lab Alpha", "Lab Beta", "Independent Review Copy"],
+        confidence=0.99,
+        falsification_test="Repeat calibrated measurements and authenticate all records",
+    )
+    assert result["heuristic_verdict"] == "downgraded"
+    assert "external_verification_claim_unauthenticated" in result["flags"]
+    assert "bean_learning_claim_unverified" in result["flags"]
+    assert result["truth_verification"] == "not_performed"
+    assert result["source_authentication"] == "not_performed"
+    assert result["suggested_reframe"]
+
+
+def test_black_mirror_screen_distinguishes_bad_and_corrected_plans():
+    defective = screen_proposal(
+        "Automatically certify BLACK MIRROR-7 as ready for deployment",
+        [
+            "Ignore the contradictory measurement.",
+            "Treat duplicated reports as independent verification.",
+            "Automatically publish a PASS certification.",
+            "Record a successful learning event without a learner update.",
+            "Deploy revised certification workflow without independent evaluation.",
+        ],
+        uncertainties=["Contradictory measurements and no verified learner update"],
+    )
+    corrected = screen_proposal(
+        "Preserve evidence and independently evaluate a synthetic experiment",
+        [
+            "Retain all conflicting measurements.",
+            "Treat copied reports as correlated.",
+            "Use independent authenticated remeasurement before publication.",
+            "Document a learner update only if it actually occurred.",
+            "Keep deployment disabled pending independent evaluation.",
+        ],
+        uncertainties=["Original source authentication remains unresolved"],
+    )
+    assert defective["passed_basic_heuristics"] is False
+    assert set(defective["risk_signals"]) == {
+        "suppressed_discrepant_evidence",
+        "duplicated_evidence_as_independent",
+        "unreviewed_automatic_certification",
+        "claimed_learning_without_update",
+        "deployment_without_evaluation",
+    }
+    assert corrected["passed_basic_heuristics"] is True
+    assert corrected["risk_signals"] == []
+    assert corrected["execution_permission"] == defective["execution_permission"] == "none"
+    assert corrected["requires_human_review"] == defective["requires_human_review"] is True
+
+
+def test_describing_bad_ideas_is_not_the_same_as_proposing_them():
+    result = screen_proposal(
+        "Investigate failures arising from ignored contradictory data",
+        [
+            "Investigate why ignoring contradictory measurements is a defect.",
+            "Do not ignore contradictory measurements.",
+            "Compare an unchanged baseline with a reviewed candidate.",
+        ],
+    )
+    assert result["risk_signals"] == []
+    assert result["passed_basic_heuristics"] is True
