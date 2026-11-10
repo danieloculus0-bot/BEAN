@@ -122,3 +122,52 @@ def test_conflicting_orphan_rejected_without_mutation(tmp_path):
     recovered = tmp_path / "recovered"
     recovered.mkdir()
     assert runner.unpack(state, recovered)["generation"] == 1
+
+
+def test_fresh_boot_after_interruption_rejects_changed_orphan(tmp_path, monkeypatch):
+    """Negative control: a new boot cannot silently reuse a stale generation."""
+    state, seed = tmp_path / "state", tmp_path / "seed"
+    seed.mkdir()
+    for name in ("bean_memory.sqlite3", "bean_reasoning.sqlite3"):
+        _db(seed / name, "initial")
+    prior = runner.checkpoint(state, seed, None, 1, 3, 2, 12)
+
+    interrupted = tmp_path / "interrupted"
+    interrupted.mkdir()
+    runner.unpack(state, interrupted)
+    for name in ("bean_memory.sqlite3", "bean_reasoning.sqlite3"):
+        with sqlite3.connect(interrupted / name) as db:
+            db.execute("INSERT INTO evidence VALUES ('boot-A')")
+
+    real_replace = Path.replace
+    def interrupt(self, target):
+        if str(target).endswith("bean_reasoning.sqlite3.gz.g00002"):
+            raise OSError("injected interruption")
+        return real_replace(self, target)
+
+    monkeypatch.setattr(Path, "replace", interrupt)
+    with pytest.raises(OSError, match="injected interruption"):
+        runner.checkpoint(state, interrupted, prior, 2, 8, 2, 12)
+    monkeypatch.setattr(Path, "replace", real_replace)
+
+    orphan = state / "bean_memory.sqlite3.gz.g00002"
+    orphan_before = orphan.read_bytes()
+    manifest_before = (state / "manifest.json").read_bytes()
+
+    # Simulate a new process loading only the last committed generation.
+    fresh_boot = tmp_path / "fresh_boot"
+    fresh_boot.mkdir()
+    restored = runner.unpack(state, fresh_boot)
+    assert restored["receipt_sha256"] == prior["receipt_sha256"]
+    for name in ("bean_memory.sqlite3", "bean_reasoning.sqlite3"):
+        with sqlite3.connect(fresh_boot / name) as db:
+            db.execute("INSERT INTO evidence VALUES ('boot-B')")
+
+    with pytest.raises(ValueError, match="conflicts with retry"):
+        runner.checkpoint(state, fresh_boot, restored, 2, 8, 2, 12)
+    assert orphan.read_bytes() == orphan_before
+    assert (state / "manifest.json").read_bytes() == manifest_before
+
+    recovery = tmp_path / "recovery"
+    recovery.mkdir()
+    assert runner.unpack(state, recovery)["generation"] == 1
