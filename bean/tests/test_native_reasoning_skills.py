@@ -81,6 +81,48 @@ class NativeReasoningSkillsTests(unittest.TestCase):
         self.assertEqual(len(selected), 1)
         self.assertEqual(selected[0]["lesson_id"], relevant[0]["lesson_id"])
 
+    def test_version_spellings_match_and_distinct_versions_do_not(self):
+        # Synthetic equivalent of a live miss: a reflection tagged "v16"
+        # shared no term with the query "v1.6 failure lesson", while records
+        # for different versions matched each other through a bare "v1".
+        self.skills.reflect(
+            domain="release", task_id="v16-fixture-authoring",
+            observed="mismatched fixture answer", expected="computed answer",
+            adjustment_hypothesis="generate fixture answers mechanically",
+            evidence_refs=["fixture:v16"])
+        self.skills.propose_instruction(
+            domain="release", instruction="Publish the v1.5 package checksum.",
+            evidence_refs=["fixture:v15"])
+
+        dotted = self.skills.recall(domain="release", query="v1.6")
+        self.assertEqual(len(dotted), 1)
+        self.assertIn("v16-fixture", dotted[0]["text"])
+        dotless = self.skills.recall(domain="release", query="v16")
+        self.assertEqual([x["lesson_id"] for x in dotless],
+                         [x["lesson_id"] for x in dotted])
+        self.assertEqual(self.skills.recall(
+            domain="release", query="V1.6", strategy="reflection")[0]["lesson_id"],
+            dotted[0]["lesson_id"])
+
+        # Different versions no longer collide through a shared major token.
+        v15 = self.skills.recall(domain="release", query="v1.5")
+        self.assertEqual(len(v15), 1)
+        self.assertIn("v1.5", v15[0]["text"])
+        self.assertEqual(self.skills.recall(domain="release", query="v1.7"), [])
+
+    def test_version_collapse_leaves_plain_numbers_unchanged(self):
+        from bean.learning.experimental import informative_recall_terms
+        self.assertEqual(informative_recall_terms("v1.6 lifecycle"),
+                         {"v16", "lifecycle"})
+        self.assertEqual(informative_recall_terms("v1.6.2"), {"v162"})
+        self.assertEqual(informative_recall_terms("1.6 mm wall"),
+                         {"1", "6", "mm", "wall"})
+        self.assertEqual(informative_recall_terms("version 1.6"),
+                         {"version", "1", "6"})
+        # Embedded identifiers are not split into a false version token.
+        self.assertEqual(informative_recall_terms("lab026v1.6"),
+                         {"lab026v1", "6"})
+
     def test_relevance_filter_survives_restart_and_preserves_known_positive_cases(self):
         self.seed()
         good_query = "What is the alphabetical order for these tokens?"

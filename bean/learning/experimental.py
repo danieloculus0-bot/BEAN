@@ -356,9 +356,22 @@ _RECALL_STOPWORDS = frozenset((
 ))
 
 
+# Version identifiers such as "v1.6" previously split into "v1" and "6": the
+# dotless spelling "v16" then shared no term with it, while unrelated versions
+# ("v1.5", "v1.6") falsely shared "v1". Collapse a v-prefixed dotted version
+# into one dotless token so both spellings match and distinct versions do not.
+# Bounded lexical rule: "v1.16" and "v11.6" both become "v116", and bare
+# numbers or "version 1.6" are left unchanged.
+_VERSION = re.compile(r"(?<![a-z0-9])v(\d+(?:\.\d+)+)(?![a-z0-9]|\.\d)")
+
+
+def _collapse_versions(text):
+    return _VERSION.sub(lambda m: "v" + m.group(1).replace(".", ""), text)
+
+
 def informative_recall_terms(text):
     """Deterministic lexical terms; no semantic or source-authentication claim."""
-    return set(_TOKENS.findall(text.casefold())) - _RECALL_STOPWORDS
+    return set(_TOKENS.findall(_collapse_versions(text.casefold()))) - _RECALL_STOPWORDS
 
 
 def task_lesson_matches(bank, *, strategy, domain, query, limit=3):
