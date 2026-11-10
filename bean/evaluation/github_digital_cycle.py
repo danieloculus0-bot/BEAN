@@ -149,7 +149,8 @@ def run_scored_digital_cycle(db_path: Path, *, generation: int,
                                 for arm, action in choices.items()},
                 })
             receipt = {
-                "schema": SCHEMA, "experiment": EXPERIMENT,
+                "schema": "bean.adaptive_lab026.v1",
+                "evaluation_schema": SCHEMA, "experiment": EXPERIMENT,
                 "generation": generation, "source_sha": source_sha,
                 "family": family, "task_ref": task, "world_id": world.world_id,
                 "task_generator": "bean.evaluation.active_abstraction_benchmark.World",
