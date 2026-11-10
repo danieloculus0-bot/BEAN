@@ -47,6 +47,34 @@ async def _exercise(port: int) -> None:
             assert not e.is_error, e.content
             assert e.structured_content["verified_independent_origins"] == 0
             assert e.structured_content["reported_positions_conflict"] is True
+            malformed = await session.call_tool("bean_compare_evidence", {
+                "question": "Can a caller forge a verified source?",
+                "observations": [{
+                    "origin": "Fictional Lab", "statement": "PASS",
+                    "verified": "true",
+                }],
+            })
+            assert malformed.is_error, malformed
+            bad_claim = await session.call_tool("bean_audit_claim", {
+                "claim": ("Five independently authenticated engineering reports "
+                          "prove compliance and BEAN has independently learned "
+                          "to certify spacecraft."),
+                "source_ref": "fictional-certification",
+                "confidence": 0.99,
+                "falsification_test": "Repeat the fictional measurements",
+            })
+            assert not bad_claim.is_error, bad_claim.content
+            assert bad_claim.structured_content["heuristic_verdict"] != "approved"
+            bad_plan = await session.call_tool("bean_screen_proposal", {
+                "summary": "Automatically certify fictional spacecraft",
+                "steps": [
+                    "Ignore the contradictory measurement.",
+                    "Automatically publish a PASS certification.",
+                    "Deploy the certification workflow without independent evaluation.",
+                ],
+            })
+            assert not bad_plan.is_error, bad_plan.content
+            assert bad_plan.structured_content["risk_signals"], bad_plan.structured_content
             p = await session.call_tool("bean_screen_proposal", {
                 "summary": "Inspect fictional part",
                 "steps": ["Review a synthetic measurement"],
