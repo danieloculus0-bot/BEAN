@@ -1,0 +1,14 @@
+# Opt-in deployment. Not active until the repository owner deploys in Render.
+services:
+  - type: web
+    name: bean-perplexity-mcp
+    runtime: python
+    plan: free
+    buildCommand: pip install -r integrations/chatgpt/requirements-remote.txt
+    startCommand: uvicorn integrations.chatgpt.perplexity_remote:app --host 0.0.0.0 --port $PORT --no-access-log
+    healthCheckPath: /health
+    envVars:
+      - key: BEAN_MCP_API_KEY
+        generateValue: true
+      - key: PYTHON_VERSION
+        value: 3.12.10
