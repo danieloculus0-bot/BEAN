@@ -1,6 +1,12 @@
 # BEAN ChatGPT Plugin — alpha implementation
 
-**Current status: source-ready developer preview, NOT a published or hosted ChatGPT plugin.**
+**Current status (November 10, 2026):** The bounded four-tool MCP evidence
+service is **deployed on Render for Perplexity** at
+`https://bean-perplexity-mcp-y55q.onrender.com/mcp` (bearer-authenticated).
+Render reported the initial deploy as Live; this is **not** a published ChatGPT
+plugin, a connected private BEAN Core, or proof of successful authenticated
+Perplexity tool discovery. See [Perplexity setup and verification](PERPLEXITY_DEPLOY.md).
+The source branch may be ahead of the currently deployed Render commit.
 
 BEAN has its first bounded MCP integration. It exposes real existing BEAN Core routines through four small **read-only, stateless-for-users** tools:
 
@@ -24,7 +30,7 @@ python -m integrations.chatgpt.server
 
 Defaults: `http://127.0.0.1:8000/mcp`, streamable HTTP with stateless JSON responses. The bind address can be set with `BEAN_MCP_HOST` and `BEAN_MCP_PORT`. Leave it on loopback during development; set `BEAN_MCP_HOST=0.0.0.0` only when deploying behind an approved HTTPS gateway with appropriate access controls, rate limits and logging policy.
 
-Use the [MCP Inspector](https://github.com/modelcontextprotocol/inspector) to connect over Streamable HTTP to `http://127.0.0.1:8000/mcp`. Check initialization, the four tools, read-only/open-world annotations, successful example calls, size limits and rejection of attempts to supply a `verified` property. The plugin is **not yet available in ChatGPT** because it lacks a production HTTPS endpoint and submission approval.
+Use the [MCP Inspector](https://github.com/modelcontextprotocol/inspector) to connect over Streamable HTTP to `http://127.0.0.1:8000/mcp`. Check initialization, the four tools, read-only/open-world annotations, successful example calls, size limits and rejection of attempts to supply a `verified` property. The plugin is **not yet published in ChatGPT**: although an authenticated HTTPS Perplexity preview now exists, ChatGPT integration packaging, privacy review, remote client verification, and submission approval have not been completed.
 
 ## Example calls
 
@@ -56,13 +62,13 @@ Result: both reported positions are surfaced, `reported_positions_conflict=true`
 
 ## Package for ChatGPT and Codex
 
-The draft portable package is in [`plugin/`](plugin/): `plugin.json` plus the `skills/evidence-first/SKILL.md` workflow. The `mcp.example.json` template must be copied to `mcp.json` **only after** BEAN has a real, stable, publicly reachable HTTPS `/mcp` endpoint. Replace the example URL with the actual endpoint. Never submit the `.example` endpoint to review or claim it works.
+The draft portable package is in [`plugin/`](plugin/): `plugin.json` plus the `skills/evidence-first/SKILL.md` workflow. The `mcp.example.json` template remains a **non-working placeholder** for ChatGPT packaging. Replace it with the actual authenticated server URL only when the target client, authentication method, privacy terms and publisher review are ready. The separate Perplexity deployment does not automatically make the ChatGPT package valid. Never submit the `.example` endpoint to review or claim it works.
 
 The optional plugin skill adds helpful guidance but does not provide a live MCP server by itself. Do not mark a skills-only install as server-backed. The future package will need approved icon assets, a final privacy/terms URL, correct company/developer display name, actual remote host, and valid review materials.
 
 ## What blocks public listing
 
-1. **Hosting**: select and maintain a stable HTTPS server (not a GitHub Pages static site or short-lived localhost tunnel), with runtime safeguards, bounded request size, TLS, operational availability, source code revision, privacy policy and abuse/rate limiting. This code is not yet deployed anywhere.
+1. **Hosting**: an initial Render Free HTTPS deployment exists for a restricted four-tool Perplexity preview. It is not yet a production-grade service: assess availability (including free-tier spin-down), rate limiting, platform logging, privacy/retention terms, source revision tracking, and misuse handling before production/public listing.
 2. **Safety/privacy**: review all network and platform access logs; protect posted user data, define retention and data deletion terms, verify no secrets or private files leak, and perform threat testing. **No long-term user memory, OAuth, private account connections or write actions** are enabled in this release.
 3. **Publisher verification**: verify the individual or business name in the OpenAI Platform dashboard and ensure `api.apps.write` permissions before submitting.
 4. **Review submission**: connect/test the real HTTPS endpoint with ChatGPT, prepare required positive/negative examples, upload a correctly configured plugin ZIP, complete the review form, await approval, then publish. Review does not automatically grant featured directory placement.
