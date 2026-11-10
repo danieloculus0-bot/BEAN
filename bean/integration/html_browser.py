@@ -9,7 +9,7 @@ from __future__ import annotations
 from hashlib import sha256
 import os
 from pathlib import Path
-from urllib.parse import unquote, urlsplit
+from urllib.parse import unquote, urljoin, urlsplit
 
 MAX_HTML_BYTES = 1_000_000
 MAX_RESULT_CHARS = 12000
@@ -194,6 +194,25 @@ def inspect_html(target: str, *, execute_scripts: bool = False,
                         code: node.src ? '' : (node.textContent || '').slice(0, 3000)
                     }))"""
                 )
+                # Resolve linked local scripts inside the same authorized
+                # folder, so source inspection is useful before execution.
+                # Never fetch a linked script outside the configured root.
+                if file is not None:
+                    for script in scripts:
+                        if script.get("kind") != "external":
+                            continue
+                        try:
+                            linked = urlsplit(urljoin(address, script["src"]))
+                            if linked.scheme != "file":
+                                continue
+                            candidate = Path(unquote(linked.path)).resolve()
+                            if (candidate.is_file() and candidate.is_relative_to(root)
+                                    and candidate.stat().st_size <= MAX_HTML_BYTES):
+                                raw = candidate.read_bytes()
+                                script["code"] = raw.decode("utf-8", errors="replace")[:MAX_SCRIPT_CHARS]
+                                script["source_sha256"] = sha256(raw).hexdigest()
+                        except (OSError, ValueError):
+                            continue
                 # Script enumeration must work even when page JS is disabled.
                 # Playwright's evaluation is a controller-side read, not
                 # site-authored JS execution; verified in the browser test.
