@@ -14,6 +14,7 @@ from __future__ import annotations
 import os
 from typing import Any
 
+from pydantic import BaseModel, ConfigDict, Field
 from mcp.server import MCPServer
 from mcp.types import ToolAnnotations
 
@@ -39,6 +40,14 @@ READ_ONLY = ToolAnnotations(readOnlyHint=True, destructiveHint=False,
                             idempotentHint=True, openWorldHint=False)
 
 
+class EvidenceObservation(BaseModel):
+    """A submitted label and statement, NOT authenticated source evidence."""
+
+    model_config = ConfigDict(extra="forbid")
+    origin: str = Field(min_length=1, max_length=80)
+    statement: str = Field(min_length=1, max_length=500)
+
+
 @mcp.tool(structured_output=True, annotations=ToolAnnotations(
     title="BEAN: Audit a claim", readOnlyHint=True, destructiveHint=False,
     idempotentHint=True, openWorldHint=False,
@@ -52,6 +61,7 @@ def bean_audit_claim(
 ) -> dict[str, Any]:
     """Flag missing evidence, confidence, falsification paths and overclaims.
 
+    Claim limit: 1..1200 chars; source_ref and evidence_refs are unverified.
     BEAN applies its actual rule-based epistemic guard in a disposable local
     database. User-provided source identifiers are NOT authenticated. Even an
     approved heuristic result is NOT independent verification of a fact.
@@ -64,15 +74,17 @@ def bean_audit_claim(
     title="BEAN: Compare conflicting statements", readOnlyHint=True,
     destructiveHint=False, idempotentHint=True, openWorldHint=False,
 ))
-def bean_compare_evidence(question: str, observations: list[dict[str, str]]) -> dict[str, Any]:
+def bean_compare_evidence(question: str, observations: list[EvidenceObservation]) -> dict[str, Any]:
     """Triage 1..12 user-supplied origin/statement pairs for disagreement.
 
+    Accept 1..12 observations (origin 1..80 chars, statement 1..500 chars).
+    No extra keys, including caller-asserted verification, are accepted.
     Example observations: [{"origin":"report A","statement":"machine ready"},
     {"origin":"report B","statement":"machine offline"}]. BEAN's actual
     evidence bridge keeps every claim UNVERIFIED even if sources agree.
     Never infer authenticated facts from the user's source labels.
     """
-    return compare_evidence(question, observations)
+    return compare_evidence(question, [item.model_dump() for item in observations])
 
 
 @mcp.tool(structured_output=True, annotations=ToolAnnotations(
