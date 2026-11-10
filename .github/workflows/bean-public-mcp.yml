@@ -6,6 +6,7 @@ on:
     paths:
       - 'bean/integration/public_plugin.py'
       - 'bean/tests/test_public_plugin.py'
+      - 'bean/tests/test_perplexity_auth.py'
       - 'integrations/chatgpt/**'
       - '.github/workflows/bean-public-mcp.yml'
   push:
@@ -40,7 +41,7 @@ jobs:
       - name: Check source and package JSON
         run: python -m compileall -q bean/integration/public_plugin.py integrations/chatgpt
       - name: Verify public tool evidence and safety behavior
-        run: python -m pytest bean/tests/test_public_plugin.py -q -ra --tb=short
+        run: python -m pytest bean/tests/test_public_plugin.py bean/tests/test_perplexity_auth.py -q -ra --tb=short
       - name: Validate MCP tool discovery and accurate annotations
         run: python -m integrations.chatgpt.smoke
       - name: Verify actual Streamable HTTP handshake and all four tool calls
