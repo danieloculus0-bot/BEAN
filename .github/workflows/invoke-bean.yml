@@ -9,12 +9,14 @@ on:
     paths:
       - 'scripts/invoke_bean.py'
       - 'bean/tests/test_github_invoke.py'
+      - 'bean/tests/test_github_checkpoint_interruption.py'
       - '.github/workflows/invoke-bean.yml'
   pull_request:
     branches: [main]
     paths:
       - 'scripts/invoke_bean.py'
       - 'bean/tests/test_github_invoke.py'
+      - 'bean/tests/test_github_checkpoint_interruption.py'
       - '.github/workflows/invoke-bean.yml'
 
 permissions:
