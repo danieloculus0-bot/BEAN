@@ -30,7 +30,15 @@ def main() -> None:
             raise AssertionError(f"Tool {tool.name} incorrectly marked destructive: {advertised}")
         if not tool.model_dump(by_alias=True).get("inputSchema"):
             raise AssertionError(f"Tool {tool.name} has no input schema")
-    print("PASS BEAN MCP tool registration, four JSON schemas, read-only annotations.")
+    evidence = next(t for t in tools if t.name == "bean_compare_evidence")
+    schema = evidence.model_dump(by_alias=True)["inputSchema"]
+    item = schema["properties"]["observations"]["items"]
+    if "$ref" in item:
+        name = item["$ref"].rsplit("/", 1)[-1]
+        item = schema["$defs"][name]
+    assert item.get("additionalProperties") is False, item
+    assert set(item["required"]) == {"origin", "statement"}, item
+    print("PASS BEAN MCP tool registration, four JSON schemas, strict evidence inputs.")
 
     async def exercise_real_sdk():
         examples = [
