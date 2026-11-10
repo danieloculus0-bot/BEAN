@@ -294,13 +294,6 @@ def invoke(state_dir: Path, runtime_dir: Path, ticks: int = 12, hz: int = 20,
         raise RuntimeError("BEAN failed verified restart or event continuity")
     if not prior and boots != 1:
         raise RuntimeError("fresh synthetic BEAN boot was not fresh")
-    # Run real native feedback learning in the existing SQLite reasoning Core.
-    # A separate deterministic evaluator scores hidden holdouts after reopening
-    # the service. No public checkpoint is published if evaluation fails.
-    from bean.evaluation.github_digital_cycle import run_scored_digital_cycle
-    digital_learning = run_scored_digital_cycle(
-        reasoning, generation=generation,
-        source_sha=os.environ.get("GITHUB_SHA", "local-validation"))
     reply_result = serve_public_request(reasoning, request) if request is not None else None
     if request is not None:
         # The receipt digest is a fixed-width SHA256. Substituting the real
@@ -309,6 +302,13 @@ def invoke(state_dir: Path, runtime_dir: Path, ticks: int = 12, hz: int = 20,
         if not (source_sha == "local-validation" or re.fullmatch(r"[0-9a-f]{40}", source_sha)):
             raise ValueError("invalid source revision")
         prepare_public_reply(request, reply_result, generation, source_sha, "0" * 64)
+    # Run real native feedback learning in the existing SQLite reasoning Core.
+    # A separate deterministic evaluator scores hidden holdouts after reopening
+    # the service. No public checkpoint is published if evaluation fails.
+    from bean.evaluation.github_digital_cycle import run_scored_digital_cycle
+    digital_learning = run_scored_digital_cycle(
+        reasoning, generation=generation,
+        source_sha=os.environ.get("GITHUB_SHA", "local-validation"))
     receipt = checkpoint(state_dir, runtime_dir, prior, boots, events, processed, ticks,
                          digital_learning=digital_learning)
     if request is not None:
