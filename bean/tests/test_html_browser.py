@@ -62,6 +62,8 @@ class LocalHtmlBrowserTests(unittest.TestCase):
         self.assertEqual(result["script_count_visible"], 2)
         self.assertEqual([x["kind"] for x in result["scripts"]], ["external", "inline"])
         self.assertIn("function change()", result["scripts"][1]["code"])
+        self.assertIn("namedFromExternal", result["scripts"][0]["code"])
+        self.assertEqual(len(result["scripts"][0]["source_sha256"]), 64)
         self.assertEqual(len(result["source_sha256"]), 64)
 
     def test_executes_html_js_linked_script_and_interacts_with_controls(self):
