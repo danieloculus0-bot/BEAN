@@ -341,6 +341,24 @@ class ExperienceBank:
 
 
 _TOKENS = re.compile(r"[a-z0-9]+")
+# A bounded lexical relevance gate, not semantic retrieval. These high-frequency
+# task/question words should never qualify a retained lesson by themselves.
+# Keep informative one-character tags/numbers available for technical tasks.
+_RECALL_STOPWORDS = frozenset((
+    "a", "an", "and", "are", "as", "at", "be", "been", "but", "by",
+    "can", "could", "did", "do", "does", "for", "from", "had", "has",
+    "have", "how", "i", "in", "into", "is", "it", "its", "me", "my",
+    "of", "on", "or", "our", "should", "that", "the", "their", "there",
+    "these", "this", "those", "to", "was", "were", "what", "when",
+    "where", "which", "who", "why", "will", "with", "would", "you",
+    "your", "task", "procedure", "step", "steps", "expected", "observed",
+    "unverified", "hypothesis", "candidate", "reported",
+))
+
+
+def informative_recall_terms(text):
+    """Deterministic lexical terms; no semantic or source-authentication claim."""
+    return set(_TOKENS.findall(text.casefold())) - _RECALL_STOPWORDS
 
 
 def task_lesson_matches(bank, *, strategy, domain, query, limit=3):
@@ -349,7 +367,9 @@ def task_lesson_matches(bank, *, strategy, domain, query, limit=3):
     The same deterministic retrieval is used by the BEAN decision packet and
     the task-aware matched evaluator. Neither path gets expected labels.
     """
-    terms = set(_TOKENS.findall(query.casefold()))
+    terms = informative_recall_terms(query)
+    if not terms:
+        return []
     matches = []
     for index, item in enumerate(bank.lessons(strategy=strategy, domain=domain)):
         # A lesson learned from a specific Bridge evidence definition is
@@ -364,7 +384,7 @@ def task_lesson_matches(bank, *, strategy, domain, query, limit=3):
             for scope in scopes
         ):
             continue
-        overlap = len(terms & set(_TOKENS.findall(item.text.casefold())))
+        overlap = len(terms & informative_recall_terms(item.text))
         if overlap:
             matches.append((overlap, index, item))
     matches.sort(key=lambda row: (-row[0], -row[1], row[2].lesson_id))

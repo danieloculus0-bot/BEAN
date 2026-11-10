@@ -6,7 +6,7 @@ Host-reported observations are not automatically independently verified.
 from __future__ import annotations
 from hashlib import sha256
 import re
-from .experimental import ExperienceBank, Lesson, task_lesson_matches
+from .experimental import ExperienceBank, Lesson, task_lesson_matches, informative_recall_terms
 from .brain_port import choose_from_outcomes, brain_decision, connector_presentation_packet
 
 SKILLS = ("reflection", "skill", "prompt")
@@ -71,10 +71,10 @@ class BEANReasoningSkills:
                 self.bank, strategy=strategy, domain=domain, query=query,
                 limit=limit)
         else:
-            wanted = _words(query)
+            wanted = informative_recall_terms(query)
             matches = []
             for index, item in enumerate(self.bank.lessons(domain=domain)):
-                overlap = len(wanted & _words(item.text))
+                overlap = len(wanted & informative_recall_terms(item.text))
                 if overlap:
                     matches.append((overlap, index, item))
             matches.sort(key=lambda row: (-row[0], -row[1], row[2].lesson_id))
