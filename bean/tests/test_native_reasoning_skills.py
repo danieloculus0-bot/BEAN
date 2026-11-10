@@ -56,6 +56,54 @@ class NativeReasoningSkillsTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             self.skills.recall(domain="sorting", query="tokens", limit=0)
 
+    def test_raw_and_selected_recall_reject_stopword_only_overlap(self):
+        # Reproduce a synthetic equivalent of the 43/44 qualification's
+        # negative retrieval probe. Only "is" / "the" overlap the query.
+        self.skills.propose_instruction(
+            domain="sorting", instruction="This is the fictional setup procedure.",
+            evidence_refs=["fixture:stopword-collision"])
+        unrelated = "What is the correct precipitation aging temperature?"
+        self.assertEqual(self.skills.recall(domain="sorting", query=unrelated), [])
+        self.assertEqual(self.skills.recall(
+            domain="sorting", query=unrelated, strategy="prompt"), [])
+        self.assertEqual(self.skills.recall(
+            domain="sorting", query="the is what"), [])
+        self.assertEqual(self.skills.recall(
+            domain="sorting", query="precipitation aging kinetics"), [])
+
+        # Useful one-term searches and longer task questions remain accessible.
+        relevant = self.skills.recall(domain="sorting", query="setup")
+        self.assertEqual(len(relevant), 1)
+        self.assertEqual(relevant[0]["matched_terms"], 1)
+        selected = self.skills.recall(
+            domain="sorting", strategy="prompt",
+            query="How do I set up the fictional setup procedure?")
+        self.assertEqual(len(selected), 1)
+        self.assertEqual(selected[0]["lesson_id"], relevant[0]["lesson_id"])
+
+    def test_relevance_filter_survives_restart_and_preserves_known_positive_cases(self):
+        self.seed()
+        good_query = "What is the alphabetical order for these tokens?"
+        old = self.skills.recall(domain="sorting", query=good_query, limit=3)
+        self.assertEqual(len(old), 3)
+        self.assertTrue(all(item["matched_terms"] > 0 for item in old))
+        self.assertTrue(self.skills.recall(
+            domain="sorting", query="sort tokens", strategy="reflection"))
+        self.assertEqual(self.skills.recall(
+            domain="sorting", query="What is the correct precipitation aging temperature?"), [])
+        count = len(self.bank.journal.events())
+        self.bank.close()
+        reopened = ExperienceBank(self.path)
+        try:
+            skill = BEANReasoningSkills(reopened)
+            self.assertEqual(skill.recall(
+                domain="sorting", query=good_query, limit=3), old)
+            self.assertEqual(skill.recall(
+                domain="sorting", query="What is the correct precipitation aging temperature?"), [])
+            self.assertEqual(len(reopened.journal.events()), count)
+        finally:
+            reopened.close()
+
     def test_reflection_marks_unverified_hypothesis_and_deduplicates(self):
         args = dict(domain="drawings", task_id="drawing-1",
                     observed="wrong tolerance", expected="correct tolerance",
