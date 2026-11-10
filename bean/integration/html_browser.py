@@ -28,7 +28,9 @@ def _root() -> Path:
 
 
 def _inside(file: Path, root: Path) -> Path:
-    resolved = file.expanduser().resolve(strict=True)
+    # Normalize missing and out-of-root paths to the same safe error.
+    # Resolve symlinks before checking containment.
+    resolved = file.expanduser().resolve()
     if not resolved.is_file() or not resolved.is_relative_to(root):
         raise ValueError("HTML file must be inside BEAN_HTML_ROOT")
     return resolved
