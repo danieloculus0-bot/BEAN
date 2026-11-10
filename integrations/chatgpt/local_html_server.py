@@ -6,6 +6,7 @@ The browser loads no user profile and cannot write files or execute shell.
 """
 from __future__ import annotations
 
+import asyncio
 import os
 from typing import Any
 
@@ -35,14 +36,14 @@ mcp = MCPServer(
     readOnlyHint=True, destructiveHint=False, idempotentHint=True,
     openWorldHint=False,
 ))
-def bean_html_inspect(target: str) -> dict[str, Any]:
+async def bean_html_inspect(target: str) -> dict[str, Any]:
     """Inspect an authorized local .html page or explicitly permitted URL.
 
     Page JavaScript is disabled. Returns source and DOM excerpts, embedded
     inline scripts, external script links, sha256 hashes and blocked requests.
     The local filesystem root must be configured before calling the tool.
     """
-    return inspect_html(target, execute_scripts=False)
+    return await asyncio.to_thread(inspect_html, target, execute_scripts=False)
 
 
 @mcp.tool(structured_output=True, annotations=ToolAnnotations(
@@ -50,16 +51,16 @@ def bean_html_inspect(target: str) -> dict[str, Any]:
     readOnlyHint=False, destructiveHint=False, idempotentHint=False,
     openWorldHint=False,
 ))
-def bean_html_run(target: str, actions: list[dict[str, str]] | None = None,
-                  wait_ms: int = 100) -> dict[str, Any]:
+async def bean_html_run(target: str, actions: list[dict[str, str]] | None = None,
+                        wait_ms: int = 100) -> dict[str, Any]:
     """Run authorized HTML and interact with up to eight click/fill actions.
 
     This runs untrusted page JavaScript inside isolated browser sandbox, not
     Python, Node or BEAN Core. No browser credentials, direct filesystem
     writes, arbitrary remote networks, or persistent browser state.
     """
-    return inspect_html(target, execute_scripts=True,
-                        actions=actions, wait_ms=wait_ms)
+    return await asyncio.to_thread(inspect_html, target, execute_scripts=True,
+                                   actions=actions, wait_ms=wait_ms)
 
 
 def main() -> None:
