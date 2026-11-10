@@ -55,7 +55,7 @@ def check_sqlite(path: Path) -> None:
 def unpack(state_dir: Path, runtime_dir: Path) -> dict | None:
     manifest_path = state_dir / MANIFEST
     if not manifest_path.exists():
-        if any((state_dir / compressed).exists() for compressed, _ in CHECKPOINTS.values()):
+        if any(any(state_dir.glob(compressed + "*")) for compressed, _ in CHECKPOINTS.values()):
             raise ValueError("orphaned BEAN checkpoint: refusing to reset memory")
         return None
     manifest_bytes = manifest_path.read_bytes()
@@ -75,7 +75,11 @@ def unpack(state_dir: Path, runtime_dir: Path) -> dict | None:
         record = previous.get("databases", {}).get(name)
         if not isinstance(record, dict):
             raise ValueError("BEAN manifest missing database")
-        compressed = state_dir / archive
+        archive_ref = record.get("archive", archive)
+        if not isinstance(archive_ref, str) or (archive_ref != archive and
+                not re.fullmatch(re.escape(archive) + r"\.g[0-9]{5,}", archive_ref)):
+            raise ValueError("invalid BEAN generation archive reference")
+        compressed = state_dir / archive_ref
         if not compressed.is_file() or compressed.stat().st_size > MAX_COMPRESSED:
             raise ValueError("missing or oversized BEAN compressed checkpoint")
         with gzip.open(compressed, "rb") as source:
@@ -112,6 +116,7 @@ def checkpoint(state_dir: Path, runtime_dir: Path, prior: dict | None,
                boots: int, events: int, processed: int, ticks: int) -> dict:
     state_dir.mkdir(parents=True, exist_ok=True)
     databases = {}
+    generation = prior["generation"] + 1 if prior else 1
     for name, (archive, filename) in CHECKPOINTS.items():
         path = runtime_dir / filename
         check_sqlite(path)
@@ -129,9 +134,20 @@ def checkpoint(state_dir: Path, runtime_dir: Path, prior: dict | None,
         compressed = gzip.compress(payload, mtime=0)
         if len(compressed) > MAX_COMPRESSED:
             raise ValueError("BEAN memory exceeded compressed checkpoint size limit")
-        (state_dir / (archive + ".tmp")).write_bytes(compressed)
-        (state_dir / (archive + ".tmp")).replace(state_dir / archive)
-        databases[name] = {"sha256": digest(payload), "bytes": len(payload)}
+        # Immutable generation archives keep the previous manifest restorable
+        # if any later archive write or manifest publication fails.
+        versioned = f"{archive}.g{generation:05d}"
+        destination = state_dir / versioned
+        if destination.exists():
+            # Preserve immutable evidence after a partial prior publication.
+            # Only an identical retry may reuse an orphaned archive.
+            if destination.read_bytes() != compressed:
+                raise ValueError("BEAN generation archive conflicts with retry")
+        else:
+            staging_archive = state_dir / (versioned + ".tmp")
+            staging_archive.write_bytes(compressed)
+            staging_archive.replace(destination)
+        databases[name] = {"sha256": digest(payload), "bytes": len(payload), "archive": versioned}
         backup.unlink()
     source_sha = os.environ.get("GITHUB_SHA", "local-validation")
     if not (source_sha == "local-validation" or re.fullmatch(r"[0-9a-f]{40}", source_sha)):
@@ -139,7 +155,7 @@ def checkpoint(state_dir: Path, runtime_dir: Path, prior: dict | None,
     receipt = {
         "schema": "bean.github.invoke.v1",
         "synthetic_only": True,
-        "generation": (prior["generation"] + 1 if prior else 1),
+        "generation": generation,
         "previous_receipt_sha256": prior["receipt_sha256"] if prior else None,
         "source_sha": source_sha,
         "github_run_id": os.environ.get("GITHUB_RUN_ID") or None,
@@ -194,10 +210,33 @@ def serve_public_request(reasoning_db: Path, request: dict) -> dict:
         service.close()
 
 
+def prepare_public_reply(request: dict, response: dict, generation: int,
+                         source_sha: str, receipt_sha256: str) -> str:
+    """Validate the exact public JSON size before checkpoint publication."""
+    payload = {
+        "schema": "bean.github.reply.v1",
+        "command": request["command"],
+        "response": response,
+        "generation": generation,
+        "receipt_sha256": receipt_sha256,
+        "source_sha": source_sha,
+        "engine": "native_python_core",
+        "external_model_invoked": False,
+        "private_jetson_connected": False,
+    }
+    encoded = json.dumps(payload, sort_keys=True, ensure_ascii=False, allow_nan=False)
+    if len(encoded.encode("utf-8")) > 14000:
+        raise ValueError("BEAN response exceeds public limit")
+    return encoded
+
+
 def invoke(state_dir: Path, runtime_dir: Path, ticks: int = 12, hz: int = 20,
            request: dict | None = None, reply_path: Path | None = None) -> dict:
     if not 2 <= ticks <= 120 or not 1 <= hz <= 30:
         raise ValueError("ticks must be 2..120 and hz 1..30")
+    # Reject missing reply wiring before any Core state restoration or mutation.
+    if request is not None and reply_path is None:
+        raise ValueError("Public BEAN request needs a reply destination")
     runtime_dir.mkdir(parents=True, exist_ok=True)
     prior = unpack(state_dir, runtime_dir)
     core = runtime_dir / "bean_memory.sqlite3"
@@ -253,24 +292,19 @@ def invoke(state_dir: Path, runtime_dir: Path, ticks: int = 12, hz: int = 20,
     if not prior and boots != 1:
         raise RuntimeError("fresh synthetic BEAN boot was not fresh")
     reply_result = serve_public_request(reasoning, request) if request is not None else None
+    if request is not None:
+        # The receipt digest is a fixed-width SHA256. Substituting the real
+        # digest after checkpointing cannot change the encoded reply size.
+        source_sha = os.environ.get("GITHUB_SHA", "local-validation")
+        if not (source_sha == "local-validation" or re.fullmatch(r"[0-9a-f]{40}", source_sha)):
+            raise ValueError("invalid source revision")
+        prepare_public_reply(request, reply_result, generation, source_sha, "0" * 64)
     receipt = checkpoint(state_dir, runtime_dir, prior, boots, events, processed, ticks)
     if request is not None:
         if reply_path is None:
             raise ValueError("Public BEAN request needs a reply destination")
-        payload = {
-            "schema": "bean.github.reply.v1",
-            "command": request["command"],
-            "response": reply_result,
-            "generation": receipt["generation"],
-            "receipt_sha256": receipt["receipt_sha256"],
-            "source_sha": receipt["source_sha"],
-            "engine": "native_python_core",
-            "external_model_invoked": False,
-            "private_jetson_connected": False,
-        }
-        encoded = json.dumps(payload, sort_keys=True, ensure_ascii=False, allow_nan=False)
-        if len(encoded.encode("utf-8")) > 14000:
-            raise ValueError("BEAN response exceeds public limit")
+        encoded = prepare_public_reply(request, reply_result, receipt["generation"],
+                                       receipt["source_sha"], receipt["receipt_sha256"])
         reply_path.parent.mkdir(parents=True, exist_ok=True)
         reply_path.write_text(encoded + "\n", encoding="utf-8")
     print(json.dumps(receipt, sort_keys=True))
