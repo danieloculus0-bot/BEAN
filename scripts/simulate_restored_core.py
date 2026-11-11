@@ -13,7 +13,14 @@ import json
 import os
 from pathlib import Path
 import shutil
+import sys
 import tempfile
+
+# Running a script by filename puts scripts/ on sys.path, not the repo root.
+# Match the proven import bootstrap in scripts/invoke_bean.py.
+REPO_ROOT = Path(__file__).resolve().parents[1]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
 
 from bean.evaluation.github_digital_cycle import FAMILIES, _hash, _prior_evaluations, run_scored_digital_cycle
 from bean.learning.reasoning_service import NativeReasoningService
@@ -173,7 +180,7 @@ def run_simulations(source: Path) -> dict:
             "blind_cases_per_generation": 144,
             "new_world_generations": [row["generation"] for row in results],
             "generation_results": results,
-            "second_checkpoint_restored_in_fresh_process_context": True,
+            "second_checkpoint_restored_in_fresh_runtime_and_connections": True,
             "no_duplicate_scoring_after_restart": True,
             "original_checkpoint_unchanged": True,
             "limits": [
