@@ -9,7 +9,8 @@ from __future__ import annotations
 from hashlib import sha256
 import os
 from pathlib import Path
-from urllib.parse import unquote, urljoin, urlsplit
+from urllib.parse import urljoin, urlsplit
+from urllib.request import url2pathname
 
 MAX_HTML_BYTES = 1_000_000
 MAX_RESULT_CHARS = 12000
@@ -69,7 +70,7 @@ def _target(value: str, root: Path, origins: set[str]) -> tuple[str, Path | None
         if parsed.username or parsed.password:
             raise ValueError("Embedded URL credentials are not supported")
         return value, None
-    if parsed.scheme:
+    if parsed.scheme and not (os.name == "nt" and len(parsed.scheme) == 1 and value[1:2] == ":"):
         raise ValueError("Only local file paths or explicitly permitted http(s) URLs are supported")
     f = _inside(Path(value), root)
     if f.suffix.lower() not in {".html", ".htm"}:
@@ -144,7 +145,7 @@ def inspect_html(target: str, *, execute_scripts: bool = False,
                     allow = False
                     if scheme == "file":
                         try:
-                            path = Path(unquote(urlsplit(url).path)).resolve(strict=True)
+                            path = Path(url2pathname(urlsplit(url).path)).resolve(strict=True)
                             allow = path.is_file() and path.is_relative_to(root)
                         except (OSError, ValueError):
                             pass
@@ -159,6 +160,12 @@ def inspect_html(target: str, *, execute_scripts: bool = False,
                         route.abort()
 
                 context.route("**/*", route_request)
+                # Normal request routing does not intercept WebSockets.
+                # Never let a page establish one from this local browser.
+                def block_web_socket(ws):
+                    blocked.append("websocket")
+                    ws.close()
+                context.route_web_socket("**/*", block_web_socket)
                 page = context.new_page()
                 page.on("console", lambda msg: console.append(
                     {"type": msg.type, "message": msg.text[:500]}
@@ -214,7 +221,7 @@ def inspect_html(target: str, *, execute_scripts: bool = False,
                             linked = urlsplit(urljoin(address, script["src"]))
                             if linked.scheme != "file":
                                 continue
-                            candidate = Path(unquote(linked.path)).resolve()
+                            candidate = Path(url2pathname(linked.path)).resolve()
                             if (candidate.is_file() and candidate.is_relative_to(root)
                                     and candidate.stat().st_size <= MAX_HTML_BYTES):
                                 raw = candidate.read_bytes()
