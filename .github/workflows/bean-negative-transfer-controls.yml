@@ -10,6 +10,8 @@ on:
       - "bean/tests/test_cross_domain_feedback_gate.py"
       - "bean/tests/test_cross_domain_drift_probes.py"
       - "bean/tests/test_cross_domain_stochastic_drift.py"
+      - "bean/tests/test_cross_domain_oracle_firewall.py"
+      - "bean/tests/test_cross_domain_budget_matched.py"
       - ".github/workflows/bean-negative-transfer-controls.yml"
   workflow_dispatch:
 
@@ -29,7 +31,7 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - name: Native paired baseline, counterfactual, feedback and stochastic drift tests
-        run: python -m unittest -v bean.tests.test_cross_domain_negative_transfer bean.tests.test_cross_domain_counterfactual_twins bean.tests.test_cross_domain_feedback_gate bean.tests.test_cross_domain_drift_probes bean.tests.test_cross_domain_stochastic_drift
+        run: python -m unittest -v bean.tests.test_cross_domain_negative_transfer bean.tests.test_cross_domain_counterfactual_twins bean.tests.test_cross_domain_feedback_gate bean.tests.test_cross_domain_drift_probes bean.tests.test_cross_domain_stochastic_drift bean.tests.test_cross_domain_oracle_firewall bean.tests.test_cross_domain_budget_matched
       - name: Save full synthetic case-level receipts
         shell: bash
         run: |
@@ -38,6 +40,8 @@ jobs:
           python -m bean.tests.test_cross_domain_feedback_gate --report > target-feedback-receipt.json
           python -m bean.tests.test_cross_domain_drift_probes --report > drift-probe-receipt.json
           python -m bean.tests.test_cross_domain_stochastic_drift --report > stochastic-drift-receipt.json
+          python -m bean.tests.test_cross_domain_oracle_firewall --report > oracle-firewall-receipt.json
+          python -m bean.tests.test_cross_domain_budget_matched --report > budget-matched-receipt.json
       - uses: actions/upload-artifact@v4
         with:
           name: negative-transfer-${{ matrix.os }}-py${{ matrix.python-version }}
@@ -47,4 +51,6 @@ jobs:
             target-feedback-receipt.json
             drift-probe-receipt.json
             stochastic-drift-receipt.json
+            oracle-firewall-receipt.json
+            budget-matched-receipt.json
           retention-days: 14
