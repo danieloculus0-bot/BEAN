@@ -89,12 +89,14 @@ def _valid_actions(actions: list[dict[str, str]] | None) -> list[dict[str, str]]
         if not isinstance(action, dict) or set(action) not in ({"type", "selector"}, {"type", "selector", "value"}):
             raise ValueError("Action requires type, selector and optional value")
         kind, selector = action.get("type"), action.get("selector")
-        if kind not in {"click", "fill"} or not isinstance(selector, str) or not 1 <= len(selector) <= 200:
+        if kind not in {"click", "fill", "choose_file"} or not isinstance(selector, str) or not 1 <= len(selector) <= 200:
             raise ValueError("Use a bounded click/fill action and CSS selector")
         if kind == "click" and "value" in action:
             raise ValueError("Click does not take a value")
         if kind == "fill" and (not isinstance(action.get("value"), str) or len(action["value"]) > 1024):
             raise ValueError("Fill requires a bounded string value")
+        if kind == "choose_file" and (not isinstance(action.get("value"), str) or not 1 <= len(action["value"]) <= 2048):
+            raise ValueError("File selection requires a bounded local path")
         cleaned.append(dict(action))
     return cleaned
 
@@ -182,8 +184,15 @@ def inspect_html(target: str, *, execute_scripts: bool = False,
                     control = page.locator(step["selector"]).first
                     if step["type"] == "click":
                         control.click(timeout=2500)
-                    else:
+                    elif step["type"] == "fill":
                         control.fill(step["value"], timeout=2500)
+                    elif step["type"] == "choose_file":
+                        selected = _inside(Path(step["value"]), root)
+                        if selected.stat().st_size > 10 * 1024 * 1024:
+                            raise ValueError("Selected file exceeds 10 MB browser input limit")
+                        with page.expect_file_chooser(timeout=2500) as event:
+                            control.click(timeout=2500)
+                        event.value.set_files(str(selected))
                 if execute_scripts and wait_ms:
                     page.wait_for_timeout(wait_ms)
                 scripts = page.locator("script").evaluate_all(
