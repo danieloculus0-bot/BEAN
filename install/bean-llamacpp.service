@@ -1,0 +1,16 @@
+[Unit]
+Description=BEAN local CUDA inference (llama.cpp)
+After=network.target
+Before=bean.service
+
+[Service]
+Type=simple
+User=@BEAN_USER@
+Group=@BEAN_GROUP@
+WorkingDirectory=@BEAN_LLAMACPP_DIR@
+ExecStart=@BEAN_LLAMACPP_DIR@/bin/llama-server --model @BEAN_GGUF_PATH@ --host 127.0.0.1 --port @BEAN_LLM_PORT@ --alias bean-local --ctx-size 2048 --n-gpu-layers 99 --threads 4
+Restart=on-failure
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
