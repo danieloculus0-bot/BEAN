@@ -69,7 +69,7 @@ jobs:
           print("BEAN CORE: two independent boots with persistent checkpoint replay verified")
           PY
 
-      - name: Run restored generation-23 Core simulations with matched controls
+      - name: Run restored checked-in Core simulations with matched controls
         shell: bash
         run: |
           set -euo pipefail
