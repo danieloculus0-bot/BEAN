@@ -16,6 +16,8 @@ def canonical_digest(plan):
         raise ValueError("invalid plan fields")
     if not all(isinstance(plan[k], str) and plan[k].strip() for k in ("baseline_sha", "candidate_sha")):
         raise ValueError("missing revisions")
+    if plan["baseline_sha"].strip() == plan["candidate_sha"].strip():
+        raise ValueError("identical baseline and candidate revisions")
     if type(plan["seed"]) is not int or plan["seed"] < 0:
         raise ValueError("invalid seed")
     if not isinstance(plan["budget"], dict) or not plan["budget"]:
@@ -52,6 +54,10 @@ def audit_preregistration(plan, anchor_digest, outcomes):
     if not isinstance(anchor_digest, str) or digest != anchor_digest:
         return {"valid": False, "reason": "plan_digest_mismatch", "digest": digest}
     expected = {c["case_id"] for c in plan["cases"] if c["split"] in ("heldout", "ood")}
+    if not expected:
+        return {"valid": False, "reason": "no_heldout_or_ood_cases",
+                "digest": digest, "expected_cases": 0, "observed_cases": 0,
+                "claim": "plan_integrity_only_anchor_timing_unverified"}
     observed = set()
     if not isinstance(outcomes, list):
         raise ValueError("outcomes must be a list")
@@ -64,7 +70,13 @@ def audit_preregistration(plan, anchor_digest, outcomes):
         if any(type(outcome[k]) is not bool for k in ("baseline", "candidate")):
             raise ValueError("outcomes must be boolean")
         observed.add(cid)
-    return {"valid": observed == expected, "reason": (
+    paired = [o for o in outcomes if o["case_id"] in expected]
+    wins = sum(o["candidate"] and not o["baseline"] for o in paired)
+    losses = sum(o["baseline"] and not o["candidate"] for o in paired)
+    ties = len(paired) - wins - losses
+    return {"paired_wins": wins, "paired_losses": losses, "paired_ties": ties,
+            "paired_net_gain": (wins - losses) if observed == expected else None,
+            "valid": observed == expected, "reason": (
         "complete_frozen_eval" if observed == expected else "missing_or_extra_cases"),
         "digest": digest, "expected_cases": len(expected), "observed_cases": len(observed),
         "claim": "plan_integrity_only_anchor_timing_unverified"}
