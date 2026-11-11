@@ -88,6 +88,22 @@ class EcosystemNavigationTests(unittest.TestCase):
         page = self.page("bean-demo/index.html")
         self.assertIn("research/github_brain/manifest.json", page)
         self.assertIn("bean.github.request.v1", page)
+        # The public demo has real device-local IndexedDB, an offline app shell,
+        # and controlled export/import, not cookie-based or public user storage.
+        self.assertIn('src="./device-ui.mjs"', page)
+        self.assertIn('href="./manifest.webmanifest"', page)
+        self.assertIn('id="local-note"', page)
+        self.assertIn('id="export-device"', page)
+        self.assertIn('id="clear-device"', page)
+        self.assertIn('id="import-file"', page)
+        for resource in ("device-ui.mjs", "device-memory.mjs",
+                         "sw.js", "manifest.webmanifest"):
+            self.assertTrue((ROOT / "bean-demo" / resource).is_file(), resource)
+        storage = (ROOT / "bean-demo" / "device-memory.mjs").read_text()
+        self.assertIn("indexedDBFactory.open(DB_NAME", storage)
+        self.assertIn("verifyPublicManifest", storage)
+        self.assertIn("replayLedger", storage)
+        self.assertNotIn("localStorage.setItem", storage)
         self.assertIn("dictionary-patch ledger", page.lower())
         self.assertIn("https://danieloculus0-bot.github.io/Axiom_Beta/erp/",
                       self.links("bean-demo/index.html").links)
