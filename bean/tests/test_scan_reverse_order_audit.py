@@ -132,6 +132,49 @@ def paired_family_sensitivity(commands, deltas):
             **paired_exact_test(family_deltas)}
 
 
+
+def paired_operand_overlap_sensitivity(commands, deltas):
+    """Conservative sensitivity analysis for shared atomic actions.
+
+    Operand-pair families are NOT independent if they share an action.
+    Form connected components of the undirected action graph; aggregate
+    paired deltas within each component and test component signs. This is
+    intentionally pessimistic: a connected graph may collapse to one unit.
+    It is not a causal independence guarantee or a primary significance test.
+    """
+    if len(commands) != len(deltas):
+        raise ValueError("Commands and paired deltas must align")
+    if any(type(x) is not int or x not in (-1, 0, 1) for x in deltas):
+        raise ValueError("Invalid paired delta")
+    parent = {}
+
+    def root(item):
+        parent.setdefault(item, item)
+        while parent[item] != item:
+            parent[item] = parent[parent[item]]
+            item = parent[item]
+        return item
+
+    for command in commands:
+        if not isinstance(command, str) or command.count(" after ") != 1:
+            raise ValueError("Expected one after operator")
+        left, right = command.split(" after ")
+        if not left or not right:
+            raise ValueError("Empty operand")
+        a, b = root(left), root(right)
+        if a != b:
+            parent[max(a, b)] = min(a, b)
+    sums = {}
+    for command, delta in zip(commands, deltas):
+        left = command.split(" after ")[0]
+        component = root(left)
+        sums[component] = sums.get(component, 0) + delta
+    signs = [int(v > 0) - int(v < 0) for _, v in sorted(sums.items())]
+    return {"component_count": len(signs), "case_count": len(commands),
+            "method": "shared_operand_connected_components_conservative_sensitivity",
+            **paired_exact_test(signs)}
+
+
 def audit(report, sources, hashes):
     if report.get("schema") != SCHEMA or report.get("selection_seed") != SEED:
         raise ValueError("Schema or selection seed changed")
@@ -210,7 +253,9 @@ def audit(report, sources, hashes):
             or paired_phrase != report["paired_learned_minus_phrase"]
             or failures != report["candidate_failures"]):
         raise ValueError("Aggregate scores or negative evidence mismatch")
-    return {"family_sensitivity_vs_blind": paired_family_sensitivity(commands, paired_blind),
+    return {"operand_overlap_vs_blind": paired_operand_overlap_sensitivity(commands, paired_blind),
+            "operand_overlap_vs_phrase": paired_operand_overlap_sensitivity(commands, paired_phrase),
+            "family_sensitivity_vs_blind": paired_family_sensitivity(commands, paired_blind),
             "family_sensitivity_vs_phrase": paired_family_sensitivity(commands, paired_phrase),
             "paired_learned_vs_blind": paired_exact_test(paired_blind),
             "paired_learned_vs_phrase": paired_exact_test(paired_phrase),
@@ -258,6 +303,27 @@ class IndependentAuditControls(unittest.TestCase):
             paired_family_sensitivity(commands, [1])
         with self.assertRaises(ValueError):
             paired_family_sensitivity(["malformed"], [1])
+
+    def test_shared_operand_components_block_false_independence(self):
+        # Four different unordered pairs but a single shared atomic action.
+        commands = ["walk after run", "walk after jump",
+                    "walk after look", "walk after turn"]
+        deltas = [1] * 4
+        self.assertEqual(paired_family_sensitivity(commands, deltas)["family_count"], 4)
+        grouped = paired_operand_overlap_sensitivity(commands, deltas)
+        self.assertEqual(grouped["component_count"], 1)
+        self.assertEqual(grouped["exact_two_sided_p"], 1.0)
+        self.assertFalse(grouped["candidate_superiority_at_0_05"])
+        # Disjoint pairs retain independent graph components for sensitivity.
+        disjoint = ["walk after run", "jump after look", "turn after crawl"]
+        result = paired_operand_overlap_sensitivity(disjoint, [1, -1, 0])
+        self.assertEqual(result["component_count"], 3)
+        self.assertEqual((result["wins"], result["losses"], result["ties"]), (1, 1, 1))
+        self.assertEqual(paired_operand_overlap_sensitivity([], [])["component_count"], 0)
+        with self.assertRaises(ValueError):
+            paired_operand_overlap_sensitivity(commands, [1])
+        with self.assertRaises(ValueError):
+            paired_operand_overlap_sensitivity(["bad"], [1])
 
     def test_digest_detects_mutation(self):
         row = {"command": "walk after run", "correct": {"learned": True}}
