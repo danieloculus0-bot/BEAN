@@ -1,0 +1,34 @@
+name: BEAN plant FLC genomics check
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'bean/bioinformatics/**'
+      - 'tests/test_genomics.py'
+      - '.github/workflows/bean-genomics.yml'
+
+jobs:
+  public-plant-genomics:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Deterministic unit tests
+        run: python -m unittest discover -s tests -p 'test_genomics.py' -v
+      - name: Public Arabidopsis FLC ecotype accession comparison
+        run: |
+          mkdir -p artifacts
+          python -m bean.bioinformatics.genomics --accessions AY769356.1 AY769357.1 --out artifacts/flc_ecotypes.json --ledger artifacts/genomics_experiments.jsonl
+      - name: Archive public results and experiment receipt
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bean-flc-public-sequence-evidence
+          path: artifacts/
+          if-no-files-found: warn
