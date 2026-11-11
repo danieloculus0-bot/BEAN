@@ -136,10 +136,21 @@ class SketchLab:
         if (type(allow_online) is not bool or type(max_attempts) is not int
                 or not 1 <= max_attempts <= 5):
             raise ValueError("Explicit online choice and 1..5 attempts required")
+        # Reuse trial feedback from earlier BEAN sessions, not a second memory.
+        prior = [e["data"] for e in self.core.bank.journal.events()
+                 if e["kind"] == "trial"
+                 and e["data"].get("experiment") == "bean_sketch_v1"]
+        precedents = json.dumps([{
+            "subject": x.get("subject"), "status": x.get("status"),
+            "suggested_change": x.get("self_review", {}).get("changes")}
+            for x in prior[-6:]], ensure_ascii=False)[:1400]
         plan_raw, model_id, model_kind, _ = self.ask(
             "Choose ANY subject to draw, without being given a subject. "
+            "You may improve an old subject or explore something new. "
             "Respond ONLY JSON with subject and reference_query keys. "
-            "The reference_query may be an empty string.")
+            "The reference_query may be an empty string. "
+            "Past BEAN drawing attempts and feedback (not verified truth): "
+            + precedents)
         idea = decode(plan_raw)
         subject = text(idea.get("subject"), 120)
         query = idea.get("reference_query", "")
