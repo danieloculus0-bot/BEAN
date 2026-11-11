@@ -1,0 +1,41 @@
+name: BEAN synthetic cross-domain negative transfer controls
+
+on:
+  pull_request:
+    paths:
+      - "bean/learning/native_skills.py"
+      - "bean/learning/reasoning_service.py"
+      - "bean/tests/test_cross_domain_negative_transfer.py"
+      - "bean/tests/test_cross_domain_counterfactual_twins.py"
+      - ".github/workflows/bean-negative-transfer-controls.yml"
+  workflow_dispatch:
+
+jobs:
+  paired-negative-transfer:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        python-version: ["3.10", "3.12"]
+    runs-on: ${{ matrix.os }}
+    env:
+      BEAN_SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Native paired baseline, counterfactual and restart tests
+        run: python -m unittest -v bean.tests.test_cross_domain_negative_transfer bean.tests.test_cross_domain_counterfactual_twins
+      - name: Save full synthetic case-level receipts
+        shell: bash
+        run: |
+          python -m bean.tests.test_cross_domain_negative_transfer --report > negative-transfer-receipt.json
+          python -m bean.tests.test_cross_domain_counterfactual_twins --report > counterfactual-twin-receipt.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: negative-transfer-${{ matrix.os }}-py${{ matrix.python-version }}
+          path: |
+            negative-transfer-receipt.json
+            counterfactual-twin-receipt.json
+          retention-days: 14
