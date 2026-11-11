@@ -200,3 +200,31 @@ def test_unavailable_transfer_evidence_is_not_a_progress_gate(tmp_path):
         assert first["families"][family]["incomplete_fields"]["prior_generation_transfer_attempted"] == "N/A"
     assert first["blind_cases_total"] == skipped_parent["blind_cases_total"] == 144
     assert skipped_parent["new_evaluation"] is True
+
+
+def test_measured_transfer_denominator_survives_core_reopen(tmp_path):
+    """Real parent evidence reports attempted-case coverage, not Unknown."""
+    db = tmp_path / "reasoning.sqlite3"
+    run_scored_digital_cycle(db, generation=1, source_sha="local-validation")
+    second = run_scored_digital_cycle(
+        db, generation=2, source_sha="local-validation")
+    receipts = {r["family"]: r for r in _evaluations(db)
+                if r["generation"] == 2}
+    for family in FAMILIES:
+        summary = second["families"][family]
+        stored = receipts[family]
+        attempted = stored["prior_generation_transfer_attempted"]
+        correct = stored["prior_generation_transfer_correct"]
+        assert isinstance(attempted, int) and 0 <= attempted <= len(BLIND)
+        assert isinstance(correct, int) and 0 <= correct <= attempted
+        assert summary["prior_generation_transfer_attempted"] == attempted
+        assert summary["prior_generation_transfer_correct"] == correct
+        assert summary["incomplete_fields"] == {}
+
+    # A reopened Core cannot create duplicate scoring credit.
+    repeated = run_scored_digital_cycle(
+        db, generation=2, source_sha="local-validation")
+    assert repeated["new_evaluation"] is False
+    assert repeated["source_evidence_sha256"] == second["source_evidence_sha256"]
+    assert repeated["families"] == second["families"]
+    assert len(_evaluations(db)) == 2 * len(FAMILIES)
