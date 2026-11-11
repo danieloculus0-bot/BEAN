@@ -63,19 +63,38 @@ def run_scored_digital_cycle(db_path: Path, *, generation: int,
         earlier = _prior_evaluations(service)
         matching = [item for item in earlier
                     if item.get("generation") == generation]
-        if matching:
-            if len(matching) != len(FAMILIES) or {
-                    item.get("family") for item in matching} != set(FAMILIES):
-                raise ValueError("partial digital learning generation")
-            if any(item["source_sha"] != source_sha for item in matching):
+        # Interrupted runs may have committed one or two scored families.
+        # Validate those immutable records before resuming only the missing
+        # families. Never rewrite or earn a second credit for a scored family.
+        recorded = {}
+        for item in matching:
+            family = item.get("family")
+            if family not in FAMILIES or family in recorded:
+                raise ValueError("duplicate or unknown digital learning family")
+            if item.get("source_sha") != source_sha:
                 raise ValueError("digital generation source revision conflict")
-            return _summary(matching, new_evaluation=False)
+            if (item.get("evaluation_sha256") != _hash({
+                    k: v for k, v in item.items()
+                    if k != "evaluation_sha256"})
+                    or item.get("world_id") != (
+                        100000 + generation * 100 + FAMILIES.index(family))
+                    or item.get("scored_cases") != len(BLIND)
+                    or [case.get("case_id") for case in item.get(
+                        "case_level_evidence", [])] != list(BLIND)):
+                raise ValueError("invalid existing digital learning receipt")
+            recorded[family] = item
+        if len(recorded) == len(FAMILIES):
+            return _summary(
+                [recorded[family] for family in FAMILIES],
+                new_evaluation=False)
         previous = {
             item["family"]: item for item in earlier
             if item.get("generation") == generation - 1
         }
         preparation = []
         for family_index, family in enumerate(FAMILIES):
+            if family in recorded:
+                continue
             world_id = 100000 + generation * 100 + family_index
             world = World(world_id, family)
             task = f"g{generation:05d}-{family}"
@@ -109,10 +128,11 @@ def run_scored_digital_cycle(db_path: Path, *, generation: int,
     # Recreate the real Core reasoning service: selected actions must be
     # retrieved from its persisted rule receipt, not a Python local variable.
     reopened = NativeReasoningService(db_path, model=None)
-    records = []
+    records = [recorded[family] for family in FAMILIES if family in recorded]
     try:
-        if any(item.get("generation") == generation
-               for item in _prior_evaluations(reopened)):
+        current = [item for item in _prior_evaluations(reopened)
+                   if item.get("generation") == generation]
+        if _hash(current) != _hash(matching):
             raise ValueError("digital generation changed during evaluation")
         for family, world, task, learner, passive, shuffled, parent in preparation:
             score = {"candidate": 0, "passive": 0,
@@ -184,7 +204,9 @@ def run_scored_digital_cycle(db_path: Path, *, generation: int,
             # abstentions are stored just as successes are.
             reopened.bank.record_trial(receipt)
             records.append(receipt)
-        return _summary(records, new_evaluation=True)
+        return _summary(
+            sorted(records, key=lambda row: FAMILIES.index(row["family"])),
+            new_evaluation=True)
     finally:
         reopened.close()
 
