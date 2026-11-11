@@ -8,6 +8,8 @@ on:
       - "bean/tests/test_cross_domain_negative_transfer.py"
       - "bean/tests/test_cross_domain_counterfactual_twins.py"
       - "bean/tests/test_cross_domain_feedback_gate.py"
+      - "bean/tests/test_cross_domain_drift_probes.py"
+      - "bean/tests/test_cross_domain_stochastic_drift.py"
       - ".github/workflows/bean-negative-transfer-controls.yml"
   workflow_dispatch:
 
@@ -26,14 +28,16 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
-      - name: Native paired baseline, counterfactual and restart tests
-        run: python -m unittest -v bean.tests.test_cross_domain_negative_transfer bean.tests.test_cross_domain_counterfactual_twins bean.tests.test_cross_domain_feedback_gate
+      - name: Native paired baseline, counterfactual, feedback and stochastic drift tests
+        run: python -m unittest -v bean.tests.test_cross_domain_negative_transfer bean.tests.test_cross_domain_counterfactual_twins bean.tests.test_cross_domain_feedback_gate bean.tests.test_cross_domain_drift_probes bean.tests.test_cross_domain_stochastic_drift
       - name: Save full synthetic case-level receipts
         shell: bash
         run: |
           python -m bean.tests.test_cross_domain_negative_transfer --report > negative-transfer-receipt.json
           python -m bean.tests.test_cross_domain_counterfactual_twins --report > counterfactual-twin-receipt.json
           python -m bean.tests.test_cross_domain_feedback_gate --report > target-feedback-receipt.json
+          python -m bean.tests.test_cross_domain_drift_probes --report > drift-probe-receipt.json
+          python -m bean.tests.test_cross_domain_stochastic_drift --report > stochastic-drift-receipt.json
       - uses: actions/upload-artifact@v4
         with:
           name: negative-transfer-${{ matrix.os }}-py${{ matrix.python-version }}
@@ -41,4 +45,6 @@ jobs:
             negative-transfer-receipt.json
             counterfactual-twin-receipt.json
             target-feedback-receipt.json
+            drift-probe-receipt.json
+            stochastic-drift-receipt.json
           retention-days: 14
