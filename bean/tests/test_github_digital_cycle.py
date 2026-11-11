@@ -189,7 +189,8 @@ def test_unavailable_transfer_evidence_is_not_a_progress_gate(tmp_path):
     for family in FAMILIES:
         assert first["families"][family]["prior_generation_transfer_correct"] is None
         assert first["families"][family]["incomplete_fields"] == {
-            "prior_generation_transfer_correct": "N/A"}
+            "prior_generation_transfer_correct": "N/A",
+            "prior_generation_transfer_attempted": "N/A"}
         assert skipped_parent["families"][family]["prior_generation_transfer_correct"] is None
         assert skipped_parent["families"][family]["incomplete_fields"] == {
             "prior_generation_transfer_correct": "Unknown",
