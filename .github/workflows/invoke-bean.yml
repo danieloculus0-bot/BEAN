@@ -9,12 +9,16 @@ on:
     paths:
       - 'scripts/invoke_bean.py'
       - 'bean/tests/test_github_invoke.py'
+      - 'bean/tests/test_github_digital_cycle.py'
+      - 'bean/evaluation/github_digital_cycle.py'
       - '.github/workflows/invoke-bean.yml'
   pull_request:
     branches: [main]
     paths:
       - 'scripts/invoke_bean.py'
       - 'bean/tests/test_github_invoke.py'
+      - 'bean/tests/test_github_digital_cycle.py'
+      - 'bean/evaluation/github_digital_cycle.py'
       - '.github/workflows/invoke-bean.yml'
 
 permissions:
@@ -38,7 +42,7 @@ jobs:
           python-version: '3.12'
       - run: python -m pip install pytest
       - name: Test checkpoint integrity and fail-closed recovery
-        run: python -m pytest bean/tests/test_github_invoke.py bean/tests/test_github_checkpoint_interruption.py -q -ra
+        run: python -m pytest bean/tests/test_github_invoke.py bean/tests/test_github_checkpoint_interruption.py bean/tests/test_github_digital_cycle.py -q -ra
       - name: Actually boot Python BEAN Core in a digital environment
         shell: bash
         run: |
@@ -54,6 +58,10 @@ jobs:
           assert receipt["events"] > 0 and receipt["processed_digital_commands"] >= 2
           assert receipt["previous_receipt_sha256"], receipt
           assert receipt["model_weights_trained"] is False
+          digital = receipt["digital_learning"]
+          assert digital["generation"] == 2 and digital["blind_cases_total"] == 144
+          assert digital["source_evidence_sha256"] and digital["new_evaluation"] is True
+          assert digital["independently_audited"] is False
           print("BEAN CORE: two independent boots with persistent checkpoint replay verified")
           PY
 
@@ -72,7 +80,7 @@ jobs:
           python-version: '3.12'
       - run: python -m pip install pytest
       - name: Verify synthetic checkpoint, tamper and restart contracts
-        run: python -m pytest bean/tests/test_github_invoke.py bean/tests/test_github_checkpoint_interruption.py -q -ra
+        run: python -m pytest bean/tests/test_github_invoke.py bean/tests/test_github_checkpoint_interruption.py bean/tests/test_github_digital_cycle.py -q -ra
       - name: Invoke real BEAN Core and resume checked-in memory
         shell: bash
         run: |
