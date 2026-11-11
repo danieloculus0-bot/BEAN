@@ -44,6 +44,12 @@ def canonical_digest(plan):
         seen.add(case["case_id"])
         if case["split"] not in ("train", "heldout", "ood"):
             raise ValueError("invalid split")
+    # A family seen during training is not independent held-out evidence.
+    # Reject overlap rather than silently count correlated examples as transfer.
+    train_families = {c["family_id"] for c in cases if c["split"] == "train"}
+    eval_families = {c["family_id"] for c in cases if c["split"] in ("heldout", "ood")}
+    if train_families & eval_families:
+        raise ValueError("training/evaluation family leakage")
     payload = json.dumps(plan, sort_keys=True, separators=(",", ":"), ensure_ascii=True,
                          allow_nan=False).encode("ascii")
     return hashlib.sha256(payload).hexdigest()
