@@ -1,0 +1,30 @@
+name: BEAN model-chosen SVG sketch experiment
+on:
+  pull_request:
+    paths:
+      - 'bean/creativity/**'
+      - 'bean/tests/test_sketch_lab.py'
+      - '.github/workflows/bean-sketch-lab.yml'
+      - 'docs/BEAN_SKETCH_LAB.md'
+  push:
+    branches: [main]
+    paths:
+      - 'bean/creativity/**'
+      - 'bean/tests/test_sketch_lab.py'
+      - '.github/workflows/bean-sketch-lab.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  synthetic-mechanism:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install tests and MIT renderer
+        run: python -m pip install pytest "drawsvg>=2,<3"
+      - name: Verify real Core journal, drawing, research handoff and negative cases
+        run: python -m pytest bean/tests/test_sketch_lab.py -q -ra
