@@ -9,6 +9,7 @@ on:
     paths:
       - 'scripts/invoke_bean.py'
       - 'bean/tests/test_github_invoke.py'
+      - 'bean/tests/test_github_checkpoint_interruption.py'
       - 'bean/tests/test_github_digital_cycle.py'
       - 'bean/evaluation/github_digital_cycle.py'
       - '.github/workflows/invoke-bean.yml'
@@ -17,6 +18,7 @@ on:
     paths:
       - 'scripts/invoke_bean.py'
       - 'bean/tests/test_github_invoke.py'
+      - 'bean/tests/test_github_checkpoint_interruption.py'
       - 'bean/tests/test_github_digital_cycle.py'
       - 'bean/evaluation/github_digital_cycle.py'
       - '.github/workflows/invoke-bean.yml'
