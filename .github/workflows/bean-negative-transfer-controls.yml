@@ -17,6 +17,9 @@ on:
       - "bean/tests/test_external_elec2_source_blind.py"
       - "bean/tests/test_external_occupancy_transfer.py"
       - "bean/tests/test_external_scan_composition.py"
+      - "bean/tests/test_scan_induced_slots.py"
+      - "bean/tests/test_scan_two_role_slots.py"
+      - "bean/tests/test_scan_two_role_audit.py"
       - ".github/workflows/bean-negative-transfer-controls.yml"
   workflow_dispatch:
 
@@ -36,7 +39,7 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - name: Native paired baseline, counterfactual, feedback and stochastic drift tests
-        run: python -m unittest -v bean.tests.test_cross_domain_negative_transfer bean.tests.test_cross_domain_counterfactual_twins bean.tests.test_cross_domain_feedback_gate bean.tests.test_cross_domain_drift_probes bean.tests.test_cross_domain_stochastic_drift bean.tests.test_cross_domain_oracle_firewall bean.tests.test_cross_domain_budget_matched bean.tests.test_external_elec2_transfer bean.tests.test_external_elec2_conditional_baseline bean.tests.test_external_elec2_source_blind bean.tests.test_external_occupancy_transfer bean.tests.test_external_scan_composition
+        run: python -m unittest -v bean.tests.test_cross_domain_negative_transfer bean.tests.test_cross_domain_counterfactual_twins bean.tests.test_cross_domain_feedback_gate bean.tests.test_cross_domain_drift_probes bean.tests.test_cross_domain_stochastic_drift bean.tests.test_cross_domain_oracle_firewall bean.tests.test_cross_domain_budget_matched bean.tests.test_external_elec2_transfer bean.tests.test_external_elec2_conditional_baseline bean.tests.test_external_elec2_source_blind bean.tests.test_external_occupancy_transfer bean.tests.test_external_scan_composition bean.tests.test_scan_induced_slots bean.tests.test_scan_two_role_slots bean.tests.test_scan_two_role_audit
       - name: Independent Elec2 stream probe (external public data, Ubuntu 3.12 only)
         if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.12'
         env:
@@ -62,6 +65,16 @@ jobs:
         env:
           BEAN_EXTERNAL_SCAN: "1"
         run: python -m unittest -v bean.tests.test_external_scan_composition.ScanCompositionControls.test_external_scan_heldout
+      - name: Independent source-induced SCAN action-slot evaluation (Ubuntu 3.12 only)
+        if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.12'
+        env:
+          BEAN_EXTERNAL_SCAN: "1"
+        run: python -m unittest -v bean.tests.test_scan_induced_slots.InducedSlotControls.test_external_disjoint_heldouts
+      - name: Fresh disjoint SCAN two-role evaluation (Ubuntu 3.12 only)
+        if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.12'
+        env:
+          BEAN_EXTERNAL_SCAN: "1"
+        run: python -m unittest -v bean.tests.test_scan_two_role_slots.TwoRoleControls.test_fresh_external_two_role_evaluation
       - name: Save full synthetic case-level receipts
         shell: bash
         run: |
@@ -78,7 +91,12 @@ jobs:
             python -m bean.tests.test_external_elec2_source_blind --report > source-blind-elec2-receipt.json
             python -m bean.tests.test_external_occupancy_transfer --report > external-occupancy-receipt.json
             python -m bean.tests.test_external_scan_composition --report > external-scan-receipt.json
+            python -m bean.tests.test_scan_induced_slots --report > induced-scan-receipt.json
+            python -m bean.tests.test_scan_two_role_slots --report > two-role-scan-receipt.json
           fi
+      - name: Independently verify all fresh SCAN receipts and print paired scores
+        if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.12'
+        run: python -m bean.tests.test_scan_two_role_audit two-role-scan-receipt.json induced-scan-receipt.json
       - uses: actions/upload-artifact@v4
         with:
           name: negative-transfer-${{ matrix.os }}-py${{ matrix.python-version }}
@@ -95,4 +113,6 @@ jobs:
             source-blind-elec2-receipt.json
             external-occupancy-receipt.json
             external-scan-receipt.json
+            induced-scan-receipt.json
+            two-role-scan-receipt.json
           retention-days: 14
