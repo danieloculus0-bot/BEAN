@@ -35,11 +35,21 @@ def canonical_digest(plan):
         if any(not isinstance(case[k], str) or not case[k].strip()
                for k in CASE_KEYS):
             raise ValueError("invalid case label")
+        # Reject ambiguous labels before hashing: whitespace variants can
+        # represent the same underlying trial under different case IDs.
+        if any(case[k] != case[k].strip() for k in CASE_KEYS):
+            raise ValueError("noncanonical case label")
         if case["case_id"] in seen:
             raise ValueError("duplicate case")
         seen.add(case["case_id"])
         if case["split"] not in ("train", "heldout", "ood"):
             raise ValueError("invalid split")
+    # A family seen during training is not independent held-out evidence.
+    # Reject overlap rather than silently count correlated examples as transfer.
+    train_families = {c["family_id"] for c in cases if c["split"] == "train"}
+    eval_families = {c["family_id"] for c in cases if c["split"] in ("heldout", "ood")}
+    if train_families & eval_families:
+        raise ValueError("training/evaluation family leakage")
     payload = json.dumps(plan, sort_keys=True, separators=(",", ":"), ensure_ascii=True,
                          allow_nan=False).encode("ascii")
     return hashlib.sha256(payload).hexdigest()
