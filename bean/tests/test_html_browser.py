@@ -43,6 +43,8 @@ class LocalHtmlBrowserTests(unittest.TestCase):
                 document.querySelector('#answer').value || 'Clicked';
             }
             fetch('https://unlisted.invalid/data').catch(() => {});
+            const deniedSocket = new WebSocket('wss://unlisted.invalid/ws');
+            deniedSocket.onerror = () => {};
             </script>
             </head><body><h1>Untrusted page fixture</h1>
             <input id="answer" value=""/>
@@ -71,6 +73,7 @@ class LocalHtmlBrowserTests(unittest.TestCase):
         self.assertIn("Linked JavaScript loaded", before["rendered_text"])
         self.assertGreaterEqual(before["blocked_request_count"], 1)
         self.assertIn("https", before["blocked_request_schemes"])
+        self.assertIn("websocket", before["blocked_request_schemes"])
         after = inspect_html(str(self.doc), execute_scripts=True,
                              actions=[
                                  {"type": "fill", "selector": "#answer", "value": "42"},
