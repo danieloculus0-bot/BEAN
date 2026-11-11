@@ -173,3 +173,21 @@ def test_duplicate_scored_family_is_rejected_without_mutation(tmp_path):
     with pytest.raises(ValueError, match="duplicate"):
         run_scored_digital_cycle(db, generation=1, source_sha="local-validation")
     assert _evaluations(db) == before
+
+
+def test_unavailable_transfer_evidence_is_not_a_progress_gate(tmp_path):
+    first = run_scored_digital_cycle(
+        tmp_path / "initial.sqlite3",
+        generation=1, source_sha="local-validation")
+    skipped_parent = run_scored_digital_cycle(
+        tmp_path / "missing-parent.sqlite3",
+        generation=2, source_sha="local-validation")
+    for family in FAMILIES:
+        assert first["families"][family]["prior_generation_transfer_correct"] is None
+        assert first["families"][family]["incomplete_fields"] == {
+            "prior_generation_transfer_correct": "N/A"}
+        assert skipped_parent["families"][family]["prior_generation_transfer_correct"] is None
+        assert skipped_parent["families"][family]["incomplete_fields"] == {
+            "prior_generation_transfer_correct": "Unknown"}
+    assert first["blind_cases_total"] == skipped_parent["blind_cases_total"] == 144
+    assert skipped_parent["new_evaluation"] is True
