@@ -152,9 +152,14 @@ class InducedSlots:
                 "source_blob": self.source_blob}
 
 
-def run_report(train, test, hashes):
+def run_report(train, test, hashes, *, holdout_offset=0):
+    """Offset whole disjoint cohorts without changing source selection or model."""
+    if type(holdout_offset) is not int or not 0 <= holdout_offset <= 8:
+        raise ValueError("Invalid preregistered holdout offset")
     selected = _training(train)
-    chosen = _select(test, TEST_BUDGET * 2, "heldout")
+    window = TEST_BUDGET * 2
+    chosen = _select(test, window * (holdout_offset + 1), "heldout")[
+        window * holdout_offset:]
     if len(chosen) != TEST_BUDGET * 2 or set(chosen) & set(selected):
         raise AssertionError("Disjoint holdout budget violated")
     model = InducedSlots(selected, FILES["train"][1])
@@ -243,6 +248,7 @@ def run_report(train, test, hashes):
         "source_revision": os.environ.get("BEAN_SOURCE_SHA", "not_supplied"),
         "benchmark": SOURCE, "split": "add_prim_jump",
         "source_hashes": hashes, "selection_seed": "bean-scan-v1-20261102",
+        "holdout_offset": holdout_offset,
         "training_budget": len(selected), "training_total": len(train),
         "atomic_anchors": dict(sorted(model.atomic.items())),
         "induced_templates": len(model.templates),
