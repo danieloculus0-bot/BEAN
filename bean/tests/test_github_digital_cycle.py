@@ -72,6 +72,10 @@ def test_actual_feedback_blind_controls_and_durable_restart(tmp_path):
     assert len(rows) == 2 * len(FAMILIES)
     assert all(r["prior_generation_transfer_correct"] is not None
                for r in rows if r["generation"] == 2)
+    for family in FAMILIES:
+        assert second["families"][family]["prior_generation_transfer_attempted"] is not None
+        assert second["families"][family]["prior_generation_transfer_attempted"] <= len(BLIND)
+        assert "prior_generation_transfer_attempted" not in second["families"][family]["incomplete_fields"]
 
 
 def test_existing_checkpoint_roundtrip_preserves_scored_rules(tmp_path):
@@ -185,9 +189,65 @@ def test_unavailable_transfer_evidence_is_not_a_progress_gate(tmp_path):
     for family in FAMILIES:
         assert first["families"][family]["prior_generation_transfer_correct"] is None
         assert first["families"][family]["incomplete_fields"] == {
-            "prior_generation_transfer_correct": "N/A"}
+            "prior_generation_transfer_correct": "N/A",
+            "prior_generation_transfer_attempted": "N/A"}
         assert skipped_parent["families"][family]["prior_generation_transfer_correct"] is None
         assert skipped_parent["families"][family]["incomplete_fields"] == {
-            "prior_generation_transfer_correct": "Unknown"}
+            "prior_generation_transfer_correct": "Unknown",
+            "prior_generation_transfer_attempted": "Unknown"}
+        assert skipped_parent["families"][family]["prior_generation_transfer_attempted"] is None
+        assert first["families"][family]["prior_generation_transfer_attempted"] is None
+        assert first["families"][family]["incomplete_fields"]["prior_generation_transfer_attempted"] == "N/A"
     assert first["blind_cases_total"] == skipped_parent["blind_cases_total"] == 144
     assert skipped_parent["new_evaluation"] is True
+
+
+def test_measured_transfer_denominator_survives_core_reopen(tmp_path):
+    """Real parent evidence reports attempted-case coverage, not Unknown."""
+    db = tmp_path / "reasoning.sqlite3"
+    run_scored_digital_cycle(db, generation=1, source_sha="local-validation")
+    second = run_scored_digital_cycle(
+        db, generation=2, source_sha="local-validation")
+    receipts = {r["family"]: r for r in _evaluations(db)
+                if r["generation"] == 2}
+    for family in FAMILIES:
+        summary = second["families"][family]
+        stored = receipts[family]
+        attempted = stored["prior_generation_transfer_attempted"]
+        correct = stored["prior_generation_transfer_correct"]
+        assert isinstance(attempted, int) and 0 <= attempted <= len(BLIND)
+        assert isinstance(correct, int) and 0 <= correct <= attempted
+        assert summary["prior_generation_transfer_attempted"] == attempted
+        assert summary["prior_generation_transfer_correct"] == correct
+        assert summary["incomplete_fields"] == {}
+
+    # A reopened Core cannot create duplicate scoring credit.
+    repeated = run_scored_digital_cycle(
+        db, generation=2, source_sha="local-validation")
+    assert repeated["new_evaluation"] is False
+    assert repeated["source_evidence_sha256"] == second["source_evidence_sha256"]
+    assert repeated["families"] == second["families"]
+    assert len(_evaluations(db)) == 2 * len(FAMILIES)
+
+
+def test_legacy_transfer_receipt_marks_only_missing_denominator_unknown(tmp_path):
+    """Old receipts can have measured correctness but no attempt coverage."""
+    from bean.evaluation.github_digital_cycle import _summary
+
+    db = tmp_path / "reasoning.sqlite3"
+    run_scored_digital_cycle(db, generation=1, source_sha="local-validation")
+    run_scored_digital_cycle(db, generation=2, source_sha="local-validation")
+    original = [row for row in _evaluations(db) if row["generation"] == 2]
+    legacy = [{k: v for k, v in row.items()
+               if k != "prior_generation_transfer_attempted"}
+              for row in original]
+    before = _evaluations(db)
+    summary = _summary(legacy, new_evaluation=False)
+    for family in FAMILIES:
+        item = summary["families"][family]
+        assert item["prior_generation_transfer_correct"] is not None
+        assert item["prior_generation_transfer_attempted"] is None
+        assert item["incomplete_fields"] == {
+            "prior_generation_transfer_attempted": "Unknown"}
+    # Summarizing historical evidence never rewrites or repairs its SHA journal.
+    assert _evaluations(db) == before
