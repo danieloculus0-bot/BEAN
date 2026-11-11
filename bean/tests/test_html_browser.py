@@ -7,6 +7,7 @@ from __future__ import annotations
 import asyncio
 from pathlib import Path
 import os
+import shutil
 import tempfile
 import unittest
 from unittest.mock import patch
@@ -107,6 +108,28 @@ class LocalHtmlBrowserTests(unittest.TestCase):
         self.assertIn("Widget,3", result["rendered_text"])
         self.assertEqual(result["actions_performed"], 1)
         self.assertEqual(csv_path.read_text(encoding="utf-8"), "Item,Qty\nWidget,3\n")
+
+    def test_existing_ez_office_csv_app_is_really_callable(self):
+        source = Path(__file__).resolve().parents[2] / "docs" / "portfolio" / "ez-office"
+        if not source.is_dir():
+            self.skipTest("BEAN Workshop EZ-Office assets are not present")
+        workspace = self.root / "office"
+        shutil.copytree(source, workspace)
+        fake_data = workspace / "synthetic.csv"
+        fake_data.write_text("Part,Qty\nWidget,3\n", encoding="utf-8")
+        with patch.dict(os.environ, {"BEAN_HTML_ROOT": str(workspace)}):
+            result = inspect_html(
+                str(workspace / "index.html"), execute_scripts=True,
+                actions=[
+                    {"type": "click", "selector": 'button[data-tool="sheets"]'},
+                    {"type": "choose_file", "selector": 'button:has-text("Open CSV")',
+                     "value": str(fake_data)},
+                ], wait_ms=250)
+        controls = {entry["value"] for entry in result["form_controls"]}
+        self.assertIn("Widget", controls)
+        self.assertIn("3", controls)
+        self.assertEqual(result["actions_performed"], 2)
+        self.assertFalse(result["page_errors"])
 
     def test_restricts_root_network_and_action_inputs(self):
         outside = self.root.parent / "unapproved-html-fixture.html"
