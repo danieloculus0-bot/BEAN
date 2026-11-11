@@ -208,6 +208,9 @@ class SketchLab:
                     correction = str(self_review.get("changes", ""))[:400]
                 except (ValueError, RuntimeError):
                     self_review = {"status": "self_review_unavailable"}
+                if self.visual_judge is None and self_review.get("satisfied") is True:
+                    # BEAN may decide it is satisfied, but cannot see its own image.
+                    status = "self_reported_satisfactory_unverified"
                 if self.visual_judge is not None:
                     feedback = self.visual_judge(path, subject)
                     if (not isinstance(feedback, dict)
@@ -237,7 +240,8 @@ class SketchLab:
                             "svg": str(path) if digest else None,
                             "sha256": digest, "journal_tip": tip,
                             "description": description})
-            if status == "host_reported_satisfactory":
+            if status in ("host_reported_satisfactory",
+                          "self_reported_satisfactory_unverified"):
                 break
         return {"subject_chosen_by_BEAN_model": subject, "history": history,
                 "research_status": research_state, "references": source_urls,
