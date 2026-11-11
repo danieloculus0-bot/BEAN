@@ -113,3 +113,63 @@ def test_invalid_or_conflicting_generation_never_earns_credit(tmp_path):
     with pytest.raises(ValueError, match="revision conflict"):
         run_scored_digital_cycle(db, generation=1, source_sha="a" * 40)
     assert len(_evaluations(db)) == len(FAMILIES)
+
+
+@pytest.mark.parametrize("scored_before_failure", [1, 2])
+def test_resume_interrupted_generation_without_duplicate_scoring(
+        tmp_path, monkeypatch, scored_before_failure):
+    """Simulate crashes after the first and second durable family receipts."""
+    from bean.learning.experimental import ExperienceBank
+
+    db = tmp_path / "reasoning.sqlite3"
+    original = ExperienceBank.record_trial
+
+    def interrupt(self, receipt):
+        if (receipt.get("experiment") == "bean.github.digital_feedback.v1"
+                and receipt.get("family") == FAMILIES[scored_before_failure]):
+            raise RuntimeError("synthetic mid-generation interruption")
+        return original(self, receipt)
+
+    with monkeypatch.context() as patched:
+        patched.setattr(ExperienceBank, "record_trial", interrupt)
+        with pytest.raises(RuntimeError, match="mid-generation interruption"):
+            run_scored_digital_cycle(
+                db, generation=1, source_sha="local-validation")
+
+    before = _evaluations(db)
+    assert [row["family"] for row in before] == list(
+        FAMILIES[:scored_before_failure])
+    with pytest.raises(ValueError, match="revision conflict"):
+        run_scored_digital_cycle(db, generation=1, source_sha="a" * 40)
+    assert _evaluations(db) == before
+
+    resumed = run_scored_digital_cycle(
+        db, generation=1, source_sha="local-validation")
+    assert resumed["new_evaluation"] is True
+    assert resumed["blind_cases_total"] == 3 * len(BLIND)
+    assert set(resumed["families"]) == set(FAMILIES)
+    after = _evaluations(db)
+    assert len(after) == len(FAMILIES)
+    assert after[:scored_before_failure] == before
+
+    repeated = run_scored_digital_cycle(
+        db, generation=1, source_sha="local-validation")
+    assert repeated["new_evaluation"] is False
+    assert repeated["source_evidence_sha256"] == (
+        resumed["source_evidence_sha256"])
+    assert _evaluations(db) == after
+
+
+def test_duplicate_scored_family_is_rejected_without_mutation(tmp_path):
+    db = tmp_path / "reasoning.sqlite3"
+    run_scored_digital_cycle(db, generation=1, source_sha="local-validation")
+    rows = _evaluations(db)
+    service = NativeReasoningService(db, model=None)
+    try:
+        service.bank.record_trial(rows[0])
+    finally:
+        service.close()
+    before = _evaluations(db)
+    with pytest.raises(ValueError, match="duplicate"):
+        run_scored_digital_cycle(db, generation=1, source_sha="local-validation")
+    assert _evaluations(db) == before
