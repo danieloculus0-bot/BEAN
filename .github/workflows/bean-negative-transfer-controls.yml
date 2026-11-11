@@ -13,6 +13,8 @@ on:
       - "bean/tests/test_cross_domain_oracle_firewall.py"
       - "bean/tests/test_cross_domain_budget_matched.py"
       - "bean/tests/test_external_elec2_transfer.py"
+      - "bean/tests/test_external_elec2_conditional_baseline.py"
+      - "bean/tests/test_external_elec2_source_blind.py"
       - ".github/workflows/bean-negative-transfer-controls.yml"
   workflow_dispatch:
 
@@ -32,12 +34,22 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - name: Native paired baseline, counterfactual, feedback and stochastic drift tests
-        run: python -m unittest -v bean.tests.test_cross_domain_negative_transfer bean.tests.test_cross_domain_counterfactual_twins bean.tests.test_cross_domain_feedback_gate bean.tests.test_cross_domain_drift_probes bean.tests.test_cross_domain_stochastic_drift bean.tests.test_cross_domain_oracle_firewall bean.tests.test_cross_domain_budget_matched bean.tests.test_external_elec2_transfer
+        run: python -m unittest -v bean.tests.test_cross_domain_negative_transfer bean.tests.test_cross_domain_counterfactual_twins bean.tests.test_cross_domain_feedback_gate bean.tests.test_cross_domain_drift_probes bean.tests.test_cross_domain_stochastic_drift bean.tests.test_cross_domain_oracle_firewall bean.tests.test_cross_domain_budget_matched bean.tests.test_external_elec2_transfer bean.tests.test_external_elec2_conditional_baseline bean.tests.test_external_elec2_source_blind
       - name: Independent Elec2 stream probe (external public data, Ubuntu 3.12 only)
         if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.12'
         env:
           BEAN_EXTERNAL_STREAM: "1"
         run: python -m unittest -v bean.tests.test_external_elec2_transfer.ExternalElec2Controls.test_independent_elec2_stream
+      - name: Independent Elec2 conditional-frequency control (same feedback budget, Ubuntu 3.12 only)
+        if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.12'
+        env:
+          BEAN_EXTERNAL_STREAM: "1"
+        run: python -m unittest -v bean.tests.test_external_elec2_conditional_baseline.ConditionalFrequencyControls.test_independent_elec2_conditional_control
+      - name: Independent Elec2 source-blind temporal controls (same feedback budget, Ubuntu 3.12 only)
+        if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.12'
+        env:
+          BEAN_EXTERNAL_STREAM: "1"
+        run: python -m unittest -v bean.tests.test_external_elec2_source_blind.SourceBlindControls.test_external_elec2_source_blind_comparisons
       - name: Save full synthetic case-level receipts
         shell: bash
         run: |
@@ -50,6 +62,8 @@ jobs:
           python -m bean.tests.test_cross_domain_budget_matched --report > budget-matched-receipt.json
           if [[ "$RUNNER_OS" == "Linux" && "${{ matrix.python-version }}" == "3.12" ]]; then
             python -m bean.tests.test_external_elec2_transfer --report > external-elec2-receipt.json
+            python -m bean.tests.test_external_elec2_conditional_baseline --report > conditional-elec2-receipt.json
+            python -m bean.tests.test_external_elec2_source_blind --report > source-blind-elec2-receipt.json
           fi
       - uses: actions/upload-artifact@v4
         with:
@@ -63,4 +77,6 @@ jobs:
             oracle-firewall-receipt.json
             budget-matched-receipt.json
             external-elec2-receipt.json
+            conditional-elec2-receipt.json
+            source-blind-elec2-receipt.json
           retention-days: 14
