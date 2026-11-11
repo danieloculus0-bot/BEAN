@@ -161,3 +161,19 @@ def test_cross_session_feedback_is_recalled_without_weight_training(tmp_path):
         assert result["final_status"] == "unverified"
     finally:
         core.close()
+
+
+def test_bean_may_end_when_self_satisfied_but_is_not_visual_verification(tmp_path):
+    satisfied = ('{"claimed_subject":"bicycle","changes":"none",'
+                 '"satisfied":true}')
+    model = FakeModel([plan(), drawing(), satisfied])
+    core = NativeReasoningService(tmp_path / "core.db", model=model)
+    try:
+        result = SketchLab(core).run(
+            task_ref="self-satisfied", output_dir=tmp_path, max_attempts=4,
+            backend="stdlib")
+        assert result["attempts"] == 1
+        assert result["final_status"] == "self_reported_satisfactory_unverified"
+        assert result["visual_success_independently_verified"] is False
+    finally:
+        core.close()
