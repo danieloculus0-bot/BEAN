@@ -224,6 +224,13 @@ def _summary(records, *, new_evaluation):
                 "learning_status": record["learning_status"],
                 "prior_generation_transfer_correct":
                     record["prior_generation_transfer_correct"],
+                # Missing transfer evidence is not a failed experiment. Keep
+                # the numeric field null, and annotate missingness separately.
+                "incomplete_fields": ({
+                    "prior_generation_transfer_correct": (
+                        "N/A" if record["generation"] == 1 else "Unknown")
+                } if record["prior_generation_transfer_correct"] is None
+                   else {}),
                 "evaluation_sha256": record["evaluation_sha256"],
                 "learning_receipt_id": record["learning_receipt_id"],
             } for record in records
