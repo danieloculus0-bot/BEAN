@@ -72,6 +72,10 @@ def test_actual_feedback_blind_controls_and_durable_restart(tmp_path):
     assert len(rows) == 2 * len(FAMILIES)
     assert all(r["prior_generation_transfer_correct"] is not None
                for r in rows if r["generation"] == 2)
+    for family in FAMILIES:
+        assert second["families"][family]["prior_generation_transfer_attempted"] is not None
+        assert second["families"][family]["prior_generation_transfer_attempted"] <= len(BLIND)
+        assert "prior_generation_transfer_attempted" not in second["families"][family]["incomplete_fields"]
 
 
 def test_existing_checkpoint_roundtrip_preserves_scored_rules(tmp_path):
@@ -188,6 +192,10 @@ def test_unavailable_transfer_evidence_is_not_a_progress_gate(tmp_path):
             "prior_generation_transfer_correct": "N/A"}
         assert skipped_parent["families"][family]["prior_generation_transfer_correct"] is None
         assert skipped_parent["families"][family]["incomplete_fields"] == {
-            "prior_generation_transfer_correct": "Unknown"}
+            "prior_generation_transfer_correct": "Unknown",
+            "prior_generation_transfer_attempted": "Unknown"}
+        assert skipped_parent["families"][family]["prior_generation_transfer_attempted"] is None
+        assert first["families"][family]["prior_generation_transfer_attempted"] is None
+        assert first["families"][family]["incomplete_fields"]["prior_generation_transfer_attempted"] == "N/A"
     assert first["blind_cases_total"] == skipped_parent["blind_cases_total"] == 144
     assert skipped_parent["new_evaluation"] is True
