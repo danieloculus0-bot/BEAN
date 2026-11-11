@@ -138,3 +138,26 @@ def test_model_required_and_online_off_by_default(tmp_path):
             SketchLab(core).run(task_ref="no-model", output_dir=tmp_path)
     finally:
         core.close()
+
+
+def test_cross_session_feedback_is_recalled_without_weight_training(tmp_path):
+    db = tmp_path / "durable-core.db"
+    first = FakeModel([plan("an old house"), drawing(), review()])
+    core = NativeReasoningService(db, model=first)
+    try:
+        SketchLab(core).run(task_ref="first-sketch", output_dir=tmp_path / "one",
+                            max_attempts=1, backend="stdlib")
+    finally:
+        core.close()
+    second = FakeModel([plan("a new sailboat"), drawing(), review()])
+    core = NativeReasoningService(db, model=second)
+    try:
+        result = SketchLab(core).run(task_ref="second-sketch",
+                                    output_dir=tmp_path / "two",
+                                    max_attempts=1, backend="stdlib")
+        assert result["subject_chosen_by_BEAN_model"] == "a new sailboat"
+        assert "an old house" in second.requests[0]
+        assert "add handlebars" in second.requests[0]
+        assert result["final_status"] == "unverified"
+    finally:
+        core.close()
