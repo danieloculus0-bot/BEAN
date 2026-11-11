@@ -83,6 +83,25 @@ def eligible(train, test):
         sha256((SEED + ":" + c).encode()).hexdigest(), c))
 
 
+def paired_exact_test(deltas):
+    """Two-sided exact paired sign test, conditional on discordant cases.
+
+    Ties and joint failures carry no directional evidence. No asymptotic
+    approximation or independent-case fiction for paired policy outputs.
+    """
+    if not isinstance(deltas, list) or any(type(x) is not int or x not in (-1, 0, 1)
+                                            for x in deltas):
+        raise ValueError("Expected paired integer differences in {-1,0,1}")
+    from math import comb
+    wins = deltas.count(1)
+    losses = deltas.count(-1)
+    n = wins + losses
+    p = min(1.0, 2.0 * sum(comb(n, k) for k in range(min(wins, losses) + 1)) / (2 ** n)) if n else 1.0
+    return {"wins": wins, "losses": losses, "ties": deltas.count(0),
+            "discordant": n, "exact_two_sided_p": p,
+            "candidate_superiority_at_0_05": wins > losses and p < 0.05}
+
+
 def audit(report, sources, hashes):
     if report.get("schema") != SCHEMA or report.get("selection_seed") != SEED:
         raise ValueError("Schema or selection seed changed")
@@ -161,7 +180,9 @@ def audit(report, sources, hashes):
             or paired_phrase != report["paired_learned_minus_phrase"]
             or failures != report["candidate_failures"]):
         raise ValueError("Aggregate scores or negative evidence mismatch")
-    return {"cases_verified": len(rows), "eligible_pool": len(candidates),
+    return {"paired_learned_vs_blind": paired_exact_test(paired_blind),
+            "paired_learned_vs_phrase": paired_exact_test(paired_phrase),
+            "cases_verified": len(rows), "eligible_pool": len(candidates),
             "scores": scores, "coverage": coverage,
             "candidate_failures_preserved": len(failures),
             "case_receipts_sha256": report["case_receipts_sha256"]}
@@ -175,6 +196,18 @@ class IndependentAuditControls(unittest.TestCase):
                 "walk after walk": "I_WALK I_WALK"}
         self.assertEqual(set(eligible(train, test)),
                          {"walk after run", "run after walk"})
+
+    def test_exact_paired_uncertainty_and_negative_controls(self):
+        self.assertEqual(paired_exact_test([0] * 96)["exact_two_sided_p"], 1.0)
+        self.assertFalse(paired_exact_test([1] * 4 + [-1] * 4)["candidate_superiority_at_0_05"])
+        strong = paired_exact_test([1] * 8 + [0] * 88)
+        self.assertEqual(strong["wins"], 8)
+        self.assertEqual(strong["discordant"], 8)
+        self.assertAlmostEqual(strong["exact_two_sided_p"], 2 / 256)
+        self.assertTrue(strong["candidate_superiority_at_0_05"])
+        self.assertFalse(paired_exact_test([-1] * 8)["candidate_superiority_at_0_05"])
+        with self.assertRaises(ValueError):
+            paired_exact_test([True])
 
     def test_digest_detects_mutation(self):
         row = {"command": "walk after run", "correct": {"learned": True}}
