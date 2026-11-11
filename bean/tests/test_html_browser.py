@@ -5,6 +5,7 @@ All fixtures are fully synthetic; no private pages or network destinations.
 from __future__ import annotations
 
 import asyncio
+from importlib.util import find_spec
 from pathlib import Path
 import os
 import shutil
@@ -15,6 +16,8 @@ from unittest.mock import patch
 from bean.integration.html_browser import inspect_html
 
 
+@unittest.skipUnless(find_spec("playwright") is not None,
+                     "Optional Playwright runtime absent; exercised by dedicated browser CI")
 class LocalHtmlBrowserTests(unittest.TestCase):
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory()
@@ -148,6 +151,8 @@ class LocalHtmlBrowserTests(unittest.TestCase):
                 inspect_html(str(self.doc))
 
 
+@unittest.skipUnless(find_spec("playwright") is not None and find_spec("mcp") is not None,
+                     "Optional Playwright/MCP runtimes absent; exercised by dedicated browser CI")
 class LocalHtmlMcpContractTests(unittest.TestCase):
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory()
