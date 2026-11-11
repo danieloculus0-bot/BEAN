@@ -80,6 +80,31 @@ class LocalHtmlBrowserTests(unittest.TestCase):
         self.assertEqual(after["actions_performed"], 2)
         self.assertNotEqual(before["dom_sha256"], after["dom_sha256"])
 
+    def test_authorized_file_picker_reads_local_csv_without_private_write(self):
+        csv_path = self.root / "fake.csv"
+        csv_path.write_text("Item,Qty\nWidget,3\n", encoding="utf-8")
+        page = self.root / "file-picker.html"
+        page.write_text(
+            """<!doctype html><title>Picker</title><button id="open">Open</button>
+            <p id="loaded">Unloaded</p><script>
+            document.getElementById('open').addEventListener('click', () => {
+              const input = document.createElement('input');
+              input.type = 'file';
+              input.onchange = async () => {
+                document.getElementById('loaded').textContent =
+                  (await input.files[0].text()).trim();
+              };
+              input.click();
+            });
+            </script>""", encoding="utf-8",
+        )
+        result = inspect_html(str(page), execute_scripts=True,
+                              actions=[{"type": "choose_file", "selector": "#open",
+                                        "value": str(csv_path)}], wait_ms=200)
+        self.assertIn("Widget,3", result["rendered_text"])
+        self.assertEqual(result["actions_performed"], 1)
+        self.assertEqual(csv_path.read_text(encoding="utf-8"), "Item,Qty\nWidget,3\n")
+
     def test_restricts_root_network_and_action_inputs(self):
         outside = self.root.parent / "unapproved-html-fixture.html"
         # No need to create outside the root; access must fail before browser.
