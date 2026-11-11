@@ -27,6 +27,45 @@ _MAX_EVIDENCE = 12
 _IDENT = re.compile(r"^[a-z][a-z0-9_.-]{1,79}$")
 
 
+_PUBLIC_AUTHORITY = re.compile(r"\b(?:independently\s+)?(?:authenticated|verified|certified)\b", re.I)
+_PUBLIC_PROOF = re.compile(r"\b(?:prove|proves|proven|compliant|ready\s+for\s+deployment)\b", re.I)
+_PUBLIC_BEAN_LEARNING = re.compile(
+    r"\bbean\b.{0,140}\b(?:learned|trained|achieved\s+(?:autonomous|general)\s+learning)\b", re.I,
+)
+
+# These are advisory public-MCP claim flags. The backend cannot authenticate
+# submitted source labels, confirm deployment or prove any learner-state update.
+# Do not reinterpret an unchecked source reference as evidence of truth.
+def _public_claim_limitations(claim: str) -> list[str]:
+    flags: list[str] = []
+    if _PUBLIC_AUTHORITY.search(claim) and _PUBLIC_PROOF.search(claim):
+        flags.append("external_verification_claim_unauthenticated")
+    if _PUBLIC_BEAN_LEARNING.search(claim):
+        flags.append("bean_learning_claim_unverified")
+    return flags
+
+
+# Look ONLY at the proposed action steps, not uncertainty statements describing
+# risks to avoid. Never authorize, execute, or silently modify the proposal.
+_PUBLIC_ACTION_RISKS = (
+    ("suppressed_discrepant_evidence",
+     r"^\s*(?:ignore|suppress|discard|hide|omit)\b.*\b(?:conflicting|contradictory|discrepant|failed|failing|measurement|evidence)\b"),
+    ("duplicated_evidence_as_independent",
+     r"^\s*treat\b.*\b(?:duplicate|duplicated|copied|copies|reproduced)\b.*\b(?:independent|verified|authenticated)\b"),
+    ("unreviewed_automatic_certification",
+     r"^\s*(?:automatically\s+)?(?:publish|certify|approve)\b.*\b(?:pass|certification|certified|compliant)\b"),
+    ("claimed_learning_without_update",
+     r"^\s*(?:record|claim|declare|report)\b.*\b(?:learning|learned|training|trained)\b.*\bwithout\b.*\b(?:update|feedback|evaluation|receipt)\b"),
+    ("deployment_without_evaluation",
+     r"^\s*deploy\b.*\bwithout\b.*\b(?:independent|evaluation|review|testing|test)\b"),
+)
+
+
+def _public_proposal_risks(steps: list[str]) -> list[str]:
+    return sorted({code for code, pattern in _PUBLIC_ACTION_RISKS
+                   if any(re.search(pattern, step, re.I) for step in steps)})
+
+
 def _text(value: str, name: str, limit: int) -> str:
     if not isinstance(value, str) or not 1 <= len(value.strip()) <= limit:
         raise ValueError(f"{name} must contain 1..{limit} characters")
@@ -87,12 +126,20 @@ def audit_claim(
             ),
             persist=False,
         )
+    public_flags = _public_claim_limitations(claim)
+    verdict = ("downgraded" if review.verdict.value == "approved" and public_flags
+               else review.verdict.value)
+    reasons = [x for x in review.reasons if x != "claim_passed_guard"]
+    reasons.extend(flag for flag in public_flags if flag not in reasons)
     return {
         "schema": "bean.plugin.claim_audit.v1",
-        "heuristic_verdict": review.verdict.value,
-        "model_advice": ("revise_or_verify" if review.verdict.value != "approved" else "preliminary_only"),
-        "flags": review.reasons,
-        "suggested_reframe": review.repaired_content,
+        "heuristic_verdict": verdict,
+        "model_advice": ("revise_or_verify" if verdict != "approved" else "preliminary_only"),
+        "flags": reasons or ["claim_passed_guard"],
+        "suggested_reframe": (review.repaired_content or
+                              ("Reported assertion, not independently verified. "
+                               "Confirm original evidence and any actual learner update."
+                               if public_flags else None)),
         "reported_source_count": len(refs) + (1 if source_ref else 0),
         "source_authentication": "not_performed",
         "truth_verification": "not_performed",
@@ -185,6 +232,13 @@ def screen_proposal(summary: str, steps: list[str], evidence_refs: list[str] | N
         "evidence_refs": refs,
         "uncertainties": unknowns,
     })
+    # Retain the existing Core filter and annotate public-MCP evidence risks.
+    # This does not confer action authorization or install a new Core policy.
+    extra_risks = _public_proposal_risks(steps)
+    for row in checked:
+        if row["filter_name"] == "action_risk":
+            row["reasons"] = sorted(set(row["reasons"]) | set(extra_risks))
+            row["passed"] = not row["reasons"]
     return {
         "schema": "bean.plugin.proposal_screen.v1",
         "passed_basic_heuristics": all(row["passed"] for row in checked),
