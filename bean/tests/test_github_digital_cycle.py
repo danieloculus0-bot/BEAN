@@ -228,3 +228,26 @@ def test_measured_transfer_denominator_survives_core_reopen(tmp_path):
     assert repeated["source_evidence_sha256"] == second["source_evidence_sha256"]
     assert repeated["families"] == second["families"]
     assert len(_evaluations(db)) == 2 * len(FAMILIES)
+
+
+def test_legacy_transfer_receipt_marks_only_missing_denominator_unknown(tmp_path):
+    """Old receipts can have measured correctness but no attempt coverage."""
+    from bean.evaluation.github_digital_cycle import _summary
+
+    db = tmp_path / "reasoning.sqlite3"
+    run_scored_digital_cycle(db, generation=1, source_sha="local-validation")
+    run_scored_digital_cycle(db, generation=2, source_sha="local-validation")
+    original = [row for row in _evaluations(db) if row["generation"] == 2]
+    legacy = [{k: v for k, v in row.items()
+               if k != "prior_generation_transfer_attempted"}
+              for row in original]
+    before = _evaluations(db)
+    summary = _summary(legacy, new_evaluation=False)
+    for family in FAMILIES:
+        item = summary["families"][family]
+        assert item["prior_generation_transfer_correct"] is not None
+        assert item["prior_generation_transfer_attempted"] is None
+        assert item["incomplete_fields"] == {
+            "prior_generation_transfer_attempted": "Unknown"}
+    # Summarizing historical evidence never rewrites or repairs its SHA journal.
+    assert _evaluations(db) == before
