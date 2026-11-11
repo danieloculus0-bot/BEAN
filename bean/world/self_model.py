@@ -144,10 +144,57 @@ class SelfModel:
         return claims
 
     def _derive_uncertainties(self) -> list[Claim]:
-        return [
-            make_claim("self.uncertainty.no_sensor_feedback", "I cannot confirm actual joint positions. Joint positions are estimated from last commanded values only.", ClaimCategory.UNCERTAINTY, ClaimSource.BOOTSTRAP, 1.0),
-            make_claim("self.uncertainty.no_hardware_motion", "I have not executed motion on real hardware yet. All motion so far has been simulated.", ClaimCategory.UNCERTAINTY, ClaimSource.BOOTSTRAP, 1.0),
-        ]
+        """Describe logged feedback, not a permanent absence of hardware ability.
+
+        A caller-labelled sensor event is evidence that a report exists, not
+        independent proof of physical motion or calibrated position. Ignore
+        corrected/superseded events so future observations can revise beliefs.
+        """
+        feedback = (
+            (
+                "self.uncertainty.no_sensor_feedback",
+                "joint_position_feedback",
+                "No sensor-sourced joint-position feedback is recorded; my actual joint positions remain unverified.",
+                "Sensor-sourced joint-position feedback is recorded, but its physical accuracy remains unverified.",
+            ),
+            (
+                "self.uncertainty.no_hardware_motion",
+                "physical_motion_feedback",
+                "No sensor-sourced physical-motion confirmation is recorded; I cannot establish that real motion occurred.",
+                "Sensor-sourced physical-motion feedback is recorded, but independent confirmation of real motion is unavailable.",
+            ),
+        )
+        claims: list[Claim] = []
+        for key, subtype, absent_text, present_text in feedback:
+            event = self._fetchone(
+                """
+                SELECT id, event_uuid FROM events
+                WHERE event_type = 'sensor_reading'
+                  AND source = 'sensor'
+                  AND subtype = ?
+                  AND superseded_by IS NULL
+                ORDER BY id DESC LIMIT 1
+                """,
+                (subtype,),
+            )
+            receipt_ref = f"event:{event['event_uuid']}" if event else None
+            claims.append(
+                make_claim(
+                    key,
+                    present_text if event else absent_text,
+                    ClaimCategory.UNCERTAINTY,
+                    ClaimSource.EVENT_LOG,
+                    1.0,
+                    {
+                        "status": "reported_unverified" if event else "not_recorded",
+                        "last_event_id": event["id"] if event else None,
+                        "independently_verified": False,
+                    },
+                    source_ref=receipt_ref,
+                    evidence=[receipt_ref] if receipt_ref else [],
+                )
+            )
+        return claims
 
     def _fetchone(self, sql: str, params=()):
         from ..memory.store import get_store
