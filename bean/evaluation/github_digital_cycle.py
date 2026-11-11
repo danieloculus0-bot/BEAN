@@ -224,13 +224,22 @@ def _summary(records, *, new_evaluation):
                 "learning_status": record["learning_status"],
                 "prior_generation_transfer_correct":
                     record["prior_generation_transfer_correct"],
+                # Attempted-case coverage is a distinct denominator. A score
+                # without it cannot establish transfer success or failure.
+                "prior_generation_transfer_attempted":
+                    record.get("prior_generation_transfer_attempted"),
                 # Missing transfer evidence is not a failed experiment. Keep
                 # the numeric field null, and annotate missingness separately.
-                "incomplete_fields": ({
-                    "prior_generation_transfer_correct": (
-                        "N/A" if record["generation"] == 1 else "Unknown")
-                } if record["prior_generation_transfer_correct"] is None
-                   else {}),
+                "incomplete_fields": {
+                    **({"prior_generation_transfer_correct": (
+                        "N/A" if record["generation"] == 1 else "Unknown")}
+                       if record["prior_generation_transfer_correct"] is None
+                       else {}),
+                    **({"prior_generation_transfer_attempted": (
+                        "N/A" if record["generation"] == 1 else "Unknown")}
+                       if record.get("prior_generation_transfer_attempted") is None
+                       else {}),
+                },
                 "evaluation_sha256": record["evaluation_sha256"],
                 "learning_receipt_id": record["learning_receipt_id"],
             } for record in records
