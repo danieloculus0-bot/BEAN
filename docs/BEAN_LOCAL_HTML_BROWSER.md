@@ -12,7 +12,7 @@ This is not part of the public Render/ChatGPT MCP evidence service.
 - Returns bounded source and rendered DOM excerpts, SHA-256 identifiers,
   visible text, page title, script snippets and linked script references,
   console output, page errors, blocked requests and action receipts.
-- Supports up to eight bounded click/fill actions per call.
+- Supports up to eight bounded click, fill, and file-picker actions per call. A file picker reads only a selected file under BEAN_HTML_ROOT (10 MB limit); it does not save or overwrite the source.
 - integrations/chatgpt/local_html_server.py: two Streamable HTTP MCP tools,
   bean_html_inspect and bean_html_run. Runs browser work in a worker thread
   rather than blocking the MCP event loop.
@@ -51,15 +51,16 @@ or direct Python shell/file write API.
     python -m unittest bean.tests.test_html_browser -v
 
 The synthetic Chromium tests check disabled and enabled page JavaScript,
-script visibility, actual linked-script evaluation, fill and click actions,
+script visibility, linked local source inspection, actual linked-script evaluation,
+fill, click and authorized CSV file-picker actions,
 network request blocking, root confinement and MCP SDK tool invocation.
 The exact-head Actions outcome is reported by the PR, not assumed here.
 
 ## Known boundaries
 
 This is a bounded first browser tool, not a full agent browser or full
-desktop UI. Persistent interactive sessions, file-picker automation,
-download/save-back, screenshots, external account credentials, or arbitrary
+desktop UI. Persistent interactive sessions, download/save-back, screenshots,
+external account credentials, or arbitrary
 user JavaScript evaluation are not exposed by these first two tools.
 Scripts can be read and executed in an isolated browser; the calling model
 must still reason about code and inspect outcomes.
