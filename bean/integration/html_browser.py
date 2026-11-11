@@ -234,6 +234,19 @@ def inspect_html(target: str, *, execute_scripts: bool = False,
                 # site-authored JS execution; verified in the browser test.
                 dom = page.content()
                 rendered = page.locator("body").inner_text(timeout=3000) if page.locator("body").count() else ""
+                # Spreadsheet and form values live in input.value, not
+                # body.innerText or serialized HTML attributes.
+                controls = page.locator("input, textarea, select").evaluate_all(
+                    """nodes => nodes.slice(0, 150).map(node => ({
+                        tag: node.tagName.toLowerCase(),
+                        type: node.type || '',
+                        id: (node.id || '').slice(0, 100),
+                        label: (node.getAttribute('aria-label') || '').slice(0, 100),
+                        value: node.type === 'password' ? '[REDACTED]' :
+                          node.type === 'file' ? '[FILE PICKER]' :
+                          String(node.value || '').slice(0, 250)
+                    }))"""
+                )
                 return {
                     "schema": "bean.local.html_browser.v1",
                     "scope": "local_isolated_browser",
@@ -246,6 +259,7 @@ def inspect_html(target: str, *, execute_scripts: bool = False,
                     "rendered_text": rendered[:MAX_RESULT_CHARS],
                     "dom_excerpt": dom[:MAX_RESULT_CHARS],
                     "dom_sha256": sha256(dom.encode("utf-8")).hexdigest(),
+                    "form_controls": controls,
                     "scripts": scripts,
                     "script_count_visible": page.locator("script").count(),
                     "actions_performed": len(steps),
