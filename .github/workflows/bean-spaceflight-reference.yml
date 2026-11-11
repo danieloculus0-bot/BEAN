@@ -1,0 +1,64 @@
+name: BEAN Experimental Spaceflight Physics
+
+on:
+  push:
+    branches:
+      - experiment/spaceflight-reference-20261028
+    paths:
+      - "bean/engineering/spaceflight.py"
+      - "bean/engineering/two_body.py"
+      - "bean/runtime/inbox_handlers.py"
+      - "bean/runtime/inbox.py"
+      - "bean/tests/test_spaceflight_reference.py"
+      - "bean/tests/test_two_body_propagation.py"
+      - "bean/tests/test_spaceflight_inbox.py"
+      - "research/spaceflight/**"
+      - ".github/workflows/bean-spaceflight-reference.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "bean/engineering/spaceflight.py"
+      - "bean/engineering/two_body.py"
+      - "bean/runtime/inbox_handlers.py"
+      - "bean/runtime/inbox.py"
+      - "bean/tests/test_spaceflight_reference.py"
+      - "bean/tests/test_two_body_propagation.py"
+      - "bean/tests/test_spaceflight_inbox.py"
+      - "research/spaceflight/**"
+      - ".github/workflows/bean-spaceflight-reference.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  reference-physics:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        python-version: ["3.10", "3.12"]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Compile deterministic reference modules and receipt generator
+        run: |
+          python -m compileall -q bean/engineering/spaceflight.py bean/engineering/two_body.py bean/tests/test_spaceflight_reference.py bean/tests/test_two_body_propagation.py research/spaceflight/ci_receipt.py bean/runtime/inbox_handlers.py bean/runtime/inbox.py bean/tests/test_spaceflight_inbox.py
+      - name: Verify physics and generate source-hashed evidence receipt
+        run: python -m research.spaceflight.ci_receipt --output spaceflight_receipt.json
+      - name: Exercise Mars calculation interface
+        run: python -m bean.engineering.spaceflight --demo mars
+      - name: Archive per-platform verification receipt, including failures
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: spaceflight-receipt-${{ matrix.os }}-py${{ matrix.python-version }}
+          path: spaceflight_receipt.json
+          retention-days: 30
+          if-no-files-found: warn
