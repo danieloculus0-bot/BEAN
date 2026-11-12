@@ -11,6 +11,7 @@ import argparse
 from hashlib import sha256
 import json
 import os
+import random
 from pathlib import Path
 import shutil
 import sys
@@ -22,7 +23,8 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
-from bean.evaluation.github_digital_cycle import FAMILIES, _hash, _prior_evaluations, run_scored_digital_cycle
+from bean.evaluation.active_abstraction_benchmark import World
+from bean.evaluation.github_digital_cycle import BLIND, FAMILIES, _hash, _prior_evaluations, run_scored_digital_cycle
 from bean.learning.reasoning_service import NativeReasoningService
 from scripts.invoke_bean import invoke, unpack
 
@@ -75,6 +77,54 @@ def coverage_metrics(families: dict, cases_per_family: int = 48) -> dict:
             "families": per_family,
         }
     return result
+
+
+def nonlearning_controls(generation: int) -> dict:
+    """Score fixed-label and pre-seeded random actions on blind worlds.
+
+    This is an evaluator-only diagnostic computed AFTER real BEAN Core learning,
+    not extra training, a new journal, or an oracle/majority-label policy. All
+    controls attempt every case and use zero reward calls and zero fitting.
+    The established all-zero comparator is retained separately in Core receipts.
+    """
+    if type(generation) is not int or generation < 1:
+        raise ValueError("invalid simulation generation")
+    controls = ("always_negative", "always_positive", "uniform_random")
+    totals = {name: 0 for name in controls}
+    families = {}
+    for family_index, family in enumerate(FAMILIES):
+        world_id = 100000 + generation * 100 + family_index
+        world = World(world_id, family)
+        rng = random.Random(world_id * 8191 + 17)
+        ground_truth = [world.correct_action(case) for case in BLIND]
+        counts = {str(label): ground_truth.count(label) for label in (-1, 0, 1)}
+        scores = {
+            "always_negative": counts["-1"],
+            "always_positive": counts["1"],
+            "uniform_random": sum(
+                rng.choice((-1, 0, 1)) == truth for truth in ground_truth),
+        }
+        if sum(counts.values()) != len(BLIND):
+            raise AssertionError("invalid blind truth-label partition")
+        for name in controls:
+            if not 0 <= scores[name] <= len(BLIND):
+                raise AssertionError("invalid nonlearning control score")
+            totals[name] += scores[name]
+        families[family] = {
+            "world_id": world_id,
+            "blind_truth_label_counts": counts,
+            "correct": scores,
+            "attempted": len(BLIND),
+        }
+    return {
+        "mode": "evaluator_only_post_learning",
+        "probes_or_reward_calls": 0,
+        "seed_rule": "world_id * 8191 + 17",
+        "all_case_attempts_per_control": len(BLIND) * len(FAMILIES),
+        "correct_totals": totals,
+        "families": families,
+        "note": "No training-derived majority label; fixed and uniform-random baselines, not AGI evidence.",
+    }
 
 
 def run_simulations(source: Path) -> dict:
@@ -162,6 +212,7 @@ def run_simulations(source: Path) -> dict:
                     digital["passive_correct_total"]),
                 "families": digital["families"],
                 "coverage_metrics": coverage_metrics(digital["families"]),
+                "nonlearning_controls": nonlearning_controls(receipt["generation"]),
             }
             for family, data in summary["families"].items():
                 correct = data["prior_generation_transfer_correct"]
