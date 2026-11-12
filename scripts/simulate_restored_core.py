@@ -206,6 +206,9 @@ def run_simulations(source: Path) -> dict:
 
         if (source / "manifest.json").read_bytes() != raw_original:
             raise AssertionError("source checkpoint manifest was modified")
+        for archive_name, original_hash in compressed_hashes.items():
+            if sha256((source / archive_name).read_bytes()).hexdigest() != original_hash:
+                raise AssertionError("source checkpoint archive was modified")
 
         return {
             "schema": "bean.github.restored_core_paired_sim.v1",
