@@ -1,16 +1,16 @@
 {
-  "boots": 24,
+  "boots": 25,
   "consciousness_proven": false,
   "databases": {
     "core": {
-      "archive": "bean_memory.sqlite3.gz.g00024",
-      "bytes": 4616192,
-      "sha256": "8fdebf848a515e69a41d54f6fd72ea7498e9008dad0f9b39d42992d3f11064af"
+      "archive": "bean_memory.sqlite3.gz.g00025",
+      "bytes": 4784128,
+      "sha256": "2b4f96ee5545fcc311fb9249f9fb98f33c910084a87a75ff3435ba77b02b4b9c"
     },
     "reasoning": {
-      "archive": "bean_reasoning.sqlite3.gz.g00024",
-      "bytes": 405504,
-      "sha256": "d0684e11162962f61dbfd3bbfea5c61dfd15cb44cad4843aee22b4c640588672"
+      "archive": "bean_reasoning.sqlite3.gz.g00025",
+      "bytes": 483328,
+      "sha256": "68e86de8dc34c0339c169ee51589cd769f9c80085dfcddfbb2ad3c338a1040ce"
     }
   },
   "digital_learning": {
@@ -30,12 +30,12 @@
           "passive": 48,
           "shuffled": 0
         },
-        "evaluation_sha256": "bb806c7339727fbeff28d4367e99559cac3d5018ec84dd498dba8ec6142265e0",
+        "evaluation_sha256": "c0cee3ddb332ed6a74451cfa13284fc162bbf577c589969a7ccea8111556602c",
         "incomplete_fields": {},
-        "learning_receipt_id": "72b1b67ac25d62b9715b420e2416d900f33de7285b8cad3ced2dcb7246c1a61a",
+        "learning_receipt_id": "3e843d413e064600e2f1e9ebbc76e6a695803d415007226f4e338602d349e22a",
         "learning_status": "provisional_rule",
         "prior_generation_transfer_attempted": 48,
-        "prior_generation_transfer_correct": 23
+        "prior_generation_transfer_correct": 25
       },
       "difference": {
         "abstentions": {
@@ -49,12 +49,12 @@
           "passive": 48,
           "shuffled": 0
         },
-        "evaluation_sha256": "d8dda4f0fae533825e287e45ded0cdfab00125c9a5bc0f02f60191f3662b6bfe",
+        "evaluation_sha256": "6d365f616c4d64dd73519d1fb77ecababfa3adf6334b8023e2a3907c8a0d0781",
         "incomplete_fields": {},
-        "learning_receipt_id": "10c38c1f710b33bb37a00b2d5935840aa8b96b61b7080511e2e8071db5ee4897",
+        "learning_receipt_id": "8364503098f5be6e11f09ac66c382f8c15906888e285cd5503a07a4e66b277d5",
         "learning_status": "provisional_rule",
         "prior_generation_transfer_attempted": 48,
-        "prior_generation_transfer_correct": 22
+        "prior_generation_transfer_correct": 21
       },
       "parity": {
         "abstentions": {
@@ -68,35 +68,35 @@
           "passive": 0,
           "shuffled": 0
         },
-        "evaluation_sha256": "05063f562337a0963154870b758f73e6948209b70bdeaf2b8b919e598bb55615",
+        "evaluation_sha256": "2572176dfca8a68a5a03b4d5f421f0dafbb2e9f570f38b831661d04a324b38ca",
         "incomplete_fields": {},
-        "learning_receipt_id": "95da66647dd22e6c97b3bb6b52d2b9daa0710da1a6f94ca45c6e4e8188ec5c4a",
+        "learning_receipt_id": "f8206bbae218c0f08a06b8f28594dabbf8a30a4cff3406bad394b0398532f39d",
         "learning_status": "abstain",
         "prior_generation_transfer_attempted": 0,
         "prior_generation_transfer_correct": 0
       }
     },
-    "generation": 24,
+    "generation": 25,
     "independently_audited": false,
     "new_evaluation": true,
     "passive_correct_total": 96,
     "schema": "bean.github.digital_feedback.v1",
     "scope": "synthetic_numeric_control_not_general_intelligence",
     "shuffled_correct_total": 0,
-    "source_evidence_sha256": "bbc29f591151e595e80e7e9102bfaa41e7e779f758af3cc71a9861a698b9f0a9",
-    "source_sha": "d5f2f0f71d1f12cce0fc5abe95b659335a41ddc5"
+    "source_evidence_sha256": "594ef803abec859da906f86571829047c3795b5dc467f87925141f4b1f42b100",
+    "source_sha": "38778447e57f1652c54789a079d2423cbaa63046"
   },
-  "events": 788,
-  "generation": 24,
+  "events": 822,
+  "generation": 25,
   "github_run_attempt": "1",
-  "github_run_id": "43134715134",
+  "github_run_id": "43193760077",
   "model_weights_trained": false,
-  "previous_receipt_sha256": "a05f736b6d6f3e51f8439f79803b13dd4752655d0b1229161fafd6f7b57c584d",
+  "previous_receipt_sha256": "9d0b898687e5641a494e35398a4f92ea98d5ff9bfbf4782b49d884279c58ce6a",
   "processed_digital_commands": 2,
-  "receipt_sha256": "9d0b898687e5641a494e35398a4f92ea98d5ff9bfbf4782b49d884279c58ce6a",
+  "receipt_sha256": "a592e01e6603824cf1dfab0f642eadcd2e4cd7cbafde2a5ce0a8c5b63d493252",
   "schema": "bean.github.invoke.v1",
   "scope": "synthetic digital Core runtime and restart continuity, not subjective experience",
-  "source_sha": "d5f2f0f71d1f12cce0fc5abe95b659335a41ddc5",
+  "source_sha": "38778447e57f1652c54789a079d2423cbaa63046",
   "synthetic_only": true,
   "ticks": 12
 }
