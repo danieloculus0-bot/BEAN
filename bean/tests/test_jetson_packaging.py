@@ -72,6 +72,7 @@ def test_render_rejects_unrecognized_username():
         render_template("service", dict(VALUES, BEAN_USER="bad name"))
 
 
+@pytest.mark.skipif(os.name == "nt", reason="Windows bash may resolve to WSL without a distro; POSIX CI validates Jetson shell syntax")
 def test_jetson_installer_shell_syntax():
     if not shutil.which("bash"):
         pytest.skip("bash unavailable on this test host")
