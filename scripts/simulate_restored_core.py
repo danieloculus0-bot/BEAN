@@ -35,6 +35,48 @@ def evaluation_rows(db_path: Path) -> list[dict]:
         service.close()
 
 
+
+def coverage_metrics(families: dict, cases_per_family: int = 48) -> dict:
+    """Report attempted-case accuracy separately from all-case accuracy.
+
+    Historical SHA-linked receipts are read-only. This derives measurements
+    solely for the disposable simulation artifact, never rewriting journals.
+    """
+    if set(families) != set(FAMILIES):
+        raise ValueError("missing or unexpected scored family")
+    result = {}
+    for arm in ("candidate", "passive", "shuffled", "always_zero"):
+        correct = 0
+        attempted = 0
+        per_family = {}
+        for family in FAMILIES:
+            row = families[family]
+            hits = row["correct"][arm]
+            abstained = (0 if arm == "always_zero"
+                         else row["abstentions"][arm])
+            if (type(hits) is not int or type(abstained) is not int
+                    or not 0 <= abstained <= cases_per_family
+                    or not 0 <= hits <= cases_per_family - abstained):
+                raise ValueError("invalid accuracy or abstention counts")
+            tries = cases_per_family - abstained
+            per_family[family] = {
+                "correct": hits, "attempted": tries,
+                "coverage": tries / cases_per_family,
+                "accuracy_when_attempted": hits / tries if tries else None,
+            }
+            correct += hits
+            attempted += tries
+        total = cases_per_family * len(FAMILIES)
+        result[arm] = {
+            "correct": correct, "attempted": attempted,
+            "coverage": attempted / total,
+            "accuracy_when_attempted": correct / attempted if attempted else None,
+            "all_case_accuracy": correct / total,
+            "families": per_family,
+        }
+    return result
+
+
 def run_simulations(source: Path) -> dict:
     original_manifest_path = source / "manifest.json"
     raw_original = original_manifest_path.read_bytes()
@@ -119,6 +161,7 @@ def run_simulations(source: Path) -> dict:
                     digital["candidate_correct_total"] -
                     digital["passive_correct_total"]),
                 "families": digital["families"],
+                "coverage_metrics": coverage_metrics(digital["families"]),
             }
             for family, data in summary["families"].items():
                 correct = data["prior_generation_transfer_correct"]
