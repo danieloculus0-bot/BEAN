@@ -76,7 +76,7 @@ def test_jetson_installer_shell_syntax():
     if not shutil.which("bash"):
         pytest.skip("bash unavailable on this test host")
     for filename in ("jetson_brain_install.sh", "jetson_local_llm_install.sh", "jetson_audio_install.sh"):
-        subprocess.run(["bash", "-n", str(ROOT / "install" / filename)], check=True)
+        subprocess.run(["bash", "-n"], input=(ROOT / "install" / filename).read_bytes(), check=True)
 
 
 def test_source_wiring_inventory_uses_existing_code():
