@@ -1,7 +1,7 @@
 """Coverage-sensitive synthetic simulation metrics, independent of Core state."""
 import pytest
 
-from scripts.simulate_restored_core import coverage_metrics
+from scripts.simulate_restored_core import coverage_metrics, nonlearning_controls
 
 
 def sample():
@@ -58,3 +58,32 @@ def test_missing_family_rejected():
     del rows["parity"]
     with pytest.raises(ValueError):
         coverage_metrics(rows)
+
+
+def test_nonlearning_controls_are_reproducible_and_nonabstaining():
+    first = nonlearning_controls(26)
+    assert first == nonlearning_controls(26)
+    assert first["mode"] == "evaluator_only_post_learning"
+    assert first["probes_or_reward_calls"] == 0
+    assert first["all_case_attempts_per_control"] == 144
+    totals = {name: 0 for name in (
+        "always_negative", "always_positive", "uniform_random")}
+    assert set(first["families"]) == {"channel", "difference", "parity"}
+    for row in first["families"].values():
+        assert row["attempted"] == 48
+        counts = row["blind_truth_label_counts"]
+        assert set(counts) == {"-1", "0", "1"}
+        assert sum(counts.values()) == 48
+        assert row["correct"]["always_negative"] == counts["-1"]
+        assert row["correct"]["always_positive"] == counts["1"]
+        for control, score in row["correct"].items():
+            assert control in totals
+            assert 0 <= score <= 48
+            totals[control] += score
+    assert totals == first["correct_totals"]
+
+
+@pytest.mark.parametrize("invalid", [0, -1, True, 3.14, "26"])
+def test_nonlearning_controls_require_positive_integer_generation(invalid):
+    with pytest.raises(ValueError):
+        nonlearning_controls(invalid)
