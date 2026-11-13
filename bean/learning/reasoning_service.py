@@ -72,7 +72,7 @@ class NativeReasoningService:
     def discover_analogy(self, *, domain, task_ref, source_ref,
                          probe_ids, observe, reward, budget=12,
                          method="disagreement", seed=0,
-                         validation_probe_ids=None):
+                         validation_probe_ids=None, include_products=False):
         """Generate numeric control hypotheses and seek distinguishing evidence.
 
         No source policy or expert candidate is supplied. The callbacks are
@@ -87,7 +87,8 @@ class NativeReasoningService:
         result = discover(
             probe_ids=probe_ids, observe=observe, reward=reward,
             budget=budget, method=method, seed=seed,
-            validation_probe_ids=validation_probe_ids)
+            validation_probe_ids=validation_probe_ids,
+            include_products=include_products)
         entry = {
             "schema": "bean.adaptive_lab026.v1",
             "experiment": "bean.native.active_hypothesis.v1",
@@ -105,7 +106,8 @@ class NativeReasoningService:
     def revise_discovered_analogy(self, *, parent_receipt_id, domain, task_ref,
                                   source_ref, probe_ids, observe, reward,
                                   budget=12, method="disagreement", seed=0,
-                                  min_gain=0.08, validation_probe_ids=None):
+                                  min_gain=0.08, validation_probe_ids=None,
+                                  include_products=False):
         """Reevaluate a saved numeric rule using fresh matched host feedback.
 
         The new decision is separately journaled; the parent decision and
@@ -200,7 +202,8 @@ class NativeReasoningService:
 
         fresh = discover(probe_ids=probe_ids, observe=observe_fresh, reward=reward,
                          budget=budget, method=method, seed=seed,
-                         validation_probe_ids=validation_probe_ids)
+                         validation_probe_ids=validation_probe_ids,
+                         include_products=include_products)
 
         prior = parent.get("selected_rule")
         prior_regret = None
