@@ -19,6 +19,7 @@ from bean.learning import NativeReasoningService
 from bean.learning.experimental import SCHEMA
 from bean.learning.reasoning_service import _model_response
 from bean.research import WebResearchService
+from bean.voice.ollama import OllamaClient
 
 
 def decode(raw):
@@ -119,6 +120,35 @@ def draw_svg(shapes, file_path, backend="auto"):
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
+class OllamaSketchProvider:
+    """Reuse BEAN's localhost-only Ollama transport for creative JSON sketches.
+
+    The ordinary OllamaProvider fixes its schema to analytical summaries, so
+    its responses cannot encode sketch subjects or shape lists. This adapter
+    changes only the JSON format and bounded generation budget, not memory.
+    """
+
+    adapter_name = "ollama"
+
+    def __init__(self, model_name=None, client=None):
+        self.model_name = model_name or os.environ.get("BEAN_OLLAMA_MODEL", "qwen2.5:1.5b")
+        self.client = client or OllamaClient(
+            base_url=os.environ.get("BEAN_OLLAMA_URL", "http://127.0.0.1:11434"),
+            timeout=240)
+
+    def complete(self, prompt, context=None):
+        try:
+            reply = self.client.chat_json(
+                self.model_name, [{"role": "user", "content": prompt}],
+                options={"temperature": 0.65, "num_predict": 2048,
+                         "num_ctx": 4096, "repeat_penalty": 1.08})
+            return {"ok": True, "raw_text": reply,
+                    "adapter_name": "ollama", "model_name": self.model_name}
+        except (OSError, RuntimeError, ValueError) as exc:
+            return {"ok": False, "error": str(exc)[:240],
+                    "adapter_name": "ollama", "model_name": self.model_name}
+
+
 class SketchLab:
     def __init__(self, core, research=None, visual_judge=None):
         if not isinstance(core, NativeReasoningService):
@@ -131,10 +161,11 @@ class SketchLab:
         return _model_response(self.core._model(), prompt, "")
 
     def run(self, *, task_ref, output_dir, allow_online=False,
-            provider="auto", max_attempts=3, backend="auto"):
+            provider="auto", max_attempts=3, backend="auto",
+            complete_all_attempts=False):
         task_ref = text(task_ref, 120)
-        if (type(allow_online) is not bool or type(max_attempts) is not int
-                or not 1 <= max_attempts <= 5):
+        if (type(allow_online) is not bool or type(complete_all_attempts) is not bool
+                or type(max_attempts) is not int or not 1 <= max_attempts <= 5):
             raise ValueError("Explicit online choice and 1..5 attempts required")
         # Reuse trial feedback from earlier BEAN sessions, not a second memory.
         prior = [e["data"] for e in self.core.bank.journal.events()
@@ -252,6 +283,7 @@ class SketchLab:
                 "svg_file": path.name if digest is not None else None,
                 "svg_sha256": digest,
                 "model_id": model_id,
+                "model_digest": os.environ.get("BEAN_OLLAMA_MODEL_DIGEST"),
                 "provider_kind": model_kind,
                 "self_review": receipt["self_review"],
                 "visual_feedback": receipt["visual_feedback"],
@@ -267,8 +299,9 @@ class SketchLab:
                             "sha256": digest, "journal_tip": tip,
                             "metadata": str(sidecar),
                             "description": description})
-            if status in ("host_reported_satisfactory",
-                          "self_reported_satisfactory_unverified"):
+            if not complete_all_attempts and status in (
+                    "host_reported_satisfactory",
+                    "self_reported_satisfactory_unverified"):
                 break
         return {"subject_chosen_by_BEAN_model": subject, "history": history,
                 "research_status": research_state, "references": source_urls,
@@ -285,6 +318,8 @@ def main():
     p.add_argument("--provider", choices=("auto", "brave", "wikipedia"), default="auto")
     p.add_argument("--backend", choices=("auto", "drawsvg", "stdlib"), default="auto")
     p.add_argument("--attempts", type=int, default=3)
+    p.add_argument("--all-attempts", action="store_true",
+                   help="Keep iterating even if a text-only self-critique claims success")
     args = p.parse_args()
     name = os.getenv("BEAN_REASONING_PROVIDER", "local_llamacpp").lower()
     providers = {"local_llamacpp": ("local_llamacpp_provider", "LocalLlamaCppProvider"),
@@ -294,13 +329,15 @@ def main():
     if name not in providers:
         p.error("Set a supported BEAN_REASONING_PROVIDER first")
     module, cls = providers[name]
-    model = getattr(importlib.import_module("bean.reasoning." + module), cls)()
+    model = (OllamaSketchProvider() if name == "ollama" else
+             getattr(importlib.import_module("bean.reasoning." + module), cls)())
     core = NativeReasoningService(args.db, model=model)
     try:
         print(json.dumps(SketchLab(core).run(
             task_ref=args.task_ref, output_dir=args.out,
             allow_online=args.online, provider=args.provider,
-            backend=args.backend, max_attempts=args.attempts), indent=2))
+            backend=args.backend, max_attempts=args.attempts,
+            complete_all_attempts=args.all_attempts), indent=2))
     finally:
         core.close()
 

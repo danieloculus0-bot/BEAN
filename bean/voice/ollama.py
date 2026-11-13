@@ -138,7 +138,8 @@ class OllamaClient:
         return reply[:6000]
 
 
-    def chat_json(self, model: str, messages: list[dict], schema: dict | None = None) -> str:
+    def chat_json(self, model: str, messages: list[dict], schema: dict | None = None, *,
+                  options: dict | None = None) -> str:
         """Request constrained JSON output for BEAN's structured reasoning layer.
 
         Shares the loopback-only transport, proxy bypass and bounded response
@@ -146,12 +147,25 @@ class OllamaClient:
         """
         if not model or not messages:
             raise ValueError("Model and conversation are required")
+        defaults = {"temperature": 0.0, "num_predict": 512,
+                    "num_ctx": 4096, "repeat_penalty": 1.2}
+        if options is not None:
+            if not isinstance(options, dict) or set(options) - set(defaults):
+                raise ValueError("Unsupported local model JSON options")
+            for name, value in options.items():
+                if name in ("num_predict", "num_ctx"):
+                    if type(value) is not int or not 1 <= value <= 8192:
+                        raise ValueError("Invalid local model token limit")
+                elif (type(value) not in (int, float)
+                      or not 0 <= value <= 2):
+                    raise ValueError("Invalid local model sampling option")
+            defaults.update(options)
         result = self._json("/api/chat", {
             "model": model,
             "messages": messages,
             "stream": False,
             "format": schema if schema is not None else "json",
-            "options": {"temperature": 0.0, "num_predict": 512, "num_ctx": 4096, "repeat_penalty": 1.2},
+            "options": defaults,
         })
         message = result.get("message")
         if not isinstance(message, dict) or not isinstance(message.get("content"), str):
