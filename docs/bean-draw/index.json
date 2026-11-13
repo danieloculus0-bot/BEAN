@@ -1,4 +1,61 @@
 {
   "schema": "bean.draw.gallery.v1",
-  "entries": []
+  "entries": [
+    {
+      "independent_visual_verification": false,
+      "model_id": "scripted-rocket-fixture",
+      "origin": "synthetic_fixture",
+      "provider_kind": "synthetic_fixture",
+      "reference_urls": [],
+      "reviewed_at": null,
+      "schema": "bean.draw.attempt.v1",
+      "subject": "A little rocket",
+      "task_ref": "synthetic-rocket-gallery-fixture",
+      "title": "A little rocket",
+      "visual_feedback": null,
+      "source_git_sha": "ccf1ed5370160121dc1259f0887207db2a139e27",
+      "attempt": 2,
+      "description": "Rocket with nose, porthole, twin fins and flame",
+      "id": "ad7e6ee26359dba34cce",
+      "journal_tip": "88293bc81ecfdad23b52a7571b53698be43065e0ad48853351adf4d82bf8b76b",
+      "metadata": "entries/ad7e6ee26359dba34cce.json",
+      "published_at": "2026-11-13T00:29:40.513222+00:00",
+      "self_review": {
+        "changes": "No further changes in this scripted test.",
+        "claimed_subject": "rocket",
+        "satisfied": true
+      },
+      "sha256": "8f5a256e450af8ae57f37b407bdbcc60a15550d4903016d842e3eae4b69e0920",
+      "status": "self_reported_satisfactory_unverified",
+      "svg": "entries/ad7e6ee26359dba34cce.svg"
+    },
+    {
+      "independent_visual_verification": false,
+      "model_id": "scripted-rocket-fixture",
+      "origin": "synthetic_fixture",
+      "provider_kind": "synthetic_fixture",
+      "reference_urls": [],
+      "reviewed_at": null,
+      "schema": "bean.draw.attempt.v1",
+      "subject": "A little rocket",
+      "task_ref": "synthetic-rocket-gallery-fixture",
+      "title": "A little rocket",
+      "visual_feedback": null,
+      "source_git_sha": "ccf1ed5370160121dc1259f0887207db2a139e27",
+      "attempt": 1,
+      "description": "Simple rocket with window, body and nose",
+      "id": "b884381c54f33f46bc20",
+      "journal_tip": "63581032eecab27043515d238b184a22b45241a02df861a4eb1400b7213c65e0",
+      "metadata": "entries/b884381c54f33f46bc20.json",
+      "published_at": "2026-11-13T00:29:40.512894+00:00",
+      "self_review": {
+        "changes": "Add two fins and a flame.",
+        "claimed_subject": "rocket",
+        "satisfied": false
+      },
+      "sha256": "565f11f5a15b8a1ccc47aa3effd6e5ac8e547ead6987be7aa03a6fce80a8a034",
+      "status": "unverified",
+      "svg": "entries/b884381c54f33f46bc20.svg"
+    }
+  ]
 }

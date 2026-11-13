@@ -65,3 +65,21 @@ def test_gallery_rejects_active_svg(svg):
 def test_missing_sidecars_fail_closed(tmp_path):
     with pytest.raises(ValueError, match="No BEAN sketch attempt"):
         curate(tmp_path, tmp_path / "site")
+
+
+def test_checked_in_showcase_art_matches_committed_receipts():
+    """Static Pages examples must be the exact CI-generated fixture bytes."""
+    import hashlib
+    root = Path(__file__).resolve().parents[2] / "docs" / "bean-draw"
+    index = json.loads((root / "index.json").read_text(encoding="utf-8"))
+    assert index["schema"] == "bean.draw.gallery.v1"
+    assert len(index["entries"]) >= 2
+    for row in index["entries"]:
+        svg = root / row["svg"]
+        descriptor = json.loads((root / row["metadata"]).read_text(encoding="utf-8"))
+        raw = svg.read_bytes()
+        validate_svg(raw)
+        assert hashlib.sha256(raw).hexdigest() == row["sha256"]
+        assert descriptor["sha256"] == row["sha256"]
+        assert descriptor["origin"] == row["origin"]
+        assert row["independent_visual_verification"] is False
