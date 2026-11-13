@@ -1,0 +1,114 @@
+name: BEAN Draw - original open-model sketch session
+
+on:
+  push:
+    branches: [experiment/bean-draw-real-qwen-iterations-20261113]
+    paths:
+      - '.github/workflows/bean-draw-open-model.yml'
+      - 'bean/creativity/sketch_lab.py'
+      - 'bean/voice/ollama.py'
+      - 'bean/tests/test_sketch_lab.py'
+      - 'scripts/build_bean_draw_gallery.py'
+  workflow_dispatch:
+
+concurrency:
+  group: bean-draw-open-model-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  draw-with-qwen:
+    if: github.ref == 'refs/heads/experiment/bean-draw-real-qwen-iterations-20261113'
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+    permissions:
+      contents: write
+    env:
+      BEAN_REASONING_PROVIDER: ollama
+      BEAN_OLLAMA_MODEL: qwen2.5:3b
+      BEAN_OLLAMA_URL: http://127.0.0.1:11434
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Prove existing Core sketch, journal and gallery regressions
+        run: |
+          python -m pip install pytest "drawsvg>=2,<3"
+          python -m pytest bean/tests/test_sketch_lab.py bean/tests/test_bean_draw_gallery.py -q -ra
+      - name: Give BEAN local Qwen and let it choose and revise its own art
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -x "$(command -v zstd)" || { echo "Local zstd required to unpack Ollama"; exit 1; }
+          mkdir -p "$RUNNER_TEMP/ollama" "$RUNNER_TEMP/bean-draw-attempts" "$RUNNER_TEMP/bean-draw-evidence"
+          curl --fail --location --retry 3 --retry-delay 3 --max-time 600 \
+            https://ollama.com/download/ollama-linux-amd64.tar.zst \
+            --output "$RUNNER_TEMP/ollama.tar.zst"
+          tar --zstd -xf "$RUNNER_TEMP/ollama.tar.zst" -C "$RUNNER_TEMP/ollama"
+          export PATH="$RUNNER_TEMP/ollama/bin:$PATH"
+          export LD_LIBRARY_PATH="$RUNNER_TEMP/ollama/lib/ollama:${LD_LIBRARY_PATH:-}"
+          export OLLAMA_HOST=127.0.0.1:11434
+          export OLLAMA_MODELS="$RUNNER_TEMP/ollama-models"
+          export OLLAMA_NUM_PARALLEL=1
+          export OLLAMA_MAX_LOADED_MODELS=1
+          ollama --version | tee "$RUNNER_TEMP/bean-draw-evidence/ollama-version.txt"
+          ollama serve > "$RUNNER_TEMP/bean-draw-evidence/ollama.log" 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid" 2>/dev/null || true' EXIT
+          ready=false
+          for n in $(seq 1 45); do
+            if curl --silent --fail http://127.0.0.1:11434/api/tags >/dev/null; then ready=true; break; fi
+            sleep 2
+          done
+          test "$ready" = true || { echo "Local Ollama failed to start"; exit 1; }
+          ollama pull "$BEAN_OLLAMA_MODEL"
+          curl --silent --fail http://127.0.0.1:11434/api/tags > "$RUNNER_TEMP/bean-draw-evidence/model-tags.json"
+          export BEAN_OLLAMA_MODEL_DIGEST="$(python -c 'import json,os; d=json.load(open(os.environ["RUNNER_TEMP"]+"/bean-draw-evidence/model-tags.json")); print(next((m.get("digest","") for m in d.get("models",[]) if m.get("name")==os.environ["BEAN_OLLAMA_MODEL"]),""))')"
+          echo "Model: $BEAN_OLLAMA_MODEL, digest: $BEAN_OLLAMA_MODEL_DIGEST"
+          python -m bean.creativity.sketch_lab \
+            --db "$RUNNER_TEMP/bean-draw-core.sqlite3" \
+            --out "$RUNNER_TEMP/bean-draw-attempts" \
+            --task-ref "qwen-self-chosen-${{ github.run_id }}" \
+            --attempts 4 --all-attempts --backend stdlib \
+            | tee "$RUNNER_TEMP/bean-draw-evidence/result.json"
+          python scripts/build_bean_draw_gallery.py \
+            --source "$RUNNER_TEMP/bean-draw-attempts" --site docs/bean-draw \
+            | tee "$RUNNER_TEMP/bean-draw-evidence/curation.json"
+          python - <<'PY'
+          import json, os
+          from pathlib import Path
+          r = Path(os.environ["RUNNER_TEMP"]) / "bean-draw-evidence"
+          report = json.loads((r / "result.json").read_text())
+          curation = json.loads((r / "curation.json").read_text())
+          assert report["attempts"] == 4, "Experiment must retain all four attempts"
+          assert curation["added"] >= 2, "Fewer than two valid model-drawn SVGs"
+          assert all(row["status"] != "host_reported_satisfactory"
+                     for row in report["history"]), "No human reviewer attached"
+          print("BEAN DRAW: four real Qwen attempts, "
+                + str(curation["added"]) + " retained model SVGs; visual success unverified")
+          PY
+      - name: Commit reviewed-by-parser model SVGs to isolated PR branch, not main
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/bean-draw/index.json docs/bean-draw/entries/
+          git diff --cached --quiet && { echo "No new model sketches to retain"; exit 1; }
+          git commit -m "BEAN Draw: retain four Qwen sketch iterations with SHA receipts"
+          AUTH="$(printf 'x-access-token:%s' "$GH_TOKEN" | base64 -w0)"
+          git -c http.extraheader="AUTHORIZATION: basic $AUTH" push origin HEAD:refs/heads/experiment/bean-draw-real-qwen-iterations-20261113
+      - name: Archive raw Core journal, SVG attempts, curation receipts, and model provenance
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bean-draw-qwen-open-model-${{ github.run_id }}
+          path: |
+            ${{ runner.temp }}/bean-draw-attempts/
+            ${{ runner.temp }}/bean-draw-evidence/
+            ${{ runner.temp }}/bean-draw-core.sqlite3
+          if-no-files-found: warn
