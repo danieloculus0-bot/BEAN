@@ -84,6 +84,52 @@ jobs:
           path: ${{ runner.temp }}/bean-restored-simulation.json
           if-no-files-found: warn
 
+      - name: Test memory-driven learning from the existing generation-27 synthetic checkpoint
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json, os, shutil
+          from pathlib import Path
+          source = Path("research/github_brain")
+          baseline = json.loads((source / "manifest.json").read_text())
+          assert baseline.get("synthetic_only") is True
+          dest = Path(os.environ["RUNNER_TEMP"]) / "bean-restored-synthetic"
+          dest.mkdir()
+          shutil.copy2(source / "manifest.json", dest / "manifest.json")
+          for item in baseline["databases"].values():
+              archive = item["archive"]
+              assert Path(archive).name == archive
+              shutil.copy2(source / archive, dest / archive)
+          PY
+          python scripts/invoke_bean.py --state-dir "$RUNNER_TEMP/bean-restored-synthetic" --runtime-dir "$RUNNER_TEMP/bean-next-run" --ticks 12
+          python - <<'PY'
+          import json, os
+          from pathlib import Path
+          original = json.loads(Path("research/github_brain/manifest.json").read_text())
+          next_state = json.loads((Path(os.environ["RUNNER_TEMP"]) /
+                                   "bean-restored-synthetic" / "manifest.json").read_text())
+          assert next_state["generation"] == original["generation"] + 1
+          assert next_state["boots"] == original["boots"] + 1
+          assert next_state["previous_receipt_sha256"] == original["receipt_sha256"]
+          digital = next_state["digital_learning"]
+          parity = digital["families"]["parity"]
+          assert parity["learning_strategy"] == "revise_prior_rule_from_fresh_feedback"
+          assert parity["hypothesis_grammar_expanded"] is True
+          assert parity["learning_status"] == "provisional_rule"
+          assert digital["memory_ablated_correct_total"] is not None
+          assert digital["candidate_correct_total"] >= digital["memory_ablated_correct_total"]
+          assert json.loads(Path("research/github_brain/manifest.json").read_text()) == original
+          print(json.dumps({
+              "result": "restored-core-next-generation-learning",
+              "baseline_generation": original["generation"],
+              "new_generation": next_state["generation"],
+              "candidate_correct": digital["candidate_correct_total"],
+              "passive_correct": digital["passive_correct_total"],
+              "memory_ablated_correct": digital["memory_ablated_correct_total"],
+              "checkpoint_original_preserved": True}, sort_keys=True))
+          PY
+
   invoke-on-main:
     if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
