@@ -1,0 +1,3 @@
+# Preserve exact committed SVG bytes across Windows and POSIX checkouts.
+# Gallery SHA-256 receipts validate the raw file, not normalized text.
+docs/bean-draw/entries/*.svg -text
