@@ -6,7 +6,7 @@ from __future__ import annotations
 
 import argparse
 import re
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 
 ROOT = Path(__file__).resolve().parent
 TOKENS = (
@@ -29,8 +29,8 @@ def render_template(kind: str, values: dict[str, str]) -> str:
     for name in ("BEAN_HOME", "BEAN_DATA_DIR", "BEAN_LOG_DIR", "BEAN_ENV_FILE") + (("BEAN_LLAMACPP_DIR", "BEAN_GGUF_PATH") if kind == "llm_service" else ()):
         value = values[name]
         # Reject characters with special meaning in environment and unit files.
-        if (not value.startswith("/") or not Path(value).is_absolute()
-                or ".." in Path(value).parts
+        if (not value.startswith("/") or not PurePosixPath(value).is_absolute()
+                or ".." in PurePosixPath(value).parts
                 or not re.fullmatch(r"/[A-Za-z0-9_./-]+", value)):
             raise ValueError(f"Unsafe or nonabsolute {name}")
     if kind == "llm_service":
