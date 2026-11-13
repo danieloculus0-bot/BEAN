@@ -110,3 +110,43 @@ def test_shuffled_feedback_offset_is_not_a_guaranteed_wrong_label(generation):
         assert 0 < mismatches < len(TRAIN), (
             generation, family, mismatches, len(TRAIN)
         )
+
+
+def test_memory_ablation_coverage_is_reported_not_discarded():
+    rows = sample()
+    for row in rows.values():
+        row["correct"]["memory_ablated"] = 0
+        row["abstentions"]["memory_ablated"] = 48
+    rows["channel"]["correct"]["memory_ablated"] = 48
+    rows["channel"]["abstentions"]["memory_ablated"] = 0
+    result = coverage_metrics(rows)
+    assert result["memory_ablated"]["correct"] == 48
+    assert result["memory_ablated"]["attempted"] == 48
+    assert result["memory_ablated"]["coverage"] == pytest.approx(1 / 3)
+    assert result["memory_ablated"]["all_case_accuracy"] == pytest.approx(1 / 3)
+
+
+def test_legacy_missing_ablation_is_unknown_not_zero():
+    result = coverage_metrics(sample())
+    assert result["memory_ablated"]["status"] == "Unknown"
+    assert result["memory_ablated"]["correct"] is None
+    assert result["memory_ablated"]["all_case_accuracy"] is None
+
+
+def test_partial_ablation_is_not_a_comparable_total():
+    rows = sample()
+    for row in rows.values():
+        row["correct"]["memory_ablated"] = 48
+        row["abstentions"]["memory_ablated"] = 0
+    del rows["parity"]["correct"]["memory_ablated"]
+    result = coverage_metrics(rows)
+    assert result["memory_ablated"]["status"] == "Unknown"
+    assert result["memory_ablated"]["correct"] is None
+    assert result["memory_ablated"]["families"]["channel"]["correct"] == 48
+
+
+def test_missing_passive_measurement_is_rejected():
+    rows = sample()
+    del rows["channel"]["correct"]["passive"]
+    with pytest.raises(ValueError):
+        coverage_metrics(rows)

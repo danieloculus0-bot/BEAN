@@ -39,23 +39,32 @@ def evaluation_rows(db_path: Path) -> list[dict]:
 
 
 def coverage_metrics(families: dict, cases_per_family: int = 48) -> dict:
-    """Report attempted-case accuracy separately from all-case accuracy.
+    """Measure all arms on identical denominators, retaining missing ablations.
 
-    Historical SHA-linked receipts are read-only. This derives measurements
-    solely for the disposable simulation artifact, never rewriting journals.
+    Historical generations may lack a memory-ablated control. Do not convert
+    absent evidence to zero accuracy or pretend it was scored.
     """
     if set(families) != set(FAMILIES):
         raise ValueError("missing or unexpected scored family")
     result = {}
-    for arm in ("candidate", "passive", "shuffled", "always_zero"):
+    for arm in ("candidate", "passive", "memory_ablated", "shuffled", "always_zero"):
         correct = 0
         attempted = 0
         per_family = {}
+        missing = False
         for family in FAMILIES:
             row = families[family]
-            hits = row["correct"][arm]
+            hits = row["correct"].get(arm)
             abstained = (0 if arm == "always_zero"
-                         else row["abstentions"][arm])
+                         else row["abstentions"].get(arm))
+            if hits is None or abstained is None:
+                if arm != "memory_ablated":
+                    raise ValueError("missing required control measurement")
+                missing = True
+                per_family[family] = {"status": "Unknown", "correct": None,
+                                      "attempted": None, "coverage": None,
+                                      "accuracy_when_attempted": None}
+                continue
             if (type(hits) is not int or type(abstained) is not int
                     or not 0 <= abstained <= cases_per_family
                     or not 0 <= hits <= cases_per_family - abstained):
@@ -70,10 +79,13 @@ def coverage_metrics(families: dict, cases_per_family: int = 48) -> dict:
             attempted += tries
         total = cases_per_family * len(FAMILIES)
         result[arm] = {
-            "correct": correct, "attempted": attempted,
-            "coverage": attempted / total,
-            "accuracy_when_attempted": correct / attempted if attempted else None,
-            "all_case_accuracy": correct / total,
+            "correct": None if missing else correct,
+            "attempted": None if missing else attempted,
+            "coverage": None if missing else attempted / total,
+            "accuracy_when_attempted": (
+                None if missing or not attempted else correct / attempted),
+            "all_case_accuracy": None if missing else correct / total,
+            "status": "Unknown" if missing else "measured",
             "families": per_family,
         }
     return result
