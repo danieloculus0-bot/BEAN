@@ -236,9 +236,36 @@ class SketchLab:
                                     if isinstance(feedback, dict) else None),
                 "weights_updated": False, "visual_evidence_independently_verified": False}
             tip = self.core.bank.record_trial(receipt)
+            # The SHA journal remains canonical. This sidecar preserves a
+            # reviewable, public-curatable copy of the drawing and its context.
+            # Neither the SVG nor this sidecar is published automatically.
+            sidecar = Path(output_dir) / ("attempt_%02d.json" % attempt)
+            sidecar.parent.mkdir(parents=True, exist_ok=True)
+            sidecar.write_text(json.dumps({
+                "schema": "bean.draw.attempt.v1",
+                "experiment": receipt["experiment"],
+                "task_ref": task_ref,
+                "attempt": attempt,
+                "subject": subject,
+                "description": description,
+                "status": status,
+                "svg_file": path.name if digest is not None else None,
+                "svg_sha256": digest,
+                "model_id": model_id,
+                "provider_kind": model_kind,
+                "self_review": receipt["self_review"],
+                "visual_feedback": receipt["visual_feedback"],
+                "reference_urls": source_urls,
+                "research_status": research_state,
+                "journal_tip": tip,
+                "source_git_sha": os.environ.get("GITHUB_SHA", "local-unverified"),
+                "independent_visual_verification": False
+            }, sort_keys=True, indent=2, ensure_ascii=False) + "\n",
+                encoding="utf-8")
             history.append({"attempt": attempt, "status": status,
                             "svg": str(path) if digest else None,
                             "sha256": digest, "journal_tip": tip,
+                            "metadata": str(sidecar),
                             "description": description})
             if status in ("host_reported_satisfactory",
                           "self_reported_satisfactory_unverified"):
