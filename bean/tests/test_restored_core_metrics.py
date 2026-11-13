@@ -87,3 +87,26 @@ def test_nonlearning_controls_are_reproducible_and_nonabstaining():
 def test_nonlearning_controls_require_positive_integer_generation(invalid):
     with pytest.raises(ValueError):
         nonlearning_controls(invalid)
+
+
+@pytest.mark.parametrize("generation", [1, 26, 27])
+def test_shuffled_feedback_offset_is_not_a_guaranteed_wrong_label(generation):
+    """Audit the existing control, without rewriting historical receipts.
+
+    An offset case ID samples another deterministic state. It is not a
+    guaranteed incorrect label and zero selected-rule coverage is abstention,
+    not evidence that the learner fitted a deliberately wrong mapping.
+    """
+    from bean.evaluation.active_abstraction_benchmark import World
+    from bean.evaluation.github_digital_cycle import FAMILIES, TRAIN
+
+    for family_index, family in enumerate(FAMILIES):
+        world = World(100000 + generation * 100 + family_index, family)
+        mismatches = sum(
+            world.correct_action(case) !=
+            world.correct_action(str(int(case) + 1000000))
+            for case in TRAIN
+        )
+        assert 0 < mismatches < len(TRAIN), (
+            generation, family, mismatches, len(TRAIN)
+        )
