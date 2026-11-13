@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#090d0c">
+<meta name="description" content="BEAN Draw. A reviewable gallery of public-safe SVG sketches, receipts and human feedback.">
+<link rel="icon" href="../bean-official.webp" type="image/webp">
+<title>BEAN Draw | A little brain with a sketchbook</title>
+<style>
+:root{color-scheme:dark;--bg:#080d0b;--surface:#131a17;--surface2:#1b231f;--line:#324238;--text:#f4f7f0;--muted:#aabcb0;--accent:#b7f78a;--gold:#e5c996}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;min-height:100vh;background:radial-gradient(ellipse 72% 420px at 82% -4%,#2a4a31 0,transparent 78%),radial-gradient(ellipse 58% 320px at 10% 95%,#18261f 0,transparent 90%),var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,"Segoe UI",sans-serif}
+a{color:var(--accent);text-underline-offset:4px}
+button,input,select,textarea{font:inherit}
+button,a{transition:color .15s,border-color .15s,background-color .15s}
+button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
+.wrap{width:min(1160px,calc(100% - 36px));margin:0 auto}
+header{position:sticky;top:0;z-index:10;backdrop-filter:blur(20px);border-bottom:1px solid #3b4a3c;background:#080d0be9}
+.top{display:flex;align-items:center;justify-content:space-between;min-height:72px;gap:20px}
+.brand{display:flex;align-items:center;gap:11px;text-decoration:none;color:#fff;font-weight:850;letter-spacing:.08em}
+.brand img{width:39px;height:39px;object-fit:contain}
+.navright{display:flex;gap:22px;align-items:center;font-size:.9rem}
+.navright a{color:#d1e0d2;text-decoration:none}
+.navright a:hover{color:var(--accent)}
+.hero{padding:76px 0 51px;display:grid;grid-template-columns:1fr minmax(230px,.5fr);align-items:end;gap:40px}
+.eyebrow{color:var(--accent);font-size:.75rem;font-weight:900;letter-spacing:.2em;text-transform:uppercase}
+h1{font-size:clamp(3.35rem,9vw,7rem);letter-spacing:-.085em;line-height:.94;margin:19px 0 24px;font-weight:870}
+h1 em{font-family:Georgia,serif;font-style:italic;color:var(--accent);font-weight:400}
+.hero p{max-width:670px;color:#bbcbc1;font-size:1.13rem;margin:0}
+.hero-note{border:1px solid var(--line);border-radius:20px;background:#121b17;padding:25px}
+.hero-note .note-icon{font-size:2rem;margin-bottom:8px}
+.hero-note h2{font-size:1.1rem;letter-spacing:-.02em;margin:0 0 8px}
+.hero-note p{font-size:.9rem;line-height:1.65}
+.toolbar{border-top:1px solid var(--line);display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:23px 0 26px}
+.toolbar h2{font-size:1.05rem;letter-spacing:-.01em;margin:0 auto 0 0}
+.toolbar label{font-size:.83rem;color:var(--muted)}
+input,select,textarea{background:#16201a;border:1px solid #415346;border-radius:10px;color:white;padding:10px 13px}
+input::placeholder{color:#95a89c}
+input{min-width:190px}
+select{max-width:190px}
+#count{color:var(--muted);font-size:.84rem}
+.gallery{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px;padding-bottom:60px}
+.card{background:linear-gradient(145deg,#17211a,#111815);border:1px solid var(--line);border-radius:19px;overflow:hidden;text-align:left;padding:0;cursor:pointer;color:var(--text);min-width:0}
+.card:hover{border-color:#a0d77f;background:#1a281c}
+.card .art{height:274px;background:radial-gradient(circle at 65% 24%,#f8fbf5,#dfe8dc);display:flex;align-items:center;justify-content:center;padding:25px}
+.card img{max-width:100%;max-height:100%;display:block;width:100%;height:100%;object-fit:contain}
+.card .caption{padding:20px 21px 22px}
+.card .title{display:block;font-weight:780;font-size:1.13rem;margin:8px 0 5px;letter-spacing:-.025em}
+.card .sub{color:var(--muted);font-size:.89rem;line-height:1.45}
+.pill{display:inline-block;font-size:.65rem;font-weight:880;letter-spacing:.1em;text-transform:uppercase;border-radius:100px;background:#30422d;color:#ccfbb6;padding:5px 9px}
+.pill.fixture{background:#3a3021;color:#f1d8a7}
+.empty{border:1px dashed #51634f;border-radius:18px;padding:40px;color:#b9c9bd;text-align:center;margin-bottom:55px}
+dialog{border:1px solid #4b6051;border-radius:20px;background:#0d1510;color:var(--text);width:min(990px,calc(100% - 28px));max-height:calc(100vh - 36px);padding:0;box-shadow:0 25px 100px #000c}
+dialog::backdrop{background:#030806db;backdrop-filter:blur(7px)}
+.detail-head{display:flex;align-items:center;justify-content:space-between;gap:15px;padding:20px 25px;border-bottom:1px solid var(--line)}
+.detail-head h2{font-size:1.25rem;margin:0;letter-spacing:-.02em}
+.close{background:transparent;border:1px solid #526252;color:white;padding:7px 12px;border-radius:8px;cursor:pointer}
+.detail-grid{display:grid;grid-template-columns:1fr .9fr}
+.detail-canvas{background:#edf5e9;min-height:330px;display:flex;align-items:center;justify-content:center;padding:20px}
+.detail-canvas img{width:100%;max-height:540px;object-fit:contain}
+.detail-side{padding:25px;max-height:68vh;overflow:auto}
+.detail-side p{color:var(--muted);margin:12px 0}
+.detail-side strong{color:white}
+.detail-side dl{display:grid;grid-template-columns:auto 1fr;gap:8px 14px;color:var(--muted);font-size:.8rem;margin:20px 0;word-break:break-word}
+.detail-side dt{color:#d5e3d4;font-weight:720}
+.detail-side dd{margin:0}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:22px}
+.btn{display:inline-flex;min-height:40px;align-items:center;padding:9px 15px;background:#233329;border:1px solid #68806c;color:#eff7ed;border-radius:9px;text-decoration:none;font-size:.86rem;font-weight:730}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#132013}
+.btn:hover{background:#34463a}
+.btn.primary:hover{background:#d2ffb6}
+footer{border-top:1px solid var(--line);padding:29px 0 43px;color:#a9b9ac;font-size:.85rem}
+footer .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
+@media(max-width:900px){.gallery{grid-template-columns:repeat(2,minmax(0,1fr))}.hero{grid-template-columns:1fr}.hero-note{max-width:650px}.detail-grid{grid-template-columns:1fr}.detail-side{max-height:none}.detail-canvas{min-height:240px;max-height:45vh}}
+@media(max-width:560px){.gallery{grid-template-columns:1fr}.card .art{height:300px}.hero{padding-top:45px}.navright{gap:12px;font-size:.78rem}.toolbar{align-items:flex-start}.toolbar h2{width:100%}.toolbar input{flex:1;min-width:0}}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{scroll-behavior:auto;transition:none!important}}
+</style>
+</head>
+<body>
+<a class="skip" href="#art" style="position:absolute;left:-9999px" onfocus="this.style.left='10px'" onblur="this.style.left='-9999px'">Skip to gallery</a>
+<header><div class="wrap top">
+<a class="brand" href="../"><img src="../bean-official.webp" alt="">BEAN / DRAW</a>
+<nav class="navright" aria-label="Related pages"><a href="../">Meet BEAN</a><a href="https://github.com/danieloculus0-bot/BEAN">Source code</a></nav>
+</div></header>
+<main>
+<section class="wrap hero">
+<div><div class="eyebrow">Experimental art laboratory · Public-safe receipts</div>
+<h1>The little<br><em>sketchbook.</em></h1>
+<p>A record of lines BEAN produced, the thoughts attached to each attempt, and what humans may learn by looking. Every drawing has a source trail. The work, the mistakes, and the uncertainty stay visible.</p>
+</div>
+<aside class="hero-note"><div class="note-icon" aria-hidden="true">✳</div><h2>Not every sketch is BEAN's own idea.</h2>
+<p>Gold-labeled drawings are scripted <strong>test fixtures</strong> that verify the pipeline, not autonomous artwork. Real-model attempts are labeled separately. BEAN currently critiques coordinates, not the rendered image; human feedback is for future work.</p></aside>
+</section>
+<section id="art" class="wrap">
+<div class="toolbar">
+<h2>Drawings <span id="count" aria-live="polite"></span></h2>
+<label for="filter">Type</label><select id="filter"><option value="all">All attempts</option><option value="model_generated_unverified">Real model attempts</option><option value="synthetic_fixture">Test fixtures</option></select>
+<label for="search">Search</label><input id="search" type="search" placeholder="Subject or description" autocomplete="off">
+</div>
+<div id="gallery" class="gallery"></div>
+<p id="empty" class="empty" hidden>No drawings match. New attempts can be added after a reviewed BEAN Core run. The empty sketchbook is not evidence that something failed.</p>
+</section>
+</main>
+<dialog id="detail" aria-labelledby="detail-title">
+<div class="detail-head"><h2 id="detail-title">Drawing</h2><button id="close" class="close" type="button" aria-label="Close drawing details">Close ✕</button></div>
+<div class="detail-grid"><div class="detail-canvas"><img id="detail-image" alt=""></div><div class="detail-side">
+<div id="detail-origin" class="pill">Attempt</div>
+<p id="detail-description"></p>
+<p><strong>BEAN's own critique</strong><span id="detail-critique" style="display:block"></span></p>
+<p><strong>Human feedback</strong><span id="detail-feedback" style="display:block"></span></p>
+<dl id="detail-meta"></dl>
+<div class="actions"><a id="raw" class="btn primary" href="#" download>Download SVG</a><a id="receipt" class="btn" href="#" target="_blank" rel="noopener noreferrer">Review metadata</a><a id="review-link" class="btn" href="#" target="_blank" rel="noopener noreferrer">Submit human review</a></div>
+</div></div>
+</dialog>
+<footer><div class="wrap"><span>BEAN Draw · Public-safe, inspectable experiments. A sketch is not proof of intelligence.</span><span><a href="https://github.com/danieloculus0-bot/BEAN/blob/main/docs/BEAN_SKETCH_LAB.md">How the sketch lab works</a></span></div></footer>
+<script>
+(function(){
+"use strict";
+var entries=[];
+var gallery=document.getElementById("gallery");
+var count=document.getElementById("count");
+var empty=document.getElementById("empty");
+var search=document.getElementById("search");
+var filter=document.getElementById("filter");
+var dialog=document.getElementById("detail");
+function labelFor(entry){return entry.origin==="synthetic_fixture"?"SYNTHETIC TEST FIXTURE":"MODEL OUTPUT · UNVERIFIED";}
+function asset(path,extension){return typeof path==="string"&&new RegExp("^entries/[a-f0-9]{20}\\."+extension+"$").test(path)?path:null;}
+function textEl(tag,cls,content){var el=document.createElement(tag);if(cls)el.className=cls;el.textContent=content||"";return el;}
+function addDefinition(dl,name,value){dl.appendChild(textEl("dt","",name));dl.appendChild(textEl("dd","",value==null?"Unknown":String(value)));}
+function openDetails(e){
+var svg=asset(e.svg,"svg"),meta=asset(e.metadata,"json");if(!svg||!meta)return;
+document.getElementById("detail-title").textContent=e.title||"Untitled";
+var image=document.getElementById("detail-image");image.src=svg;image.alt="Drawing labeled "+(e.title||"untitled");
+var origin=document.getElementById("detail-origin");origin.textContent=labelFor(e);origin.className="pill"+(e.origin==="synthetic_fixture"?" fixture":"");
+document.getElementById("detail-description").textContent=e.description||"No description recorded.";
+var review=e.self_review||{};
+document.getElementById("detail-critique").textContent=review.changes||"No self-critique recorded.";
+document.getElementById("detail-feedback").textContent=e.visual_feedback||"Not reviewed by a human.";
+var dl=document.getElementById("detail-meta");dl.replaceChildren();
+addDefinition(dl,"Attempt",e.attempt);addDefinition(dl,"Core status",e.status);
+addDefinition(dl,"Model",e.model_id);addDefinition(dl,"Task",e.task_ref);
+addDefinition(dl,"Source revision",e.source_git_sha);
+addDefinition(dl,"SHA-256",e.sha256);
+addDefinition(dl,"Journal tip",e.journal_tip);
+addDefinition(dl,"Published",e.published_at);
+var raw=document.getElementById("raw");raw.href=svg;raw.download=(e.id||"bean-draw")+".svg";
+document.getElementById("receipt").href=meta;
+var title="BEAN Draw review: "+(e.title||"Untitled");
+var body="Drawing: "+(e.title||"Untitled")+"\nAttempt: "+e.attempt+"\nSHA-256: "+e.sha256+"\nOrigin: "+e.origin+"\n\nVisual accuracy (1-5): \nWhat is recognizable? \nWhat should change? \n";
+document.getElementById("review-link").href="https://github.com/danieloculus0-bot/BEAN/issues/new?title="+encodeURIComponent(title)+"&body="+encodeURIComponent(body);
+dialog.showModal();
+}
+function render(){
+var term=search.value.trim().toLowerCase(),kind=filter.value;
+var matched=entries.filter(function(e){return(kind==="all"||e.origin===kind)&&((e.title||"")+" "+(e.description||"")).toLowerCase().includes(term)&&asset(e.svg,"svg")&&asset(e.metadata,"json");});
+gallery.replaceChildren();
+matched.forEach(function(e){
+var card=document.createElement("button");card.className="card";card.type="button";card.setAttribute("aria-label","Open drawing: "+(e.title||"Untitled"));
+var art=textEl("div","art","");var img=document.createElement("img");img.src=e.svg;img.alt="";img.loading="lazy";art.appendChild(img);card.appendChild(art);
+var cap=textEl("div","caption","");cap.appendChild(textEl("span","pill"+(e.origin==="synthetic_fixture"?" fixture":""),labelFor(e)));
+cap.appendChild(textEl("span","title",e.title||"Untitled"));cap.appendChild(textEl("div","sub","Attempt "+e.attempt+" · "+(e.status||"unverified")));card.appendChild(cap);
+card.addEventListener("click",function(){openDetails(e)});gallery.appendChild(card);
+});
+count.textContent="("+matched.length+")";
+empty.hidden=matched.length!==0;
+}
+document.getElementById("close").addEventListener("click",function(){dialog.close()});
+dialog.addEventListener("click",function(event){if(event.target===dialog)dialog.close()});
+search.addEventListener("input",render);filter.addEventListener("change",render);
+fetch("./index.json",{cache:"no-store"}).then(function(response){if(!response.ok)throw new Error("Gallery index unavailable");return response.json()}).then(function(data){if(!data||data.schema!=="bean.draw.gallery.v1"||!Array.isArray(data.entries))throw new Error("Unsupported gallery index");entries=data.entries;render()}).catch(function(err){empty.textContent="Could not load the gallery index. "+err.message;empty.hidden=false;count.textContent="(unavailable)"});
+})();
+</script>
+</body>
+</html>

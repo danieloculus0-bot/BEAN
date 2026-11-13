@@ -22,6 +22,38 @@ The MIT renderer is https://github.com/cduck/drawsvg ; keep its source and licen
 
 Broad general web search requires a locally configured BRAVE_SEARCH_API_KEY. Without that credential, BEAN's existing automatic provider searches Wikipedia, not the entire internet. References are retained as URLs and bounded excerpts in BEAN's existing source-linked journal.
 
+## BEAN Draw gallery and retained review files
+
+Each SketchLab attempt now preserves **both** the SVG and a neighboring
+`attempt_XX.json` review sidecar. The sidecar links the drawing hash, original
+Core SHA journal tip, chosen subject, self-critique, model identity, source
+revision, and any host feedback. Failed attempts without SVG still leave a
+sidecar so missing artwork is not silently counted as success.
+
+To curate **public-safe** images into the existing GitHub Pages site, first run
+the configured model as above, inspect all sidecar content and SVGs for private
+data, then run:
+
+    python scripts/build_bean_draw_gallery.py --source sketch_trials --site docs/bean-draw
+
+This verifies that the SVG exactly matches BEAN's recorded SHA-256 hash,
+rejects active SVG content, and copies immutable reviewed entries to
+`docs/bean-draw/entries/` plus an append-only `index.json`. Commit and review
+only intentionally public artwork. GitHub Pages displays the gallery at
+https://danieloculus0-bot.github.io/BEAN/bean-draw/ **after** reviewed changes
+are merged to the configured Pages source. Static Pages cannot write into
+BEAN's private SQLite journal; the review link opens a pre-filled GitHub issue
+for a human to submit feedback explicitly.
+
+The existing sketch GitHub Actions workflow also runs the **real Python Core**
+using a scripted, deterministic model fixture with two drawing attempts. It
+uploads the SVG, sidecars and curated index as a downloadable Actions artifact.
+That CI demonstration is visibly labeled SYNTHETIC TEST FIXTURE, **not** real
+autonomous subject choice, a live web research session, independent vision, or
+acquired artistic skill. GitHub-hosted runners do not have the owner's local
+llama.cpp or Ollama server. Run real-model experiments only where the owner has
+configured a provider and intentionally provided reference access.
+
 ## Measurement boundaries
 
 Without a real visual evaluation component, BEAN cannot inspect a rendered SVG. Its self-critique only examines the coordinates and written description. Trials are labeled unverified regardless of self-confidence. An application may inject a separate visual_judge(path, subject) callback returning a dict with Boolean satisfactory and text feedback, after examining the actual image. Such a result is only host reported, not independently authenticated. Do not fake image recognition by comparing the subject to its own generated label.
