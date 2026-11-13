@@ -25,7 +25,7 @@ Broad general web search requires a locally configured BRAVE_SEARCH_API_KEY. Wit
 ## BEAN Draw gallery and retained review files
 
 Each SketchLab attempt now preserves **both** the SVG and a neighboring
-\`attempt_XX.json\` review sidecar. The sidecar links the drawing hash, original
+`attempt_XX.json` review sidecar. The sidecar links the drawing hash, original
 Core SHA journal tip, chosen subject, self-critique, model identity, source
 revision, and any host feedback. Failed attempts without SVG still leave a
 sidecar so missing artwork is not silently counted as success.
@@ -38,7 +38,7 @@ data, then run:
 
 This verifies that the SVG exactly matches BEAN's recorded SHA-256 hash,
 rejects active SVG content, and copies immutable reviewed entries to
-\`docs/bean-draw/entries/\` plus an append-only \`index.json\`. Commit and review
+`docs/bean-draw/entries/` plus an append-only `index.json`. Commit and review
 only intentionally public artwork. GitHub Pages displays the gallery at
 https://danieloculus0-bot.github.io/BEAN/bean-draw/ **after** reviewed changes
 are merged to the configured Pages source. Static Pages cannot write into
