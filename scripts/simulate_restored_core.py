@@ -217,7 +217,7 @@ def run_simulations(source: Path) -> dict:
                 "blind_cases_total": digital["blind_cases_total"],
                 "correct": {
                     name: digital[f"{name}_correct_total"]
-                    for name in ("candidate", "passive", "shuffled", "always_zero")
+                    for name in ("candidate", "passive", "memory_ablated", "shuffled", "always_zero")
                 },
                 "candidate_minus_passive": (
                     digital["candidate_correct_total"] -
