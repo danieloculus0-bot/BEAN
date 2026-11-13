@@ -98,30 +98,63 @@ def run_scored_digital_cycle(db_path: Path, *, generation: int,
             world_id = 100000 + generation * 100 + family_index
             world = World(world_id, family)
             task = f"g{generation:05d}-{family}"
-            # Only observe() and per-action feedback() reach the learner.
-            learner = service.discover_analogy(
-                domain="synthetic_numeric_control",
-                task_ref=task,
+            # The next generation must actually consult durable reasoning
+            # evidence. A previous failed hypothesis widens the compositional
+            # grammar; an accepted or failed parent is revised using new host
+            # observations rather than merely scored after the fact.
+            parent = previous.get(family)
+            expanded = bool(parent and (
+                parent.get("learning_status") == "abstain"
+                or parent.get("hypothesis_grammar_expanded") is True))
+            # Generation-qualified IDs are genuinely unseen by the previous
+            # revision ancestry, including its unrewarded observations.
+            # The public blind pool remains separate from either arm.
+            training = (TRAIN if generation == 1 else tuple(
+                str(generation * 1000000 + int(pid)) for pid in TRAIN))
+            validation = (VALIDATE if generation == 1 else tuple(
+                str(generation * 1000000 + int(pid)) for pid in VALIDATE))
+            arguments = dict(
+                domain="synthetic_numeric_control", task_ref=task,
                 source_ref=f"bean-benchmark:World:{world_id}:{family}",
-                probe_ids=TRAIN, validation_probe_ids=VALIDATE,
+                probe_ids=training, validation_probe_ids=validation,
+                observe=world.observe, reward=world.feedback,
+                budget=BUDGET, method="disagreement", seed=world_id,
+                include_products=expanded)
+            if parent is None:
+                learner = service.discover_analogy(**arguments)
+                strategy = "cold_start_no_prior_receipt"
+            else:
+                learner = service.revise_discovered_analogy(
+                    parent_receipt_id=parent["learning_receipt_id"],
+                    **arguments)
+                strategy = "revise_prior_rule_from_fresh_feedback"
+            # The passive control receives the SAME expanded hypothesis class
+            # and reward budget, isolating probe selection from grammar scope.
+            passive = discover(
+                probe_ids=training, validation_probe_ids=validation,
+                observe=world.observe, reward=world.feedback,
+                budget=BUDGET, method="passive", seed=world_id,
+                include_products=expanded)
+            # The memory-ablated candidate does not receive the prior failure
+            # or prior policy. Same new-world observations, active strategy,
+            # budget and validation. This baseline isolates *the complete
+            # memory-conditioned choice*, not the grammar expansion alone.
+            ablated = discover(
+                probe_ids=training, validation_probe_ids=validation,
                 observe=world.observe, reward=world.feedback,
                 budget=BUDGET, method="disagreement", seed=world_id)
-            # Equal-budget passive exploration control, never installed as a
-            # learned Core policy.
-            passive = discover(
-                probe_ids=TRAIN, validation_probe_ids=VALIDATE,
-                observe=world.observe, reward=world.feedback,
-                budget=BUDGET, method="passive", seed=world_id)
-            # Explicit negative control: probes and feedback labels are
-            # deliberately mismatched. This must not gain genuine credit.
+            # Historical negative control, retained for continuity. Its label
+            # offset is NOT assumed to guarantee wrong feedback (audit #333).
             def wrong_feedback(case_id, action, *, _world=world):
                 return _world.feedback(str(int(case_id) + 1000000), action)
             shuffled = discover(
-                probe_ids=TRAIN, validation_probe_ids=VALIDATE,
+                probe_ids=training, validation_probe_ids=validation,
                 observe=world.observe, reward=wrong_feedback,
-                budget=BUDGET, method="disagreement", seed=world_id)
-            preparation.append((family, world, task, learner, passive, shuffled,
-                                previous.get(family)))
+                budget=BUDGET, method="disagreement", seed=world_id,
+                include_products=expanded)
+            preparation.append((
+                family, world, task, learner, passive, shuffled, ablated,
+                parent, expanded, strategy, training, validation))
     finally:
         service.close()
 
@@ -134,10 +167,12 @@ def run_scored_digital_cycle(db_path: Path, *, generation: int,
                    if item.get("generation") == generation]
         if _hash(current) != _hash(matching):
             raise ValueError("digital generation changed during evaluation")
-        for family, world, task, learner, passive, shuffled, parent in preparation:
-            score = {"candidate": 0, "passive": 0,
-                     "shuffled": 0, "always_zero": 0}
-            abstentions = {"candidate": 0, "passive": 0, "shuffled": 0}
+        for (family, world, task, learner, passive, shuffled, ablated,
+             parent, expanded, strategy, training, validation) in preparation:
+            score = {"candidate": 0, "passive": 0, "shuffled": 0,
+                     "memory_ablated": 0, "always_zero": 0}
+            abstentions = {"candidate": 0, "passive": 0,
+                           "shuffled": 0, "memory_ablated": 0}
             cases = []
             parent_score = 0
             parent_attempted = 0
@@ -150,6 +185,8 @@ def run_scored_digital_cycle(db_path: Path, *, generation: int,
                                 if passive["selected_rule"] is not None else None),
                     "shuffled": (act(shuffled["selected_rule"], sensors)
                                  if shuffled["selected_rule"] is not None else None),
+                    "memory_ablated": (act(ablated["selected_rule"], sensors)
+                                       if ablated["selected_rule"] is not None else None),
                     "always_zero": 0,
                 }
                 for arm, action in choices.items():
@@ -175,8 +212,15 @@ def run_scored_digital_cycle(db_path: Path, *, generation: int,
                 "family": family, "task_ref": task, "world_id": world.world_id,
                 "task_generator": "bean.evaluation.active_abstraction_benchmark.World",
                 "budget_probes": BUDGET,
-                "training_ids_sha256": _hash(TRAIN),
-                "validation_ids_sha256": _hash(VALIDATE),
+                "training_ids_sha256": _hash(training),
+                "validation_ids_sha256": _hash(validation),
+                "learning_strategy": strategy,
+                "revision_decision": learner.get("revision_decision"),
+                "prior_receipt_used_during_learning": (
+                    parent["learning_receipt_id"] if parent else None),
+                "hypothesis_grammar_expanded": expanded,
+                "grammar_expansion_trigger": (
+                    "retained_failed_or_expanded_search" if expanded else None),
                 "heldout_ids_sha256": _hash(BLIND),
                 "heldout_evaluated_after_service_restart": True,
                 "hidden_truth_not_passed_to_candidate": True,
@@ -189,6 +233,7 @@ def run_scored_digital_cycle(db_path: Path, *, generation: int,
                 "learning_reward_calls": learner["reward_calls"],
                 "passive_reward_calls": passive["reward_calls"],
                 "shuffled_reward_calls": shuffled["reward_calls"],
+                "memory_ablated_reward_calls": ablated["reward_calls"],
                 "scored_cases": len(BLIND),
                 "correct": score, "abstentions": abstentions,
                 "prior_generation_transfer_correct": (
@@ -222,6 +267,9 @@ def _summary(records, *, new_evaluation):
                 "correct": record["correct"],
                 "abstentions": record["abstentions"],
                 "learning_status": record["learning_status"],
+                "learning_strategy": record.get("learning_strategy", "historical_unrecorded"),
+                "revision_decision": record.get("revision_decision"),
+                "hypothesis_grammar_expanded": record.get("hypothesis_grammar_expanded", False),
                 "prior_generation_transfer_correct":
                     record["prior_generation_transfer_correct"],
                 # Attempted-case coverage is a distinct denominator. A score
@@ -251,6 +299,12 @@ def _summary(records, *, new_evaluation):
             record["correct"]["passive"] for record in records),
         "shuffled_correct_total": sum(
             record["correct"]["shuffled"] for record in records),
+        # Legacy checkpoint receipts predate the ablation arm. Missing
+        # measurements are unknown, never a fabricated zero score.
+        "memory_ablated_correct_total": (
+            sum(record["correct"]["memory_ablated"] for record in records)
+            if all("memory_ablated" in record["correct"] for record in records)
+            else None),
         "always_zero_correct_total": sum(
             record["correct"]["always_zero"] for record in records),
         "source_evidence_sha256": _hash(
