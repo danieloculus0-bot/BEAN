@@ -334,3 +334,28 @@ def test_legacy_memory_ablation_is_unknown_not_fabricated_zero(tmp_path):
     assert _summary(legacy, new_evaluation=False)[
         "memory_ablated_correct_total"] is None
     assert len(_evaluations(db)) == len(FAMILIES)
+
+
+def test_grammar_matched_control_is_independent_of_prior_receipt(tmp_path):
+    """Same grammar and feedback budget without retained learning state."""
+    db = tmp_path / "matched.sqlite3"
+    run_scored_digital_cycle(db, generation=1, source_sha="local-validation")
+    second = run_scored_digital_cycle(db, generation=2, source_sha="local-validation")
+    rows = [r for r in _evaluations(db) if r["generation"] == 2]
+    assert second["grammar_matched_correct_total"] == sum(
+        r["correct"]["grammar_matched"] for r in rows)
+    for row in rows:
+        assert row["grammar_matched_reward_calls"] == row["learning_reward_calls"]
+        assert row["grammar_matched_reward_calls"] == row["passive_reward_calls"]
+        assert row["correct"]["grammar_matched"] >= 0
+        assert all("grammar_matched" in case["actions"] for case in row["case_level_evidence"])
+        assert all("grammar_matched" in case["correct"] for case in row["case_level_evidence"])
+    assert second["families"]["parity"]["hypothesis_grammar_expanded"] is True
+    # A missing earlier arm is unknown, not a fabricated zero.
+    from bean.evaluation.github_digital_cycle import _summary
+    historical = [{**r, "correct": {k: v for k, v in r["correct"].items()
+                   if k != "grammar_matched"}} for r in rows]
+    assert _summary(historical, new_evaluation=False)[
+        "grammar_matched_correct_total"] is None
+    assert run_scored_digital_cycle(db, generation=2,
+        source_sha="local-validation")["new_evaluation"] is False
