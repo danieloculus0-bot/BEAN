@@ -143,6 +143,15 @@ def run_scored_digital_cycle(db_path: Path, *, generation: int,
                 probe_ids=training, validation_probe_ids=validation,
                 observe=world.observe, reward=world.feedback,
                 budget=BUDGET, method="disagreement", seed=world_id)
+            # Grammar-matched cold start: same active probes, reward budget,
+            # and expanded search space as the candidate, but no prior receipt.
+            # Unlike legacy memory_ablated, this isolates the benefit of
+            # revision/retained state from hypothesis-class expansion.
+            grammar_matched = discover(
+                probe_ids=training, validation_probe_ids=validation,
+                observe=world.observe, reward=world.feedback,
+                budget=BUDGET, method="disagreement", seed=world_id,
+                include_products=expanded)
             # Historical negative control, retained for continuity. Its label
             # offset is NOT assumed to guarantee wrong feedback (audit #333).
             def wrong_feedback(case_id, action, *, _world=world):
@@ -154,7 +163,7 @@ def run_scored_digital_cycle(db_path: Path, *, generation: int,
                 include_products=expanded)
             preparation.append((
                 family, world, task, learner, passive, shuffled, ablated,
-                parent, expanded, strategy, training, validation))
+                grammar_matched, parent, expanded, strategy, training, validation))
     finally:
         service.close()
 
@@ -168,11 +177,13 @@ def run_scored_digital_cycle(db_path: Path, *, generation: int,
         if _hash(current) != _hash(matching):
             raise ValueError("digital generation changed during evaluation")
         for (family, world, task, learner, passive, shuffled, ablated,
-             parent, expanded, strategy, training, validation) in preparation:
+             grammar_matched, parent, expanded, strategy, training, validation) in preparation:
             score = {"candidate": 0, "passive": 0, "shuffled": 0,
-                     "memory_ablated": 0, "always_zero": 0}
+                     "memory_ablated": 0, "grammar_matched": 0,
+                     "always_zero": 0}
             abstentions = {"candidate": 0, "passive": 0,
-                           "shuffled": 0, "memory_ablated": 0}
+                           "shuffled": 0, "memory_ablated": 0,
+                           "grammar_matched": 0}
             cases = []
             parent_score = 0
             parent_attempted = 0
@@ -187,6 +198,9 @@ def run_scored_digital_cycle(db_path: Path, *, generation: int,
                                  if shuffled["selected_rule"] is not None else None),
                     "memory_ablated": (act(ablated["selected_rule"], sensors)
                                        if ablated["selected_rule"] is not None else None),
+                    "grammar_matched": (
+                        act(grammar_matched["selected_rule"], sensors)
+                        if grammar_matched["selected_rule"] is not None else None),
                     "always_zero": 0,
                 }
                 for arm, action in choices.items():
@@ -234,6 +248,7 @@ def run_scored_digital_cycle(db_path: Path, *, generation: int,
                 "passive_reward_calls": passive["reward_calls"],
                 "shuffled_reward_calls": shuffled["reward_calls"],
                 "memory_ablated_reward_calls": ablated["reward_calls"],
+                "grammar_matched_reward_calls": grammar_matched["reward_calls"],
                 "scored_cases": len(BLIND),
                 "correct": score, "abstentions": abstentions,
                 "prior_generation_transfer_correct": (
@@ -304,6 +319,10 @@ def _summary(records, *, new_evaluation):
         "memory_ablated_correct_total": (
             sum(record["correct"]["memory_ablated"] for record in records)
             if all("memory_ablated" in record["correct"] for record in records)
+            else None),
+        "grammar_matched_correct_total": (
+            sum(record["correct"]["grammar_matched"] for record in records)
+            if all("grammar_matched" in record["correct"] for record in records)
             else None),
         "always_zero_correct_total": sum(
             record["correct"]["always_zero"] for record in records),
