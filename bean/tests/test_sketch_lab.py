@@ -4,7 +4,7 @@ import xml.etree.ElementTree as ET
 
 import pytest
 
-from bean.creativity.sketch_lab import SketchLab, draw_svg, validate_shapes
+from bean.creativity.sketch_lab import SketchLab, OllamaSketchProvider, draw_svg, validate_shapes
 from bean.learning import NativeReasoningService
 
 
@@ -177,3 +177,51 @@ def test_bean_may_end_when_self_satisfied_but_is_not_visual_verification(tmp_pat
         assert result["visual_success_independently_verified"] is False
     finally:
         core.close()
+
+
+def test_open_model_sketch_provider_uses_creative_json_not_reasoning_schema():
+    class LocalClient:
+        def __init__(self):
+            self.calls = []
+        def chat_json(self, model, messages, **kwargs):
+            self.calls.append((model, messages, kwargs))
+            return '{"subject":"a rainy garden","reference_query":""}'
+    client = LocalClient()
+    provider = OllamaSketchProvider(model_name="qwen2.5:1.5b", client=client)
+    reply = provider.complete("Choose ANY subject to draw")
+    assert reply["ok"] is True
+    assert reply["adapter_name"] == "ollama"
+    assert reply["model_name"] == "qwen2.5:1.5b"
+    assert client.calls[0][2]["options"]["num_predict"] == 2048
+    assert "schema" not in client.calls[0][2]  # NOT general reasoning response schema
+
+
+def test_forced_iteration_budget_ignores_unverified_self_satisfaction(tmp_path):
+    happy = ('{"claimed_subject":"bicycle","changes":"none",'
+             '"satisfied":true}')
+    model = FakeModel([plan(), drawing(), happy, drawing(), happy,
+                       drawing(), happy])
+    core = NativeReasoningService(tmp_path / "journal.sqlite3", model=model)
+    try:
+        result = SketchLab(core).run(
+            task_ref="all-four-is-not-a-success-claim", output_dir=tmp_path / "out",
+            max_attempts=3, complete_all_attempts=True, backend="stdlib")
+        assert result["attempts"] == 3
+        assert all(Path(row["metadata"]).exists() for row in result["history"])
+        assert result["visual_success_independently_verified"] is False
+        rows = [e for e in core.bank.journal.events()
+                if e["kind"] == "trial" and
+                e["data"].get("experiment") == "bean_sketch_v1"]
+        assert len(rows) == 3
+    finally:
+        core.close()
+
+
+def test_sketch_provider_reports_unreachable_local_model():
+    class OfflineClient:
+        def chat_json(self, *args, **kwargs):
+            raise RuntimeError("local model not available")
+    provider = OllamaSketchProvider(client=OfflineClient())
+    outcome = provider.complete("Choose ANY subject")
+    assert outcome["ok"] is False
+    assert outcome["adapter_name"] == "ollama"
