@@ -1,16 +1,16 @@
 {
-  "boots": 27,
+  "boots": 28,
   "consciousness_proven": false,
   "databases": {
     "core": {
-      "archive": "bean_memory.sqlite3.gz.g00027",
-      "bytes": 5103616,
-      "sha256": "12fbb1659473ebc33106256dc06b8bcf01f8dd22ab240af65b66a66a85d775bb"
+      "archive": "bean_memory.sqlite3.gz.g00028",
+      "bytes": 5259264,
+      "sha256": "1b5dd1ad83f3ce47e0a3d9592e253328a321a57fdfb1da38a4f9a202ded11ea6"
     },
     "reasoning": {
-      "archive": "bean_reasoning.sqlite3.gz.g00027",
-      "bytes": 638976,
-      "sha256": "ed82c3b8b4e10ca1150eb9acf5723b855f62287135427d1d0a11882997b288a6"
+      "archive": "bean_reasoning.sqlite3.gz.g00028",
+      "bytes": 716800,
+      "sha256": "84ca7dfbdb7cf95e96fb01fc2a2d2c53ff62f379f309a95d5ccf987af9d6f947"
     }
   },
   "digital_learning": {
@@ -30,9 +30,9 @@
           "passive": 48,
           "shuffled": 0
         },
-        "evaluation_sha256": "a14fd2cb7d8678fee09407e9e51ba7a943352c843f962bad0a0444358e6ff71a",
+        "evaluation_sha256": "09657ccbcb4170852d96c38ca089144f308ec6da70e2697decf8bfeae1b6fcc5",
         "incomplete_fields": {},
-        "learning_receipt_id": "2aab41f5aceafe790c17d0346c0e9e606b1fe962837b2039c9e011cd5f81b81c",
+        "learning_receipt_id": "83d24dd14c555272db7363f213066c39679685e04cef56353f7aab98cc0141e8",
         "learning_status": "provisional_rule",
         "prior_generation_transfer_attempted": 48,
         "prior_generation_transfer_correct": 26
@@ -49,12 +49,12 @@
           "passive": 48,
           "shuffled": 0
         },
-        "evaluation_sha256": "154ca3974b2d5fd0ead83d3885cc3a6847ba10252962ec1607a2fcc262fc81fd",
+        "evaluation_sha256": "50ff317d3c1e42d35dbeb817251359bdb2cb3ef236599b303cbe228e3f4a055d",
         "incomplete_fields": {},
-        "learning_receipt_id": "c39c9977d505101a6bd9790f42f1674a906a553d576ea68a1145b1c6c45f1a56",
+        "learning_receipt_id": "7dc21b8b1feab665a1b0d71d5148198925efe4fe9b1b104f5861aa13de6e3a52",
         "learning_status": "provisional_rule",
         "prior_generation_transfer_attempted": 48,
-        "prior_generation_transfer_correct": 34
+        "prior_generation_transfer_correct": 30
       },
       "parity": {
         "abstentions": {
@@ -68,35 +68,35 @@
           "passive": 0,
           "shuffled": 0
         },
-        "evaluation_sha256": "c858d3c06ff97e24af85b423c0d20dcb7593dc083974092877c355e7350069db",
+        "evaluation_sha256": "881acb21f1399c0e7c0ad9cbf4a136b97bcba10e52e8c0f11567920ef5971bcd",
         "incomplete_fields": {},
-        "learning_receipt_id": "33352e8981b8f4f0fb65228ff64183ea7dca0365c0dd5202a5bf5aab9130b502",
+        "learning_receipt_id": "4819d776eb2bad415ad3d33738b64d1ebefb7292b4a38b43dc585bf090ad8c3f",
         "learning_status": "abstain",
         "prior_generation_transfer_attempted": 0,
         "prior_generation_transfer_correct": 0
       }
     },
-    "generation": 27,
+    "generation": 28,
     "independently_audited": false,
     "new_evaluation": true,
     "passive_correct_total": 96,
     "schema": "bean.github.digital_feedback.v1",
     "scope": "synthetic_numeric_control_not_general_intelligence",
     "shuffled_correct_total": 0,
-    "source_evidence_sha256": "3cd2ef32b368aa43e6e31f1697d5ed471019a90876f1da8eca2bcc20536c16cc",
-    "source_sha": "ae1b5282c62d53ae73b07b8cedd994f8e14798a9"
+    "source_evidence_sha256": "70c94fc8519ff64dc2c683fcceb4275a3948d08ea1f3b8733eaebfcffb2fc081",
+    "source_sha": "6a8d4d5faf33082c3554b950cb5c12bfc7ecf847"
   },
-  "events": 890,
-  "generation": 27,
+  "events": 924,
+  "generation": 28,
   "github_run_attempt": "1",
-  "github_run_id": "43334775240",
+  "github_run_id": "43389966021",
   "model_weights_trained": false,
-  "previous_receipt_sha256": "98987f8f0670e9530c6d4a3bae76d5bef08d0b2dc6ebd1304eefa5b3ad0f2286",
+  "previous_receipt_sha256": "c0ff1b2ce3d6ed5cca644758bac95151ceab54cc3fd61378ae710649c29ce4d8",
   "processed_digital_commands": 2,
-  "receipt_sha256": "c0ff1b2ce3d6ed5cca644758bac95151ceab54cc3fd61378ae710649c29ce4d8",
+  "receipt_sha256": "70dad7b267a24b7e24a1479d628a45411f9a8e9aa8bcc5819fff303dcf364672",
   "schema": "bean.github.invoke.v1",
   "scope": "synthetic digital Core runtime and restart continuity, not subjective experience",
-  "source_sha": "ae1b5282c62d53ae73b07b8cedd994f8e14798a9",
+  "source_sha": "6a8d4d5faf33082c3554b950cb5c12bfc7ecf847",
   "synthetic_only": true,
   "ticks": 12
 }
