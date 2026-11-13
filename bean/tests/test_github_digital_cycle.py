@@ -251,3 +251,86 @@ def test_legacy_transfer_receipt_marks_only_missing_denominator_unknown(tmp_path
             "prior_generation_transfer_attempted": "Unknown"}
     # Summarizing historical evidence never rewrites or repairs its SHA journal.
     assert _evaluations(db) == before
+
+
+def test_retained_history_changes_next_generation_search(tmp_path):
+    """A measured failure drives a new hypothesis search after a real restart."""
+    from bean.learning.active_hypothesis import act, generate
+
+    assert not any(rule["kind"] == "product" for rule in generate(4))
+    expanded_rules = generate(4, include_products=True)
+    assert any(rule["kind"] == "product" for rule in expanded_rules)
+    assert act({"kind": "product", "lhs": 0, "rhs": 1, "polarity": 1},
+               (-0.25, 0.75, 0.3, 0.2)) == -1
+
+    db = tmp_path / "reasoning.sqlite3"
+    first = run_scored_digital_cycle(
+        db, generation=1, source_sha="local-validation")
+    assert first["families"]["parity"]["learning_status"] == "abstain"
+    baseline = {row["family"]: row for row in _evaluations(db)}
+    assert not baseline["parity"]["hypothesis_grammar_expanded"]
+
+    # Closing and reopening the native service happens inside the next run.
+    second = run_scored_digital_cycle(
+        db, generation=2, source_sha="local-validation")
+    after = {row["family"]: row for row in _evaluations(db)
+             if row["generation"] == 2}
+    for family in FAMILIES:
+        row = after[family]
+        assert row["learning_strategy"] == "revise_prior_rule_from_fresh_feedback"
+        assert row["prior_receipt_used_during_learning"] == baseline[family][
+            "learning_receipt_id"]
+        assert row["learning_reward_calls"] == row["passive_reward_calls"] == 60
+        assert row["memory_ablated_reward_calls"] == 60
+        assert row["revision_decision"] is not None
+        assert "memory_ablated" in row["correct"]
+        assert "memory_ablated" in row["abstentions"]
+
+    assert after["parity"]["hypothesis_grammar_expanded"] is True
+    assert second["families"]["parity"]["hypothesis_grammar_expanded"] is True
+    assert second["families"]["parity"]["learning_status"] == "provisional_rule"
+    assert after["parity"]["correct"]["candidate"] > after["parity"][
+        "correct"]["memory_ablated"]
+    assert len(_evaluations(db)) == 2 * len(FAMILIES)
+    assert run_scored_digital_cycle(
+        db, generation=2, source_sha="local-validation")["new_evaluation"] is False
+    assert len(_evaluations(db)) == 2 * len(FAMILIES)
+
+    # Continued experience must preserve the expanded hypothesis search
+    # through another independently reconstructed Core reasoning session.
+    third = run_scored_digital_cycle(
+        db, generation=3, source_sha="local-validation")
+    assert third["families"]["parity"]["hypothesis_grammar_expanded"] is True
+    assert third["families"]["parity"]["learning_status"] == "provisional_rule"
+    assert third["families"]["parity"]["learning_strategy"] == (
+        "revise_prior_rule_from_fresh_feedback")
+    assert len(_evaluations(db)) == 3 * len(FAMILIES)
+
+
+def test_no_prior_history_does_not_trigger_expanded_hypotheses(tmp_path):
+    """No generation-one checkpoint means no fabricated remembered failure."""
+    db = tmp_path / "cold.sqlite3"
+    cold = run_scored_digital_cycle(
+        db, generation=2, source_sha="local-validation")
+    for family in FAMILIES:
+        row = cold["families"][family]
+        assert row["learning_strategy"] == "cold_start_no_prior_receipt"
+        assert row["hypothesis_grammar_expanded"] is False
+    assert cold["families"]["parity"]["learning_status"] == "abstain"
+
+
+def test_legacy_memory_ablation_is_unknown_not_fabricated_zero(tmp_path):
+    from bean.evaluation.github_digital_cycle import _summary
+
+    db = tmp_path / "legacy.sqlite3"
+    run_scored_digital_cycle(
+        db, generation=1, source_sha="local-validation")
+    actual = _evaluations(db)
+    legacy = [
+        {**record, "correct": {
+            key: value for key, value in record["correct"].items()
+            if key != "memory_ablated"}}
+        for record in actual]
+    assert _summary(legacy, new_evaluation=False)[
+        "memory_ablated_correct_total"] is None
+    assert len(_evaluations(db)) == len(FAMILIES)
