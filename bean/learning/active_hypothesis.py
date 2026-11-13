@@ -37,10 +37,12 @@ def _sensor_fingerprint(value):
         state, separators=(",", ":"), allow_nan=False).encode()).hexdigest()
 
 
-def generate(dimensions):
+def generate(dimensions, *, include_products=False):
     """Compose candidate actions from channels, differences and constants."""
     if type(dimensions) is not int or not 2 <= dimensions <= 8:
         raise ValueError("Unsupported channel count")
+    if type(include_products) is not bool:
+        raise ValueError("include_products must be boolean")
     candidates = []
     for i in range(dimensions):
         for polarity in (-1, 1):
@@ -50,6 +52,13 @@ def generate(dimensions):
         for polarity in (-1, 1):
             candidates.append({"kind": "difference", "lhs": a, "rhs": b,
                                "polarity": polarity})
+    if include_products:
+        # A generic pairwise composition, activated by a measured model
+        # failure in a subsequent task rather than by a task-family label.
+        for a, b in combinations(range(dimensions), 2):
+            for polarity in (-1, 1):
+                candidates.append({"kind": "product", "lhs": a, "rhs": b,
+                                   "polarity": polarity})
     for constant in ACTIONS:
         candidates.append({"kind": "constant", "lhs": None, "rhs": None,
                            "polarity": constant})
@@ -62,6 +71,8 @@ def act(rule, state):
     score = state[rule["lhs"]]
     if rule["kind"] == "difference":
         score -= state[rule["rhs"]]
+    elif rule["kind"] == "product":
+        score *= state[rule["rhs"]]
     elif rule["kind"] != "channel":
         raise ValueError("Unrecognized hypothesis kind")
     score *= rule["polarity"]
@@ -76,7 +87,7 @@ def _entropy(actions):
 
 def discover(*, probe_ids, observe, reward, budget=12, method="disagreement",
              seed=0, tolerance=0.12, min_gap=0.08,
-             validation_probe_ids=None):
+             validation_probe_ids=None, include_products=False):
     """Choose and execute bounded resettable paired-intervention experiments.
 
     observe(probe_id) exposes ONLY the sensor vector. reward(probe_id, action)
@@ -135,7 +146,7 @@ def discover(*, probe_ids, observe, reward, budget=12, method="disagreement",
             raise ValueError(
                 "Validation requires sensor states unseen in training and "
                 "distinct within validation")
-    rules = generate(n)
+    rules = generate(n, include_products=include_products)
     losses = [0.0] * len(rules)
     remaining = list(probe_ids)
     rng = random.Random(seed)
@@ -215,7 +226,9 @@ def discover(*, probe_ids, observe, reward, budget=12, method="disagreement",
             failure_reason = "fresh_validation_regret_exceeded_tolerance"
     result = {
         "schema": SCHEMA, "method": method, "grammar": (
-            "signed_sensor", "signed_sensor_difference", "constant_action"),
+            "signed_sensor", "signed_sensor_difference", "constant_action") + (
+            ("signed_sensor_product",) if include_products else ()),
+        "hypothesis_grammar_expanded": include_products,
         "hypotheses_generated": len(rules),
         "candidate_source": "local_compositional_search",
         "correct_sensor_or_policy_supplied": False,
