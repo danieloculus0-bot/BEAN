@@ -121,6 +121,7 @@ def curate(source: Path, site: Path) -> dict:
             "status": row["status"],
             "origin": source_kind,
             "model_id": row["model_id"],
+            "model_digest": row.get("model_digest"),
             "provider_kind": row["provider_kind"],
             "self_review": row.get("self_review") or {},
             "visual_feedback": row.get("visual_feedback"),
