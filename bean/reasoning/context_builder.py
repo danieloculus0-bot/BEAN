@@ -20,6 +20,7 @@ LIMITS = {
     "wisdom_recent_traces": 10,
     "relationship_summaries": 10,
     "open_hypotheses": 10,
+    "focused_world_memory": 6,
 }
 
 
@@ -86,6 +87,17 @@ def build_reasoning_context(session_uuid: str, source_event_id: int | None = Non
     wisdom_traces = _rows(conn, "SELECT id, trace_id, source_event_id, root_trigger, pressure_delta_json, meaning_frame_id, uncertainty_score, created_at FROM wisdom_activation_traces ORDER BY id DESC LIMIT ?", (LIMITS["wisdom_recent_traces"],))
     relationships = _rows(conn, "SELECT id, relationship_id, supervisor_id, display_label, interaction_count, trust_score, trust_status, last_seen_at FROM supervisor_relationships WHERE active=1 ORDER BY last_seen_at DESC LIMIT ?", (LIMITS["relationship_summaries"],))
 
+    # The full BEAN world-model database, not a second memory service, owns
+    # these claims. Prefer the actual triggering event; only use the session's
+    # most recent event when there is no specific request to contextualize.
+    from ..memory.focused_recall import recall_focused_claims
+    focus_event = (_row(conn, "SELECT summary FROM events WHERE id=? AND session_uuid=?",
+                        (source_event_id, session_uuid)) if source_event_id is not None
+                   else (recent_events[0] if recent_events else {}))
+    focused = recall_focused_claims(
+        conn, str(focus_event.get("summary") or ""),
+        limit=LIMITS["focused_world_memory"])
+
     context = {
         "identity_rules": {
             "llm_is_tool_not_identity": True,
@@ -101,6 +113,7 @@ def build_reasoning_context(session_uuid: str, source_event_id: int | None = Non
         "capabilities": capabilities,
         "recent_events": recent_events,
         "active_world_claims": active_claims,
+        "focused_world_memory": focused,
         "uncertainty_claims": uncertainty_claims,
         "wisdom_recent_traces": wisdom_traces,
         "relationship_summaries": relationships,
