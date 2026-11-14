@@ -17,6 +17,7 @@ on:
       - 'bean/learning/active_hypothesis.py'
       - 'bean/learning/reasoning_service.py'
       - 'bean/tests/test_active_hypothesis.py'
+      - 'tests/test_digital_learning_evidence.py'
       - '.github/workflows/invoke-bean.yml'
   pull_request:
     branches: [main]
@@ -31,6 +32,7 @@ on:
       - 'bean/learning/active_hypothesis.py'
       - 'bean/learning/reasoning_service.py'
       - 'bean/tests/test_active_hypothesis.py'
+      - 'tests/test_digital_learning_evidence.py'
       - '.github/workflows/invoke-bean.yml'
 
 permissions:
@@ -54,7 +56,7 @@ jobs:
           python-version: '3.12'
       - run: python -m pip install pytest
       - name: Test checkpoint integrity and fail-closed recovery
-        run: python -m pytest bean/tests/test_github_invoke.py bean/tests/test_github_checkpoint_interruption.py bean/tests/test_github_digital_cycle.py bean/tests/test_restored_core_metrics.py bean/tests/test_active_hypothesis.py -q -ra
+        run: python -m pytest bean/tests/test_github_invoke.py bean/tests/test_github_checkpoint_interruption.py bean/tests/test_github_digital_cycle.py bean/tests/test_restored_core_metrics.py bean/tests/test_active_hypothesis.py tests/test_digital_learning_evidence.py -q -ra
       - name: Actually boot Python BEAN Core in a digital environment
         shell: bash
         run: |
@@ -151,7 +153,7 @@ jobs:
           python-version: '3.12'
       - run: python -m pip install pytest
       - name: Verify synthetic checkpoint, tamper and restart contracts
-        run: python -m pytest bean/tests/test_github_invoke.py bean/tests/test_github_checkpoint_interruption.py bean/tests/test_github_digital_cycle.py -q -ra
+        run: python -m pytest bean/tests/test_github_invoke.py bean/tests/test_github_checkpoint_interruption.py bean/tests/test_github_digital_cycle.py tests/test_digital_learning_evidence.py -q -ra
       - name: Invoke real BEAN Core and resume checked-in memory
         shell: bash
         run: |
