@@ -20,3 +20,11 @@ Regression uses synthetic world claims and events for: an old low-confidence fac
 The retrieved memories are **claims**, not independently established truths. This change does not update model weights or demonstrate any subjective experience. Later benchmarking should compare matched factual-recall problems before and after the retrieval change, with failures and false positives tracked. No outward licensing decision for BEAN is implied.
 
 Next candidate for evaluation: Omega / OpenNARS' evidence revision logic, but avoid installing their heavy runtimes unless the incremental tests show a benefit.
+
+## Omega-inspired incremental revision evidence
+
+Design inspiration: [Omega](https://github.com/singnet/Omega), Apache License 2.0. No Omega code was copied or runtime installed.
+
+The active claim's prior evidence is now carried into BEAN's actual reasoning prompts. Textually changed claims are marked `changed_text_unresolved`; identical successive claims are `same_text_unverified`. Neither status proves logical contradiction, current truth, or independent source validation. Prior claim ID, source reference, excerpt and confidence remain inspectable; BEAN does not automatically erase historical observations or promote newer versions as verified.
+
+This incremental evidence-provenance step is not a port of Omega's formal NAL/PLN/MeTTa inference. Installing Omega's Prolog and MeTTa dependencies would require a separate measured benefit.

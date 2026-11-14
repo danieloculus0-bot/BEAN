@@ -70,7 +70,7 @@ def recall_focused_claims(conn: sqlite3.Connection, query: str, *,
     for row in rows:
         item = dict(row)
         previous = conn.execute(
-            "SELECT claim_id FROM world_claims WHERE key=? AND id<? "
+            "SELECT claim_id,content,confidence,source_ref FROM world_claims WHERE key=? AND id<? "
             "ORDER BY id DESC LIMIT 1", (item["key"], item["id"])
         ).fetchone()
         try:
@@ -79,11 +79,28 @@ def recall_focused_claims(conn: sqlite3.Connection, query: str, *,
                 evidence = []
         except (TypeError, json.JSONDecodeError):
             evidence = []
+        # Source text disagreement does not establish a factual or logical
+        # contradiction: measurements can legitimately change over time.
+        # Preserve the competing observation for independent assessment.
+        revision_status = (
+            "no_prior_record" if previous is None
+            else "same_text_unverified" if previous["content"] == item["content"]
+            else "changed_text_unresolved"
+        )
+        revision_evidence = {
+            "status": revision_status,
+            "prior_excerpt": previous["content"][:200] if previous else None,
+            "prior_source_ref": previous["source_ref"] if previous else None,
+            "prior_confidence": previous["confidence"] if previous else None,
+            "semantic_contradiction_proven": False,
+            "independent_source_verification": False,
+        }
         selected.append({
             "key": item["key"],
             "claim_id": item["claim_id"],
             "source_row_id": item["id"],
             "previous_claim_id": previous["claim_id"] if previous else None,
+            "revision_evidence": revision_evidence,
             "content": item["content"][:350],
             "category": item["category"],
             "confidence": item["confidence"],

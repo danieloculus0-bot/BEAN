@@ -89,6 +89,12 @@ def build_ollama_prompt(context: dict, request_type: str = "reflection") -> str:
              "source_ref": x.get("source_ref"),
              "evidence_refs": (x.get("evidence_refs") or [])[:3],
              "confidence": x.get("confidence"),
+             "revision_evidence": {
+                 "status": (x.get("revision_evidence") or {}).get("status", "unknown"),
+                 "prior_excerpt": str((x.get("revision_evidence") or {}).get(
+                     "prior_excerpt") or "")[:160],
+                 "prior_source_ref": (x.get("revision_evidence") or {}).get("prior_source_ref"),
+                 "semantic_contradiction_proven": False},
              "source_authenticated": False}
             for x in focused[:3]
         ],
