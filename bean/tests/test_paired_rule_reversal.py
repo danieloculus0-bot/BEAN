@@ -26,7 +26,7 @@ def reversal_trial(world_id: int, budget: int) -> dict:
 
     train = [str(1000 + i) for i in range(40)]
     blind = [str(50000 + i) for i in range(48)]
-    seen = {"cold": [], "warm": []}
+    # Verify disjoint sensor states, not just distinct case identifiers.\n    prior_ids = [str(100 + i) for i in range(40)]\n    observed = [world.observe(case) for case in prior_ids + train + blind]\n    assert len(set(observed)) == len(observed), "Prior/train/blind state collision"\n    seen = {"cold": [], "warm": []
     results = {}
     for arm in ("cold", "warm"):
         def feedback(case, action, arm=arm):
@@ -61,7 +61,7 @@ def reversal_trial(world_id: int, budget: int) -> dict:
             for case in blind
         ),
         "training_reward_calls": {arm: len(calls) for arm, calls in seen.items()},
-        "blind_used_for_training": False,
+        "blind_used_for_training": False,\n        "prior_source": "same_trial_synthetic_feedback_not_restored_core_memory",\n        "prior_train_blind_sensor_disjoint": True,
     }
 
 
@@ -82,7 +82,7 @@ class PairedRuleReversalTests(unittest.TestCase):
             self.assertEqual(warm["probes_used"], row["budget"])
             self.assertEqual(cold["attempted"] + cold["abstained"], 48)
             self.assertEqual(warm["attempted"] + warm["abstained"], 48)
-            self.assertFalse(row["blind_used_for_training"])
+            self.assertFalse(row["blind_used_for_training"])\n            self.assertTrue(row["prior_train_blind_sensor_disjoint"])\n            self.assertEqual(row["prior_source"],\n                             "same_trial_synthetic_feedback_not_restored_core_memory")
             if row["budget"] == 12:
                 self.assertEqual(cold["probe_ids"], warm["probe_ids"])
                 self.assertFalse(warm["prior_guided"])
