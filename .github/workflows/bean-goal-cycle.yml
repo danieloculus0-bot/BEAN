@@ -1,0 +1,38 @@
+name: BEAN autonomous goal cycle regression
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'bean/runtime/goal_cycle.py'
+      - 'bean/runtime/tick_handlers.py'
+      - 'bean_run.py'
+      - 'bean/tests/test_goal_cycle.py'
+      - '.github/workflows/bean-goal-cycle.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'bean/runtime/goal_cycle.py'
+      - 'bean/runtime/tick_handlers.py'
+      - 'bean_run.py'
+      - 'bean/tests/test_goal_cycle.py'
+      - '.github/workflows/bean-goal-cycle.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  goal-cycle:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+      fail-fast: false
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install pytest psutil
+      - run: python -m compileall -q bean/runtime/goal_cycle.py bean/runtime/tick_handlers.py bean_run.py bean/tests/test_goal_cycle.py
+      - run: python -m pytest bean/tests/test_goal_cycle.py bean/tests/test_task_engine_lab011.py bean/tests/test_task_adversarial_lab011.py -q -ra
