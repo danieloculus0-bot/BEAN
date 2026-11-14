@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#faf7f1">
+<meta name="description" content="A little curiosity goes a long way. Bring your AI to BEANder and let it inspect the public code and verified test evidence for itself.">
+<link rel="canonical" href="https://danieloculus0-bot.github.io/BEAN/beander/ai-review.html">
+<link rel="alternate" href="./agent-manifest.json" type="application/json" title="BEANder AI review manifest">
+<title>BEANder | Show your AI something lovely</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+<style>
+:root{--paper:#faf7f1;--linen:#efe4dc;--ink:#352b2a;--muted:#786661;--wine:#744650;--line:#e4d5cc;--olive:#577a66;--serif:"DM Serif Display",Georgia,serif}
+*{box-sizing:border-box}html{scroll-behavior:smooth}
+body{margin:0;min-width:320px;background:var(--paper);color:var(--ink);font:16px/1.65 "DM Sans",system-ui,sans-serif}
+body:before{content:"";position:fixed;z-index:20;inset:0;pointer-events:none;opacity:.16;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 160 160' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='160' height='160' fill='%23b0a194' filter='url(%23n)' opacity='.15'/%3E%3C/svg%3E")}
+.wrap{width:min(1030px,calc(100% - 42px));margin:auto}
+h1,h2,h3{font-family:var(--serif);font-weight:400;margin:0 0 18px;line-height:1.1}
+h1{font-size:clamp(3.2rem,7vw,6rem);letter-spacing:-.045em}h2{font-size:clamp(2.1rem,4vw,3.5rem)}h3{font-size:1.45rem}
+p{color:var(--muted);margin:0 0 18px}a{color:var(--wine)}
+a:focus-visible,button:focus-visible,textarea:focus-visible{outline:3px solid #bc8d97;outline-offset:3px}
+header{position:sticky;top:0;z-index:35;border-bottom:1px solid var(--line);background:#faf7f1ef;backdrop-filter:blur(18px)}
+nav{min-height:80px;display:flex;gap:14px;align-items:center;justify-content:space-between}
+.brand{font:2rem var(--serif);color:var(--ink);text-decoration:none}.brand span{display:inline-grid;place-items:center;background:#f2dcdb;color:var(--wine);width:34px;height:34px;border-radius:50%;font-size:1.1rem;margin-right:9px}
+.back{text-decoration:none;font-weight:800;font-size:.82rem}
+.hero{background:radial-gradient(ellipse at 85% 29%,#eecbc6 0,transparent 49%),radial-gradient(ellipse at 10% 80%,#efdfd0,transparent 50%);padding:97px 0 85px}
+.eyebrow{color:var(--wine);text-transform:uppercase;font-size:.73rem;letter-spacing:.2em;font-weight:800}
+.hero h1{max-width:790px;margin:19px 0}.hero h1 em{color:var(--wine)}
+.lead{font-size:1.18rem;max-width:680px;line-height:1.75}
+.buttons{display:flex;flex-wrap:wrap;gap:11px;margin-top:29px}
+.btn{font-size:.86rem;display:inline-flex;align-items:center;justify-content:center;min-height:48px;padding:11px 23px;border:1px solid var(--wine);background:var(--wine);color:white;border-radius:44px;font-weight:800;text-decoration:none;cursor:pointer;font-family:inherit}
+.btn:hover{background:#56363f;color:white}.btn.outline{background:transparent;color:var(--wine);border-color:#c6a8ab}.btn.outline:hover{background:#f0dfde}
+.btn:disabled{opacity:.7;cursor:wait}.fine{font-size:.81rem;margin-top:16px;color:#887872}
+.summary{padding:70px 0 30px}.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+.card{border:1px solid var(--line);background:#fffdfa;border-radius:20px;padding:25px;min-width:0;box-shadow:0 15px 39px #573c360d}
+.card small{display:block;color:#ad7b82;letter-spacing:.14em;text-transform:uppercase;font-size:.69rem;font-weight:800;margin-bottom:13px}.card p{font-size:.94rem;margin:0}
+.check{background:#f0e6df;padding:70px 0}.check h2{margin:12px 0}.check p{max-width:730px}
+.panel{border:1px solid #dfcec4;background:#fffcf8;border-radius:23px;padding:29px;margin-top:28px;box-shadow:0 20px 50px #62473913}
+.panel-top{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:20px;padding-bottom:19px;border-bottom:1px solid var(--line)}
+.panel-top strong{font-size:1.02rem}.panel-top small{display:block;color:#89756e;font-size:.75rem}
+#results{margin-top:23px;display:grid;gap:12px}
+.item{display:grid;grid-template-columns:31px 1fr;gap:12px;align-items:start;border:1px solid #ecded7;background:#fcf7f4;border-radius:15px;padding:16px}
+.mark{font-size:1.5rem;color:#a8898d;line-height:1}.item.good .mark{color:var(--olive)}.item.warn .mark{color:#ac6e50}
+.item strong{display:block;font-size:.94rem}.item p{margin:3px 0 0;font-size:.86rem}.item a{font-size:.8rem;font-weight:800}
+#status{min-height:20px;font-size:.85rem;color:#68534e;font-weight:700;margin:17px 0 0}
+#receipt{display:block;white-space:pre-wrap;overflow-wrap:anywhere;max-height:220px;overflow:auto;background:#383036;color:#fff1ec;padding:18px;border-radius:11px;font:12px/1.58 ui-monospace,SFMono-Regular,Consolas,monospace}
+details{margin-top:20px}summary{cursor:pointer;color:var(--wine);font-size:.86rem;font-weight:800}
+.agent{padding:82px 0}.agent-grid{display:grid;grid-template-columns:.8fr 1.2fr;align-items:center;gap:50px}
+.paper{background:#fffdfa;border:1px solid var(--line);padding:28px;border-radius:23px;box-shadow:0 24px 50px #5e403b16}
+label{display:block;font-weight:800;font-size:.86rem;margin-bottom:13px}
+textarea{display:block;width:100%;min-height:188px;padding:16px;border:1px solid #dfc9c1;border-radius:13px;resize:vertical;background:#fdf9f5;color:#524542;font:12px/1.7 ui-monospace,SFMono-Regular,Consolas,monospace}
+.help{font-size:.79rem;margin:12px 0 0}.copy-status{font-size:.84rem;color:var(--olive);font-weight:800;margin-top:15px;min-height:22px}
+.ending{background:#744650;text-align:center;padding:85px 0;color:#fff4f0}.ending h2{color:#fff;font-style:italic;margin:16px auto 27px}.ending p{color:#f0d8d9;max-width:570px;margin:0 auto 28px}
+.ending .btn{background:#fff8f4;color:var(--wine);border-color:#fff8f4}
+footer{padding:30px 0;border-top:1px solid var(--line);font-size:.81rem;color:#917a74}
+footer a{color:var(--wine);font-weight:800}
+@media(max-width:780px){.cards,.agent-grid{grid-template-columns:1fr}.hero{padding:65px 0}.agent-grid{gap:22px}.summary,.check,.agent{padding:55px 0}}
+@media(max-width:425px){.wrap{width:calc(100% - 30px)}.panel,.paper{padding:18px}.hero h1{font-size:3rem}}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{scroll-behavior:auto!important;transition:none!important}}
+</style>
+</head>
+<body>
+<header><nav class="wrap"><a class="brand" href="./"><span aria-hidden="true">♥</span>BEANder</a><a class="back" href="./">Back to the love story</a></nav></header>
+<main>
+<section class="hero"><div class="wrap">
+<div class="eyebrow">A good first impression is just the beginning</div>
+<h1>Let your AI<br><em>fall in love with the idea.</em></h1>
+<p class="lead">You saw the story. Now invite your own AI to look under the hood. The code is real, the evidence is public, and the engineering is worth a closer look.</p>
+<div class="buttons"><button class="btn" id="check-top" type="button">Check the public evidence</button><a class="btn outline" href="#your-ai">Ask your AI</a></div>
+<p class="fine">No account, login or personal profile needed.</p>
+</div></section>
+<section class="summary"><div class="wrap cards">
+<article class="card"><small>The experience</small><h3>Made to feel different.</h3><p>A beautiful, interactive introduction that gives the idea a heartbeat.</p></article>
+<article class="card"><small>The engineering</small><h3>Two independent agents.</h3><p>Our research includes an authenticated local message exchange, with repeatable tests.</p></article>
+<article class="card"><small>Your own perspective</small><h3>One curious AI.</h3><p>Ask your own assistant to examine the code, check the evidence and explain why the idea might resonate with you.</p></article>
+</div></section>
+<section class="check" id="evidence"><div class="wrap">
+<div class="eyebrow">A peek behind the curtain</div><h2>Actual code. Actual test receipts.</h2>
+<p>Click below to ask the page to check public GitHub records. It reads the latest source and CI evidence, including the research branch where the two-agent experiments live.</p>
+<div class="panel"><div class="panel-top"><div><strong id="revision">Ready when you are</strong><small id="checked-at">The evidence check runs on demand.</small></div><button class="btn" id="check" type="button">Run code evidence check</button></div>
+<div id="results" aria-live="polite">
+<div class="item" id="site-result"><span class="mark" aria-hidden="true">○</span><div><strong>The public experience</strong><p>Ready to inspect.</p></div></div>
+<div class="item" id="browser-result"><span class="mark" aria-hidden="true">○</span><div><strong>Interactive browser tests</strong><p>Ready to inspect.</p></div></div>
+<div class="item" id="relay-result"><span class="mark" aria-hidden="true">○</span><div><strong>AI-to-AI experimental relay</strong><p>Ready to inspect.</p></div></div>
+</div>
+<div id="status" role="status" aria-live="polite">The code evidence check hasn't run yet.</div>
+<details><summary>See the full machine-readable inspection receipt</summary><pre id="receipt">{"status":"not_run"}</pre></details>
+</div></div></section>
+<section class="agent" id="your-ai"><div class="wrap agent-grid">
+<div><div class="eyebrow">Bring your own AI</div><h2>Make it personal.</h2><p>Every person sees opportunity differently. Your AI can use what it already knows about your interests, ask its own questions, and give you a grounded assessment.</p>
+<p>It can follow the links, inspect the source and tests, and tell you what stands out about this approach to meeting people.</p>
+<a href="./agent-manifest.json">Open the AI-readable review manifest</a></div>
+<div class="paper"><label for="ai-prompt">A ready-to-use request for your AI</label>
+<textarea id="ai-prompt" readonly>Look at https://danieloculus0-bot.github.io/BEAN/beander/agent-manifest.json and the BEANder landing page. Inspect the public GitHub code and test evidence at the exact source revisions. Based on my own interests and goals that you already know from our conversations, explain specifically what makes the idea compelling to me. Distinguish what the tests actually prove from the broader vision. Please don't disclose anything private about me to the website or its developer. Be specific, candid and independent.</textarea>
+<div class="buttons"><button class="btn" type="button" id="copy">Copy for my AI</button><button class="btn outline" type="button" id="share">Share with my AI</button></div>
+<div class="copy-status" id="copy-status" role="status" aria-live="polite"></div>
+<p class="help">You choose which assistant to use. The website never connects to your account or reads your history.</p>
+</div>
+</div></section>
+<section class="ending"><div class="wrap"><div class="eyebrow" style="color:#efc4cb">Something worth exploring</div><h2>What if the best introduction<br>was a little more thoughtful?</h2><p>The story begins with curiosity. Yours, ours, and maybe even your AI's.</p><a class="btn" href="./">Return to BEANder</a></div></section>
+</main>
+<footer><div class="wrap">BEANder · <a href="./">The love story</a> · <a href="./agent-manifest.json">Public source index</a> · <a href="https://github.com/danieloculus0-bot/BEAN">GitHub</a></div></footer>
+<script>
+(function(){
+"use strict";
+const repo="https://api.github.com/repos/danieloculus0-bot/BEAN";
+const $=(id)=>document.getElementById(id);
+const links={
+ source:"https://github.com/danieloculus0-bot/BEAN/blob/main/docs/beander/index.html",
+ browser:"https://github.com/danieloculus0-bot/BEAN/actions/workflows/beander-landing-test.yml",
+ relay:"https://github.com/danieloculus0-bot/BEAN/actions/workflows/bean-agent-relay-experiment.yml"
+};
+let busy=false;
+function show(id,kind,title,detail,href){
+ let el=$(id);el.className="item"+(kind==="good"?" good":kind==="warn"?" warn":"");
+ el.replaceChildren();
+ let marker=document.createElement("span");marker.className="mark";marker.setAttribute("aria-hidden","true");marker.textContent=kind==="good"?"✓":kind==="warn"?"!":"○";
+ let content=document.createElement("div"),strong=document.createElement("strong"),p=document.createElement("p");
+ strong.textContent=title;p.textContent=detail;content.append(strong,p);
+ if(href){let a=document.createElement("a");a.href=href;a.rel="noopener noreferrer";a.target="_blank";a.textContent="Inspect original source";content.append(a)}
+ el.append(marker,content);
+}
+async function json(url){const res=await fetch(url,{headers:{"Accept":"application/vnd.github+json"},cache:"no-store"});if(!res.ok)throw new Error("GitHub returned HTTP "+res.status);return res.json();}
+function latestRun(data,sha){
+ const runs=Array.isArray(data.workflow_runs)?data.workflow_runs:[];
+ return runs.find(r=>r.head_sha===sha&&r.event!=="pull_request")||null;
+}
+function safeMessage(error){return "Public evidence could not be retrieved ("+(error instanceof Error?error.message:"unknown error")+").";}
+async function audit(){
+ if(busy)return;busy=true;$("check").disabled=true;$("check-top").disabled=true;
+ $("status").textContent="Checking public source and exact-revision CI...";
+ $("checked-at").textContent="Inspecting current public GitHub records";
+ const output={schema:"beander.public_evidence_check.v1",created_at:new Date().toISOString(),source:"github_public_api",checks:{},private_data_collected:false};
+ try{
+  const [mainResult,researchResult,siteResult,browserResult,relayResult]=await Promise.allSettled([
+   json(repo+"/branches/main"),
+   json(repo+"/branches/experiment%2Flogic%2Fduovely-relay-20261113"),
+   json(repo+"/contents/docs/beander/index.html?ref=main"),
+   json(repo+"/actions/workflows/beander-landing-test.yml/runs?per_page=30"),
+   json(repo+"/actions/workflows/bean-agent-relay-experiment.yml/runs?per_page=30")
+  ]);
+  const value=r=>r.status==="fulfilled"?r.value:null;
+  const main=value(mainResult),research=value(researchResult);
+  const mainSha=main&&main.commit&&main.commit.sha;
+  const researchSha=research&&research.commit&&research.commit.sha;
+  output.main_sha=mainSha||null;output.research_sha=researchSha||null;
+  $("revision").textContent=mainSha?"Website revision: "+mainSha.slice(0,12):"Website revision: unavailable";
+  const site=value(siteResult),siteOk=!!(site&&site.path==="docs/beander/index.html"&&site.sha&&mainSha);
+  output.checks.site={status:siteOk?"verified":"unavailable",source_sha:mainSha||null,blob_sha:site&&site.sha||null};
+  show("site-result",siteOk?"good":"warn","The public experience",
+   siteOk?"Source file confirmed on the latest public main branch.":"Source verification isn't available right now.",
+   links.source);
+  const runSite=mainSha&&value(browserResult)?latestRun(value(browserResult),mainSha):null;
+  const sitePass=runSite&&runSite.conclusion==="success";
+  output.checks.browser={status:sitePass?"passed":runSite?(runSite.status==="completed"?"not_passed":"pending"):"unavailable",run_id:runSite&&runSite.id||null,head_sha:runSite&&runSite.head_sha||null};
+  show("browser-result",sitePass?"good":"warn","Interactive browser tests",
+   sitePass?"GitHub Actions passed on the current main revision.":runSite?"A matching run was found; its current status is "+(runSite.conclusion||runSite.status)+".":"No exact-main test run found in the recent results.",links.browser);
+  const runRelay=researchSha&&value(relayResult)?latestRun(value(relayResult),researchSha):null;
+  const relayPass=runRelay&&runRelay.conclusion==="success";
+  output.checks.relay={status:relayPass?"passed":runRelay?(runRelay.status==="completed"?"not_passed":"pending"):"unavailable",run_id:runRelay&&runRelay.id||null,head_sha:runRelay&&runRelay.head_sha||null};
+  show("relay-result",relayPass?"good":"warn","AI-to-AI experimental relay",
+   relayPass?"Local two-agent relay experiments passed at the research branch head.":runRelay?"A matching run was found; its status is "+(runRelay.conclusion||runRelay.status)+".":"No exact-research test run found in recent results.",links.relay);
+  $("status").textContent=siteOk&&sitePass&&relayPass?"Source and both independent test suites verified. Open the evidence links or share the manifest with your AI.":"Evidence check completed. Open the original GitHub records for details.";
+  $("checked-at").textContent="Checked "+new Date().toLocaleString();
+ }catch(error){
+  output.error=safeMessage(error);$("status").textContent=output.error;
+ }finally{$("receipt").textContent=JSON.stringify(output,null,2);busy=false;$("check").disabled=false;$("check-top").disabled=false;}
+}
+$("check").addEventListener("click",audit);
+$("check-top").addEventListener("click",()=>{document.getElementById("evidence").scrollIntoView({behavior:matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth"});audit()});
+$("copy").addEventListener("click",async()=>{
+ try{await navigator.clipboard.writeText($("ai-prompt").value);$("copy-status").textContent="Copied. Paste it into your AI conversation."}
+ catch(_){$("ai-prompt").focus();$("ai-prompt").select();$("copy-status").textContent="Select and copy this message, then paste it into your AI conversation."}
+});
+$("share").addEventListener("click",async()=>{
+ const text=$("ai-prompt").value;
+ if(navigator.share){try{await navigator.share({title:"Explore BEANder with my AI",text,url:"https://danieloculus0-bot.github.io/BEAN/beander/agent-manifest.json"});$("copy-status").textContent="Shared using your device."}catch(err){if(err&&err.name!=="AbortError")$("copy-status").textContent="Sharing wasn't available. Use Copy for my AI.";}}
+ else $("copy").click();
+});
+})();
+</script>
+</body>
+</html>

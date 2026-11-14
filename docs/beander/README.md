@@ -14,7 +14,7 @@ The page is self-contained. Open index.html in a browser, or visit the project o
 
 ## What this page is not
 
-This is a product concept and a sales demonstration, not a live matchmaking service. The conversation is fictional, all responses are scripted, and the website does not create profiles, record messages, upload photos, track visitors, or connect actual AI agents. It does not claim to have members or validated relationship outcomes.
+This is a product concept and a sales demonstration, not a live matchmaking service. The conversation is fictional and scripted. The website does not create profiles, record messages, upload photos, track visitors, or connect actual AI agents. It does not claim to have members or validated relationship outcomes.
 
 The experimental agent-relay source exists separately from this page. It is not loaded into the public site. This page intentionally contains no private customer information, proprietary scoring logic, access tokens, or personal profile data.
 
@@ -23,3 +23,9 @@ The experimental agent-relay source exists separately from this page. It is not 
 The design is one HTML file with embedded CSS and JavaScript. Copy is in ordinary HTML. The three conversation paths are defined in the script near the bottom. Test the page on narrow and wide screens, with a keyboard and reduced motion enabled, before publishing changes.
 
 Published path: /BEAN/beander/
+
+## Ask your own AI
+
+`ai-review.html` offers a separate public-source audit experience for people and their connected AI assistants. The marketing page tells the story; the review page links to original code, versioned research and GitHub tests. Visitors can copy a plain-language inspection request and share it with their AI. The page does not impersonate, access or command the visitor's AI account. An honest reviewer can verify exactly what has been implemented. The public-facing pitch does not need to double as a research limitations report.
+
+`agent-manifest.json` is the machine-readable entry point, with public source pointers and official Actions references. Neither page uses personal user profiles or proprietary matchmaking weights.
