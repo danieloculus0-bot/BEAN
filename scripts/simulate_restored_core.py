@@ -47,7 +47,7 @@ def coverage_metrics(families: dict, cases_per_family: int = 48) -> dict:
     if set(families) != set(FAMILIES):
         raise ValueError("missing or unexpected scored family")
     result = {}
-    for arm in ("candidate", "passive", "memory_ablated", "shuffled", "always_zero"):
+    for arm in ("candidate", "grammar_matched", "passive", "memory_ablated", "shuffled", "always_zero"):
         correct = 0
         attempted = 0
         per_family = {}
@@ -58,7 +58,7 @@ def coverage_metrics(families: dict, cases_per_family: int = 48) -> dict:
             abstained = (0 if arm == "always_zero"
                          else row["abstentions"].get(arm))
             if hits is None or abstained is None:
-                if arm != "memory_ablated":
+                if arm not in ("memory_ablated", "grammar_matched"):
                     raise ValueError("missing required control measurement")
                 missing = True
                 per_family[family] = {"status": "Unknown", "correct": None,
@@ -217,9 +217,9 @@ def run_simulations(source: Path) -> dict:
                 "blind_cases_total": digital["blind_cases_total"],
                 "correct": {
                     name: digital[f"{name}_correct_total"]
-                    for name in ("candidate", "passive", "memory_ablated", "shuffled", "always_zero")
+                    for name in ("candidate", "grammar_matched", "passive", "memory_ablated", "shuffled", "always_zero")
                 },
-                "candidate_minus_passive": (
+                "candidate_minus_grammar_matched": (\n                    None if digital.get("grammar_matched_correct_total") is None\n                    else digital["candidate_correct_total"] - digital["grammar_matched_correct_total"]),\n                "candidate_minus_passive": (
                     digital["candidate_correct_total"] -
                     digital["passive_correct_total"]),
                 "families": digital["families"],
