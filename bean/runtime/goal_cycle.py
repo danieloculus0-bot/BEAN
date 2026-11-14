@@ -103,7 +103,7 @@ class GoalCycle:
                 tries, good, bad = (stats["tries"] or 0,
                                     stats["good"] or 0, stats["bad"] or 0)
                 usable = good + bad
-                novelty = 4.0 / math.sqrt(1 + tries)
+                novelty = 8.0 / math.sqrt(1 + tries)
                 observed = 2.0 * (good - bad) / usable if usable else 0.0
                 priority = max(1, min(9, int(row["priority"])))
                 score = -100.0 * priority + novelty + observed
@@ -186,10 +186,13 @@ class GoalCycle:
             if goal is None:
                 break
             try:
-                outcomes.append(self._finish(
-                    goal, result=self.actions[goal["action_type"]](goal)))
+                result = self.actions[goal["action_type"]](goal)
+                error = None
             except Exception as exc:
-                outcomes.append(self._finish(goal, error=exc))
+                result, error = None, exc
+            # An error persisting a receipt must remain visible; do not
+            # mistake a storage failure for a second failed agent action.
+            outcomes.append(self._finish(goal, result=result, error=error))
         return outcomes
 
     def history(self, limit: int = 20) -> list[dict]:
