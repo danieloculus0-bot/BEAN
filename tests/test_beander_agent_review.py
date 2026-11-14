@@ -90,7 +90,7 @@ class BrowserContract(unittest.TestCase):
         try:
             page.get_by_role("button", name="Run code evidence check").click()
             page.get_by_text("Source and both independent test suites verified.", exact=False).wait_for()
-            receipt = json.loads(page.locator("#receipt").inner_text())
+            receipt = json.loads(page.locator("#receipt").text_content())
             self.assertEqual(receipt["main_sha"], MAIN_SHA)
             self.assertEqual(receipt["research_sha"], RESEARCH_SHA)
             for name in ("site", "browser", "relay"):
@@ -104,7 +104,7 @@ class BrowserContract(unittest.TestCase):
         try:
             page.get_by_role("button", name="Run code evidence check").click()
             page.get_by_text("Evidence check completed.", exact=False).wait_for()
-            receipt = json.loads(page.locator("#receipt").inner_text())
+            receipt = json.loads(page.locator("#receipt").text_content())
             for name in ("site", "browser", "relay"):
                 self.assertNotIn(receipt["checks"][name]["status"], ("verified", "passed"))
             self.assertEqual(errors, [])
