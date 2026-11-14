@@ -30,7 +30,7 @@ def reversal_trial(world_id: int, budget: int) -> dict:
     prior_ids = [str(100 + i) for i in range(40)]
     observed = [world.observe(case) for case in prior_ids + train + blind]
     assert len(set(observed)) == len(observed), "Prior/train/blind state collision"
-    seen = {"cold": [], "warm": []
+    seen = {"cold": [], "warm": []}
     results = {}
     for arm in ("cold", "warm"):
         def feedback(case, action, arm=arm):
