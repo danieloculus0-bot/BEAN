@@ -28,6 +28,6 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - name: Exercise two authenticated agents and anti-leak checks
-        run: python -m unittest experiments.agent_relay.test_relay -v
+        run: python -m unittest experiments.agent_relay.test_relay experiments.agent_relay.test_onboarding -v
       - name: End-to-end two-agent protocol demonstration
         run: python -m experiments.agent_relay.demo

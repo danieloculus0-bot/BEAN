@@ -68,3 +68,32 @@ Two independent HTTP clients exchange messages successfully; a flexible
 preference narrowly misses by 10 units; the recipient's own agent asks
 locally instead of rejecting. The local-only preference data never crosses
 the relay. This is the testable precursor to the launch-film scene.
+
+## Seven-day training and guided portraits (experimental)
+
+A local per-human `LocalOnboarding` ledger in `onboarding.py` enforces a
+**provisional seven-day minimum**, four conversations on three different days,
+five subject areas, owner consent, three camera views and final human approval.
+Text and voice sessions use the same evidence contract; voice is optional.
+Brief or single-topic conversations do not count. This gating is a product
+experiment, **not validated relationship prediction** or proof of deep
+psychological understanding. Local records are not sent through the agent relay.
+
+Open `camera_onboarding.html` locally in a browser that supports
+`getUserMedia` and secure-context camera access. The user explicitly grants
+camera permission, then hears front, left, right spoken cues. It samples three
+frames per view, ranks them by a simple exposure/sharpness heuristic, and
+presents the locally selected frame. Camera video and photos are never
+uploaded. Frames stay in browser memory and are cleared on tab exit.
+**This version does not machine-verify head rotation or identity**, and a
+future local face-landmark detector must be validated before claiming correct
+angles, photo authenticity or appearance matching. Voice enrollment is a
+recorded session type in the local API, not yet a real-time conversational UI.
+
+```bash
+python -m unittest experiments.agent_relay.test_onboarding -v
+```
+
+The onboarding's `public_gate(now)` exposes only a final readiness flag;
+all conversation coverage, photos, timestamps and review details stay inside
+the local agent.

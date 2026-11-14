@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>BEAN agent relay | private guided photo session</title>
+<style>
+:root {color-scheme:dark;font-family:system-ui, sans-serif;background:#17191d;color:#f5f5f7}
+body {max-width:780px;margin:2rem auto;padding:0 1.1rem}
+video {width:100%;max-height:55vh;border-radius:14px;background:#08090a;object-fit:contain;transform:scaleX(-1)}
+button {background:#405fdf;color:white;border:0;border-radius:9px;padding:0.85rem 1rem;font:inherit;cursor:pointer}
+button[disabled] {opacity:.35;cursor:not-allowed}
+button.secondary {background:#3b3e48}
+.controls {display:flex;flex-wrap:wrap;gap:.65rem;margin:1rem 0}
+.status {background:#262931;padding:1rem;border-radius:10px;line-height:1.6}
+#previews {display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+figure {margin:0;text-align:center}
+figure img {width:100%;border-radius:8px}
+small {color:#bbb}
+</style>
+</head>
+<body>
+<h1>Guided profile portraits</h1>
+<p>Three angles. Multiple frames per angle. The sharpest, best-lit frame is
+selected for your review. No uploads, no hidden camera start, and no persistent
+browser storage. These are experimental captures, not verified identity or
+automated 3D face-pose measurements.</p>
+<label><input type="checkbox" id="consent"> I choose to start a private camera session</label>
+<div class="controls">
+<button id="start">Start camera</button>
+<button id="capture" disabled>Capture guided angle</button>
+<button id="retake" disabled class="secondary">Retake current view</button>
+<button id="finish" disabled class="secondary">Finish and close camera</button>
+</div>
+<video id="video" autoplay playsinline muted></video>
+<h2 id="instruction">Awaiting camera permission</h2>
+<div class="status" id="status" role="status">No images have been captured.</div>
+<div id="previews"></div>
+<small>Your images remain in this tab's memory and are cleared if you close or
+reload it. This demo produces local SHA-256 receipts, not a beauty score.
+A future agent-side pose estimator must separately validate head orientation.</small>
+<script>
+"use strict";
+(() => {
+  const views = [
+    {id:"front", speech:"Face straight toward the camera."},
+    {id:"left", speech:"Slowly turn your face toward your left shoulder."},
+    {id:"right", speech:"Slowly turn your face toward your right shoulder."}
+  ];
+  const $ = id => document.getElementById(id);
+  const video = $("video");
+  let stream = null, index = 0, busy = false;
+  const results = new Map();
+
+  function speak(text) {
+    if (!("speechSynthesis" in window)) return;
+    speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.rate = 0.82;
+    speechSynthesis.speak(utterance);
+  }
+  function notice(text) { $("status").textContent = text; }
+  function sync() {
+    const done = index >= views.length;
+    $("capture").disabled = !stream || done || busy;
+    $("retake").disabled = !stream || busy || index === 0;
+    $("finish").disabled = !stream;
+    $("instruction").textContent = done ? "All three views complete."
+      : "View " + (index + 1) + " of " + views.length + ": " + views[index].speech;
+    if (stream && !done && !busy) speak(views[index].speech);
+  }
+  function end() {
+    if (stream) stream.getTracks().forEach(track => track.stop());
+    stream = null;
+    if ("speechSynthesis" in window) speechSynthesis.cancel();
+    sync();
+  }
+  function scoreFrame(canvas, ctx) {
+    const {data, width, height} = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    let brightness = 0, gradient = 0, samples = 0;
+    for (let y=2; y<height-2; y+=3) for (let x=2; x<width-2; x+=3) {
+      const p = (y * width + x) * 4;
+      const lum = (k) => (data[k] * .2126 + data[k+1]*.7152 + data[k+2]*.0722);
+      const q = lum(p);
+      brightness += q;
+      gradient += Math.abs(q-lum(p-4)) + Math.abs(q-lum(p-width*4));
+      samples++;
+    }
+    if (!samples) return 0;
+    const light = brightness/samples;
+    const exposure = Math.max(0, 1 - Math.abs(light-125)/125);
+    const sharpness = Math.min(1, gradient/samples/38);
+    return Math.round(100 * (.4*exposure + .6*sharpness)) / 100;
+  }
+  async function snapshot() {
+    const canvas = document.createElement("canvas");
+    canvas.width = 320; canvas.height = 240;
+    const ctx = canvas.getContext("2d", {willReadFrequently:true});
+    ctx.translate(canvas.width, 0); ctx.scale(-1, 1);
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    ctx.setTransform(1,0,0,1,0,0);
+    const quality = scoreFrame(canvas, ctx);
+    const blob = await new Promise(resolve => canvas.toBlob(resolve, "image/jpeg", .88));
+    if (!blob) throw new Error("Unable to capture frame.");
+    return {blob, quality};
+  }
+  const sleep = ms => new Promise(resolve=>setTimeout(resolve, ms));
+  function previews() {
+    const area = $("previews"); area.replaceChildren();
+    for (const view of views) {
+      const record = results.get(view.id);
+      if (!record) continue;
+      const fig=document.createElement("figure"), im=document.createElement("img");
+      im.src=record.url; im.alt="Local "+view.id+" image";
+      const cap=document.createElement("figcaption");
+      cap.textContent=view.id+" | quality "+record.quality;
+      fig.append(im,cap); area.append(fig);
+    }
+  }
+  $("start").addEventListener("click", async () => {
+    if (!$("consent").checked) return notice("Consent is required to start.");
+    if (!navigator.mediaDevices?.getUserMedia) return notice("Camera API unavailable.");
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({
+        video:{facingMode:"user",width:{ideal:640},height:{ideal:480}},audio:false
+      });
+      video.srcObject=stream; await video.play();
+      index=0;
+      for (const item of results.values()) URL.revokeObjectURL(item.url);
+      results.clear(); previews();
+      notice("Camera active. Follow the spoken cue for each angle.");
+      sync();
+    } catch (err) { notice("Camera unavailable: "+err.name); }
+  });
+  $("capture").addEventListener("click", async () => {
+    if (busy || !stream || index>=views.length) return;
+    busy=true; sync();
+    const view=views[index]; notice("Hold "+view.id+" position. Capturing three frames...");
+    try {
+      let best=null;
+      for(let i=0;i<3;i++) {
+        await sleep(400);
+        const sample=await snapshot();
+        if(!best || sample.quality>best.quality) best=sample;
+      }
+      const sha=await crypto.subtle.digest("SHA-256", await best.blob.arrayBuffer());
+      const digest=Array.from(new Uint8Array(sha), b=>b.toString(16).padStart(2,"0")).join("");
+      if(results.has(view.id)) URL.revokeObjectURL(results.get(view.id).url);
+      results.set(view.id,{url:URL.createObjectURL(best.blob),quality:best.quality,digest});
+      index++; previews();
+      notice("Selected sharpest "+view.id+" frame. Review or retake.");
+    } catch(err) {notice("Capture failed: "+err.message);}
+    busy=false;sync();
+  });
+  $("retake").addEventListener("click", () => {
+    if(busy || index===0) return;
+    const view=views[--index];
+    if(results.has(view.id)) URL.revokeObjectURL(results.get(view.id).url);
+    results.delete(view.id);previews();notice("Retake "+view.id+".");sync();
+  });
+  $("finish").addEventListener("click", () => {
+    const complete=results.size===3;
+    end();
+    notice(complete ? "Three photo views captured and reviewed locally; nothing uploaded."
+                    : "Camera closed. Profile portraits incomplete.");
+  });
+  window.addEventListener("pagehide", () => {
+    end();
+    for (const item of results.values()) URL.revokeObjectURL(item.url);
+    results.clear();
+  });
+})();
+</script>
+</body></html>
