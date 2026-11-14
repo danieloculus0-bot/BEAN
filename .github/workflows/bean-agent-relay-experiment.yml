@@ -14,7 +14,7 @@ permissions:
 
 jobs:
   synthetic-agent-http:
-    name: Local HTTP relay and private-preference controls
+    name: Agent transport, onboarding and weighted discovery
     runs-on: ${{ matrix.os }}
     timeout-minutes: 12
     strategy:
@@ -27,7 +27,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
-      - name: Exercise two authenticated agents and anti-leak checks
-        run: python -m unittest experiments.agent_relay.test_relay experiments.agent_relay.test_onboarding -v
-      - name: End-to-end two-agent protocol demonstration
+      - name: Authenticated transport, onboarding and weighted matching
+        run: python -m unittest experiments.agent_relay.test_relay experiments.agent_relay.test_onboarding experiments.agent_relay.test_matching -v
+      - name: End-to-end two-agent HTTP demonstration
         run: python -m experiments.agent_relay.demo
