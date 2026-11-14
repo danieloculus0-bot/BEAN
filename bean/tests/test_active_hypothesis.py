@@ -562,5 +562,138 @@ class ActiveHypothesisTests(unittest.TestCase):
 
 
 
+    def test_retained_prior_changes_which_experiment_runs_first(self):
+        """Proof of a causal decision change before looking at rewards."""
+        states = {
+            "balanced": (1.0, -1.0, -1.0, -1.0),
+            "uniform": (1.0, 1.0, 1.0, 1.0),
+            "mixed": (1.0, 1.0, -1.0, -1.0),
+        }
+        prior = {"kind": "channel", "lhs": 0, "rhs": None, "polarity": 1}
+        seen = []
+
+        def reward(pid, action):
+            seen.append((pid, action))
+            return float(action == act(prior, states[pid]))
+
+        inputs = dict(probe_ids=list(states), observe=states.__getitem__,
+                      reward=reward, method="disagreement", budget=3)
+        cold = discover(**inputs)
+        warm = discover(**inputs, prior_rule=prior)
+        self.assertEqual(cold["records"][0]["probe_id"], "balanced")
+        self.assertEqual(warm["records"][0]["probe_id"], "uniform")
+        self.assertTrue(warm["prior_guided_probe_selection"])
+        self.assertEqual(warm["reward_calls"], cold["reward_calls"])
+        self.assertEqual(len(seen), 18)
+        with self.assertRaisesRegex(ValueError, "Prior must be"):
+            discover(**{**inputs, "method": "passive"}, prior_rule=prior)
+
+    def test_bounded_prior_guidance_can_help_and_wrong_prior_is_rejected(self):
+        """Same grammar, same 3-probe budget, fresh validation and blind data."""
+        prior = {"kind": "channel", "lhs": 0, "rhs": None, "polarity": 1}
+        training = [str(i) for i in range(12)]
+        validation = [str(100 + i) for i in range(8)]
+
+        def observe(pid):
+            i = int(pid)
+            first = (1 if i < 100 or i % 2 == 0 else -1) * (2 + i / 100)
+            return (first, 1 + i / 97, 2 + i / 89, 3 + i / 83)
+
+        def reward(pid, action):
+            return float(action == act(prior, observe(pid)))
+
+        common = dict(probe_ids=training, validation_probe_ids=validation,
+                      observe=observe, reward=reward, budget=3,
+                      method="disagreement", seed=17)
+        cold = discover(**common)
+        warm = discover(**common, prior_rule=prior)
+        misleading = discover(**common, prior_rule={**prior, "polarity": -1})
+        self.assertIsNone(cold["selected_rule"])
+        self.assertEqual(warm["selected_rule"], prior)
+        self.assertTrue(warm["prior_rule_used_during_learning"])
+        self.assertTrue(warm["prior_rule_selected_at_training_tie"])
+        self.assertEqual(warm["probe_selection"], "prior_rule_falsification")
+        self.assertTrue(warm["validation"]["passed"])
+        self.assertEqual(cold["reward_calls"], warm["reward_calls"])
+        self.assertEqual(warm["reward_calls"], misleading["reward_calls"])
+        self.assertIsNone(misleading["selected_rule"])
+        self.assertFalse(misleading["validation"]["passed"])
+        self.assertIsNone(discover(
+            **{k: v for k, v in common.items()
+               if k != "validation_probe_ids"}, prior_rule=prior
+        )["selected_rule"])
+        self.assertEqual(sum(act(warm["selected_rule"], observe(str(500+i)))
+                             == act(prior, observe(str(500+i)))
+                             for i in range(32)), 32)
+        with self.assertRaisesRegex(ValueError, "Prior must be"):
+            discover(**common, prior_rule={"kind": "imaginary"})
+
+    def test_recovered_native_receipt_conditions_next_real_experiment(self):
+        """A restored Core uses a journaled prior before reward probes."""
+        with tempfile.TemporaryDirectory() as d:
+            db = Path(d) / "retained.sqlite3"
+            first_world = World(120, "channel")
+            core = NativeReasoningService(db)
+            first = core.discover_analogy(
+                domain="numeric", task_ref="learning-g1",
+                source_ref="fixture:g1",
+                probe_ids=[str(100 + i) for i in range(40)],
+                observe=first_world.observe, reward=first_world.feedback,
+                budget=12)
+            self.assertIsNotNone(first["selected_rule"])
+            core.close()
+
+            parent = first["selected_rule"]
+            fresh_probes = [f"fresh-{i}" for i in range(12)]
+            validation = [f"verify-{i}" for i in range(8)]
+
+            def observe(pid):
+                tag, n = pid.split("-")
+                i = int(n)
+                if tag == "fresh":
+                    return tuple(float(2 + k + (i + 1)/(13 + k))
+                                 for k in range(4))
+                return (float((-1 if i % 2 else 1) * (2 + i / 17)),
+                        float((-1 if i % 3 else 1) * (3 + i / 19)),
+                        float((-1 if i % 4 else 1) * (4 + i / 23)),
+                        float((-1 if i % 5 else 1) * (5 + i / 29)))
+
+            def reward(pid, action):
+                return float(action == act(parent, observe(pid)))
+
+            core = NativeReasoningService(db)
+            try:
+                revised = core.revise_discovered_analogy(
+                    parent_receipt_id=first["receipt_id"],
+                    domain="numeric", task_ref="learning-g2",
+                    source_ref="fixture:g2",
+                    probe_ids=fresh_probes, validation_probe_ids=validation,
+                    observe=observe, reward=reward, budget=3)
+                self.assertTrue(revised["retained_prior_eligible_for_probing"])
+                self.assertTrue(revised["prior_rule_used_during_learning"])
+                self.assertTrue(revised["prior_rule_selected_at_training_tie"])
+                self.assertEqual(revised["selected_rule"], parent)
+                self.assertEqual(revised["revision_decision"],
+                                 "retained_after_fresh_feedback")
+                self.assertEqual(revised["reward_calls"], 33)
+                saved_id = revised["receipt_id"]
+            finally:
+                core.close()
+
+            recovered = NativeReasoningService(db)
+            try:
+                self.assertEqual(recovered.use_discovered_analogy(
+                    receipt_id=saved_id, sensors=observe("verify-1"))["action"],
+                    act(parent, observe("verify-1")))
+                records = [e["data"] for e in recovered.bank.journal.events()
+                           if e["kind"] == "trial" and e["data"].get(
+                               "experiment") == "bean.native.active_hypothesis.v1"]
+                self.assertEqual(len(records), 2)
+                self.assertTrue(records[-1]["decision"][
+                    "prior_rule_used_during_learning"])
+            finally:
+                recovered.close()
+
+
 if __name__=="__main__":
     unittest.main()
