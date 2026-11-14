@@ -11,6 +11,7 @@ independently authenticated world truth.
 from __future__ import annotations
 
 from collections import defaultdict, deque
+from hashlib import sha256
 import json
 import re
 
@@ -37,7 +38,12 @@ def _predicate(value):
 
 
 def _key(subject, predicate, target, polarity):
-    return f"symbolic.{predicate}.{subject}.{target}.{polarity}"
+    # Canonical component hashing prevents ambiguous dotted-atom keys, e.g.
+    # ("a.b", "c") versus ("a", "b.c"). The full typed tuple is stored in
+    # the existing claim's JSON value and never discarded.
+    terms = json.dumps([subject, predicate, target, polarity],
+                       separators=(",", ":"), ensure_ascii=False)
+    return "symbolic." + sha256(terms.encode("utf-8")).hexdigest()
 
 
 class TypedRelations:
