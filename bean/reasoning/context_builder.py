@@ -137,7 +137,7 @@ def build_reasoning_context(session_uuid: str, source_event_id: int | None = Non
             packet_type,
             json.dumps(context),
             _json_ids(recent_events),
-            _json_ids(active_claims + uncertainty_claims),
+            _json_ids(active_claims + uncertainty_claims + [{"id": x["source_row_id"]} for x in focused]),
             _json_ids(wisdom_traces),
             _json_ids(relationships),
         ),
