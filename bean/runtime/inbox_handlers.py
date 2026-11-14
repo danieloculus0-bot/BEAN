@@ -312,6 +312,24 @@ def make_handlers(
         from ..wisdom.maintenance import run_wisdom_maintenance as run_maintenance
         return {"success": True, "report": run_maintenance(session_uuid)}
 
+    def record_belief_evidence(msg: InboxMessage, session_uuid: str) -> dict:
+        """Record one host-observed support/refute outcome in the canonical ledger."""
+        from ..cognition.evidence_revision import EvidenceReviser
+        args = msg.args or {}
+        return {"success": True, "revision": EvidenceReviser().observe(
+            session_uuid,
+            claim_key=args.get("claim_key"),
+            polarity=args.get("polarity"),
+            source_ref=args.get("source_ref"),
+            evidence_ref=args.get("evidence_ref"),
+        )}
+
+    def assess_belief_evidence(msg: InboxMessage, session_uuid: str) -> dict:
+        """Review what BEAN knows without promoting a world claim."""
+        from ..cognition.evidence_revision import EvidenceReviser
+        return {"success": True, "revision": EvidenceReviser().assess(
+            (msg.args or {}).get("claim_key"))}
+
     def build_reasoning_context(msg: InboxMessage, session_uuid: str) -> dict:
         from ..reasoning.context_builder import build_reasoning_context as build_context
         return {"success": True, **build_context(session_uuid, msg.args.get("source_event_id"), str(msg.args.get("packet_type") or "manual"))}
@@ -406,6 +424,8 @@ def make_handlers(
         "record_repair_attempt": record_repair_attempt,
         "show_loop_signatures": show_loop_signatures,
         "run_wisdom_maintenance": run_wisdom_maintenance,
+        "record_belief_evidence": record_belief_evidence,
+        "assess_belief_evidence": assess_belief_evidence,
         "build_reasoning_context": build_reasoning_context,
         "run_reasoning_pass": run_reasoning_pass,
         "show_reasoning_proposal": show_reasoning_proposal,
