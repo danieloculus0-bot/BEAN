@@ -87,7 +87,8 @@ def _entropy(actions):
 
 def discover(*, probe_ids, observe, reward, budget=12, method="disagreement",
              seed=0, tolerance=0.12, min_gap=0.08,
-             validation_probe_ids=None, include_products=False):
+             validation_probe_ids=None, include_products=False,
+             prior_rule=None):
     """Choose and execute bounded resettable paired-intervention experiments.
 
     observe(probe_id) exposes ONLY the sensor vector. reward(probe_id, action)
@@ -147,6 +148,11 @@ def discover(*, probe_ids, observe, reward, budget=12, method="disagreement",
                 "Validation requires sensor states unseen in training and "
                 "distinct within validation")
     rules = generate(n, include_products=include_products)
+    if prior_rule is not None:
+        if (method != "disagreement" or type(prior_rule) is not dict
+                or prior_rule not in rules):
+            raise ValueError("Prior must be a known grammar rule for active revision")
+    prior_index = rules.index(prior_rule) if prior_rule is not None else None
     losses = [0.0] * len(rules)
     remaining = list(probe_ids)
     rng = random.Random(seed)
@@ -157,9 +163,19 @@ def discover(*, probe_ids, observe, reward, budget=12, method="disagreement",
         considered = [i for i, loss in enumerate(losses)
                       if loss - best <= max(0.9, 0.3 * (index + 1))]
         if method == "disagreement":
-            chosen = max(remaining, key=lambda pid:
-                         (_entropy([act(rules[i], views[pid])
-                                    for i in considered]), -remaining.index(pid)))
+            if prior_index is None:
+                chosen = max(remaining, key=lambda pid:
+                             (_entropy([act(rules[i], views[pid])
+                                        for i in considered]), -remaining.index(pid)))
+            else:
+                # Spend scarce feedback on cases that can falsify the
+                # *retrieved* hypothesis, not just reduce generic entropy.
+                # Fresh measured losses can still reject the prior.
+                chosen = max(remaining, key=lambda pid: (
+                    sum(act(rules[i], views[pid]) != act(prior_rule, views[pid])
+                        for i in considered),
+                    _entropy([act(rules[i], views[pid]) for i in considered]),
+                    -remaining.index(pid)))
         else:
             chosen = remaining[rng.randrange(len(remaining))]
         remaining.remove(chosen)
@@ -186,6 +202,16 @@ def discover(*, probe_ids, observe, reward, budget=12, method="disagreement",
     selected = (rules[first] if
                 losses[first] / budget <= tolerance and gap / budget >= min_gap
                 else None)
+    prior_tie = False
+    # When fresh observations alone cannot distinguish equivalent models,
+    # retain a proven ancestral candidate *only provisionally*. A separate
+    # fresh validation pool must approve it; without validation abstain.
+    if (selected is None and prior_index is not None
+            and validation_probe_ids is not None
+            and losses[prior_index] / budget <= tolerance
+            and abs(losses[prior_index] - losses[first]) <= 1e-12):
+        selected = prior_rule
+        prior_tie = True
     validation = None
     failure_reason = None if selected else "insufficient_evidence_or_model_mismatch"
     if validation_probe_ids is not None:
@@ -230,10 +256,15 @@ def discover(*, probe_ids, observe, reward, budget=12, method="disagreement",
             ("signed_sensor_product",) if include_products else ()),
         "hypothesis_grammar_expanded": include_products,
         "hypotheses_generated": len(rules),
-        "candidate_source": "local_compositional_search",
-        "correct_sensor_or_policy_supplied": False,
-        "probe_selection": "candidate_action_disagreement" if method == "disagreement"
-            else "random_without_replacement",
+        "candidate_source": ("retained_prior_plus_local_search"
+                             if prior_index is not None else "local_compositional_search"),
+        "correct_sensor_or_policy_supplied": prior_index is not None,
+        "prior_rule_used_during_learning": prior_index is not None,
+        "prior_rule_selected_at_training_tie": prior_tie,
+        "probe_selection": ("prior_rule_falsification"
+                            if prior_index is not None else
+                            "candidate_action_disagreement" if method == "disagreement"
+                            else "random_without_replacement"),
         "probes_used": budget, "reward_calls": budget * len(ACTIONS),
         # All candidate sensors are observed before reward probes are chosen.
         # Retain the entire observed pool so later revisions cannot recycle
