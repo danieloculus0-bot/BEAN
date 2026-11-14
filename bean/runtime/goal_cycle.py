@@ -84,10 +84,13 @@ class GoalCycle:
         try:
             # Existing BEAN cognition proposes goals. Only explicit registered
             # internal operations can execute. Others remain in the ledger.
+            eligible_actions = tuple(sorted(self.actions))
+            placeholders = ",".join("?" for _ in eligible_actions)
             rows = conn.execute(
                 "SELECT * FROM cognition_goal_proposals "
                 "WHERE status='pending' AND approval_required='none' "
-                "ORDER BY priority,id LIMIT 100"
+                f"AND action_type IN ({placeholders}) "
+                "ORDER BY priority,id LIMIT 100", eligible_actions
             ).fetchall()
             candidates = []
             for row in rows:
