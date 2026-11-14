@@ -1,0 +1,33 @@
+name: BEAN anonymous agent relay experiment
+
+on:
+  push:
+    branches:
+      - experiment/logic/duovely-relay-20261113
+    paths:
+      - 'experiments/agent_relay/**'
+      - '.github/workflows/bean-agent-relay-experiment.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  synthetic-agent-http:
+    name: Local HTTP relay and private-preference controls
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 12
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        python-version: ['3.11', '3.12']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Exercise two authenticated agents and anti-leak checks
+        run: python -m unittest experiments.agent_relay.test_relay -v
+      - name: End-to-end two-agent protocol demonstration
+        run: python -m experiments.agent_relay.demo
