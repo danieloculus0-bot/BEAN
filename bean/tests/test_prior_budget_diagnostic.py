@@ -48,8 +48,8 @@ class PriorBudgetDiagnostic(unittest.TestCase):
         cold = discover(**options)
         warm = discover(**options, prior_rule=generate(4)[-1])
         self.assertEqual(cold["reward_calls"], warm["reward_calls"])
-        self.assertEqual(len(cold["probes_used"]), 4)
-        self.assertEqual(len(warm["probes_used"]), 4)
+        self.assertEqual(cold["probes_used"], 4)
+        self.assertEqual(warm["probes_used"], 4)
         # No assertion of advantage: different probes are not proof of
         # better adaptation. That requires paired unseen reversal worlds.
 
