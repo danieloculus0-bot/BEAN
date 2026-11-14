@@ -107,6 +107,10 @@ def test_refutation_blocks_an_inferred_path_and_is_visible(bean):
     contested = r.query(subject="b", predicate="located_in", target="c")
     assert contested["status"] == "contested"
     assert contested["results"][0]["counterevidence"]["polarity"] == "refute"
+    assert contested["results"][0]["evidence_claim_ids"]
+    broad = r.query(subject="b", predicate="located_in")
+    assert any(x["target"] == "c" and x["status"] == "contested"
+               for x in broad["results"])
 
 
 def test_direct_refutation_does_not_prove_negation(bean):
@@ -153,8 +157,8 @@ def test_historical_revision_preserved_with_unchanged_active_edge(bean):
 def test_restart_does_not_lose_source_proofs(bean):
     path, session = bean
     r = TypedRelations()
-    a = edge(r, "part", "assembly")
-    b = edge(r, "assembly", "machine")
+    a = edge(r, "part", "assembly", predicate="part_of")
+    b = edge(r, "assembly", "machine", predicate="part_of")
     get_store().close()
     init_store(str(path))
     r2 = TypedRelations()

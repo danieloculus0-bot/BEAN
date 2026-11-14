@@ -191,9 +191,16 @@ class TypedRelations:
         if target is not None:
             # Explicit direct refutation is not mathematical proof of negation;
             # it is evidence that contradicts or challenges the proposed path.
-            refute = pairs.get((subject, target), {}).get("refute")
+            direct = pairs.get((subject, target), {})
+            refute = direct.get("refute")
             proof = paths.get(target)
-            if proof and refute:
+            # A directly supported and refuted relation is contested even
+            # though its support edge is excluded from transitive traversal.
+            # Keep both receipts visible without allowing it as a clean path.
+            if refute and direct.get("support"):
+                proof = proof or (direct["support"],)
+                state = "contested"
+            elif proof and refute:
                 state = "contested"
             elif refute:
                 state = "refuted_unverified"
@@ -206,6 +213,11 @@ class TypedRelations:
             return {**base, "status": state, "results": results,
                     "records_scanned": len(rows), "truncated": False}
         results = []
+        # Include contested direct edges in broad queries even though they
+        # are not permitted to generate downstream inferences.
+        for (src, dst), direct in pairs.items():
+            if src == subject and "support" in direct and "refute" in direct:
+                paths.setdefault(dst, (direct["support"],))
         for node, proof in sorted(paths.items(), key=lambda item: (len(item[1]), item[0])):
             refute = pairs.get((subject, node), {}).get("refute")
             state = ("contested" if refute else "direct_unverified"
