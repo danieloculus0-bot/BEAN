@@ -105,6 +105,30 @@ def build_reasoning_context(session_uuid: str, source_event_id: int | None = Non
         if (report := reviser.assess(item["key"]))["event_count"] > 0
     ]
 
+    # A structured question in a real event can invoke typed relation
+    # inference. No free-text hallucinated triples, hidden LLM commands, or
+    # persistent claims are created by this read-only reasoning step.
+    symbolic_inference = None
+    if source_event_id is not None:
+        source = _row(conn, "SELECT data FROM events WHERE id=? AND session_uuid=?",
+                      (source_event_id, session_uuid))
+        envelope = _load_json(source.get("data"), {})
+        if isinstance(envelope, dict) and isinstance(envelope.get("symbolic_query"), dict):
+            from ..cognition.typed_relations import TypedRelations
+            request = envelope["symbolic_query"]
+            try:
+                symbolic_inference = TypedRelations().query(
+                    subject=request.get("subject"),
+                    predicate=request.get("predicate"),
+                    target=request.get("target"),
+                    max_hops=request.get("max_hops", 3),
+                )
+            except (ValueError, TypeError):
+                symbolic_inference = {
+                    "status": "invalid_structured_query", "results": [],
+                    "world_truth_verified": False,
+                }
+
     context = {
         "identity_rules": {
             "llm_is_tool_not_identity": True,
@@ -122,6 +146,7 @@ def build_reasoning_context(session_uuid: str, source_event_id: int | None = Non
         "active_world_claims": active_claims,
         "focused_world_memory": focused,
         "evidence_revisions": evidence_revisions,
+        "symbolic_inference": symbolic_inference,
         "uncertainty_claims": uncertainty_claims,
         "wisdom_recent_traces": wisdom_traces,
         "relationship_summaries": relationships,
@@ -149,7 +174,15 @@ def build_reasoning_context(session_uuid: str, source_event_id: int | None = Non
                 [event_id for report in evidence_revisions
                  for event_id in report["evidence_event_ids"]]
             ))),
-            _json_ids(active_claims + uncertainty_claims + [{"id": x["source_row_id"]} for x in focused]),
+            json.dumps(list(dict.fromkeys(
+                json.loads(_json_ids(active_claims + uncertainty_claims +
+                                    [{"id": x["source_row_id"]} for x in focused])) +
+                [row_id for result in (symbolic_inference or {}).get("results", [])
+                 for row_id in (result.get("evidence_row_ids") or [])] +
+                [result["counterevidence"]["source_row_id"]
+                 for result in (symbolic_inference or {}).get("results", [])
+                 if result.get("counterevidence")]
+            ))),
             _json_ids(wisdom_traces),
             _json_ids(relationships),
         ),

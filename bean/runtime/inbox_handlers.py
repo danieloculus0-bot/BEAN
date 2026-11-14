@@ -312,6 +312,31 @@ def make_handlers(
         from ..wisdom.maintenance import run_wisdom_maintenance as run_maintenance
         return {"success": True, "report": run_maintenance(session_uuid)}
 
+    def assert_symbolic_relation(msg: InboxMessage, session_uuid: str) -> dict:
+        """Record an explicit typed relation through BEAN's existing model."""
+        from ..cognition.typed_relations import TypedRelations
+        args = msg.args or {}
+        return {"success": True, "observation": TypedRelations().observe(
+            subject=args.get("subject"),
+            predicate=args.get("predicate"),
+            target=args.get("target"),
+            polarity=args.get("polarity", "support"),
+            source_ref=args.get("source_ref"),
+            evidence_refs=args.get("evidence_refs"),
+            confidence=args.get("confidence", 0.5),
+        )}
+
+    def query_symbolic_relation(msg: InboxMessage, session_uuid: str) -> dict:
+        """Bounded read-only symbolic inference with exact source paths."""
+        from ..cognition.typed_relations import TypedRelations
+        args = msg.args or {}
+        return {"success": True, "inference": TypedRelations().query(
+            subject=args.get("subject"),
+            predicate=args.get("predicate"),
+            target=args.get("target"),
+            max_hops=args.get("max_hops", 3),
+        )}
+
     def record_belief_evidence(msg: InboxMessage, session_uuid: str) -> dict:
         """Record one host-observed support/refute outcome in the canonical ledger."""
         from ..cognition.evidence_revision import EvidenceReviser
@@ -424,6 +449,8 @@ def make_handlers(
         "record_repair_attempt": record_repair_attempt,
         "show_loop_signatures": show_loop_signatures,
         "run_wisdom_maintenance": run_wisdom_maintenance,
+        "assert_symbolic_relation": assert_symbolic_relation,
+        "query_symbolic_relation": query_symbolic_relation,
         "record_belief_evidence": record_belief_evidence,
         "assess_belief_evidence": assess_belief_evidence,
         "build_reasoning_context": build_reasoning_context,

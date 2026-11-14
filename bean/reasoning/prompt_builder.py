@@ -50,6 +50,7 @@ def build_ollama_prompt(context: dict, request_type: str = "reflection") -> str:
     boundaries = context.get("active_boundaries") or []
     focused = context.get("focused_world_memory") or []
     revisions = context.get("evidence_revisions") or []
+    symbolic = context.get("symbolic_inference")
     # Normal recency alone evicts experimental errors and measured outcomes.
     # Carry the latest few PLUS earlier experiment receipts in the context.
     latest = events[:3]
@@ -112,6 +113,27 @@ def build_ollama_prompt(context: dict, request_type: str = "reflection") -> str:
              "source_independence_authenticated": False}
             for r in revisions[:3]
         ],
+        "symbolic_inference": ({
+            "status": symbolic.get("status"),
+            "subject": symbolic.get("subject"),
+            "predicate": symbolic.get("predicate"),
+            "target": symbolic.get("target"),
+            "hypotheses": [
+                {"target": r.get("target"), "status": r.get("status"),
+                 "hops": r.get("hops"),
+                 "proof": [
+                     {"claim_id": edge.get("claim_id"),
+                      "subject": edge.get("subject"),
+                      "predicate": edge.get("predicate"),
+                      "target": edge.get("target"),
+                      "source_ref": edge.get("source_ref")}
+                     for edge in (r.get("proof") or [])[:3]
+                 ]}
+                for r in (symbolic.get("results") or [])[:3]
+            ],
+            "world_truth_verified": False,
+            "actions_authorized": False,
+        } if isinstance(symbolic, dict) else None),
         "world_claims": [
             {"claim_id": x.get("claim_id"), "content": str(x.get("content", ""))[:160],
              "confidence": x.get("confidence")} for x in claims[:3]
