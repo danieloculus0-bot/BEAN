@@ -238,6 +238,32 @@ def main():
             task_engine.configure(load_task_specs(task_config))
             ctx["task_engine"] = task_engine
 
+        # BEAN's own persisted cognition goals become executable internal
+        # experiences. This invokes real registered Core operations, never
+        # arbitrary commands proposed by a model. Disable with 0/off/false.
+        goal_cycle = None
+        if os.environ.get("BEAN_GOAL_CYCLE", "1").strip().lower() not in (
+                "0", "off", "false", "no"):
+            from bean.runtime.goal_cycle import GoalCycle
+            from bean.reflection.reflect import run_reflection
+
+            def goal_event(receipt):
+                log_event(
+                    session_uuid, EventType.OBSERVATION,
+                    "Autonomous internal goal outcome: " + receipt["action_type"],
+                    Source.SYSTEM, subtype="autonomous_goal_cycle",
+                    data=receipt,
+                )
+
+            goal_cycle = GoalCycle({
+                "update_models": lambda goal: model_updater.run(
+                    session_uuid, trigger="autonomous_goal"),
+                "run_reflection": lambda goal: run_reflection(
+                    session_uuid, trigger_type="autonomous_goal"),
+            }, event_sink=goal_event)
+            goal_cycle.recover_interrupted()
+            ctx["goal_cycle"] = goal_cycle
+
         handlers = build_default_handlers(
             monitor,
             inbox,
@@ -247,6 +273,7 @@ def main():
             coherence_engine=coherence,
             watcher=watcher,
             task_engine=task_engine,
+            goal_cycle=goal_cycle,
         )
         loop = BeanLoop(ctx, handlers, tick_rate_hz=tick_rate, max_ticks=args.ticks)
         register_all(
