@@ -21,11 +21,19 @@ def assess_learning_evidence(learning):
     if not controls or any(type(v) is not int or not 0 <= v <= n for v in controls.values()):
         raise ValueError("missing or invalid controls")
     strongest = max(controls.values())
+    # An ablated learner is not a sufficient comparator for retained-state
+    # claims. Older receipts may lack strong arms; preserve Unknown rather
+    # than manufacturing a positive result from a weak baseline.
+    strong_complete = all(
+        type(learning.get(key)) is int
+        for key in ("grammar_matched_correct_total", "passive_correct_total")
+    )
     return {
         "candidate": candidate,
         "strongest_control": strongest,
         "advantage_cases": candidate - strongest,
-        "positive_advantage": candidate > strongest,
+        "positive_advantage": candidate > strongest if strong_complete else None,
+        "strong_control_status": "measured" if strong_complete else "Unknown",
         "independently_audited": learning.get("independently_audited") is True,
     }
 
@@ -49,8 +57,26 @@ class DigitalLearningEvidenceTests(unittest.TestCase):
     def test_positive_advantage_not_independent_proof(self):
         result = assess_learning_evidence(dict(blind_cases_total=10, candidate_correct_total=9,
                                                passive_correct_total=5))
-        self.assertTrue(result["positive_advantage"])
+        self.assertIsNone(result["positive_advantage"])
+        self.assertEqual(result["strong_control_status"], "Unknown")
         self.assertFalse(result["independently_audited"])
+
+    def test_strong_control_positive_result_is_provisional(self):
+        result = assess_learning_evidence(dict(
+            blind_cases_total=10, candidate_correct_total=9,
+            grammar_matched_correct_total=7, passive_correct_total=8,
+            memory_ablated_correct_total=2))
+        self.assertTrue(result["positive_advantage"])
+        self.assertEqual(result["advantage_cases"], 1)
+        self.assertEqual(result["strong_control_status"], "measured")
+        self.assertFalse(result["independently_audited"])
+
+    def test_ablated_only_cannot_certify_learning(self):
+        result = assess_learning_evidence(dict(
+            blind_cases_total=10, candidate_correct_total=9,
+            memory_ablated_correct_total=1))
+        self.assertIsNone(result["positive_advantage"])
+        self.assertEqual(result["strong_control_status"], "Unknown")
 
     def test_invalid_scores_rejected(self):
         for n, score in [(0, 0), (10, 11), (10, True)]:
