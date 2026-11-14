@@ -82,6 +82,7 @@ def recall_focused_claims(conn: sqlite3.Connection, query: str, *,
         selected.append({
             "key": item["key"],
             "claim_id": item["claim_id"],
+            "source_row_id": item["id"],
             "previous_claim_id": previous["claim_id"] if previous else None,
             "content": item["content"][:350],
             "category": item["category"],
