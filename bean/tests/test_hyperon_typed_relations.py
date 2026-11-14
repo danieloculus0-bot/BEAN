@@ -137,8 +137,11 @@ def test_historical_revision_preserved_with_unchanged_active_edge(bean):
     original = edge(r, "a", "b", evidence="receipt:old")
     revised = edge(r, "a", "b", evidence="receipt:new")
     assert original["claim_id"] != revised["claim_id"]
-    history = ModelStore().get_history(
-        "symbolic.located_in.a.b.support")
+    key = get_store().fetchone(
+        "SELECT key FROM world_claims WHERE claim_id=?",
+        (original["claim_id"],)
+    )["key"]
+    history = ModelStore().get_history(key)
     assert len(history) == 2
     assert not history[0].active
     assert history[1].active
@@ -246,3 +249,15 @@ def test_malformed_question_is_reported_as_invalid_not_invented_fact(bean):
         Source.HUMAN, data={"symbolic_query": {"subject": "a", "predicate": "nonsense"}})
     packet = build_reasoning_context(session, source_event_id=event)
     assert packet["context"]["symbolic_inference"]["status"] == "invalid_structured_query"
+
+
+def test_distinct_dotted_atom_tuples_do_not_collide(bean):
+    _, session = bean
+    r = TypedRelations()
+    first = edge(r, "a.b", "c")
+    second = edge(r, "a", "b.c")
+    assert first["claim_id"] != second["claim_id"]
+    assert r.query(subject="a.b", predicate="located_in",
+                   target="c")["results"][0]["evidence_claim_ids"] == [first["claim_id"]]
+    assert r.query(subject="a", predicate="located_in",
+                   target="b.c")["results"][0]["evidence_claim_ids"] == [second["claim_id"]]
