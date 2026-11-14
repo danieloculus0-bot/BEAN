@@ -18,7 +18,7 @@ from .judgment import choose_counsel
 from .local_reasoner import LocalReasoner
 from .interpretation_fidelity import context_for_interpretation
 from .transfer_gate import evaluate_transfer
-from .active_hypothesis import discover, act
+from .active_hypothesis import discover, act, generate
 from .composition import CompositionLearner
 from bean.optimization.autodev import canonical
 
@@ -200,12 +200,19 @@ class NativeReasoningService:
             current_states.add(fingerprint)
             return sensors
 
+        prior = parent.get("selected_rule")
+        # The prior must come from the actual persisted SHA journal, not a
+        # caller-supplied answer. Only a structurally valid grammar rule can
+        # bias the fresh experiment; unsupported priors remain evidence but
+        # cannot silently expand the hypothesis language.
+        usable_prior = (prior if prior in generate(
+            dimensions, include_products=include_products) else None)
         fresh = discover(probe_ids=probe_ids, observe=observe_fresh, reward=reward,
                          budget=budget, method=method, seed=seed,
                          validation_probe_ids=validation_probe_ids,
-                         include_products=include_products)
-
-        prior = parent.get("selected_rule")
+                         include_products=include_products,
+                         prior_rule=usable_prior if method == "disagreement" else None)
+        fresh["retained_prior_eligible_for_probing"] = usable_prior is not None
         prior_regret = None
         if prior is not None:
             loss = 0.0
