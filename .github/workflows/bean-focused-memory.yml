@@ -1,0 +1,38 @@
+name: BEAN focused memory regression
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'bean/memory/focused_recall.py'
+      - 'bean/reasoning/context_builder.py'
+      - 'bean/reasoning/prompt_builder.py'
+      - 'bean/tests/test_focused_memory.py'
+      - '.github/workflows/bean-focused-memory.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'bean/memory/focused_recall.py'
+      - 'bean/reasoning/context_builder.py'
+      - 'bean/reasoning/prompt_builder.py'
+      - 'bean/tests/test_focused_memory.py'
+      - '.github/workflows/bean-focused-memory.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install pytest psutil
+      - run: python -m compileall -q bean/memory/focused_recall.py bean/reasoning/context_builder.py bean/reasoning/prompt_builder.py bean/tests/test_focused_memory.py
+      - run: python -m pytest bean/tests/test_focused_memory.py bean/tests/test_reasoning_context_packet.py bean/tests/test_reasoning_layer.py bean/tests/test_world_model.py -q -ra
