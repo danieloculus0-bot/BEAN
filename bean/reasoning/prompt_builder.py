@@ -49,6 +49,7 @@ def build_ollama_prompt(context: dict, request_type: str = "reflection") -> str:
     claims = context.get("active_world_claims") or []
     boundaries = context.get("active_boundaries") or []
     focused = context.get("focused_world_memory") or []
+    revisions = context.get("evidence_revisions") or []
     # Normal recency alone evicts experimental errors and measured outcomes.
     # Carry the latest few PLUS earlier experiment receipts in the context.
     latest = events[:3]
@@ -97,6 +98,19 @@ def build_ollama_prompt(context: dict, request_type: str = "reflection") -> str:
                  "semantic_contradiction_proven": False},
              "source_authenticated": False}
             for x in focused[:3]
+        ],
+        "evidence_revision": [
+            {"claim_key": str(r.get("claim_key") or "")[:120],
+             "status": r.get("status"),
+             "frequency": r.get("frequency"),
+             "confidence": r.get("confidence"),
+             "expectation": r.get("expectation"),
+             "supporting_sources": r.get("supporting_sources"),
+             "refuting_sources": r.get("refuting_sources"),
+             "evidence_event_ids": (r.get("evidence_event_ids") or [])[:6],
+             "claim_truth_verified": False,
+             "source_independence_authenticated": False}
+            for r in revisions[:3]
         ],
         "world_claims": [
             {"claim_id": x.get("claim_id"), "content": str(x.get("content", ""))[:160],

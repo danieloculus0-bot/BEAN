@@ -1,0 +1,40 @@
+name: BEAN non-axiomatic evidence revision regression
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'bean/cognition/evidence_revision.py'
+      - 'bean/reasoning/context_builder.py'
+      - 'bean/reasoning/prompt_builder.py'
+      - 'bean/runtime/inbox_handlers.py'
+      - 'bean/tests/test_evidence_revision_nars.py'
+      - '.github/workflows/bean-nars-evidence.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'bean/cognition/evidence_revision.py'
+      - 'bean/reasoning/context_builder.py'
+      - 'bean/reasoning/prompt_builder.py'
+      - 'bean/runtime/inbox_handlers.py'
+      - 'bean/tests/test_evidence_revision_nars.py'
+      - '.github/workflows/bean-nars-evidence.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  evidence-revision:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install pytest psutil
+      - run: python -m compileall -q bean/cognition/evidence_revision.py bean/reasoning/context_builder.py bean/reasoning/prompt_builder.py bean/runtime/inbox_handlers.py bean/tests/test_evidence_revision_nars.py
+      - run: python -m pytest bean/tests/test_evidence_revision_nars.py bean/tests/test_focused_memory.py bean/tests/test_contradiction_court.py bean/tests/test_reasoning_context_packet.py bean/tests/test_reasoning_layer.py bean/tests/test_inbox_request_handling.py -q -ra
