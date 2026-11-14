@@ -156,7 +156,7 @@ class BrowserContract(unittest.TestCase):
                              page.locator(".reveal-on-scroll").count())
             page.get_by_text("Wait, the AIs actually talk?").focus()
             page.keyboard.press("Enter")
-            self.assertTrue(page.get_by_text("That's the plan.", exact=False).is_visible())
+            self.assertTrue(page.get_by_text("Connected assistants could ask each other thoughtful questions", exact=False).is_visible())
             self.assertEqual(page.evaluate(
                 "() => getComputedStyle(document.documentElement).scrollBehavior"), "auto")
         finally:
