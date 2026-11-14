@@ -48,6 +48,7 @@ def build_ollama_prompt(context: dict, request_type: str = "reflection") -> str:
     events = context.get("recent_events") or []
     claims = context.get("active_world_claims") or []
     boundaries = context.get("active_boundaries") or []
+    focused = context.get("focused_world_memory") or []
     # Normal recency alone evicts experimental errors and measured outcomes.
     # Carry the latest few PLUS earlier experiment receipts in the context.
     latest = events[:3]
@@ -80,6 +81,16 @@ def build_ollama_prompt(context: dict, request_type: str = "reflection") -> str:
             {"id": e.get("id"), "summary": str(e.get("summary", ""))[:220],
              "subtype": e.get("subtype"), "data": bounded_event_data(e),
              "source": e.get("source")} for e in selected
+        ],
+        "focused_memory": [
+            {"claim_id": x.get("claim_id"), "previous_claim_id": x.get("previous_claim_id"),
+             "key": str(x.get("key", ""))[:100],
+             "content": str(x.get("content", ""))[:220],
+             "source_ref": x.get("source_ref"),
+             "evidence_refs": (x.get("evidence_refs") or [])[:3],
+             "confidence": x.get("confidence"),
+             "source_authenticated": False}
+            for x in focused[:3]
         ],
         "world_claims": [
             {"claim_id": x.get("claim_id"), "content": str(x.get("content", ""))[:160],
