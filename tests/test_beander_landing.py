@@ -56,6 +56,29 @@ class PageContract(unittest.TestCase):
         self.assertNotIn("fetch(", source)
         self.assertNotIn("64,000", source)
 
+    def test_existing_ai_and_relatable_match_copy(self):
+        source = PAGE.read_text(encoding="utf-8")
+        for phrase in ("ChatGPT", "Gemini", "Claude",
+                       "Keep talking to the AI you trust.",
+                       "BEANder is the bridge",
+                       "Your AI, the one you already use",
+                       "Ashley", "Kyle", "Sunday brunch"):
+            self.assertIn(phrase, source)
+        self.assertNotIn("<b>Your companion</b>", source)
+        self.assertNotIn("soldering", source)
+        self.assertNotIn("tinkering", source)
+        self.assertNotIn("one little thing", source.lower())
+
+    def test_real_historical_images_have_fallbacks_and_attribution(self):
+        source = PAGE.read_text(encoding="utf-8")
+        self.assertEqual(source.count('class="historic-photo"'), 5)
+        self.assertIn('onerror="this.remove()"', source)
+        self.assertIn("Historic image sources:", source)
+        for name in ("Arnolfini_Portrait.jpg", "Brautpaar_1900.jpg",
+                     "The70s.jpg", "Wedding_-_1920s.jpg",
+                     "AffectionateCouple-1850s-Dagguerotypie-US.jpg"):
+            self.assertIn(name, source)
+
     def test_assets_are_relative_and_no_private_operational_data(self):
         source = PAGE.read_text(encoding="utf-8")
         self.assertNotIn("OPENAI_API_KEY", source)
@@ -99,14 +122,14 @@ class BrowserContract(unittest.TestCase):
         try:
             issues = []
             page.on("pageerror", lambda e: issues.append(str(e)))
-            page.get_by_role("button", name="I'm curious").click()
-            self.assertTrue(page.get_by_text("Tell me more.", exact=False).count())
-            self.assertEqual(page.get_by_role("button", name="Yes, please").count(), 1)
-            page.get_by_role("button", name="Yes, please").click()
-            self.assertTrue(page.get_by_text("whether the interest is mutual", exact=False).count())
+            page.get_by_role("button", name="Wait, cute. Tell me more").click()
+            self.assertTrue(page.get_by_text("Okay wait, tell me more.", exact=True).count())
+            self.assertEqual(page.get_by_role("button", name="Yeah, ask him").count(), 1)
+            page.get_by_role("button", name="Yeah, ask him").click()
+            self.assertTrue(page.get_by_text("No pressure.", exact=False).count())
             page.get_by_role("button", name="Start the conversation again").click()
-            page.get_by_role("button", name="Not this time").click()
-            self.assertTrue(page.get_by_text("We'll keep looking.", exact=False).count())
+            page.get_by_role("button", name="Not my vibe").click()
+            self.assertTrue(page.get_by_text("somebody who feels more like your type.", exact=False).count())
             self.assertEqual(issues, [])
         finally:
             context.close()
@@ -116,8 +139,8 @@ class BrowserContract(unittest.TestCase):
             with self.subTest(width=width):
                 context, page = self.make_page(width, 820)
                 try:
-                    page.get_by_text("Okay, but how does it learn?").click()
-                    self.assertTrue(page.get_by_text("Through a guided introduction", exact=False).is_visible())
+                    page.get_by_text("Do I need another AI?").click()
+                    self.assertTrue(page.get_by_text("The idea is to use the assistant you already know.", exact=False).is_visible())
                     outside = page.evaluate(
                         "() => document.documentElement.scrollWidth - window.innerWidth")
                     self.assertLessEqual(outside, 2, "horizontal overflow at " + str(width))
