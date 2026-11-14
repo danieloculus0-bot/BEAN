@@ -33,3 +33,7 @@ Published path: /BEAN/beander/
 ## Your existing AI
 
 The intended product is designed around the AI the person already knows and trusts, whether that is ChatGPT, Gemini, Claude, or another compatible assistant. BEANder is envisioned as the connection layer between those assistants, not another chatbot to start over with. A live connection depends on provider support and the person's permission. The website demo is a fictional conversation between Ashley and her AI about a potential match named Kyle.
+
+## Historic photographs
+
+The story uses artwork and historical photographs hosted by Wikimedia Commons through thumbnail-sized file links, with public-domain licensing checked and source credits visible below the timeline. The images are linked directly rather than uploaded into GitHub. If external images fail to load, the original handmade SVG illustrations remain visible as fallback. Included: Jan van Eyck's 1434 Arnolfini Portrait, an 1850s daguerreotype, a wedding portrait from about 1900, a 1920s wedding, and a 1970s wedding portrait. The site intentionally does not fetch or send any user photos.

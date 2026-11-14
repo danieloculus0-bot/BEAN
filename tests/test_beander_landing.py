@@ -69,6 +69,16 @@ class PageContract(unittest.TestCase):
         self.assertNotIn("tinkering", source)
         self.assertNotIn("one little thing", source.lower())
 
+    def test_real_historical_images_have_fallbacks_and_attribution(self):
+        source = PAGE.read_text(encoding="utf-8")
+        self.assertEqual(source.count('class="historic-photo"'), 5)
+        self.assertIn('onerror="this.remove()"', source)
+        self.assertIn("Historic image sources:", source)
+        for name in ("Arnolfini_Portrait.jpg", "Brautpaar_1900.jpg",
+                     "The70s.jpg", "Wedding_-_1920s.jpg",
+                     "AffectionateCouple-1850s-Dagguerotypie-US.jpg"):
+            self.assertIn(name, source)
+
     def test_assets_are_relative_and_no_private_operational_data(self):
         source = PAGE.read_text(encoding="utf-8")
         self.assertNotIn("OPENAI_API_KEY", source)
