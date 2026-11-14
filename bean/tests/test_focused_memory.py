@@ -111,3 +111,35 @@ def test_retrieval_is_bounded_and_lexical_not_truth_proof(core):
         recall_focused_claims(conn, "induction voltage", limit=0)
     with pytest.raises(TypeError):
         recall_focused_claims(conn, None)
+
+
+def test_changed_claim_keeps_prior_evidence_without_fake_truth(core):
+    _, session = core
+    before = claim("environment.induction.voltage", "Induction voltage is 12 V",
+                   source_ref="synthetic:day-one")
+    after = claim("environment.induction.voltage", "Induction voltage is 14 V",
+                  source_ref="synthetic:day-two")
+    event = log_event(session, EventType.HUMAN_INPUT,
+                      "Compare induction voltage", Source.HUMAN)
+    packet = build_reasoning_context(session, source_event_id=event)
+    found = packet["context"]["focused_world_memory"][0]
+    revision = found["revision_evidence"]
+    assert found["claim_id"] == after.claim_id
+    assert found["previous_claim_id"] == before.claim_id
+    assert revision["status"] == "changed_text_unresolved"
+    assert revision["prior_excerpt"] == "Induction voltage is 12 V"
+    assert revision["prior_source_ref"] == "synthetic:day-one"
+    assert revision["semantic_contradiction_proven"] is False
+    assert "Induction voltage is 12 V" in build_ollama_prompt(packet["context"])
+
+
+def test_matching_revision_does_not_invent_independent_confirmation(core):
+    before = claim("environment.tool.rotation", "Tool rotation 300 rpm",
+                   source_ref="synthetic:a")
+    after = claim("environment.tool.rotation", "Tool rotation 300 rpm",
+                  source_ref="synthetic:b")
+    found = recall_focused_claims(get_store()._conn(), "tool rotation")[0]
+    assert found["claim_id"] == after.claim_id
+    assert found["previous_claim_id"] == before.claim_id
+    assert found["revision_evidence"]["status"] == "same_text_unverified"
+    assert found["revision_evidence"]["independent_source_verification"] is False
