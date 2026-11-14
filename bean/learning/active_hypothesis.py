@@ -163,7 +163,11 @@ def discover(*, probe_ids, observe, reward, budget=12, method="disagreement",
         considered = [i for i, loss in enumerate(losses)
                       if loss - best <= max(0.9, 0.3 * (index + 1))]
         if method == "disagreement":
-            if prior_index is None:
+            # A prior guides targeted falsification only when feedback is
+            # scarce. At standard budgets, revert to generic disagreement
+            # sampling so a wrong prior cannot steer evidence collection away
+            # from a genuinely changed policy.
+            if prior_index is None or budget > 6:
                 chosen = max(remaining, key=lambda pid:
                              (_entropy([act(rules[i], views[pid])
                                         for i in considered]), -remaining.index(pid)))
@@ -260,9 +264,10 @@ def discover(*, probe_ids, observe, reward, budget=12, method="disagreement",
                              if prior_index is not None else "local_compositional_search"),
         "correct_sensor_or_policy_supplied": prior_index is not None,
         "prior_rule_used_during_learning": prior_index is not None,
+        "prior_guided_probe_selection": prior_index is not None and budget <= 6,
         "prior_rule_selected_at_training_tie": prior_tie,
         "probe_selection": ("prior_rule_falsification"
-                            if prior_index is not None else
+                            if prior_index is not None and budget <= 6 else
                             "candidate_action_disagreement" if method == "disagreement"
                             else "random_without_replacement"),
         "probes_used": budget, "reward_calls": budget * len(ACTIONS),
