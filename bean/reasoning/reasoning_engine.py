@@ -8,6 +8,7 @@ from .openai_provider import OpenAIProvider
 from .ollama_provider import OllamaProvider
 from .local_llamacpp_provider import LocalLlamaCppProvider
 from .openrouter_provider import OpenRouterProvider
+from .peer_inference_provider import PeerInferenceProvider
 from .prompt_builder import build_prompt, build_ollama_prompt
 from .proposal_filter import all_passed, filter_proposal
 from .proposal_store import create_filter_result, create_proposal, create_request, create_response
@@ -24,6 +25,8 @@ def adapter_from_name(name: str | None):
         return LocalLlamaCppProvider()
     if name == "openrouter":
         return OpenRouterProvider()
+    if name == "peer_inference":
+        return PeerInferenceProvider.from_environment()
     if name in (None, "mock"):
         return MockLLMAdapter()
     raise ValueError("Unknown BEAN reasoning provider: " + str(name))
