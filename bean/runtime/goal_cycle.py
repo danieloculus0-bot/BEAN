@@ -198,6 +198,20 @@ class GoalCycle:
             outcomes.append(self._finish(goal, result=result, error=error))
         return outcomes
 
+    def snapshot(self) -> dict:
+        """Compact observable progress, not a fabricated intelligence score."""
+        pending = self.store.fetchone(
+            "SELECT COUNT(*) AS n FROM cognition_goal_proposals "
+            "WHERE status='pending' AND approval_required='none'"
+        )
+        recent = self.store.fetchall(
+            "SELECT proposal_id,action_type,state,started_at,finished_at "
+            "FROM bean_goal_runs ORDER BY started_at DESC LIMIT 5"
+        )
+        return {"enabled": True, "pending_unresolved": pending["n"],
+                "recent": [dict(item) for item in recent],
+                "outcomes_are_execution_receipts": True}
+
     def history(self, limit: int = 20) -> list[dict]:
         if type(limit) is not int or not 1 <= limit <= 200:
             raise ValueError("limit must be 1..200")
