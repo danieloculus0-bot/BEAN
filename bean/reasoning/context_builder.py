@@ -98,6 +98,13 @@ def build_reasoning_context(session_uuid: str, source_event_id: int | None = Non
         conn, str(focus_event.get("summary") or ""),
         limit=LIMITS["focused_world_memory"])
 
+    from ..cognition.evidence_revision import EvidenceReviser
+    reviser = EvidenceReviser(conn)
+    evidence_revisions = [
+        report for item in focused
+        if (report := reviser.assess(item["key"]))["event_count"] > 0
+    ]
+
     context = {
         "identity_rules": {
             "llm_is_tool_not_identity": True,
@@ -114,6 +121,7 @@ def build_reasoning_context(session_uuid: str, source_event_id: int | None = Non
         "recent_events": recent_events,
         "active_world_claims": active_claims,
         "focused_world_memory": focused,
+        "evidence_revisions": evidence_revisions,
         "uncertainty_claims": uncertainty_claims,
         "wisdom_recent_traces": wisdom_traces,
         "relationship_summaries": relationships,
@@ -136,7 +144,11 @@ def build_reasoning_context(session_uuid: str, source_event_id: int | None = Non
             source_event_id,
             packet_type,
             json.dumps(context),
-            _json_ids(recent_events),
+            json.dumps(list(dict.fromkeys(
+                json.loads(_json_ids(recent_events)) +
+                [event_id for report in evidence_revisions
+                 for event_id in report["evidence_event_ids"]]
+            ))),
             _json_ids(active_claims + uncertainty_claims + [{"id": x["source_row_id"]} for x in focused]),
             _json_ids(wisdom_traces),
             _json_ids(relationships),
