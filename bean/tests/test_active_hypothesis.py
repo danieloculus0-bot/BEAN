@@ -562,6 +562,32 @@ class ActiveHypothesisTests(unittest.TestCase):
 
 
 
+    def test_retained_prior_changes_which_experiment_runs_first(self):
+        """Proof of a causal decision change before looking at rewards."""
+        states = {
+            "balanced": (1.0, -1.0, -1.0, -1.0),
+            "uniform": (1.0, 1.0, 1.0, 1.0),
+            "mixed": (1.0, 1.0, -1.0, -1.0),
+        }
+        prior = {"kind": "channel", "lhs": 0, "rhs": None, "polarity": 1}
+        seen = []
+
+        def reward(pid, action):
+            seen.append((pid, action))
+            return float(action == act(prior, states[pid]))
+
+        inputs = dict(probe_ids=list(states), observe=states.__getitem__,
+                      reward=reward, method="disagreement", budget=3)
+        cold = discover(**inputs)
+        warm = discover(**inputs, prior_rule=prior)
+        self.assertEqual(cold["records"][0]["probe_id"], "balanced")
+        self.assertEqual(warm["records"][0]["probe_id"], "uniform")
+        self.assertTrue(warm["prior_guided_probe_selection"])
+        self.assertEqual(warm["reward_calls"], cold["reward_calls"])
+        self.assertEqual(len(seen), 18)
+        with self.assertRaisesRegex(ValueError, "Prior must be"):
+            discover(**{**inputs, "method": "passive"}, prior_rule=prior)
+
     def test_bounded_prior_guidance_can_help_and_wrong_prior_is_rejected(self):
         """Same grammar, same 3-probe budget, fresh validation and blind data."""
         prior = {"kind": "channel", "lhs": 0, "rhs": None, "polarity": 1}
