@@ -164,3 +164,43 @@ def test_unchanged_question_does_not_repeat_after_attempt_or_restart(memory, out
     revised = GoalStateEngine().propose(new_session, [], [question])
     assert len(revised) == 1
     assert revised[0].proposal_id != original.proposal_id
+
+
+def test_goal_outcome_event_links_to_exact_persisted_result_after_restart(memory):
+    """The event receipt authenticates stored bytes, not an invented success."""
+    import hashlib
+
+    item = memory()
+    emitted = []
+    outcome = {"status": "verified", "observations": [1, 2, 3]}
+    cycle = GoalCycle({"update_models": lambda _: outcome},
+                      event_sink=emitted.append)
+    result = cycle.poll_due()[0]
+    assert result["status"] == "success"
+    assert emitted == [result]
+    stored = get_store().fetchone(
+        "SELECT result_json FROM bean_goal_runs WHERE proposal_id=?",
+        (item.proposal_id,))["result_json"]
+    expected_digest = hashlib.sha256(stored.encode("utf-8")).hexdigest()
+    assert result["result_sha256"] == expected_digest
+    assert json.loads(stored) == outcome
+
+    path = get_store().db_path
+    get_store().close()
+    init_store(path)
+    restarted = GoalCycle({"update_models": lambda _: pytest.fail("replayed")})
+    assert restarted.poll_due() == []
+    persisted = restarted.history()[0]["result_json"]
+    assert hashlib.sha256(persisted.encode("utf-8")).hexdigest() == expected_digest
+
+
+def test_failed_goal_has_no_fabricated_result_digest(memory):
+    memory()
+    emitted = []
+    def broken(_):
+        raise RuntimeError("synthetic failed operation")
+    result = GoalCycle({"update_models": broken},
+                       event_sink=emitted.append).poll_due()[0]
+    assert result["status"] == "failed"
+    assert result["result_sha256"] is None
+    assert emitted == [result]
