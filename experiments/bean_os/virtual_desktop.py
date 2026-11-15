@@ -285,6 +285,19 @@ def run(db_path: Path) -> dict:
         "subsystems": list(FAMILIES), "learned_rules": len(learned),
         "accepted_rules": sum(v["status"] == "provisional_rule" for v in learned.values()),
         "policy_receipts": receipts, "training_journal_heads": persisted_head,
+        "learning_diagnostics": {
+            f: {"status": d["status"], "failure_reason": d["failure_reason"],
+                "best_rule": d["best_rule"],
+                "best_loss": d["best_loss_per_probe"],
+                "runner_up_gap": d["second_best_gap_per_probe"],
+                "probes": [
+                    {"id": row["probe_id"],
+                     "sensors": row["sensors"]}
+                    for row in d["records"]
+                ],
+                "validated": d["validation"]["passed"]}
+            for f, d in learned.items()
+        },
         "persisted_episode_records": len(recorded),
         "blind_episodes": len(episodes),
         "completed_episodes": completed,
