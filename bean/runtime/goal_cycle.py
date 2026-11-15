@@ -6,6 +6,7 @@ Original implementation, no upstream code copied. Core owns the memory.
 from __future__ import annotations
 
 import json
+import hashlib
 import math
 import uuid
 from datetime import datetime, timezone
@@ -173,7 +174,12 @@ class GoalCycle:
                    "action_type": goal["action_type"], "status": state,
                    "proposal_status": new_status, "decision": goal["decision"],
                    "model_weights_trained": False,
-                   "independent_outcome_verified": False}
+                   "independent_outcome_verified": False,
+                   # Hash the exact JSON persisted in bean_goal_runs.result_json.
+                   # The event sink can verify this receipt without copying
+                   # potentially sensitive action outputs into the event log.
+                   "result_sha256": (hashlib.sha256(payload.encode("utf-8")).hexdigest()
+                                     if payload is not None else None)}
         try:
             self.event_sink(receipt)
         except Exception:
