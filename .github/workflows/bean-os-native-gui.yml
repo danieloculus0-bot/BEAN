@@ -1,0 +1,52 @@
+name: BEAN OS native GUI navigation
+on:
+  push:
+    paths:
+      - 'bean/desktop/**'
+      - 'experiments/bean_os/gui_lab_app.py'
+      - 'experiments/bean_os/navigate_gui.py'
+      - 'tests/test_bean_os_gui_navigation.py'
+      - '.github/workflows/bean-os-native-gui.yml'
+  pull_request:
+    paths:
+      - 'bean/desktop/**'
+      - 'experiments/bean_os/gui_lab_app.py'
+      - 'experiments/bean_os/navigate_gui.py'
+      - 'tests/test_bean_os_gui_navigation.py'
+      - '.github/workflows/bean-os-native-gui.yml'
+  workflow_dispatch:
+jobs:
+  navigate-real-gui:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install actual Linux desktop and input dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq xvfb xauth openbox xdotool scrot python3-tk fonts-dejavu-core
+          python -m pip install pyautogui Pillow
+      - name: Boot isolated graphical desktop and navigate with BEAN
+        run: |
+          xvfb-run -a -s "-screen 0 1280x800x24 -ac" bash -euo pipefail -c '
+            openbox >/tmp/bean-openbox.log 2>&1 &
+            wm_pid=$!
+            trap "kill $wm_pid || true" EXIT
+            sleep 1
+            python -m experiments.bean_os.navigate_gui --sandbox artifacts/bean-gui-nav --output artifacts/bean-gui-navigation.json
+            python -m unittest discover -s tests -p test_bean_os_gui_navigation.py -v
+          '
+      - name: Publish native screen capture and BEAN Core action receipt
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bean-os-real-gui-navigation
+          path: |
+            artifacts/bean-gui-nav/screenshots/*.png
+            artifacts/bean-gui-navigation.json
+          if-no-files-found: ignore
