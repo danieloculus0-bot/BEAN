@@ -14,7 +14,7 @@ and storage permissions. Its host simulates what each action changes.
 The host exposes numeric observations and measured intervention rewards, **not
 the correct tool or the hidden condition**. The existing
 `NativeReasoningService.discover_analogy` fits a bounded rule using 60 observed
-training states, 12 measured probes and 12 validation states *per subsystem*.
+training states, 12 measured **passively sampled** probes and 12 validation states *per subsystem*. The active disagreement sampler was separately found to overselect healthy observations in this environment; that limitation is retained as an open BEAN learning defect.
 The selected policy and its evidence are retained by BEAN's existing SQLite
 SHA journal. All policies are reloaded from storage before any blind episode.
 
