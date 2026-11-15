@@ -68,6 +68,7 @@ class VirtualDesktopTest(unittest.TestCase):
             str({k: report[k] for k in (
                 "accepted_rules", "learned_rules", "completion_rate",
                 "remaining_faults", "repair_actions", "unnecessary_actions")})
+            + " learning=" + str(report["learning_diagnostics"]["storage"])
             + " first_episode=" + str(report["episodes"][0]["trace"][:5]))
         self.assertLessEqual(report["unnecessary_action_rate"], 0.10)
 
