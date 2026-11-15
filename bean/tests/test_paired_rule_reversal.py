@@ -89,12 +89,20 @@ class PairedRuleReversalTests(unittest.TestCase):
             self.assertEqual(cold["attempted"] + cold["abstained"], 48)
             self.assertEqual(warm["attempted"] + warm["abstained"], 48)
             self.assertFalse(row["blind_used_for_training"])
+            # A reversal must genuinely invalidate the ancestral rule on
+            # withheld states; otherwise this is not a discriminating test.
+            self.assertLess(row["prior_blind_correct_after_reversal"], 48)
             self.assertTrue(row["prior_train_blind_sensor_disjoint"])
             self.assertEqual(row["prior_source"],
                              "same_trial_synthetic_feedback_not_restored_core_memory")
             if row["budget"] == 12:
                 self.assertEqual(cold["probe_ids"], warm["probe_ids"])
                 self.assertFalse(warm["prior_guided"])
+                # With identical probes and no validation tie-break, a retained
+                # prior must not receive unearned credit at the standard budget.
+                self.assertEqual(cold["selected_rule"], warm["selected_rule"])
+                self.assertEqual(cold["correct"], warm["correct"])
+                self.assertEqual(cold["abstained"], warm["abstained"])
             else:
                 self.assertTrue(warm["prior_guided"])
         # Emit actual per-world scores for CI logs, including losses and ties.
