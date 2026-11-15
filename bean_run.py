@@ -332,6 +332,13 @@ def main():
                 reasoning_db, model=model)
             register_native_reasoning_handlers(inbox, native_reasoning_service)
             ctx["native_reasoning_service"] = native_reasoning_service
+            # Register the bounded, provider-free native experiment only after
+            # the actual reasoning service exists. GoalCycle retains its
+            # original SQLite claim/outcome/restart semantics.
+            if goal_cycle is not None:
+                from bean.runtime.digital_experiment import make_local_reasoning_experiment
+                goal_cycle.actions["run_experiment"] = make_local_reasoning_experiment(
+                    native_reasoning_service)
             # Native read-only web research; it makes no network request at
             # startup and uses Core's existing wisdom/reasoning memory owner.
             from bean.research.research_service import (
