@@ -38,7 +38,7 @@ observable file and window objectives, not general autonomy.
 
 ## Run on a graphical Linux/X11 environment
 
-Requires Python 3 with Tk, PyAutoGUI, `wmctrl` and `scrot` installed.
+Requires Python 3 with Tk, PyAutoGUI, `xdotool` and `scrot` installed.
 
 ```bash
 python -m pip install pyautogui Pillow
