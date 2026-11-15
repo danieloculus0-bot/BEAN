@@ -19,7 +19,7 @@ class X11Desktop:
     def __init__(self, evidence_dir: str | Path):
         if not os.environ.get("DISPLAY") or os.environ.get("XDG_SESSION_TYPE") == "wayland":
             raise RuntimeError("X11 DISPLAY required for this desktop adapter")
-        for executable in ("wmctrl", "scrot"):
+        for executable in ("xdotool", "scrot"):
             if not shutil.which(executable):
                 raise RuntimeError(f"Missing local desktop dependency: {executable}")
         # Import after checking DISPLAY; pyautogui initializes the live X server.
@@ -38,18 +38,29 @@ class X11Desktop:
         return result.stdout
 
     def windows(self) -> list[dict]:
-        """Observe real window-manager top-level titles and screen geometry."""
-        raw = self._command("wmctrl", "-lG")
+        """Enumerate real X11 windows by name and live screen geometry."""
+        result = subprocess.run(
+            ["xdotool", "search", "--onlyvisible", "--name", "."],
+            capture_output=True, text=True, check=False, timeout=8)
+        if result.returncode not in (0, 1):
+            raise RuntimeError("X11 window discovery command failed")
         found = []
-        for line in raw.splitlines():
-            parts = line.split(maxsplit=7)
-            if len(parts) != 8:
+        for handle in result.stdout.splitlines():
+            if not handle.isdigit():
                 continue
-            handle, desktop, x, y, width, height, host, title = parts
-            found.append({
-                "id": handle, "title": title, "x": int(x), "y": int(y),
-                "width": int(width), "height": int(height),
-            })
+            try:
+                title = self._command("xdotool", "getwindowname", handle).strip()
+                geometry = self._command(
+                    "xdotool", "getwindowgeometry", "--shell", handle)
+                fields = dict(line.strip().split("=", 1)
+                              for line in geometry.splitlines() if "=" in line)
+                found.append({
+                    "id": handle, "title": title,
+                    "x": int(fields["X"]), "y": int(fields["Y"]),
+                    "width": int(fields["WIDTH"]), "height": int(fields["HEIGHT"]),
+                })
+            except (subprocess.CalledProcessError, KeyError, ValueError):
+                continue
         return found
 
     def find(self, title: str) -> dict | None:
@@ -66,7 +77,7 @@ class X11Desktop:
 
     def focus(self, title: str) -> dict:
         window = self.wait_for(title)
-        self._command("wmctrl", "-ia", window["id"])
+        self._command("xdotool", "windowactivate", "--sync", window["id"])
         time.sleep(.23)
         self.trace.append({"action": "focus", "window": title})
         return self.wait_for(title)
