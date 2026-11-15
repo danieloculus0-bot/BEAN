@@ -1,0 +1,35 @@
+name: BEAN OS virtual desktop
+on:
+  push:
+    paths:
+      - 'experiments/bean_os/**'
+      - 'tests/test_bean_os_virtual_desktop.py'
+      - '.github/workflows/bean-os-virtual-desktop.yml'
+  pull_request:
+    paths:
+      - 'experiments/bean_os/**'
+      - 'tests/test_bean_os_virtual_desktop.py'
+      - '.github/workflows/bean-os-virtual-desktop.yml'
+  workflow_dispatch:
+jobs:
+  virtual-desktop:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Validate simulated tools and real BEAN Core loop
+        run: python -m unittest discover -s tests -p test_bean_os_virtual_desktop.py -v
+      - name: Execute blind multi-fault desktop episodes
+        run: python -m experiments.bean_os.virtual_desktop --output artifacts/bean-virtual-desktop.json
+      - name: Upload case-level experimental evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bean-os-virtual-desktop-evidence
+          path: artifacts/bean-virtual-desktop.json
+          if-no-files-found: ignore
