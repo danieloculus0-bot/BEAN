@@ -136,6 +136,8 @@ def run(sandbox: Path, *, body: str = "BEAN navigated this real X11 desktop offl
         except subprocess.TimeoutExpired:
             application.kill()
             application.wait(timeout=4)
+        if application.stderr is not None:
+            application.stderr.close()
         try:
             get_store().close()
         except RuntimeError:
