@@ -7,10 +7,12 @@ verification. GoalCycle owns durable action results and restart behavior.
 from __future__ import annotations
 
 
-def make_local_reasoning_experiment(core):
+def make_local_reasoning_experiment(core, *, evaluator=None):
     """Return a registered GoalCycle action for a native symbolic comparison."""
     if not callable(getattr(core, "reason_local", None)):
         raise TypeError("Existing NativeReasoningService required")
+    if evaluator is not None and not callable(evaluator):
+        raise TypeError("Evaluator must be a trusted host callable")
 
     def run_experiment(goal):
         detail = goal.get("action_detail")
@@ -39,7 +41,30 @@ def make_local_reasoning_experiment(core):
             return {"status": "unverified", "reason": "native_reasoner_abstained",
                     "core_status": observed.get("status"),
                     "independent_outcome_verified": False}
+        # Optional host-owned oracle runs only after Core predicts. Never
+        # expose the goal's expected_output to this callback.
+        # Its verdict is a receipt, not independently audited ground truth.
+        evaluator_receipt = None
+        if evaluator is not None:
+            try:
+                verdict = evaluator(dict(inputs), answer)
+                if (isinstance(verdict, dict)
+                        and verdict.get("verdict") in ("correct", "incorrect", "unknown")
+                        and isinstance(verdict.get("evidence_ref"), str)
+                        and 0 < len(verdict["evidence_ref"]) <= 250):
+                    evaluator_receipt = {
+                        "verdict": verdict["verdict"],
+                        "evidence_ref": verdict["evidence_ref"],
+                        "independently_audited": False,
+                    }
+                else:
+                    evaluator_receipt = {"verdict": "unknown",
+                                         "reason": "invalid_evaluator_receipt"}
+            except Exception:
+                evaluator_receipt = {"verdict": "unknown",
+                                     "reason": "evaluator_failed"}
         return {"status": "unverified",
+                "evaluator_receipt": evaluator_receipt,
                 "reason": "host_expected_answer_not_independent_ground_truth",
                 "prediction_matches_expected": answer == expected["answer"],
                 "observed_answer": answer[:1000],

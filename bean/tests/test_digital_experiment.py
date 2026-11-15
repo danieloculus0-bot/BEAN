@@ -89,3 +89,46 @@ def test_registered_goalcycle_persists_unverified_outcome_without_replay(tmp_pat
         assert len(core.calls) == 1
     finally:
         get_store().close()
+
+
+def test_host_evaluator_receives_prediction_not_expected_label():
+    calls = []
+    core = Core({"status": "locally_solved", "answer": "no"})
+    def oracle(inputs, prediction):
+        calls.append((inputs, prediction))
+        return {"verdict": "incorrect", "evidence_ref": "synthetic-oracle:case-1"}
+    item = goal()
+    item["action_detail"]["expected_output"]["answer"] = "secret-label"
+    result = make_local_reasoning_experiment(core, evaluator=oracle)(item)
+    assert calls == [({"domain": "synthetic", "task_ref": "case-1",
+                       "query": "a?"}, "no")]
+    assert result["evaluator_receipt"] == {
+        "verdict": "incorrect", "evidence_ref": "synthetic-oracle:case-1",
+        "independently_audited": False}
+    assert result["status"] == "unverified"
+    assert result["independent_outcome_verified"] is False
+
+
+def test_invalid_or_failed_evaluator_never_promotes_to_success():
+    core = Core({"status": "locally_solved", "answer": "yes"})
+    for evaluator, reason in [
+        (lambda inputs, answer: {"verdict": "correct"}, "invalid_evaluator_receipt"),
+        (lambda inputs, answer: {"verdict": "correct", "evidence_ref": ""}, "invalid_evaluator_receipt"),
+    ]:
+        result = make_local_reasoning_experiment(core, evaluator=evaluator)(goal())
+        assert result["status"] == "unverified"
+        assert result["evaluator_receipt"]["reason"] == reason
+    def broken(inputs, answer):
+        raise RuntimeError("synthetic evaluator outage")
+    result = make_local_reasoning_experiment(core, evaluator=broken)(goal())
+    assert result["evaluator_receipt"]["reason"] == "evaluator_failed"
+    assert result["independent_outcome_verified"] is False
+
+
+def test_abstention_does_not_call_oracle():
+    calls = []
+    core = Core({"status": "unknown"})
+    result = make_local_reasoning_experiment(
+        core, evaluator=lambda inputs, answer: calls.append(answer))(goal())
+    assert result["status"] == "unverified"
+    assert calls == []
