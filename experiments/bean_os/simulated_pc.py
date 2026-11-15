@@ -21,7 +21,12 @@ ACTIONS = {-1: "clean_temp", 0: "inspect", 1: "restart_service"}
 
 def pc_case(case_id: str) -> dict:
     i = int(case_id)
-    offset = (i // 3) * 0.07
+    # Keep generated PC states within the same physical operating envelope
+    # regardless of disjoint numeric IDs. Otherwise blind IDs in the 50,000s
+    # turn supposedly healthy states into massive faults, changing the task.
+    # The sensor vector still includes a unique per-case signal, so training,
+    # validation and blind observations remain distinct.
+    offset = ((i // 3) % 997) * 0.01
     kind = i % 3
     if kind == 0:
         disk, service = 85.0 + offset, 8.0 + offset

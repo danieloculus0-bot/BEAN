@@ -14,6 +14,18 @@ class SimulatedPCTest(unittest.TestCase):
         self.assertLess(outcome["after"]["disk_pressure"], before["disk_pressure"])
         self.assertEqual(before, pc_case("50100"))
 
+    def test_blind_scenarios_keep_realistic_pressure_ranges(self):
+        # Numeric case IDs distinguish withheld observations; they must not
+        # inflate resource pressure and silently change the simulated task.
+        for i in list(range(100, 160)) + list(range(1000, 1012)) + list(range(50000, 50060)):
+            state = pc_case(str(i))
+            expected = -1 if i % 3 == 0 else 1 if i % 3 == 1 else 0
+            self.assertLessEqual(state["disk_pressure"], 100)
+            self.assertLessEqual(state["service_fault"], 100)
+            rewards = {a: simulate_action(str(i), a)["reward"]
+                       for a in (-1, 0, 1)}
+            self.assertEqual(expected, max(rewards, key=rewards.get))
+
     def test_real_core_learns_and_reopens_receipt(self):
         with tempfile.TemporaryDirectory() as directory:
             result = run(Path(directory) / "reasoning.sqlite3")
