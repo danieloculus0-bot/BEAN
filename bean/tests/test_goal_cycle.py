@@ -122,3 +122,45 @@ def test_tick_scheduler_runs_native_goals(memory):
     handlers.run_due(0, "synthetic-session", {})
     assert seen == ["done"]
     assert item.proposal_id in [r["proposal_id"] for r in cycle.history()]
+
+
+@pytest.mark.parametrize("outcome", [
+    "pending", "success", "failed", "unknown", "unverified", "interrupted",
+])
+def test_unchanged_question_does_not_repeat_after_attempt_or_restart(memory, outcome):
+    from bean.memory.identity import bootstrap_identity
+    from bean.memory.session import begin_session
+
+    bootstrap_identity()
+    session = begin_session()
+    engine = GoalStateEngine()
+    question = {
+        "id": 77, "question": "Does the synthetic sum rule predict the outcome?",
+        "context": {
+            "schema": "bean.cognition.experiment.v1", "capability": "sum",
+            "inputs": {"values": [2, 3]}, "expected_output": {"sum": 6},
+        },
+    }
+    original = engine.propose(session, [], [question])[0]
+    cycle = GoalCycle({"run_experiment": lambda _: {"status": outcome}})
+    if outcome == "interrupted":
+        assert cycle._claim()["proposal_id"] == original.proposal_id
+    elif outcome != "pending":
+        assert len(cycle.poll_due()) == 1
+    assert engine.propose(session, [], [question]) == []
+
+    path = get_store().db_path
+    get_store().close()
+    init_store(path)
+    new_session = begin_session()
+    restarted = GoalCycle({"run_experiment": lambda _: pytest.fail("replayed")})
+    assert restarted.recover_interrupted() == (outcome == "interrupted")
+    assert GoalStateEngine().propose(new_session, [], [question]) == []
+    rows = get_store().fetchall("SELECT proposal_id FROM cognition_goal_proposals")
+    assert [row["proposal_id"] for row in rows] == [original.proposal_id]
+
+    # A corrected prediction is a new experiment, retaining the failed path.
+    question["context"]["expected_output"] = {"sum": 5}
+    revised = GoalStateEngine().propose(new_session, [], [question])
+    assert len(revised) == 1
+    assert revised[0].proposal_id != original.proposal_id

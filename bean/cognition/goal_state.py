@@ -115,12 +115,19 @@ class GoalStateEngine:
                     4, ApprovalRequired.SUPERVISOR, {"question_id": q.get("id")},
                     "curiosity"))
 
-        # A running cognition loop sees the same question each tick. Never
-        # inflate the goal count or lose the original receipt on replay.
+        # Open questions outlive sessions and attempts. Re-proposing an
+        # unchanged experiment would bypass GoalCycle's no-replay history,
+        # including after failure or an interrupted action with unknown effects.
+        # Preserve the original proposal in every state; changed inputs or
+        # predictions form a new signature and may be investigated again.
+        # Ordinary drive goals retain their existing session-local semantics.
         from ..memory.store import get_store
         pending = get_store().fetchall(
             "SELECT goal_state, action_type, action_detail, drive_source "
-            "FROM cognition_goal_proposals WHERE session_uuid=? AND status='pending'",
+            "FROM cognition_goal_proposals "
+            "WHERE (session_uuid=? AND status='pending') OR "
+            "(goal_state='investigate_open_question' "
+            "AND action_type='run_experiment' AND drive_source='curiosity')",
             (session_uuid,))
         existing = {
             (row["goal_state"], row["action_type"],
