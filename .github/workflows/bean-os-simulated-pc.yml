@@ -1,0 +1,29 @@
+name: BEAN OS simulated PC
+on:
+  push:
+    paths:
+      - 'experiments/bean_os/**'
+      - 'tests/test_bean_os_simulated_pc.py'
+      - '.github/workflows/bean-os-simulated-pc.yml'
+  workflow_dispatch:
+jobs:
+  simulated-pc:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Test BEAN native PC simulation
+        run: python -m unittest discover -s tests -p test_bean_os_simulated_pc.py -v
+      - name: Execute BEAN PC learning and blind simulation
+        run: python -m experiments.bean_os.simulated_pc --output artifacts/bean-os-pc-sim.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: bean-os-pc-simulation
+          path: artifacts/bean-os-pc-sim.json
+          if-no-files-found: ignore
