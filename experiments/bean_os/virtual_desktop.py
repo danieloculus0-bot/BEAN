@@ -179,7 +179,11 @@ def train(service: NativeReasoningService) -> dict[str, dict]:
             source_ref="simulated-pc:resettable-tools-v2",
             probe_ids=TRAIN, validation_probe_ids=VALIDATE,
             observe=observe, reward=reward, budget=12,
-            method="disagreement", seed=42 + FAMILIES.index(family),
+            # The current active disagreement sampler repeatedly selected
+            # healthy probes for this telemetry layout and abstained on all
+            # five learned policies. Use BEAN's native passive exploration
+            # until its active selection receives a separately tested fix.
+            method="passive", seed=42 + FAMILIES.index(family),
         )
     return decisions
 
