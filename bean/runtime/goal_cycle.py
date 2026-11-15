@@ -152,8 +152,23 @@ class GoalCycle:
             state = "unknown"
         new_status = {"success": "completed", "n/a": "needs_evidence",
                       "failed": "failed", "unknown": "needs_review"}[state]
-        payload = (json.dumps(result, default=str, ensure_ascii=False)[:8192]
-                   if result is not None else None)
+        # Never truncate JSON in the middle of a token: the durable outcome
+        # must remain parseable after restart. Oversized output is represented
+        # by a compact, explicit evidence-gap envelope, not invented detail.
+        payload = None
+        result_truncated = False
+        if result is not None:
+            encoded = json.dumps(result, default=str, ensure_ascii=False)
+            if len(encoded.encode("utf-8")) > 8192:
+                result_truncated = True
+                payload = json.dumps({
+                    "schema": "bean.goal.result_truncated.v1",
+                    "truncated": True,
+                    "original_utf8_bytes": len(encoded.encode("utf-8")),
+                    "original_sha256": hashlib.sha256(encoded.encode("utf-8")).hexdigest(),
+                }, sort_keys=True)
+            else:
+                payload = encoded
         conn = self.store._conn()
         conn.execute("BEGIN IMMEDIATE")
         try:
@@ -175,6 +190,7 @@ class GoalCycle:
                    "proposal_status": new_status, "decision": goal["decision"],
                    "model_weights_trained": False,
                    "independent_outcome_verified": False,
+                   "result_truncated": result_truncated,
                    # Hash the exact JSON persisted in bean_goal_runs.result_json.
                    # The event sink can verify this receipt without copying
                    # potentially sensitive action outputs into the event log.

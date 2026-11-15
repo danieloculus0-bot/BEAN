@@ -204,3 +204,41 @@ def test_failed_goal_has_no_fabricated_result_digest(memory):
     assert result["status"] == "failed"
     assert result["result_sha256"] is None
     assert emitted == [result]
+
+
+def test_large_goal_outcome_is_parseable_evidence_gap_after_restart(memory):
+    """A bounded durable receipt must not contain half a JSON document."""
+    import hashlib
+
+    item = memory()
+    original = {"status": "verified", "data": "🫘" * 3000}
+    encoded = json.dumps(original, default=str, ensure_ascii=False)
+    receipt = GoalCycle({"update_models": lambda _: original}).poll_due()[0]
+    assert receipt["status"] == "success"
+    assert receipt["result_truncated"] is True
+
+    stored = get_store().fetchone(
+        "SELECT result_json FROM bean_goal_runs WHERE proposal_id=?",
+        (item.proposal_id,))["result_json"]
+    envelope = json.loads(stored)
+    assert envelope["schema"] == "bean.goal.result_truncated.v1"
+    assert envelope["truncated"] is True
+    assert envelope["original_utf8_bytes"] == len(encoded.encode("utf-8"))
+    assert envelope["original_sha256"] == hashlib.sha256(encoded.encode("utf-8")).hexdigest()
+    assert len(stored.encode("utf-8")) <= 8192
+    assert receipt["result_sha256"] == hashlib.sha256(stored.encode("utf-8")).hexdigest()
+
+    path = get_store().db_path
+    get_store().close()
+    init_store(path)
+    restarted = GoalCycle({"update_models": lambda _: pytest.fail("replayed")})
+    assert restarted.poll_due() == []
+    assert json.loads(restarted.history()[0]["result_json"]) == envelope
+
+
+def test_small_goal_result_retains_exact_json_and_not_truncated(memory):
+    memory()
+    original = {"status": "verified", "evidence": [1, 2]}
+    receipt = GoalCycle({"update_models": lambda _: original}).poll_due()[0]
+    assert receipt["result_truncated"] is False
+    assert json.loads(GoalCycle({"update_models": lambda _: None}).history()[0]["result_json"]) == original
