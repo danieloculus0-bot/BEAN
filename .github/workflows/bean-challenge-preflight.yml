@@ -1,0 +1,39 @@
+name: BEAN evidence challenge preflight
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'bean/cognition/challenge_gate.py'
+      - 'bean/tests/test_challenge_gate.py'
+      - 'scripts/bean_challenge_preflight.py'
+      - 'docs/BEAN_CHALLENGE_PREFLIGHT.md'
+      - '.github/workflows/bean-challenge-preflight.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'bean/cognition/challenge_gate.py'
+      - 'bean/tests/test_challenge_gate.py'
+      - 'scripts/bean_challenge_preflight.py'
+      - 'docs/BEAN_CHALLENGE_PREFLIGHT.md'
+      - '.github/workflows/bean-challenge-preflight.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  challenge-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Compile Core challenge preflight
+        run: python -m py_compile bean/cognition/challenge_gate.py scripts/bean_challenge_preflight.py bean/tests/test_challenge_gate.py
+      - name: Assert block, persistence, evidence and override contracts
+        run: python -m unittest bean.tests.test_challenge_gate -v
