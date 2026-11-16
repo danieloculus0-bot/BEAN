@@ -104,7 +104,8 @@ def test_host_evaluator_receives_prediction_not_expected_label():
                        "query": "a?"}, "no")]
     assert result["evaluator_receipt"] == {
         "verdict": "incorrect", "evidence_ref": "synthetic-oracle:case-1",
-        "independently_audited": False}
+        "independently_audited": False,
+        "subject_sha256": result["evaluation_subject_sha256"]}
     assert result["status"] == "unverified"
     assert result["independent_outcome_verified"] is False
 
