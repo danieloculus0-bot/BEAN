@@ -132,3 +132,28 @@ def test_abstention_does_not_call_oracle():
         core, evaluator=lambda inputs, answer: calls.append(answer))(goal())
     assert result["status"] == "unverified"
     assert calls == []
+
+
+def test_oversized_core_answer_never_reaches_evaluator():
+    """A locally solved result must not bypass the experiment output budget."""
+    calls = []
+    answer = "x" * 1001
+    core = Core({"status": "locally_solved", "answer": answer})
+    result = make_local_reasoning_experiment(
+        core, evaluator=lambda inputs, prediction: calls.append(prediction))(goal())
+    assert result["status"] == "unverified"
+    assert result["reason"] == "core_answer_exceeds_bound"
+    assert result["independent_outcome_verified"] is False
+    assert len(result["observed_answer_sha256"]) == 64
+    assert calls == []
+
+
+def test_answer_at_bound_still_reaches_evaluator():
+    calls = []
+    core = Core({"status": "locally_solved", "answer": "x" * 1000})
+    result = make_local_reasoning_experiment(
+        core, evaluator=lambda inputs, prediction: (
+            calls.append(prediction) or {"verdict": "unknown", "evidence_ref": "synthetic:bound"}
+        ))(goal())
+    assert len(calls) == 1 and len(calls[0]) == 1000
+    assert result["status"] == "unverified"
