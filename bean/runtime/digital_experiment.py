@@ -43,7 +43,16 @@ def make_local_reasoning_experiment(core, *, evaluator=None):
             return {"status": "unverified", "reason": "native_reasoner_abstained",
                     "core_status": observed.get("status"),
                     "independent_outcome_verified": False}
-        # Bound the Core-produced value before passing it to a trusted oracle.\n        # A provider or malformed local rule can return an arbitrarily large\n        # string even when the proposed goal itself passed schema validation.\n        if len(answer) > 1000:\n            return {"status": "unverified", "reason": "core_answer_exceeds_bound",\n                    "core_status": observed["status"],\n                    "observed_answer_sha256": hashlib.sha256(\n                        answer.encode("utf-8")).hexdigest(),\n                    "independent_outcome_verified": False}\n        # Optional host-owned oracle runs only after Core predicts. Never
+        # Bound the Core-produced value before passing it to a trusted oracle.
+        # A provider or malformed local rule can return an arbitrarily large
+        # string even when the proposed goal itself passed schema validation.
+        if len(answer) > 1000:
+            return {"status": "unverified", "reason": "core_answer_exceeds_bound",
+                    "core_status": observed["status"],
+                    "observed_answer_sha256": hashlib.sha256(
+                        answer.encode("utf-8")).hexdigest(),
+                    "independent_outcome_verified": False}
+        # Optional host-owned oracle runs only after Core predicts. Never
         # expose the goal's expected_output to this callback.
         # Its verdict is a receipt, not independently audited ground truth.
         evaluator_receipt = None
