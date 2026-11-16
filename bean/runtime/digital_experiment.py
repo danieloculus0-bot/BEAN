@@ -7,6 +7,7 @@ verification. GoalCycle owns durable action results and restart behavior.
 from __future__ import annotations
 
 import hashlib
+import json
 
 
 def make_local_reasoning_experiment(core, *, evaluator=None):
@@ -56,6 +57,13 @@ def make_local_reasoning_experiment(core, *, evaluator=None):
         # expose the goal's expected_output to this callback.
         # Its verdict is a receipt, not independently audited ground truth.
         evaluator_receipt = None
+        # Bind an external evaluator claim to the exact Core prediction and
+        # canonical task inputs. The digest is provenance, not proof of truth.
+        evaluation_subject_sha256 = hashlib.sha256(
+            json.dumps({"inputs": inputs, "prediction": answer},
+                       sort_keys=True, separators=(",", ":"),
+                       ensure_ascii=False).encode("utf-8")
+        ).hexdigest()
         if evaluator is not None:
             try:
                 verdict = evaluator(dict(inputs), answer)
@@ -67,6 +75,7 @@ def make_local_reasoning_experiment(core, *, evaluator=None):
                         "verdict": verdict["verdict"],
                         "evidence_ref": verdict["evidence_ref"],
                         "independently_audited": False,
+                        "subject_sha256": evaluation_subject_sha256,
                     }
                 else:
                     evaluator_receipt = {"verdict": "unknown",
@@ -76,6 +85,7 @@ def make_local_reasoning_experiment(core, *, evaluator=None):
                                      "reason": "evaluator_failed"}
         return {"status": "unverified",
                 "evaluator_receipt": evaluator_receipt,
+                "evaluation_subject_sha256": evaluation_subject_sha256,
                 "reason": "host_expected_answer_not_independent_ground_truth",
                 "prediction_matches_expected": answer == expected["answer"],
                 "observed_answer": answer[:1000],
