@@ -1,16 +1,16 @@
 {
-  "boots": 54,
+  "boots": 55,
   "consciousness_proven": false,
   "databases": {
     "core": {
-      "archive": "bean_memory.sqlite3.gz.g00054",
-      "bytes": 9728000,
-      "sha256": "7146bf32d30e44388f0ab9f6a9ae7e1ef433e3b3b0418996d4aabd67c433b097"
+      "archive": "bean_memory.sqlite3.gz.g00055",
+      "bytes": 9912320,
+      "sha256": "6b258183d7a87a0e0bde6ab5f62171c6101f3e64264874be00115804d0d34613"
     },
     "reasoning": {
-      "archive": "bean_reasoning.sqlite3.gz.g00054",
-      "bytes": 3223552,
-      "sha256": "f1caab68bb546ce54ba3d718c2776503aef20fd0a0454aa60072425ddf700e88"
+      "archive": "bean_reasoning.sqlite3.gz.g00055",
+      "bytes": 3321856,
+      "sha256": "c1c74beccaff443f2d81ec85322bac6ff1726882752fbea5bfe7543401159b12"
     }
   },
   "digital_learning": {
@@ -23,7 +23,7 @@
           "candidate": 0,
           "grammar_matched": 0,
           "memory_ablated": 0,
-          "passive": 48,
+          "passive": 0,
           "shuffled": 48
         },
         "correct": {
@@ -31,17 +31,17 @@
           "candidate": 48,
           "grammar_matched": 48,
           "memory_ablated": 48,
-          "passive": 0,
+          "passive": 48,
           "shuffled": 0
         },
-        "evaluation_sha256": "9a82726f6cfecee4aa6b6ac4757c19f287cc3a4e10e0ee51c23d4199b03b0df8",
+        "evaluation_sha256": "805effb639cc4def7b96a230b9f8bf9b93f78c3d63a1ad8ae6484a6876d7c962",
         "hypothesis_grammar_expanded": false,
         "incomplete_fields": {},
-        "learning_receipt_id": "83befd27fb84f7c3f47c8390041a36fe735d21909201fef39ed74b9465de895a",
+        "learning_receipt_id": "aa1166db7a2928567edadd2363374f94abc219cc3982ba7cf6846e4cfddc5f17",
         "learning_status": "provisional_rule",
         "learning_strategy": "revise_prior_rule_from_fresh_feedback",
         "prior_generation_transfer_attempted": 48,
-        "prior_generation_transfer_correct": 27,
+        "prior_generation_transfer_correct": 23,
         "revision_decision": "updated_from_fresh_feedback"
       },
       "difference": {
@@ -49,7 +49,7 @@
           "candidate": 0,
           "grammar_matched": 0,
           "memory_ablated": 0,
-          "passive": 0,
+          "passive": 48,
           "shuffled": 48
         },
         "correct": {
@@ -57,25 +57,25 @@
           "candidate": 48,
           "grammar_matched": 48,
           "memory_ablated": 48,
-          "passive": 48,
+          "passive": 0,
           "shuffled": 0
         },
-        "evaluation_sha256": "f0c1147340c1b233a7faa2dfd960f4e524339443cd8ba0ec4740e9cdc0ca60fb",
+        "evaluation_sha256": "d26b210d7a5486ba87bdd811a7a3b5455eb366f9b03b24345942a2d0b3bf3d2c",
         "hypothesis_grammar_expanded": false,
         "incomplete_fields": {},
-        "learning_receipt_id": "ab75a4a434769bc50039a9bd1412ac3116e9ed5a101af6ee83b5462c3f768c35",
+        "learning_receipt_id": "b7888943e57862cfc2f0cb912d942966727e0199ee73074fc7d63a15f417b68a",
         "learning_status": "provisional_rule",
         "learning_strategy": "revise_prior_rule_from_fresh_feedback",
         "prior_generation_transfer_attempted": 48,
-        "prior_generation_transfer_correct": 48,
-        "revision_decision": "retained_after_fresh_feedback"
+        "prior_generation_transfer_correct": 19,
+        "revision_decision": "updated_from_fresh_feedback"
       },
       "parity": {
         "abstentions": {
           "candidate": 0,
           "grammar_matched": 0,
           "memory_ablated": 48,
-          "passive": 48,
+          "passive": 0,
           "shuffled": 48
         },
         "correct": {
@@ -83,43 +83,43 @@
           "candidate": 48,
           "grammar_matched": 48,
           "memory_ablated": 0,
-          "passive": 0,
+          "passive": 48,
           "shuffled": 0
         },
-        "evaluation_sha256": "0b3f0ed692c8e501c61ac1c097e73c3c5141ae1f6561e999b8bf6f133b7955f7",
+        "evaluation_sha256": "e752dd16818a27427a6be13334b4f916f6bffa65580b9cdb62f881dd6f380a4e",
         "hypothesis_grammar_expanded": true,
         "incomplete_fields": {},
-        "learning_receipt_id": "1823bf9a12338e05a84be127ede7b32d0a79f75d00b0c529a6ef92a549f353d9",
+        "learning_receipt_id": "0972f3143647b87597ff06f9a0ae0e734446b8b563e81b859fe2129d86ab8a80",
         "learning_status": "provisional_rule",
         "learning_strategy": "revise_prior_rule_from_fresh_feedback",
         "prior_generation_transfer_attempted": 48,
-        "prior_generation_transfer_correct": 22,
+        "prior_generation_transfer_correct": 25,
         "revision_decision": "updated_from_fresh_feedback"
       }
     },
-    "generation": 54,
+    "generation": 55,
     "grammar_matched_correct_total": 144,
     "independently_audited": false,
     "memory_ablated_correct_total": 96,
     "new_evaluation": true,
-    "passive_correct_total": 48,
+    "passive_correct_total": 96,
     "schema": "bean.github.digital_feedback.v1",
     "scope": "synthetic_numeric_control_not_general_intelligence",
     "shuffled_correct_total": 0,
-    "source_evidence_sha256": "8d985a477763aa7cce0a956901d631d45d0703c8979c309c5941abab18ca6598",
-    "source_sha": "4ce3786e29b9018663346639d97e444546cc7f5a"
+    "source_evidence_sha256": "341cff1d42ead9b98bbaf3047a76fed980d7415452e1fa6eb9955274b5b83362",
+    "source_sha": "ee93d822e9a94cf6290f0493b11d876c8558c65a"
   },
-  "events": 1808,
-  "generation": 54,
+  "events": 1842,
+  "generation": 55,
   "github_run_attempt": "1",
-  "github_run_id": "43788868048",
+  "github_run_id": "43840054025",
   "model_weights_trained": false,
-  "previous_receipt_sha256": "39743b92cf1fcdaac875213e0083cec04c1136e2b6a7364e0ae88ce84daaa2a2",
+  "previous_receipt_sha256": "5bd30b9342d2028d726db01485305d476809094f70feaf7787b7a5ac7d8e12ca",
   "processed_digital_commands": 2,
-  "receipt_sha256": "5bd30b9342d2028d726db01485305d476809094f70feaf7787b7a5ac7d8e12ca",
+  "receipt_sha256": "becc165f7d408a101faf909a3dee9b75c85e1629b6a4a23f9ee8e752b3ffd237",
   "schema": "bean.github.invoke.v1",
   "scope": "synthetic digital Core runtime and restart continuity, not subjective experience",
-  "source_sha": "4ce3786e29b9018663346639d97e444546cc7f5a",
+  "source_sha": "ee93d822e9a94cf6290f0493b11d876c8558c65a",
   "synthetic_only": true,
   "ticks": 12
 }
