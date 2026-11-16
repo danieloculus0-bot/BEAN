@@ -157,3 +157,31 @@ def test_answer_at_bound_still_reaches_evaluator():
         ))(goal())
     assert len(calls) == 1 and len(calls[0]) == 1000
     assert result["status"] == "unverified"
+
+def test_evaluator_receipt_digest_binds_exact_prediction_and_inputs():
+    """A claimed verdict must identify which prediction was evaluated."""
+    import hashlib
+    import json
+    core = Core({"status": "locally_solved", "answer": "yes"})
+    oracle = lambda inputs, answer: {
+        "verdict": "correct", "evidence_ref": "synthetic:oracle-1"}
+    handler = make_local_reasoning_experiment(core, evaluator=oracle)
+    first = handler(goal())
+    subject = {"inputs": goal()["action_detail"]["inputs"], "prediction": "yes"}
+    digest = hashlib.sha256(json.dumps(
+        subject, sort_keys=True, separators=(",", ":"),
+        ensure_ascii=False).encode("utf-8")).hexdigest()
+    assert first["evaluation_subject_sha256"] == digest
+    assert first["evaluator_receipt"]["subject_sha256"] == digest
+    assert first["independent_outcome_verified"] is False
+
+    core.observation = {"status": "locally_solved", "answer": "no"}
+    changed_prediction = handler(goal())
+    assert changed_prediction["evaluation_subject_sha256"] != digest
+    assert changed_prediction["evaluator_receipt"]["subject_sha256"] != digest
+
+    changed_inputs = goal()
+    changed_inputs["action_detail"]["inputs"]["query"] = "different?"
+    changed_query = handler(changed_inputs)
+    assert changed_query["evaluation_subject_sha256"] != changed_prediction["evaluation_subject_sha256"]
+    assert changed_query["status"] == "unverified"
