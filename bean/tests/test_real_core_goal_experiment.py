@@ -100,3 +100,72 @@ def test_real_native_core_rule_survives_restart_and_changes_goal_outcome(tmp_pat
         cold.close()
         learned.close()
         get_store().close()
+
+
+def test_conflicting_learned_rules_survive_restart_without_false_confidence(tmp_path):
+    """New evidence can change understanding without improving a decision.
+
+    Two individually consistent teachings in one domain disagree. Core must
+    retain both immutable lessons and abstain after reopening the SHA journal,
+    not silently overwrite the older lesson or report a successful outcome.
+    A same-grammar lesson in another domain must not leak across the boundary.
+    """
+    db = tmp_path / "contradictory_reasoning.sqlite"
+    core = NativeReasoningService(db)
+    descending = [
+        {"question": "A1 B3 C2", "answer": "BCA"},
+        {"question": "D2 E5 F1", "answer": "EDF"},
+        {"question": "G4 H1 I3", "answer": "GIH"},
+    ]
+    ascending = [
+        {"question": "A1 B3 C2", "answer": "ACB"},
+        {"question": "D2 E5 F1", "answer": "FDE"},
+        {"question": "G4 H1 I3", "answer": "HIG"},
+    ]
+    query = "J3 K8 L1"
+    try:
+        before = core.reason_local(
+            domain="synthetic-conflict", task_ref="before", query=query)
+        assert before["status"] == "abstain"
+
+        first = core.learn_local(
+            domain="synthetic-conflict", task_ref="lesson-desc",
+            examples=descending, evidence_refs=["synthetic:conflict:desc"])
+        assert first["status"] == "learned_local_rule"
+        initial = core.reason_local(
+            domain="synthetic-conflict", task_ref="first", query=query)
+        assert initial["status"] == "locally_solved"
+        assert initial["answer"] == "KJL"
+
+        second = core.learn_local(
+            domain="synthetic-conflict", task_ref="lesson-asc",
+            examples=ascending, evidence_refs=["synthetic:conflict:asc"])
+        assert second["status"] == "learned_local_rule"
+        assert second["rule_id"] != first["rule_id"]
+        changed = core.reason_local(
+            domain="synthetic-conflict", task_ref="contradiction", query=query)
+        assert changed["status"] == "abstain"
+        assert changed["reason"] == "conflicting_or_inapplicable_rules"
+
+        # Same symbolic grammar and query, but unrelated evidence domain.
+        other = core.learn_local(
+            domain="synthetic-unrelated", task_ref="other-domain",
+            examples=descending, evidence_refs=["synthetic:other:desc"])
+        assert other["status"] == "learned_local_rule"
+        assert core.reason_local(
+            domain="synthetic-unrelated", task_ref="other", query=query
+        )["answer"] == "KJL"
+
+        core.close()
+        core = NativeReasoningService(db)
+        after = core.reason_local(
+            domain="synthetic-conflict", task_ref="after-restart", query=query)
+        assert after["status"] == "abstain"
+        assert after["reason"] == "conflicting_or_inapplicable_rules"
+        assert core.reason_local(
+            domain="synthetic-unrelated", task_ref="other-restart",
+            query=query)["answer"] == "KJL"
+        # New contradictory evidence was learned and retained, even though
+        # confidence and immediate task completion decreased.
+    finally:
+        core.close()
