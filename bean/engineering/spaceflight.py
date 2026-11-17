@@ -169,6 +169,17 @@ def acceleration_reference(*, delta_v_km_s, acceleration_m_s2):
     }
 
 
+def earth_projectile_reference(*, launch_speed_m_s, angle_deg, initial_height_m,
+                               gravity_m_s2, linear_drag_s_inv):
+    """Exact local-Earth projectile model with user-declared uniform gravity."""
+    from .earth_projectile import solve_earth_projectile
+    return solve_earth_projectile(
+        launch_speed_m_s=launch_speed_m_s, angle_deg=angle_deg,
+        initial_height_m=initial_height_m, gravity_m_s2=gravity_m_s2,
+        linear_drag_s_inv=linear_drag_s_inv,
+    )
+
+
 def two_body_reference(*, body, position_km, velocity_km_s, step_seconds, steps):
     """Propagate a declared initial state using a bounded two-body integrator."""
     from .two_body import propagate_two_body
@@ -212,6 +223,11 @@ def solve_spaceflight_reference(request):
         "rocket": (("delta_v_km_s", "isp_s", "dry_mass_kg"), rocket_reference),
         "departure_burn": (("body", "parking_altitude_km", "v_infinity_km_s"), departure_burn_reference),
         "acceleration": (("delta_v_km_s", "acceleration_m_s2"), acceleration_reference),
+        "earth_projectile": (
+            ("launch_speed_m_s", "angle_deg", "initial_height_m",
+             "gravity_m_s2", "linear_drag_s_inv"),
+            earth_projectile_reference,
+        ),
         "two_body_propagation": (
             ("body", "position_km", "velocity_km_s", "step_seconds", "steps"),
             two_body_reference,
@@ -231,6 +247,7 @@ def solve_spaceflight_reference(request):
             "radii": "JPL SSD planetary physical parameters; Sun rounded reference",
             "rocket_equation": "NASA Glenn ideal rocket equation",
             "date_specific_ephemeris": "not_fetched",
+            "earth_projectile_gravity": "caller_supplied_constant_not_measured",
         },
         "flight_qualified": False, "physical_hardware_connected": False,
         "independently_validated": False,
