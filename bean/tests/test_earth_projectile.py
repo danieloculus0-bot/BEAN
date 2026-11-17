@@ -46,6 +46,25 @@ class EarthProjectileTests(unittest.TestCase):
         self.assertEqual(out["flight_time_s"], 0)
         self.assertEqual(out["horizontal_range_m"], 0)
 
+    def test_native_spaceflight_request_dispatch(self):
+        from bean.engineering.spaceflight import REQUEST_SCHEMA, solve_spaceflight_reference
+        request = {
+            "schema": REQUEST_SCHEMA, "calculation": "earth_projectile",
+            "parameters": {
+                "launch_speed_m_s": 20, "angle_deg": 30,
+                "initial_height_m": 0, "gravity_m_s2": 9.81,
+                "linear_drag_s_inv": 0,
+            },
+        }
+        response = solve_spaceflight_reference(request)
+        self.assertEqual(response["result"]["schema"], "bean.earth_projectile_reference.v1")
+        self.assertAlmostEqual(response["result"]["horizontal_range_m"],
+                               solve()["horizontal_range_m"], places=9)
+        self.assertFalse(response["flight_qualified"])
+        with self.assertRaises(ValueError):
+            solve_spaceflight_reference({**request, "parameters":
+                {**request["parameters"], "unexpected": 1}})
+
     def test_invalid_physical_inputs_rejected(self):
         for kwargs in ({"g":0}, {"h":-1}, {"speed":-1}, {"k":-1},
                        {"k":float("nan")}, {"angle":120}, {"speed":True},
