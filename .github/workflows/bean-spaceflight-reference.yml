@@ -4,13 +4,16 @@ on:
   push:
     branches:
       - experiment/spaceflight-reference-20261028
+      - main
     paths:
       - "bean/engineering/spaceflight.py"
       - "bean/engineering/two_body.py"
+      - "bean/engineering/earth_projectile.py"
       - "bean/runtime/inbox_handlers.py"
       - "bean/runtime/inbox.py"
       - "bean/tests/test_spaceflight_reference.py"
       - "bean/tests/test_two_body_propagation.py"
+      - "bean/tests/test_earth_projectile.py"
       - "bean/tests/test_spaceflight_inbox.py"
       - "research/spaceflight/**"
       - ".github/workflows/bean-spaceflight-reference.yml"
@@ -19,10 +22,12 @@ on:
     paths:
       - "bean/engineering/spaceflight.py"
       - "bean/engineering/two_body.py"
+      - "bean/engineering/earth_projectile.py"
       - "bean/runtime/inbox_handlers.py"
       - "bean/runtime/inbox.py"
       - "bean/tests/test_spaceflight_reference.py"
       - "bean/tests/test_two_body_propagation.py"
+      - "bean/tests/test_earth_projectile.py"
       - "bean/tests/test_spaceflight_inbox.py"
       - "research/spaceflight/**"
       - ".github/workflows/bean-spaceflight-reference.yml"
@@ -49,7 +54,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: Compile deterministic reference modules and receipt generator
         run: |
-          python -m compileall -q bean/engineering/spaceflight.py bean/engineering/two_body.py bean/tests/test_spaceflight_reference.py bean/tests/test_two_body_propagation.py research/spaceflight/ci_receipt.py bean/runtime/inbox_handlers.py bean/runtime/inbox.py bean/tests/test_spaceflight_inbox.py
+          python -m compileall -q bean/engineering/spaceflight.py bean/engineering/two_body.py bean/engineering/earth_projectile.py bean/tests/test_spaceflight_reference.py bean/tests/test_two_body_propagation.py bean/tests/test_earth_projectile.py research/spaceflight/ci_receipt.py bean/runtime/inbox_handlers.py bean/runtime/inbox.py bean/tests/test_spaceflight_inbox.py
       - name: Verify physics and generate source-hashed evidence receipt
         run: python -m research.spaceflight.ci_receipt --output spaceflight_receipt.json
       - name: Exercise Mars calculation interface
