@@ -98,12 +98,37 @@ class GoalCycle:
                 action = row["action_type"]
                 if action not in self.actions:
                     continue
-                stats = conn.execute(
-                    "SELECT COUNT(*) AS tries,"
-                    "SUM(CASE WHEN state='success' THEN 1 ELSE 0 END) AS good,"
-                    "SUM(CASE WHEN state='failed' THEN 1 ELSE 0 END) AS bad "
-                    "FROM bean_goal_runs WHERE action_type=?", (action,)
-                ).fetchone()
+                # An explicit experiment context isolates outcome histories.
+                # Untagged goals retain the original pooled policy unchanged.
+                # No model-generated free-text goal_state is treated as a
+                # validated equivalence class for transfer.
+                try:
+                    detail = json.loads(row["action_detail"] or "null")
+                except (TypeError, ValueError):
+                    detail = None
+                context = detail.get("learning_context") if isinstance(detail, dict) else None
+                scoped = (isinstance(context, str) and 0 < len(context) <= 128
+                          and context.isascii() and
+                          all(c.isalnum() or c in "._:-" for c in context))
+                if scoped:
+                    stats = conn.execute(
+                        "SELECT COUNT(*) AS tries,"
+                        "SUM(CASE WHEN r.state='success' THEN 1 ELSE 0 END) AS good,"
+                        "SUM(CASE WHEN r.state='failed' THEN 1 ELSE 0 END) AS bad "
+                        "FROM bean_goal_runs AS r "
+                        "JOIN cognition_goal_proposals AS p "
+                        "ON p.proposal_id=r.proposal_id "
+                        "WHERE r.action_type=? AND json_valid(p.action_detail) "
+                        "AND json_extract(p.action_detail,'$.learning_context')=?",
+                        (action, context)
+                    ).fetchone()
+                else:
+                    stats = conn.execute(
+                        "SELECT COUNT(*) AS tries,"
+                        "SUM(CASE WHEN state='success' THEN 1 ELSE 0 END) AS good,"
+                        "SUM(CASE WHEN state='failed' THEN 1 ELSE 0 END) AS bad "
+                        "FROM bean_goal_runs WHERE action_type=?", (action,)
+                    ).fetchone()
                 tries, good, bad = (stats["tries"] or 0,
                                     stats["good"] or 0, stats["bad"] or 0)
                 usable = good + bad
@@ -121,6 +146,9 @@ class GoalCycle:
                     "observed_successes": good, "observed_failures": bad,
                     "unknown_not_rewarded": True,
                     "selection_score": round(score, 6),
+                    "outcome_scope": "explicit_context" if scoped else "pooled",
+                    "context_sha256": (hashlib.sha256(context.encode()).hexdigest()
+                                       if scoped else None),
                 }))
             if not candidates:
                 conn.commit()
