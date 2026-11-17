@@ -110,9 +110,13 @@ class GoalCycle:
                 novelty = 8.0 / math.sqrt(1 + tries)
                 observed = 2.0 * (good - bad) / usable if usable else 0.0
                 priority = max(1, min(9, int(row["priority"])))
-                score = -100.0 * priority + novelty + observed
+                # A priority step costs 8 points, the same as maximum novelty.
+                # Repeated independently recorded failures can therefore
+                # eventually favor a fresh, slightly lower-priority action.
+                # Unknown and unverified results remain unrewarded.
+                score = -8.0 * priority + novelty + observed
                 candidates.append((score, -int(row["id"]), row, {
-                    "policy": "priority_novelty_observed_outcomes_v1",
+                    "policy": "priority_novelty_observed_outcomes_v2",
                     "priority": priority, "prior_attempts": tries,
                     "observed_successes": good, "observed_failures": bad,
                     "unknown_not_rewarded": True,
