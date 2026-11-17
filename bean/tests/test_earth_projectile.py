@@ -96,5 +96,56 @@ class EarthProjectileTests(unittest.TestCase):
             solve(speed=0, h=1e7, k=1e6)
 
 
+    def test_seeded_unseen_linear_drag_against_independent_rk4(self):
+        """12 deterministic synthetic cases; independent ODE integration, not Core learning.
+
+        Fixed seed 20261117; 12 cases, dt=0.002 s, no model feedback or
+        parameter fitting. Impact is interpolated between RK4 steps.
+        Checks solver correctness only; not autonomous task selection.
+        """
+        import random
+        rng = random.Random(20261117)
+        for case in range(12):
+            speed = rng.uniform(12.0, 90.0)
+            angle = rng.uniform(12.0, 78.0)
+            height = rng.uniform(2.0, 35.0)
+            gravity = rng.uniform(3.0, 15.0)
+            drag = rng.uniform(0.015, 0.45)
+            exact = solve(speed=speed, angle=angle, h=height, g=gravity, k=drag)
+            theta = math.radians(angle)
+            state = (0.0, height, speed * math.cos(theta), speed * math.sin(theta))
+            dt = 0.002
+
+            def derivative(s):
+                x, y, vx, vy = s
+                return (vx, vy, -drag * vx, -gravity - drag * vy)
+
+            def advance(s):
+                k1 = derivative(s)
+                k2 = derivative(tuple(v + 0.5 * dt * d for v, d in zip(s, k1)))
+                k3 = derivative(tuple(v + 0.5 * dt * d for v, d in zip(s, k2)))
+                k4 = derivative(tuple(v + dt * d for v, d in zip(s, k3)))
+                return tuple(v + dt * (a + 2*b + 2*c + d) / 6
+                             for v, a, b, c, d in zip(s, k1, k2, k3, k4))
+
+            elapsed = 0.0
+            for step in range(100000):
+                previous = state
+                state = advance(state)
+                elapsed += dt
+                if state[1] <= 0:
+                    fraction = previous[1] / (previous[1] - state[1])
+                    impact_x = previous[0] + fraction * (state[0] - previous[0])
+                    impact_t = elapsed - dt + fraction * dt
+                    with self.subTest(case=case, speed=speed, drag=drag):
+                        self.assertAlmostEqual(exact["flight_time_s"], impact_t, delta=0.003)
+                        self.assertAlmostEqual(exact["horizontal_range_m"], impact_x, delta=0.03)
+                        self.assertGreaterEqual(exact["specific_mechanical_energy_loss_m2_s2"], 0)
+                    break
+            else:
+                self.fail(f"Seeded RK4 case {case} did not impact within 200 seconds")
+
+
+
 if __name__ == "__main__":
     unittest.main()
