@@ -165,6 +165,18 @@ jobs:
         run: |
           set -euo pipefail
           python scripts/invoke_bean.py --state-dir research/github_brain --runtime-dir "$RUNNER_TEMP/bean-run" --ticks 12
+      - name: Independently score restored Core with matched controls before checkpoint publication
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/simulate_restored_core.py --state-dir research/github_brain --report "$RUNNER_TEMP/bean-restored-simulation.json"
+      - name: Preserve mainline restored-Core paired evaluation receipt
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bean-main-restored-core-paired-${{ github.run_id }}
+          path: ${{ runner.temp }}/bean-restored-simulation.json
+          if-no-files-found: warn
       - name: Save synthetic BEAN brain checkpoint to GitHub main
         shell: bash
         env:
