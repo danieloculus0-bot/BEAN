@@ -254,7 +254,7 @@ def test_failed_experience_can_change_goal_choice_without_erasing_priority(memor
         seen.append("novel")
         return {"status": "success"}
 
-    cycle = GoalCycle({"update_models": fail, "run_reflection": novel})
+    cycle = GoalCycle({"update_models": fail, "run_reflection": novel, "run_experiment": novel})
     # Before experience, a fresh priority-1 action outranks priority-2.
     first = memory(ActionType.UPDATE_MODELS, priority=1, goal="initial")
     second = memory(ActionType.RUN_REFLECTION, priority=2, goal="alternative")
@@ -275,13 +275,13 @@ def test_failed_experience_can_change_goal_choice_without_erasing_priority(memor
     path = get_store().db_path
     get_store().close()
     init_store(path)
-    restarted = GoalCycle({"update_models": fail, "run_reflection": novel})
+    restarted = GoalCycle({"update_models": fail, "run_reflection": novel, "run_experiment": novel})
     higher_priority = memory(ActionType.UPDATE_MODELS, priority=1, goal="after-feedback")
-    alternative = memory(ActionType.RUN_REFLECTION, priority=2, goal="new-alternative")
+    alternative = memory(ActionType.RUN_EXPERIMENT, priority=2, goal="new-alternative")
     selected = restarted.poll_due()[0]
     assert selected["proposal_id"] == alternative.proposal_id
     assert selected["decision"]["policy"] == "priority_novelty_observed_outcomes_v2"
-    assert selected["decision"]["prior_attempts"] == 1
+    assert selected["decision"]["prior_attempts"] == 0
     assert selected["status"] == "success"
     assert seen[-1] == "novel"
     assert get_store().fetchone(
