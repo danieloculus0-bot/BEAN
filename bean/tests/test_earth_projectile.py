@@ -3,6 +3,7 @@ import math
 import unittest
 
 from bean.engineering.earth_projectile import solve_earth_projectile
+from bean.engineering.spaceflight import REQUEST_SCHEMA, solve_spaceflight_reference
 
 
 def solve(speed=20., angle=30., h=0., g=9.81, k=0.):
@@ -51,6 +52,25 @@ class EarthProjectileTests(unittest.TestCase):
                        {"h":1e9}, {"k":1e9}):
             with self.subTest(kwargs=kwargs), self.assertRaises(ValueError):
                 solve(**kwargs)
+
+    def test_existing_bean_physics_dispatcher(self):
+        request = {"schema":REQUEST_SCHEMA, "calculation":"earth_projectile",
+                   "parameters":{
+                       "launch_speed_m_s":20, "angle_deg":30,
+                       "initial_height_m":0, "gravity_m_s2":9.81,
+                       "linear_drag_s_inv":0.3,
+                   }}
+        out = solve_spaceflight_reference(request)
+        self.assertEqual(out["calculation"], "earth_projectile")
+        self.assertEqual(out["result"]["schema"], "bean.earth_projectile_reference.v1")
+        self.assertGreater(out["result"]["horizontal_range_m"], 0)
+        self.assertFalse(out["flight_qualified"])
+        self.assertFalse(out["independently_validated"])
+        self.assertEqual(out["data_provenance"]["earth_projectile_gravity"],
+                         "caller_supplied_constant_not_measured")
+        with self.assertRaises(ValueError):
+            solve_spaceflight_reference({**request, "parameters":
+                {**request["parameters"], "extra":1}})
 
     def test_overlong_drag_case_fails_closed(self):
         with self.assertRaises(ValueError):
