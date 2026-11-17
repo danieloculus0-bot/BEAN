@@ -260,12 +260,15 @@ def test_failed_experience_can_change_goal_choice_without_erasing_priority(memor
     second = memory(ActionType.RUN_REFLECTION, priority=2, goal="alternative")
     assert cycle.poll_due()[0]["proposal_id"] == first.proposal_id
     assert seen == ["failed"]
+    # Resolve the initial alternative so it cannot preempt training attempts.
+    assert cycle.poll_due()[0]["proposal_id"] == second.proposal_id
+    seen.clear()
 
     # Accumulate real persisted failed action receipts, not a fabricated score.
     for index in range(19):
         item = memory(ActionType.UPDATE_MODELS, priority=1, goal=f"retry-{index}")
         assert cycle.poll_due()[0]["proposal_id"] == item.proposal_id
-    assert len(seen) == 20 and all(x == "failed" for x in seen)
+    assert len(seen) == 19 and all(x == "failed" for x in seen)
 
     # Reopen the existing SQLite store to prove outcome-dependent selection
     # survives process-local state loss. Neither action has been replayed.
@@ -274,10 +277,11 @@ def test_failed_experience_can_change_goal_choice_without_erasing_priority(memor
     init_store(path)
     restarted = GoalCycle({"update_models": fail, "run_reflection": novel})
     higher_priority = memory(ActionType.UPDATE_MODELS, priority=1, goal="after-feedback")
+    alternative = memory(ActionType.RUN_REFLECTION, priority=2, goal="new-alternative")
     selected = restarted.poll_due()[0]
-    assert selected["proposal_id"] == second.proposal_id
+    assert selected["proposal_id"] == alternative.proposal_id
     assert selected["decision"]["policy"] == "priority_novelty_observed_outcomes_v2"
-    assert selected["decision"]["prior_attempts"] == 0
+    assert selected["decision"]["prior_attempts"] == 1
     assert selected["status"] == "success"
     assert seen[-1] == "novel"
     assert get_store().fetchone(
