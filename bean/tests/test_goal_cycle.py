@@ -242,3 +242,61 @@ def test_small_goal_result_retains_exact_json_and_not_truncated(memory):
     receipt = GoalCycle({"update_models": lambda _: original}).poll_due()[0]
     assert receipt["result_truncated"] is False
     assert json.loads(GoalCycle({"update_models": lambda _: None}).history()[0]["result_json"]) == original
+
+
+def test_failed_experience_can_change_goal_choice_without_erasing_priority(memory):
+    """Observed failures can change choice, without implying perfect decisions."""
+    seen = []
+    def fail(_):
+        seen.append("failed")
+        return {"status": "failed"}
+    def novel(_):
+        seen.append("novel")
+        return {"status": "success"}
+
+    cycle = GoalCycle({"update_models": fail, "run_reflection": novel, "run_experiment": novel})
+    # Before experience, a fresh priority-1 action outranks priority-2.
+    first = memory(ActionType.UPDATE_MODELS, priority=1, goal="initial")
+    second = memory(ActionType.RUN_REFLECTION, priority=2, goal="alternative")
+    assert cycle.poll_due()[0]["proposal_id"] == first.proposal_id
+    assert seen == ["failed"]
+    # Resolve the initial alternative so it cannot preempt training attempts.
+    assert cycle.poll_due()[0]["proposal_id"] == second.proposal_id
+    seen.clear()
+
+    # Accumulate real persisted failed action receipts, not a fabricated score.
+    for index in range(19):
+        item = memory(ActionType.UPDATE_MODELS, priority=1, goal=f"retry-{index}")
+        assert cycle.poll_due()[0]["proposal_id"] == item.proposal_id
+    assert len(seen) == 19 and all(x == "failed" for x in seen)
+
+    # Reopen the existing SQLite store to prove outcome-dependent selection
+    # survives process-local state loss. Neither action has been replayed.
+    path = get_store().db_path
+    get_store().close()
+    init_store(path)
+    restarted = GoalCycle({"update_models": fail, "run_reflection": novel, "run_experiment": novel})
+    higher_priority = memory(ActionType.UPDATE_MODELS, priority=1, goal="after-feedback")
+    alternative = memory(ActionType.RUN_EXPERIMENT, priority=2, goal="new-alternative")
+    selected = restarted.poll_due()[0]
+    assert selected["proposal_id"] == alternative.proposal_id
+    assert selected["decision"]["policy"] == "priority_novelty_observed_outcomes_v2"
+    assert selected["decision"]["prior_attempts"] == 0
+    assert selected["status"] == "success"
+    assert seen[-1] == "novel"
+    assert get_store().fetchone(
+        "SELECT status FROM cognition_goal_proposals WHERE proposal_id=?",
+        (higher_priority.proposal_id,)
+    )["status"] == "pending"
+
+
+def test_unknown_outcomes_are_not_counted_as_success_or_failure(memory):
+    cycle = GoalCycle({"update_models": lambda _: {"status": "unknown"}})
+    memory(ActionType.UPDATE_MODELS, priority=2, goal="unresolved")
+    assert cycle.poll_due()[0]["status"] == "unknown"
+    memory(ActionType.UPDATE_MODELS, priority=2, goal="later")
+    receipt = cycle.poll_due()[0]
+    assert receipt["decision"]["prior_attempts"] == 1
+    assert receipt["decision"]["observed_successes"] == 0
+    assert receipt["decision"]["observed_failures"] == 0
+    assert receipt["decision"]["unknown_not_rewarded"] is True
