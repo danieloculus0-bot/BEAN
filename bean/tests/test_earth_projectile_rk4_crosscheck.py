@@ -72,7 +72,7 @@ class EarthProjectileIndependentNumerics(unittest.TestCase):
         )
         vx0 = speed * math.cos(math.radians(angle))
         vy0 = speed * math.sin(math.radians(angle))
-        t = (-vy0 + math.sqrt(vy0**2 + 2 * gravity * height)) / gravity
+        t = (vy0 + math.sqrt(vy0**2 + 2 * gravity * height)) / gravity
         self.assertAlmostEqual(result["flight_time_s"], t, delta=1e-9)
         self.assertAlmostEqual(result["horizontal_range_m"], vx0 * t, delta=1e-8)
         self.assertAlmostEqual(result["specific_mechanical_energy_loss_m2_s2"], 0, delta=1e-8)
