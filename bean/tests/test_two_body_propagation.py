@@ -175,5 +175,63 @@ class TestTwoBodyPropagation(unittest.TestCase):
             })
 
 
+
+    def test_seeded_three_dimensional_rotation_covariance(self):
+        """Independent SO(3) symmetry check on held-out inertial states.
+
+        Seed 20261118; eight synthetic tilted circular states, 120 fixed
+        steps per state. Rotate both initial vectors using Rodrigues'
+        formula and compare with rotated original output. This verifies
+        vector direction handling, not adaptive learning or ephemerides.
+        A deliberately wrong velocity rotation is the negative control.
+        """
+        import random
+        rng = random.Random(20261118)
+
+        def rotate(vector, axis, angle):
+            c, s = math.cos(angle), math.sin(angle)
+            dot = sum(a * b for a, b in zip(axis, vector))
+            cross = (axis[1]*vector[2] - axis[2]*vector[1],
+                     axis[2]*vector[0] - axis[0]*vector[2],
+                     axis[0]*vector[1] - axis[1]*vector[0])
+            return [c*v + s*w + (1-c)*dot*a
+                    for v, w, a in zip(vector, cross, axis)]
+
+        for case in range(8):
+            radius = rng.uniform(EARTH_RADIUS + 300, EARTH_RADIUS + 5000)
+            speed = math.sqrt(MU / radius)
+            pos, vel = [radius, 0., 0.], [0., speed, 0.]
+            axis_raw = [rng.uniform(-1, 1) for _ in range(3)]
+            length = math.sqrt(sum(v*v for v in axis_raw))
+            axis = [v / length for v in axis_raw]
+            angle = rng.uniform(0.35, 2.8)
+            rotated_pos = rotate(pos, axis, angle)
+            rotated_vel = rotate(vel, axis, angle)
+
+            def propagate(position, velocity):
+                return propagate_two_body(
+                    mu_km3_s2=MU, minimum_radius_km=EARTH_RADIUS,
+                    position_km=position, velocity_km_s=velocity,
+                    step_seconds=4., steps=120)
+
+            baseline = propagate(pos, vel)
+            candidate = propagate(rotated_pos, rotated_vel)
+            expected_pos = rotate(baseline["final_position_km"], axis, angle)
+            expected_vel = rotate(baseline["final_velocity_km_s"], axis, angle)
+            position_residual = math.dist(candidate["final_position_km"], expected_pos)
+            velocity_residual = math.dist(candidate["final_velocity_km_s"], expected_vel)
+            wrong_control = propagate(rotated_pos, vel)
+            wrong_residual = math.dist(wrong_control["final_position_km"], expected_pos)
+            with self.subTest(case=case):
+                self.assertLess(position_residual, 1e-7)
+                self.assertLess(velocity_residual, 1e-10)
+                self.assertGreater(wrong_residual, 1.0)
+                self.assertAlmostEqual(
+                    baseline["initial_specific_energy_km2_s2"],
+                    candidate["initial_specific_energy_km2_s2"], delta=1e-11)
+                self.assertAlmostEqual(
+                    baseline["max_scaled_specific_energy_drift"],
+                    candidate["max_scaled_specific_energy_drift"], delta=1e-11)
+
 if __name__ == "__main__":
     unittest.main()
