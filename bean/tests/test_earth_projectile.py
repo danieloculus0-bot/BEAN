@@ -147,5 +147,48 @@ class EarthProjectileTests(unittest.TestCase):
 
 
 
+    def test_seeded_drag_energy_work_balance_and_convergence(self):
+        """Independent work-energy check using composite Simpson quadrature.
+
+        Seed 20261117, 12 synthetic cases, 64/128/256 intervals.
+        Unlike the solver's initial-minus-final energy, this integrates
+        drag power k*|v|^2 along the exact velocity law. No learning claim.
+        """
+        import random
+        rng = random.Random(20261117)
+        for case in range(12):
+            speed = rng.uniform(8.0, 85.0)
+            angle = rng.uniform(8.0, 82.0)
+            height = rng.uniform(1.0, 45.0)
+            gravity = rng.uniform(3.0, 15.0)
+            drag = rng.uniform(0.02, 0.5)
+            result = solve(speed=speed, angle=angle, h=height, g=gravity, k=drag)
+            flight = result["flight_time_s"]
+            vx0 = speed * math.cos(math.radians(angle))
+            vy0 = speed * math.sin(math.radians(angle))
+
+            def power(t):
+                decay = math.exp(-drag * t)
+                vx = vx0 * decay
+                vy = (vy0 + gravity / drag) * decay - gravity / drag
+                return drag * (vx * vx + vy * vy)
+
+            def integrate(n):
+                dt = flight / n
+                weighted = power(0.0) + power(flight)
+                for i in range(1, n):
+                    weighted += (4 if i % 2 else 2) * power(i * dt)
+                return weighted * dt / 3.0
+
+            coarse, medium, fine = (integrate(n) for n in (64, 128, 256))
+            target = result["specific_mechanical_energy_loss_m2_s2"]
+            with self.subTest(case=case):
+                self.assertGreater(target, 0.0)
+                self.assertLess(abs(fine - target), 1e-4)
+                self.assertLessEqual(abs(fine - target), abs(coarse - target) + 1e-9)
+                self.assertLessEqual(abs(fine - medium), abs(medium - coarse) + 1e-9)
+
+
+
 if __name__ == "__main__":
     unittest.main()
