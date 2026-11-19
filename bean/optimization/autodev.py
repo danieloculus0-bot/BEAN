@@ -236,40 +236,92 @@ def evaluate(project, target, source, timeout=15):
             return {"passed": False, "test_count": 0, "exit": 124, "excerpt": "timeout"}
 
 
-def run_cycle(*, project, target, task, journal_path, output, provider, attempts=25):
-    """Search, write, test, remember, resume. Never modify production source."""
+
+def run_cycle(*, project, target, task, journal_path, output, provider,
+              attempts=25, holdout_project=None):
+    """Write, test and remember code. An optional distinct held-out suite gates promotion.
+
+    The original Lab019 behavior remains available for research fixtures, but
+    its one-suite result never constitutes independent skill promotion. Holdout
+    failures stop the search, so the hidden evaluator cannot become an iterative
+    training signal for subsequent proposals.
+    """
     if not 1 <= attempts <= 100 or not 12 <= len(task) <= 4000:
         raise ValueError("invalid trial budget or objective")
     project = Path(project).resolve(strict=True)
     original = target_file(project, target).read_text(encoding="utf-8")
     original_sha, tests_sha = source_digest(original), test_digest(project / "tests")
-    objective = digest(canonical({"target": target, "task": task, "original": original_sha,
-                                  "tests": tests_sha}))
+    held = None
+    held_sha = None
+    if holdout_project is not None:
+        held = Path(holdout_project).resolve(strict=True)
+        if held == project:
+            raise ValueError("Holdout project must be a separate frozen evaluator")
+        held_original = target_file(held, target).read_text(encoding="utf-8")
+        if source_digest(held_original) != original_sha:
+            raise ValueError("Holdout target differs from training source")
+        held_sha = test_digest(held / "tests")
+        if held_sha == tests_sha:
+            raise ValueError("Holdout tests must differ from training tests")
+    objective = digest(canonical({
+        "target": target, "task": task, "original": original_sha,
+        "tests": tests_sha, "holdout_tests": held_sha}))
     baseline = evaluate(project, target, original)
+    holdout_baseline = evaluate(held, target, original) if held else None
     journal = Journal(journal_path)
     output = Path(output)
     if output.is_symlink():
+        journal.close()
         raise ValueError("symlink output forbidden")
     output.mkdir(parents=True, exist_ok=True)
     archive = output / "candidates" / objective
     archive.mkdir(parents=True, exist_ok=True)
     try:
         history = journal.events(objective)
-        report = {"schema": SCHEMA, "objective": objective,
-                  "target": target, "original_sha256": original_sha,
-                  "tests_sha256": tests_sha, "baseline": baseline,
-                  "provider": type(provider).__name__, "prior_attempts": len(history),
-                  "new_attempts": 0, "status": "unresolved", "accepted_source": None}
-        if baseline["passed"]:
+        report = {
+            "schema": SCHEMA, "objective": objective, "target": target,
+            "original_sha256": original_sha, "tests_sha256": tests_sha,
+            "holdout_tests_sha256": held_sha, "baseline": baseline,
+            "holdout_baseline": holdout_baseline,
+            "provider": type(provider).__name__, "prior_attempts": len(history),
+            "new_attempts": 0, "status": "unresolved", "accepted_source": None,
+            "skill_promotion_ready": False,
+            "validation_scope": "separate_holdout" if held else "training_only"}
+        if baseline["passed"] and (holdout_baseline is None or holdout_baseline["passed"]):
             report["status"] = "baseline_passed_no_witnessed_defect"
             return report
         previous = next((row for row in history if row["outcome"] == "validated"), None)
         if previous:
-            report.update({"status": "previously_validated_in_memory",
-                           "accepted_source": previous["candidate_sha256"]})
+            sha = previous["candidate_sha256"]
+            accepted_file = output / "validated" / target
+            archived_file = archive / (sha + ".py")
+            if accepted_file.exists():
+                if accepted_file.is_symlink() or source_digest(
+                        accepted_file.read_text(encoding="utf-8")) != sha:
+                    raise ValueError("previously validated source has changed")
+                recovered = False
+            elif archived_file.is_file() and not archived_file.is_symlink():
+                candidate = archived_file.read_text(encoding="utf-8")
+                if source_digest(candidate) != sha:
+                    raise ValueError("archived validated source has changed")
+                accepted_file.parent.mkdir(parents=True, exist_ok=True)
+                accepted_file.write_text(candidate, encoding="utf-8")
+                recovered = True
+            else:
+                report.update({"status": "validated_artifact_missing",
+                               "accepted_source": sha})
+                return report
+            report.update({
+                "status": "previously_validated_in_memory", "accepted_source": sha,
+                "validated_path": str(accepted_file), "recovered_from_archive": recovered,
+                "skill_promotion_ready": bool(held and previous.get("holdout_passed"))})
+            return report
+        if any(row.get("outcome") == "holdout_rejected" for row in history):
+            report["status"] = "holdout_rejected"
             return report
         iteration = len(history)
         for _ in range(attempts):
+            holdout_test = None
             try:
                 source = provider.propose(task, original, history, iteration)
                 if not isinstance(source, str) or not source.strip() or len(source) > 50000:
@@ -282,38 +334,66 @@ def run_cycle(*, project, target, task, journal_path, output, provider, attempts
                     raise ValueError("candidate already attempted")
                 (archive / (proposal_sha + ".py")).write_text(source, encoding="utf-8")
                 test = evaluate(project, target, source)
-                accepted = test["passed"] and test["test_count"] >= baseline["test_count"]
-                event = {"objective": objective, "iteration": iteration,
-                         "source_sha256": original_sha, "tests_sha256": tests_sha,
-                         "candidate_sha256": proposal_sha,
-                         "outcome": "validated" if accepted else "rejected",
-                         "test_count": test["test_count"], "exit": test["exit"],
-                         "failure": "" if accepted else test["excerpt"],
-                         "timestamp": datetime.now(timezone.utc).isoformat()}
+                passed_train = test["passed"] and test["test_count"] >= baseline["test_count"]
+                # Evaluate the independent suite only after the frozen training
+                # suite passes. Never reveal holdout assertions to the writer.
+                if passed_train and held is not None:
+                    holdout_test = evaluate(held, target, source)
+                held_pass = (holdout_test is not None and holdout_test["passed"]
+                             and holdout_test["test_count"] >= holdout_baseline["test_count"])
+                accepted = passed_train and (held is None or held_pass)
+                outcome = ("validated" if accepted else
+                           "holdout_rejected" if passed_train and held is not None
+                           else "rejected")
+                event = {
+                    "objective": objective, "iteration": iteration,
+                    "source_sha256": original_sha, "tests_sha256": tests_sha,
+                    "holdout_tests_sha256": held_sha,
+                    "candidate_sha256": proposal_sha, "outcome": outcome,
+                    "test_count": test["test_count"], "exit": test["exit"],
+                    "holdout_passed": held_pass if held is not None else None,
+                    "holdout_test_count": (holdout_test["test_count"]
+                                          if holdout_test is not None else None),
+                    "failure": ("" if accepted else
+                                "independent_holdout_rejected" if passed_train and held is not None
+                                else test["excerpt"]),
+                    "timestamp": datetime.now(timezone.utc).isoformat()}
             except StopIteration:
                 report["status"] = "candidate_space_exhausted"
                 break
             except (ValueError, RuntimeError, SyntaxError, TypeError, KeyError) as exc:
                 accepted = False
-                event = {"objective": objective, "iteration": iteration,
-                         "source_sha256": original_sha, "tests_sha256": tests_sha,
-                         "candidate_sha256": None, "outcome": "invalid",
-                         "test_count": 0, "exit": 1,
-                         "failure": (type(exc).__name__ + ": " + str(exc))[:900],
-                         "timestamp": datetime.now(timezone.utc).isoformat()}
+                outcome = "invalid"
+                event = {
+                    "objective": objective, "iteration": iteration,
+                    "source_sha256": original_sha, "tests_sha256": tests_sha,
+                    "holdout_tests_sha256": held_sha, "candidate_sha256": None,
+                    "outcome": outcome, "test_count": 0, "exit": 1,
+                    "holdout_passed": None, "holdout_test_count": None,
+                    "failure": (type(exc).__name__ + ": " + str(exc))[:900],
+                    "timestamp": datetime.now(timezone.utc).isoformat()}
             journal.append(event)
             history.append(event)
             iteration += 1
             report["new_attempts"] += 1
+            if outcome == "holdout_rejected":
+                report["status"] = "holdout_rejected"
+                report["holdout_passed"] = False
+                break
             if accepted:
                 accepted_file = output / "validated" / target
                 accepted_file.parent.mkdir(parents=True, exist_ok=True)
                 accepted_file.write_text(source, encoding="utf-8")
-                report.update({"status": "validated_patch_written",
-                               "accepted_source": proposal_sha,
-                               "accepted_iteration": event["iteration"],
-                               "validated_path": str(accepted_file),
-                               "tests_passed": test["test_count"]})
+                report.update({
+                    "status": "validated_patch_written",
+                    "accepted_source": proposal_sha,
+                    "accepted_iteration": event["iteration"],
+                    "validated_path": str(accepted_file),
+                    "tests_passed": test["test_count"],
+                    "holdout_passed": held_pass if held else None,
+                    "holdout_tests_passed": (holdout_test["test_count"]
+                                            if holdout_test is not None else None),
+                    "skill_promotion_ready": bool(held and held_pass)})
                 break
         return report
     finally:
@@ -329,6 +409,7 @@ def main():
     cli.add_argument("--task", required=True)
     cli.add_argument("--journal", type=Path, required=True)
     cli.add_argument("--output", type=Path, required=True)
+    cli.add_argument("--holdout-project", type=Path, default=None)
     cli.add_argument("--provider", choices=("ast", "ollama", "openrouter"), default="ast")
     cli.add_argument("--model", default="qwen2.5-coder:7b")
     cli.add_argument("--attempts", type=int, default=25)
@@ -337,7 +418,8 @@ def main():
     writer = ASTBruteForce(original) if args.provider == "ast" else ModelWriter(args.provider, args.model)
     result = run_cycle(project=args.project, target=args.target, task=args.task,
                        journal_path=args.journal, output=args.output,
-                       provider=writer, attempts=args.attempts)
+                       provider=writer, attempts=args.attempts,
+                       holdout_project=args.holdout_project)
     (args.output / "report.json").write_text(json.dumps(result, indent=2, sort_keys=True),
                                               encoding="utf-8")
     print(json.dumps(result, indent=2, sort_keys=True))
