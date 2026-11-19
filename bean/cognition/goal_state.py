@@ -95,6 +95,27 @@ class GoalStateEngine:
             except (TypeError, ValueError):
                 candidate = None
             if (isinstance(candidate, dict)
+                    and candidate.get("schema") == "bean.cognition.skill_question.v1"
+                    and isinstance(candidate.get("skill_id"), str)
+                    and 2 <= len(candidate["skill_id"]) <= 64
+                    and candidate["skill_id"][0].islower()
+                    and candidate["skill_id"][0].isascii()
+                    and all(ch.isascii() and
+                            (ch.islower() or ch.isdigit() or ch in "_:-")
+                            for ch in candidate["skill_id"])):
+                # Curiosity selects a skill ID from a host-owned, independently
+                # evaluated curriculum. It cannot choose executable paths,
+                # provider credentials, test labels or source code.
+                skill_id = candidate["skill_id"]
+                proposals.append(GoalProposal(
+                    "investigate_open_question", ActionType.RUN_EXPERIMENT,
+                    "Learn a reusable skill motivated by open curiosity", 3,
+                    ApprovalRequired.NONE,
+                    {"capability": "native_skill_incubator",
+                     "skill_id": skill_id,
+                     "learning_context": "skill:" + skill_id},
+                    "curiosity"))
+            elif (isinstance(candidate, dict)
                     and candidate.get("schema") == "bean.cognition.experiment.v1"
                     and isinstance(candidate.get("capability"), str)
                     and isinstance(candidate.get("inputs"), dict)
