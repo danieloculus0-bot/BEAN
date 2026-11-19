@@ -176,6 +176,7 @@ def propose_skill_from_curiosity(core, *, catalog, session_uuid):
         raise ValueError("validated skill catalog required")
     if not isinstance(session_uuid, str) or not session_uuid:
         raise ValueError("session ID required")
+    goals = GoalStateEngine()
     store = get_store()
     questions = [dict(row) for row in store.fetchall(
         "SELECT id,question FROM curiosity WHERE status='open' "
@@ -245,7 +246,7 @@ def propose_skill_from_curiosity(core, *, catalog, session_uuid):
         "id": selected_question["id"], "question": selected_question["question"],
         "context": {"schema": "bean.cognition.skill_question.v1",
                     "skill_id": choice["skill_id"]}}
-    proposals = GoalStateEngine().propose(session_uuid, [], [generated])
+    proposals = goals.propose(session_uuid, [], [generated])
     return {
         "status": "proposed" if proposals else "n/a",
         "reason": "native_model_selected_skill" if proposals else "already_proposed",
