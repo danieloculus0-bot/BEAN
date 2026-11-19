@@ -158,3 +158,101 @@ def make_native_skill_experiment(core, *, catalog, journal_path, output,
             "evaluation_scope": "separate_host_authored_holdout_not_peer_benchmark",
         }
     return run_experiment
+
+
+def propose_skill_from_curiosity(core, *, catalog, session_uuid):
+    """Let BEAN's OWN configured model select a skill worth learning.
+
+    Source questions come from the existing Core curiosity table. Available
+    skill objectives and withheld tests are host-owned; the model chooses only
+    IDs. GoalStateEngine stores the decision using its existing dedup and
+    GoalCycle runs it on subsequent ticks. No self-generated Python runs here.
+    """
+    from bean.cognition.goal_state import GoalStateEngine
+    from bean.memory.store import get_store
+    from bean.learning.reasoning_service import _model_response
+
+    if not isinstance(catalog, dict) or not isinstance(catalog.get("skills"), dict):
+        raise ValueError("validated skill catalog required")
+    if not isinstance(session_uuid, str) or not session_uuid:
+        raise ValueError("session ID required")
+    store = get_store()
+    questions = [dict(row) for row in store.fetchall(
+        "SELECT id,question FROM curiosity WHERE status='open' "
+        "ORDER BY id DESC LIMIT 8")]
+    if not questions:
+        return {"status": "n/a", "reason": "no_open_curiosity"}
+    # The existing SQLite history prevents repeatedly offering the model a
+    # skill it has already attempted or queued, across sessions and restarts.
+    existing = store.fetchall(
+        "SELECT action_detail FROM cognition_goal_proposals "
+        "WHERE action_type='run_experiment' "
+        "AND goal_state='investigate_open_question'")
+    used = set()
+    for row in existing:
+        try:
+            detail = json.loads(row["action_detail"] or "null")
+        except (ValueError, TypeError):
+            continue
+        if isinstance(detail, dict) and detail.get("capability") == "native_skill_incubator":
+            used.add(detail.get("skill_id"))
+    available = [item for key, item in sorted(catalog["skills"].items())
+                 if key not in used]
+    if not available:
+        return {"status": "n/a", "reason": "no_unattempted_skills"}
+    if getattr(core, "model", None) is None:
+        return {"status": "unverified", "reason": "no_live_core_model"}
+
+    # Keep the model's context bounded; do not give it withheld labels, test
+    # source, paths or any capability beyond choosing a catalogued ID.
+    choices = [{"skill_id": x["skill_id"], "objective": x["objective"][:180]}
+               for x in available[:12]]
+    queries = [{"question_id": q["id"], "question": q["question"][:250]}
+               for q in questions if isinstance(q["question"], str)]
+    if not queries:
+        return {"status": "n/a", "reason": "no_valid_curiosity"}
+    prompt = (
+        "You are BEAN investigating unresolved questions from your OWN "
+        "persistent curiosity memory. Choose at most one new skill whose "
+        "purpose helps investigate one of these questions. Use your "
+        "judgment; abstain if unrelated. Reply with ONLY a JSON object "
+        "containing exactly skill_id and question_id. On abstention return "
+        '{"skill_id":null,"question_id":null}.\n'
+        "Unresolved questions: " + json.dumps(queries) + "\n"
+        "Available independent skill objectives: " + json.dumps(choices)
+    )
+    try:
+        response, model_id, provider_kind, _ = _model_response(
+            core.model, prompt, "BEAN native curiosity and skill choice")
+        if response.startswith(chr(96) * 3):
+            response = "\n".join(response.splitlines()[1:-1]).strip()
+        choice = json.loads(response)
+    except (ValueError, RuntimeError, TypeError, KeyError):
+        return {"status": "unverified", "reason": "invalid_model_choice"}
+    if not isinstance(choice, dict) or set(choice) != {"skill_id", "question_id"}:
+        return {"status": "unverified", "reason": "invalid_model_choice"}
+    if choice["skill_id"] is None and choice["question_id"] is None:
+        return {"status": "n/a", "reason": "model_abstained",
+                "model_id": model_id, "provider": provider_kind}
+    if (not isinstance(choice["skill_id"], str)
+            or choice["skill_id"] not in {x["skill_id"] for x in choices}
+            or type(choice["question_id"]) is not int
+            or choice["question_id"] not in {q["question_id"] for q in queries}):
+        return {"status": "unverified", "reason": "untrusted_model_selection"}
+    selected_question = next(
+        q for q in questions if q["id"] == choice["question_id"])
+    generated = {
+        "id": selected_question["id"], "question": selected_question["question"],
+        "context": {"schema": "bean.cognition.skill_question.v1",
+                    "skill_id": choice["skill_id"]}}
+    proposals = GoalStateEngine().propose(session_uuid, [], [generated])
+    return {
+        "status": "proposed" if proposals else "n/a",
+        "reason": "native_model_selected_skill" if proposals else "already_proposed",
+        "proposal_id": proposals[0].proposal_id if proposals else None,
+        "skill_id": choice["skill_id"],
+        "question_id": choice["question_id"],
+        "model_id": model_id, "provider": provider_kind,
+        "catalog_sha256": catalog["sha256"],
+        "selection_is_self_directed_but_catalog_host_authored": True,
+        "skill_success_unverified_until_goal_executed": True}
