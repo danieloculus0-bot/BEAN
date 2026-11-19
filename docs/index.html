@@ -1,13 +1,41 @@
 <!doctype html>
 <html lang="en"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#050607">
-<meta name="description" content="Meet BEAN, an experimental AI agent project built around memory, evidence, experience and better decisions. Learn what it does in plain English.">
-<meta property="og:type" content="website"><meta property="og:title" content="BEAN | AI Built to Learn From Experience">
-<meta property="og:description" content="What if AI remembered what happened after it gave an answer? Meet BEAN.">
+<meta name="description" content="BEAN (Behavior Enabled Avatar Node) is an experimental AI research project exploring persistent memory, evidence-linked reasoning, skill learning, and model-independent intelligence.">
+<meta property="og:type" content="website"><meta property="og:title" content="BEAN (Behavior Enabled Avatar Node) | AI Memory and Learning Research">
+<meta property="og:description" content="Most AI gives you an answer. BEAN is an experiment in what happens when intelligence remembers, tests, questions and grows from experience.">
 <meta property="og:image" content="https://danieloculus0-bot.github.io/BEAN/bean-official.webp"><meta property="og:url" content="https://danieloculus0-bot.github.io/BEAN/">
 <meta name="twitter:card" content="summary_large_image"><link rel="canonical" href="https://danieloculus0-bot.github.io/BEAN/">
 <link rel="icon" type="image/webp" href="./bean-official.webp">
-<title>Meet BEAN | AI That Remembers, Learns and Improves</title>
+<title>Meet BEAN | Building a Brain That Learns From Experience</title>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebSite",
+      "@id": "https://danieloculus0-bot.github.io/BEAN/#website",
+      "url": "https://danieloculus0-bot.github.io/BEAN/",
+      "name": "BEAN (Behavior Enabled Avatar Node)",
+      "description": "Public research website for the BEAN persistent AI memory and learning platform.",
+      "inLanguage": "en",
+      "about": {
+        "@id": "https://danieloculus0-bot.github.io/BEAN/#source"
+      }
+    },
+    {
+      "@type": "SoftwareSourceCode",
+      "@id": "https://danieloculus0-bot.github.io/BEAN/#source",
+      "name": "BEAN (Behavior Enabled Avatar Node)",
+      "description": "Experimental Python platform for persistent memory, evidence-linked reasoning, learning experiments and model-independent AI research.",
+      "url": "https://danieloculus0-bot.github.io/BEAN/",
+      "codeRepository": "https://github.com/danieloculus0-bot/BEAN",
+      "programmingLanguage": "Python",
+      "applicationCategory": "Artificial Intelligence"
+    }
+  ]
+}
+</script>
 <style>
 :root{color-scheme:dark;--bg:#050607;--card:#111417;--soft:#181b1e;--line:#343a3d;--text:#f4fbf3;--muted:#c2d1c2;--green:#a6ed75;--width:1110px}
 *{box-sizing:border-box}html{scroll-behavior:smooth;scroll-padding-top:96px}body{margin:0;color:var(--text);background:radial-gradient(ellipse 75% 460px at 70% 0%,#22242780,transparent),var(--bg);font:17px/1.6 system-ui,-apple-system,"Segoe UI",sans-serif}
@@ -32,10 +60,11 @@ footer{border-top:1px solid #343a3d;padding:33px 0 50px}.footer{display:flex;jus
 <header><nav class="wrap" aria-label="Main navigation"><a class="brand" href="./"><img src="./bean-official.webp" alt="" width="45" height="49">BEAN</a><div class="menu"><a href="#what">What is BEAN?</a><a href="#how">How it works</a><a href="#real">What's real?</a><a href="#core-updates">Core updates</a><a href="#questions">Questions</a><a href="#start">Explore</a><a href="https://danieloculus0-bot.github.io/Axiom_Beta/erp/">Axiom ERP</a><a href="https://danieloculus0-bot.github.io/Axiom_Beta/erp/?job=sample-1001#cam">EZ CAM</a><a href="./portfolio/">Project directory</a><a href="./bean-draw/">BEAN Draw</a><a href="./bean-demo/">BEAN Core demo</a></div></nav></header>
 <main id="main">
 <section class="hero"><div class="wrap hero-grid"><div>
-<div class="eyebrow">Meet BEAN · Behavior Enabled Avatar Node</div><h1>BEAN is <em>running on Jetson.</em></h1>
-<p class="lead"><strong>BEAN Core is running locally on an NVIDIA Jetson Orin Nano Super.</strong> It uses Qwen2.5 for language reasoning, NVIDIA GPU acceleration, and memory that survives restarts.</p>
-<p>That is working on real hardware today. The next job is connecting the original voice, face and robotic hardware to Core.</p>
-<div class="actions"><a class="btn primary" href="#real">See what works</a><a class="btn" href="#what">Meet BEAN</a><a class="btn" href="./rubiks-cube.html">Try the Rubik’s Cube challenge</a></div><p class="small">Built on real hardware. The source, tests and deployment record are on GitHub.</p></div>
+<div class="eyebrow">Meet BEAN · Behavior Enabled Avatar Node · Independent AI Research</div><h1>A small name.<br><em>A huge question.</em></h1>
+<p class="lead"><strong>What if AI could grow from experience instead of starting over?</strong> Meet BEAN, an experimental digital brain built to remember what happened, challenge what it believes, and test whether experience can make its next decision better.</p>
+<p>BEAN is not another chatbot skin. It is a model-independent research platform with persistent memory, evidence-linked reasoning, real experiments, and a long-term ambition: discover what an artificial mind might become when it can keep learning over time.</p>
+<p><strong>More than a concept:</strong> BEAN Core has run local Qwen2.5 inference on an NVIDIA Jetson Orin Nano Super, recovered memory across restarts, and recorded measurable experiment results. The voice, robot-body and continuous general learning ambitions are still under development.</p>
+<div class="actions"><a class="btn primary" href="#real">See what works</a><a class="btn" href="#what">Meet BEAN</a><a class="btn" href="./rubiks-cube.html">Try the Rubik’s Cube challenge</a></div><p class="small">Real code. Real experiments. Real failures, too. See the source, test results and limitations on GitHub.</p></div>
 <div class="hero-art"><img src="./bean-official.webp" width="375" height="375" alt="BEAN project mascot"><p>Little name. Big idea. Built for the long game.</p></div></div></section>
 <section id="what"><div class="wrap"><div class="intro"><div class="eyebrow">The simple version</div><h2>AI answers questions. BEAN is trying to learn from what happens next.</h2>
 <p>Most AI assistants are pretty good at answering you right now. But what happens when the answer is wrong? Or you find a better way? Or you come back next week?</p>
