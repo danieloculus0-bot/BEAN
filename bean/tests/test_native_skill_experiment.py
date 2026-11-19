@@ -235,6 +235,13 @@ def test_bean_autonomously_selects_new_skill_from_own_curiosity_and_executes(wor
     assert choice["question_id"] == question_id
     assert choice["skill_id"] == "double"
     assert len(model.calls) == 1
+    events = get_store().fetchall(
+        "SELECT data FROM events WHERE subtype='native_skill_curiosity_choice'")
+    assert len(events) == 1
+    signed_choice = json.loads(events[0]["data"])
+    assert signed_choice["proposal_id"] == choice["proposal_id"]
+    assert len(signed_choice["selection_sha256"]) == 64
+    assert signed_choice["independently_validated_choice"] is False
     assert "holdout_project" not in model.calls[0][0]
     assert "test_double.py" not in model.calls[0][0]
     cycle = GoalCycle({"run_experiment": handler(root, path, model)})
