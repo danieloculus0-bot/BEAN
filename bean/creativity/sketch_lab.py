@@ -52,6 +52,14 @@ def coord(x, positive=False):
     return x
 
 
+def _shape_coord(value, label, positive=False):
+    try:
+        return coord(value, positive)
+    except ValueError as exc:
+        raise ValueError("Invalid drawing coordinate " + label + "=" + repr(value)[:60] +
+                         "; require finite 0..256, positive sizes") from exc
+
+
 def validate_shapes(shapes):
     if not isinstance(shapes, list) or not 1 <= len(shapes) <= 80:
         raise ValueError("Expected 1..80 drawing primitives")
@@ -59,7 +67,7 @@ def validate_shapes(shapes):
     kinds = {"line": ("x1", "y1", "x2", "y2"),
              "circle": ("cx", "cy", "r"),
              "rect": ("x", "y", "w", "h")}
-    for obj in shapes:
+    for index, obj in enumerate(shapes):
         if not isinstance(obj, dict) or obj.get("type") not in (*kinds, "polyline"):
             raise ValueError("Unsupported primitive")
         kind = obj["type"]
@@ -69,10 +77,11 @@ def validate_shapes(shapes):
                     or any(not isinstance(p, list) or len(p) != 2 for p in pts)):
                 raise ValueError("Invalid polyline")
             validated.append({"type": kind,
-                              "points": [[coord(x), coord(y)] for x, y in pts]})
+                              "points": [[_shape_coord(x, str(index) + ".point.x"),
+                                          _shape_coord(y, str(index) + ".point.y")] for x, y in pts]})
         else:
             validated.append({"type": kind, **{
-                k: coord(obj.get(k), k in ("r", "w", "h")) for k in kinds[kind]}})
+                k: _shape_coord(obj.get(k), str(index) + "." + k, k in ("r", "w", "h")) for k in kinds[kind]}})
     return validated
 
 
@@ -185,6 +194,9 @@ def execution_mode(model):
     # A caller setting provider_kind='real_model' does not prove a live call.
     if getattr(model, 'provider_kind', None) == 'synthetic_fixture':
         return 'synthetic_fixture'
+    if type(model) is OllamaSketchProvider and (
+            type(model.client) is not OllamaClient or model.client.custom_transport):
+        return 'unverified'
     types = [OllamaSketchProvider]
     for module, cls in [('local_llamacpp_provider', 'LocalLlamaCppProvider'),
                         ('openrouter_provider', 'OpenRouterProvider'),
@@ -210,9 +222,9 @@ def drawing_schema():
         for key in keys:
             props[key] = ({'type': 'array', 'minItems': 2, 'maxItems': 40,
                            'items': {'type': 'array', 'minItems': 2, 'maxItems': 2,
-                                     'items': {'type': 'number', 'minimum': 0, 'maximum': 256}}}
+                                     'items': {'type': 'integer', 'enum': list(range(257))}}}
                           if key == 'points' else
-                          {'type': 'number', 'minimum': 0, 'maximum': 256})
+                          {'type': 'integer', 'enum': list(range(1 if key in ('r', 'w', 'h') else 0, 257))})
         variants.append({'type': 'object', 'properties': props,
                          'required': ['type'] + keys, 'additionalProperties': False})
     return {'type': 'object', 'properties': {
@@ -250,6 +262,9 @@ class SketchLab:
         except Exception as exc:
             event['error'] = type(exc).__name__ + ': ' + str(exc)[:500]
             raise
+        finally:
+            if getattr(self, '_output', None) is not None:
+                write_json(self._output / 'model_calls.json', self.calls)
 
     def run(self, *, task_ref, output_dir, allow_online=False,
             provider='auto', max_attempts=3, backend='auto',
@@ -267,6 +282,7 @@ class SketchLab:
         if list(out.glob('attempt_*')) or (out / 'run.json').exists():
             raise ValueError('Output already contains a run; choose a new directory')
         self.calls = []
+        self._output = out
         run_id, started = str(uuid.uuid4()), utc_now()
         revision = source_revision()
         mode = 'unverified'
@@ -275,7 +291,11 @@ class SketchLab:
         model_id, model_kind = 'unavailable', 'unavailable'
         research_state, source_urls = 'not_requested', []
         context, correction = '', ''
-        manifest = {'schema': 'bean.draw.run.v1', 'run_id': run_id,
+        runtime_files = ['bean/creativity/sketch_lab.py', 'bean/creativity/artifacts.py',
+                         'bean/voice/ollama.py', 'scripts/build_bean_draw_gallery.py']
+        repo = Path(__file__).resolve().parents[2]
+        runtime_hashes = {name: file_hash(repo / name) for name in runtime_files}
+        manifest = {'runtime_source_sha256': runtime_hashes, 'schema': 'bean.draw.run.v1', 'run_id': run_id,
                     'task_ref': task_ref, 'created_at_utc': started,
                     'source_git_sha': revision, 'subject_source': subject_source,
                     'memory_mode': memory_mode, 'seed': seed,
@@ -327,7 +347,7 @@ class SketchLab:
                     raise ValueError('Frozen condition requires a fixed trial snapshot')
                 prior = frozen_memory
             precedents = json.dumps([{
-                'subject': x.get('subject'), 'status': x.get('status'),
+                'subject': x.get('subject'), 'status': x.get('status'), 'error': x.get('error'),
                 'suggested_change': x.get('self_review', {}).get('changes'),
                 'external_feedback': x.get('external_feedback')}
                 for x in prior[-6:]], ensure_ascii=False)[:2400]
@@ -463,6 +483,26 @@ class SketchLab:
             if not complete_all_attempts and status in (
                     'host_reported_satisfactory', 'self_reported_satisfactory_unverified'):
                 break
+        manifest['selected_attempt'] = None
+        manifest['selection_state'] = 'unavailable'
+        if mode == 'live_model' and any(h['sha256'] for h in history):
+            try:
+                evidence = [json.loads(Path(h['metadata']).read_text()) for h in history]
+                selection_raw, _, _, _ = self.ask(
+                    'Choose the strongest retained drawing attempt from this evidence. '
+                    'You cannot inspect pixels yourself. Weigh external pixel feedback '
+                    'separately from your textual confidence. Return JSON selected_attempt '
+                    '(an existing valid attempt number) and reason: ' + json.dumps(evidence)[:19000],
+                    {'type': 'object', 'properties': {'selected_attempt': {'type': 'integer'},
+                     'reason': {'type': 'string'}}, 'required': ['selected_attempt', 'reason']})
+                selection = decode(selection_raw)
+                selected = selection.get('selected_attempt')
+                if type(selected) is not int or not any(h['attempt'] == selected and h['sha256'] for h in history):
+                    raise ValueError('Model selected a failed or nonexistent draft')
+                manifest.update(selected_attempt=selected, selection_reason=text(selection.get('reason'), 1000),
+                                selection_state='model_selected_from_recorded_evidence')
+            except (ValueError, RuntimeError, OSError) as exc:
+                manifest['selection_error'] = type(exc).__name__ + ': ' + str(exc)[:500]
         return finish(history[-1]['status'])
 
 

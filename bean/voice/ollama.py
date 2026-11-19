@@ -43,6 +43,7 @@ class OllamaClient:
         self.base_url = validated_local_url(base_url)
         self.timeout = timeout
         # Do not use workstation HTTP proxy settings for local conversations.
+        self.custom_transport = opener is not None
         self._open = opener or build_opener(ProxyHandler({})).open
 
     def _json(self, route: str, body: dict | None = None) -> dict:

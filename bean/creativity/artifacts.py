@@ -49,13 +49,17 @@ def validate_feedback(report, png):
             or not isinstance(report.get("feedback"), str)
             or not 1 <= len(report["feedback"]) <= 3000):
         raise ValueError("Pixel review must identify evaluator and actual PNG hash")
+    if not isinstance(report.get("scores", {}), dict):
+        raise ValueError("Review scores must be an object")
     for key, score in report.get("scores", {}).items():
         if key not in ("spatial_coherence", "subject_recognition", "composition", "diversity"):
             raise ValueError("Unknown review metric")
         if type(score) not in (int, float) or not 0 <= score <= 4:
             raise ValueError("Review scores must be 0..4")
     # A host callback/file is evidence, not authenticated independent truth.
-    return {**report, "state": "host_reported_pixel_review",
+    return {key: report[key] for key in ("image_sha256", "kind", "evaluator",
+                                        "satisfactory", "feedback", "scores") if key in report} | {
+            "state": "host_reported_pixel_review", "created_at_utc": utc_now(),
             "independently_authenticated": False}
 
 

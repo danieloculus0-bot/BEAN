@@ -10,6 +10,7 @@
 <style>
 :root{color-scheme:dark;--bg:#080d0b;--surface:#131a17;--surface2:#1b231f;--line:#324238;--text:#f4f7f0;--muted:#aabcb0;--accent:#b7f78a;--gold:#e5c996}
 *{box-sizing:border-box}
+[hidden]{display:none!important}
 html{scroll-behavior:smooth}
 body{margin:0;min-height:100vh;background:radial-gradient(ellipse 72% 420px at 82% -4%,#2a4a31 0,transparent 78%),radial-gradient(ellipse 58% 320px at 10% 95%,#18261f 0,transparent 90%),var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,"Segoe UI",sans-serif}
 a{color:var(--accent);text-underline-offset:4px}
@@ -90,17 +91,17 @@ footer .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
 <h1>The little<br><em>sketchbook.</em></h1>
 <p>A record of lines BEAN produced, the thoughts attached to each attempt, and what humans may learn by looking. Every drawing has a source trail. The work, the mistakes, and the uncertainty stay visible.</p>
 </div>
-<aside class="hero-note"><div class="note-icon" aria-hidden="true">✳</div><h2>Not every sketch is BEAN's own idea.</h2>
-<p>Gold-labeled drawings are scripted <strong>test fixtures</strong> that verify the pipeline, not autonomous artwork. Real-model attempts are labeled separately. BEAN currently critiques coordinates, not the rendered image; human feedback is for future work.</p></aside>
+<aside class="hero-note"><div class="note-icon" aria-hidden="true">✳</div><h2>Original work and test fixtures stay separate.</h2>
+<p>The default view shows live model runs with checked SVG and PNG hashes and reviewed provenance. This verifies artifact bytes, not artistic quality. Gold-labeled <strong>scripted test fixtures</strong> have a separate view. Text self-critique, external image review, and human evaluation remain distinct.</p></aside>
 </section>
 <section id="art" class="wrap">
 <div class="toolbar">
 <h2>Drawings <span id="count" aria-live="polite"></span></h2>
-<label for="filter">Type</label><select id="filter"><option value="all">All attempts</option><option value="model_generated_unverified">Real model attempts</option><option value="synthetic_fixture">Test fixtures</option></select>
+<label for="filter">Type</label><select id="filter"><option value="live_model_artifact_verified">Live model · artifact checked</option><option value="model_generated_unverified">Unverified model records</option><option value="synthetic_fixture">Synthetic test fixtures</option></select>
 <label for="search">Search</label><input id="search" type="search" placeholder="Subject or description" autocomplete="off">
 </div>
 <div id="gallery" class="gallery"></div>
-<p id="empty" class="empty" hidden>No drawings match. New attempts can be added after a reviewed BEAN Core run. The empty sketchbook is not evidence that something failed.</p>
+<p id="empty" class="empty" hidden>No drawings in this evidence class. Synthetic test fixtures are available in their separate view; they do not establish live drawing capability.</p>
 </section>
 </main>
 <dialog id="detail" aria-labelledby="detail-title">
@@ -108,10 +109,10 @@ footer .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
 <div class="detail-grid"><div class="detail-canvas"><img id="detail-image" alt=""></div><div class="detail-side">
 <div id="detail-origin" class="pill">Attempt</div>
 <p id="detail-description"></p>
-<p><strong>BEAN's own critique</strong><span id="detail-critique" style="display:block"></span></p>
-<p><strong>Human feedback</strong><span id="detail-feedback" style="display:block"></span></p>
-<dl id="detail-meta"></dl>
-<div class="actions"><a id="raw" class="btn primary" href="#" download>Download SVG</a><a id="receipt" class="btn" href="#" target="_blank" rel="noopener noreferrer">Review metadata</a><a id="review-link" class="btn" href="#" target="_blank" rel="noopener noreferrer">Submit human review</a></div>
+<p><strong>BEAN's text self-critique (coordinates only)</strong><span id="detail-critique" style="display:block"></span></p>
+<p><strong>External image review</strong><span id="detail-feedback" style="display:block"></span></p>
+<p><strong>Human evaluation</strong><span id="detail-human" style="display:block"></span></p><dl id="detail-meta"></dl>
+<div class="actions"><a id="raw" class="btn primary" href="#" download>Download SVG</a><a id="receipt" class="btn" href="#" target="_blank" rel="noopener noreferrer">Review metadata</a><a id="png" class="btn" href="#" download hidden>PNG preview</a><a id="attempt-receipt" class="btn" href="#" target="_blank" rel="noopener noreferrer" hidden>Original attempt receipt</a><a id="run-receipt" class="btn" href="#" target="_blank" rel="noopener noreferrer" hidden>Run receipt</a><a id="public-review" class="btn" href="#" target="_blank" rel="noopener noreferrer" hidden>Public-safe review</a><a id="review-link" class="btn" href="#" target="_blank" rel="noopener noreferrer">Submit human review</a></div>
 </div></div>
 </dialog>
 <footer><div class="wrap"><span>BEAN Draw · Public-safe, inspectable experiments. A sketch is not proof of intelligence.</span><span><a href="https://github.com/danieloculus0-bot/BEAN/blob/main/docs/BEAN_SKETCH_LAB.md">How the sketch lab works</a></span></div></footer>
@@ -125,28 +126,34 @@ var empty=document.getElementById("empty");
 var search=document.getElementById("search");
 var filter=document.getElementById("filter");
 var dialog=document.getElementById("detail");
-function labelFor(entry){return entry.origin==="synthetic_fixture"?"SYNTHETIC TEST FIXTURE":"MODEL OUTPUT · UNVERIFIED";}
+function labelFor(entry){return entry.origin==="synthetic_fixture"?"SYNTHETIC TEST FIXTURE":entry.origin==="live_model_artifact_verified"?"LIVE MODEL · ARTIFACT HASHES CHECKED":"MODEL RECORD · UNVERIFIED";}
 function asset(path,extension){return typeof path==="string"&&new RegExp("^entries/[a-f0-9]{20}\\."+extension+"$").test(path)?path:null;}
+function receiptAsset(path,suffix){return typeof path==="string"&&new RegExp("^entries/[a-f0-9]{20}\\."+suffix+"\\.json$").test(path)?path:null;}
 function textEl(tag,cls,content){var el=document.createElement(tag);if(cls)el.className=cls;el.textContent=content||"";return el;}
 function addDefinition(dl,name,value){dl.appendChild(textEl("dt","",name));dl.appendChild(textEl("dd","",value==null?"Unknown":String(value)));}
 function openDetails(e){
 var svg=asset(e.svg,"svg"),meta=asset(e.metadata,"json");if(!svg||!meta)return;
 document.getElementById("detail-title").textContent=e.title||"Untitled";
-var image=document.getElementById("detail-image");image.src=svg;image.alt="Drawing labeled "+(e.title||"untitled");
+var image=document.getElementById("detail-image");image.src=asset(e.png,"png")||svg;image.alt="Drawing labeled "+(e.title||"untitled");
 var origin=document.getElementById("detail-origin");origin.textContent=labelFor(e);origin.className="pill"+(e.origin==="synthetic_fixture"?" fixture":"");
 document.getElementById("detail-description").textContent=e.description||"No description recorded.";
 var review=e.self_review||{};
 document.getElementById("detail-critique").textContent=review.changes||"No self-critique recorded.";
-document.getElementById("detail-feedback").textContent=e.visual_feedback||"Not reviewed by a human.";
+var external=e.external_feedback;
+document.getElementById("detail-feedback").textContent=external?JSON.stringify(external):e.visual_feedback||"Image evaluation unavailable or not recorded.";
+document.getElementById("detail-human").textContent=e.human_evaluation?JSON.stringify(e.human_evaluation):"No human evaluation recorded.";
 var dl=document.getElementById("detail-meta");dl.replaceChildren();
 addDefinition(dl,"Attempt",e.attempt);addDefinition(dl,"Core status",e.status);
-addDefinition(dl,"Model",e.model_id);addDefinition(dl,"Task",e.task_ref);
+addDefinition(dl,"Model",e.model_id);addDefinition(dl,"Model digest",e.model_digest);addDefinition(dl,"Task",e.task_ref);
+addDefinition(dl,"Subject source",e.subject_source);addDefinition(dl,"Execution mode",e.execution_mode);addDefinition(dl,"Created UTC",e.created_at_utc);addDefinition(dl,"Run ID",e.run_id);
+addDefinition(dl,"Artifact state",e.verification_state);addDefinition(dl,"Independent visual verification",e.independent_visual_verification===true?"Claimed; inspect evaluator evidence":"Not established");
 addDefinition(dl,"Source revision",e.source_git_sha);
-addDefinition(dl,"SHA-256",e.sha256);
+addDefinition(dl,"SVG SHA-256",e.sha256);addDefinition(dl,"PNG SHA-256",e.png_sha256);
 addDefinition(dl,"Journal tip",e.journal_tip);
 addDefinition(dl,"Published",e.published_at);
 var raw=document.getElementById("raw");raw.href=svg;raw.download=(e.id||"bean-draw")+".svg";
 document.getElementById("receipt").href=meta;
+[["png",asset(e.png,"png")],["attempt-receipt",receiptAsset(e.attempt_receipt,"attempt")],["run-receipt",receiptAsset(e.run_receipt,"run")],["public-review",receiptAsset(e.public_review,"review")]].forEach(function(pair){var link=document.getElementById(pair[0]);link.hidden=!pair[1];if(pair[1])link.href=pair[1];});
 var title="BEAN Draw review: "+(e.title||"Untitled");
 var body="Drawing: "+(e.title||"Untitled")+"\nAttempt: "+e.attempt+"\nSHA-256: "+e.sha256+"\nOrigin: "+e.origin+"\n\nVisual accuracy (1-5): \nWhat is recognizable? \nWhat should change? \n";
 document.getElementById("review-link").href="https://github.com/danieloculus0-bot/BEAN/issues/new?title="+encodeURIComponent(title)+"&body="+encodeURIComponent(body);
@@ -158,7 +165,7 @@ var matched=entries.filter(function(e){return(kind==="all"||e.origin===kind)&&((
 gallery.replaceChildren();
 matched.forEach(function(e){
 var card=document.createElement("button");card.className="card";card.type="button";card.setAttribute("aria-label","Open drawing: "+(e.title||"Untitled"));
-var art=textEl("div","art","");var img=document.createElement("img");img.src=e.svg;img.alt="";img.loading="lazy";art.appendChild(img);card.appendChild(art);
+var art=textEl("div","art","");var img=document.createElement("img");img.src=asset(e.png,"png")||e.svg;img.alt="";img.loading="lazy";art.appendChild(img);card.appendChild(art);
 var cap=textEl("div","caption","");cap.appendChild(textEl("span","pill"+(e.origin==="synthetic_fixture"?" fixture":""),labelFor(e)));
 cap.appendChild(textEl("span","title",e.title||"Untitled"));cap.appendChild(textEl("div","sub","Attempt "+e.attempt+" · "+(e.status||"unverified")));card.appendChild(cap);
 card.addEventListener("click",function(){openDetails(e)});gallery.appendChild(card);
