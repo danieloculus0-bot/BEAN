@@ -100,7 +100,7 @@ class PublicDiscoveryTests(unittest.TestCase):
         self.assertIn("model-independent", homepage)
         self.assertIn("https://github.com/danieloculus0-bot/BEAN", homepage)
         scripts = re.findall(
-            r'<script\\s+type="application/ld\\+json"[^>]*>(.*?)</script>',
+            r'<script\s+type="application/ld\+json"[^>]*>(.*?)</script>',
             homepage, re.DOTALL | re.IGNORECASE
         )
         self.assertTrue(scripts, "homepage must contain JSON-LD structured data")
