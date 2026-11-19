@@ -1,6 +1,14 @@
 # BEAN — Behavior Enabled Avatar Node
 
-**Adaptive intelligence infrastructure for AI agents and language models.** BEAN is an experimental Python platform for persistent memory, evidence-linked reasoning, reusable strategies, model assistance, feedback-driven adaptation and independent evaluation. It aims to strengthen existing models rather than replace them with another chatbot.
+### A small name. A huge question.
+
+**What if AI could grow from experience instead of starting over?**
+
+**BEAN (Behavior Enabled Avatar Node)** is an experimental, model-independent digital brain: a persistent memory and learning architecture designed to carry experience forward, question its own conclusions, test new strategies and preserve the evidence behind every result. It is not another chatbot wrapper, and it does not assume that one model or one robot body defines intelligence.
+
+**What makes BEAN different:** the research loop values what survives scrutiny. Evidence-linked memory, replayable journals, measured feedback, independent controls and bounded skill-generation experiments turn attractive ideas into falsifiable tests. BEAN Core has also completed local-model inference on an NVIDIA Jetson Orin Nano Super. General autonomous learning, broad transfer and consciousness remain open research questions, not claimed achievements.
+
+**The ambition is extraordinary. The proof is earned one experiment at a time.**
 
 **Original research mission:** BEAN is a body-optional, model-independent continuity-based brain. It learns through measurable **digital as well as physical** environments, retains development and evidence across sessions, and investigates whether broader intelligence or consciousness could emerge without claiming either has been established. [Canonical origin record](memory/identity/origin_record.json) and [GitHub continuity audit](docs/BEAN_GITHUB_MEMORY_CONTINUITY_AUDIT_2026-11-06.md) distinguish durable, delayed public-safe GitHub handoffs from private live Core memory. These are longstanding requirements, not a newly proposed direction.
 
