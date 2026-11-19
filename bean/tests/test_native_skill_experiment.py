@@ -10,7 +10,8 @@ from bean.memory.identity import bootstrap_identity
 from bean.memory.session import begin_session
 from bean.runtime.goal_cycle import GoalCycle
 from bean.runtime.native_skill_experiment import (
-    load_skill_catalog, make_native_skill_experiment)
+    load_skill_catalog, make_native_skill_experiment,
+    propose_skill_from_curiosity)
 
 
 GOOD = "def double(value):\n    return value * 2\n"
@@ -191,3 +192,92 @@ def test_catalog_rejects_ambiguous_or_repeated_skills(world):
     path.write_text(json.dumps(catalog))
     with pytest.raises(ValueError, match="separate"):
         load_skill_catalog(path)
+
+
+class ModelThatSelectsAndWrites:
+    def __init__(self, question_id, skill_id="double"):
+        self.question_id = question_id
+        self.skill_id = skill_id
+        self.calls = []
+
+    def complete(self, prompt, context):
+        self.calls.append((prompt, context))
+        if "Unresolved questions:" in prompt:
+            result = json.dumps({"skill_id": self.skill_id,
+                                 "question_id": self.question_id})
+        else:
+            result = GOOD
+        return {"ok": True, "raw_text": result,
+                "model_name": "synthetic-dual-model",
+                "adapter_name": "synthetic_fixture"}
+
+
+def insert_curiosity(question):
+    get_store().execute(
+        "INSERT INTO curiosity (question,context,status) VALUES (?,?,?)",
+        (question, "synthetic independent observation", "open"))
+    get_store().commit()
+    return get_store().fetchone(
+        "SELECT id FROM curiosity WHERE question=?", (question,))["id"]
+
+
+def test_bean_autonomously_selects_new_skill_from_own_curiosity_and_executes(world):
+    root, session, path = world
+    question_id = insert_curiosity(
+        "How could a reusable doubling skill explain this repeated numeric pattern?")
+    model = ModelThatSelectsAndWrites(question_id)
+    catalog = load_skill_catalog(path)
+    choice = propose_skill_from_curiosity(
+        Core(model), catalog=catalog, session_uuid=session)
+    assert choice["status"] == "proposed"
+    assert choice["question_id"] == question_id
+    assert choice["skill_id"] == "double"
+    assert len(model.calls) == 1
+    assert "holdout_project" not in model.calls[0][0]
+    assert "test_double.py" not in model.calls[0][0]
+    cycle = GoalCycle({"run_experiment": handler(root, path, model)})
+    receipt = cycle.poll_due()[0]
+    assert receipt["status"] == "success"
+    result = json.loads(cycle.history()[0]["result_json"])
+    assert result["created_executable_code"] is True
+    assert result["skill_promotion_ready"] is True
+    assert len(model.calls) == 2
+    # Persistent prior trial suppresses repeated model prompts and execution.
+    later = propose_skill_from_curiosity(
+        Core(model), catalog=catalog, session_uuid=begin_session())
+    assert later["reason"] == "no_unattempted_skills"
+    assert len(model.calls) == 2
+    assert GoalCycle({"run_experiment": handler(root, path, model)}).poll_due() == []
+
+
+def test_no_curiosity_is_an_explicit_abstention_without_model_call(world):
+    _, session, path = world
+    model = ModelThatSelectsAndWrites(1)
+    answer = propose_skill_from_curiosity(
+        Core(model), catalog=load_skill_catalog(path), session_uuid=session)
+    assert answer == {"status": "n/a", "reason": "no_open_curiosity"}
+    assert model.calls == []
+
+
+def test_invalid_or_unrelated_model_choice_does_not_create_goals(world):
+    root, session, path = world
+    question_id = insert_curiosity("Could symbolic arithmetic help us reason?")
+    catalog = load_skill_catalog(path)
+    for fake_id in ("outside_catalog", None):
+        model = ModelThatSelectsAndWrites(question_id, skill_id=fake_id)
+        outcome = propose_skill_from_curiosity(
+            Core(model), catalog=catalog, session_uuid=session)
+        assert outcome["status"] != "proposed"
+    assert get_store().fetchall(
+        "SELECT * FROM cognition_goal_proposals WHERE action_type='run_experiment'") == []
+
+
+def test_model_may_refuse_skill_and_preserve_curiosity(world):
+    _, session, path = world
+    question_id = insert_curiosity("What is the meaning of this poetry?")
+    model = ModelThatSelectsAndWrites(question_id, skill_id=None)
+    result = propose_skill_from_curiosity(
+        Core(model), catalog=load_skill_catalog(path), session_uuid=session)
+    assert result["status"] == "unverified"
+    assert get_store().fetchall(
+        "SELECT * FROM cognition_goal_proposals WHERE action_type='run_experiment'") == []
