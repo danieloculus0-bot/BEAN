@@ -220,7 +220,9 @@ class TestTwoBodyPropagation(unittest.TestCase):
             expected_vel = rotate(baseline["final_velocity_km_s"], axis, angle)
             position_residual = math.dist(candidate["final_position_km"], expected_pos)
             velocity_residual = math.dist(candidate["final_velocity_km_s"], expected_vel)
-            # Reverse the correctly rotated tangential velocity. This remains a\n            # valid circular orbit while deliberately violating direction.\n            wrong_control = propagate(rotated_pos, [-v for v in rotated_vel])
+            # Reverse the correctly rotated tangential velocity. This remains a
+            # valid circular orbit while deliberately violating direction.
+            wrong_control = propagate(rotated_pos, [-v for v in rotated_vel])
             wrong_residual = math.dist(wrong_control["final_position_km"], expected_pos)
             with self.subTest(case=case):
                 self.assertLess(position_residual, 1e-7)
