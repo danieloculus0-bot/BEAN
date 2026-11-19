@@ -5,7 +5,6 @@ from pathlib import Path
 import subprocess
 import sys
 
-from PIL import Image
 import pytest
 
 from bean.creativity.artifacts import FileVisionReviewer, file_hash, validate_feedback
@@ -16,6 +15,23 @@ from bean.tests.test_sketch_lab import FakeModel, plan, drawing, review
 
 def read_json(path):
     return json.loads(Path(path).read_text())
+
+
+def require_png_renderer():
+    try:
+        import cairosvg  # noqa: F401 - pixel tests require actual rasterization
+        from PIL import Image
+    except (ImportError, OSError) as exc:
+        pytest.skip("Optional PNG renderer unavailable: " + str(exc))
+    return Image
+
+
+def require_pillow():
+    try:
+        from PIL import Image
+    except (ImportError, OSError) as exc:
+        pytest.skip("Optional Pillow image decoder unavailable: " + str(exc))
+    return Image
 
 
 @pytest.mark.parametrize("model", [
@@ -104,12 +120,19 @@ def test_invalid_output_retained_and_next_attempt_gets_error(tmp_path):
         assert read_json(raw)[0]["response"] == invalid
         assert "Unsupported primitive" in model.requests[1]
         assert "bad primitive" in model.requests[1]
-        assert read_json(tmp_path / "out" / "attempt_02.json")["verification_state"] == "artifacts_verified"
+        retained = read_json(tmp_path / "out" / "attempt_02.json")
+        assert retained["svg_file"] == "attempt_02.svg"
+        if retained["png_file"]:
+            assert retained["verification_state"] == "artifacts_verified"
+        else:
+            assert retained["verification_state"] == "incomplete"
+            assert retained["preview_error"]
     finally:
         core.close()
 
 
 def test_real_png_bytes_and_all_recorded_artifact_hashes(tmp_path):
+    Image = require_png_renderer()
     model = FakeModel([plan(), drawing(), review()])
     core = NativeReasoningService(tmp_path / "core.db", model=model)
     try:
@@ -171,6 +194,7 @@ def test_output_reuse_cannot_overwrite_retained_attempts(tmp_path):
 
 
 def test_hash_bound_pixel_feedback_reaches_revision_prompt(tmp_path):
+    Image = require_png_renderer()
     model = FakeModel([plan(), drawing(), review(), drawing(), review()])
     core = NativeReasoningService(tmp_path / "core.db", model=model)
     inspected = []
@@ -199,6 +223,7 @@ def test_hash_bound_pixel_feedback_reaches_revision_prompt(tmp_path):
 
 
 def test_wrong_image_feedback_fails_and_legacy_report_stays_unverified(tmp_path):
+    require_png_renderer()
     for name, report in (("wrong-hash", {"image_sha256": "0" * 64, "kind": "human",
                                         "evaluator": "synthetic-test", "satisfactory": True,
                                         "feedback": "synthetic claim"}),
@@ -221,6 +246,7 @@ def test_wrong_image_feedback_fails_and_legacy_report_stays_unverified(tmp_path)
 
 
 def test_file_reviewer_records_unavailable_and_requires_matching_hash(tmp_path):
+    Image = require_pillow()
     png = tmp_path / "image.png"
     Image.new("RGB", (512, 512), "white").save(png)
     reviewer = FileVisionReviewer(tmp_path / "feedback")
@@ -236,6 +262,7 @@ def test_file_reviewer_records_unavailable_and_requires_matching_hash(tmp_path):
 
 
 def test_core_feedback_and_failed_drafts_survive_separate_processes(tmp_path):
+    require_png_renderer()
     root = Path(__file__).resolve().parents[2]
     first = r'''
 import json, sys

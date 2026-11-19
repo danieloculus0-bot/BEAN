@@ -97,6 +97,18 @@ def _validate_png(raw):
         raise ValueError("Invalid PNG preview") from exc
 
 
+def _verify_preview(svg, png):
+    # A hash proves preserved bytes, not that a PNG depicts the linked SVG.
+    import cairosvg
+    from PIL import Image, ImageChops
+    rendered = cairosvg.svg2png(bytestring=svg, unsafe=False, output_width=512,
+                               output_height=512, background_color="white")
+    with Image.open(BytesIO(png)) as actual, Image.open(BytesIO(rendered)) as expected:
+        if actual.size != expected.size or ImageChops.difference(
+                actual.convert("RGB"), expected.convert("RGB")).getbbox() is not None:
+            raise ValueError("PNG preview does not depict the recorded SVG")
+
+
 def _digest(raw):
     return sha256(raw).hexdigest()
 
@@ -246,6 +258,8 @@ def curate(source: Path, site: Path, *, review: Path | None = None) -> dict:
                     raise ValueError("Run receipt does not bind this attempt")
             files[run_name] = run_raw
         if not fixture:
+            if png is not None:
+                _verify_preview(raw, png)
             if any(report["files"].get(name) != _digest(data) for name, data in files.items()):
                 raise ValueError("Public review does not cover exact artifact bytes")
             if row.get("execution_mode") == "live_model":

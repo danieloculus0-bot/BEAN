@@ -135,7 +135,12 @@ def test_fixture_cannot_claim_live_execution(tmp_path):
 def reviewed_transport_case(source):
     """Synthetic receipt transport case, never a claim of live model output."""
     from io import BytesIO
-    from PIL import Image
+    pytest.importorskip("PIL.Image")
+    try:
+        import cairosvg
+    except (ImportError, OSError):
+        pytest.skip("Optional CairoSVG preview backend unavailable")
+    from bean.creativity.artifacts import rasterize
     from scripts.build_bean_draw_gallery import REVIEW_SCHEMA
     make_demo(source)
     run = {"schema": "bean.draw.run.v1", "run_id": "transport-test", "history": []}
@@ -145,11 +150,9 @@ def reviewed_transport_case(source):
                    source_git_sha="a" * 40, created_at_utc="2026-11-19T00:00:00Z",
                    subject_source="autonomous", run_id="transport-test",
                    verification_state="artifacts_verified")
-        png = BytesIO()
-        Image.new("RGB", (256, 256), "white").save(png, format="PNG")
         name = meta.stem + ".png"
-        (source / name).write_bytes(png.getvalue())
-        row.update(png_file=name, png_sha256=sha256(png.getvalue()).hexdigest())
+        preview = rasterize(source / row["svg_file"], source / name)
+        row.update(png_file=name, **preview)
         meta.write_text(json.dumps(row))
         run["history"].append({"attempt": row["attempt"], "metadata_sha256": sha256(meta.read_bytes()).hexdigest(),
                                "sha256": row["svg_sha256"], "png_sha256": row["png_sha256"]})

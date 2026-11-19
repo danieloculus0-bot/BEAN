@@ -4,6 +4,7 @@ on:
     branches: [main]
     paths:
       - 'bean/creativity/**'
+      - 'bean/tests/test_*draw*.py'
       - 'bean/tests/test_sketch_lab.py'
       - 'bean/tests/test_bean_draw_gallery.py'
       - 'scripts/run_bean_draw_fixture.py'
@@ -15,6 +16,7 @@ on:
     branches: [main]
     paths:
       - 'bean/creativity/**'
+      - 'bean/tests/test_*draw*.py'
       - 'bean/tests/test_sketch_lab.py'
       - 'bean/tests/test_bean_draw_gallery.py'
       - 'scripts/run_bean_draw_fixture.py'
@@ -38,9 +40,9 @@ jobs:
         with:
           python-version: '3.12'
       - name: Install tests and MIT renderer
-        run: python -m pip install pytest "drawsvg>=2,<3"
+        run: python -m pip install pytest "drawsvg>=2,<3" "CairoSVG==2.8.2"
       - name: Verify real Core journal, SVG gallery and negative cases
-        run: python -m pytest bean/tests/test_sketch_lab.py bean/tests/test_bean_draw_gallery.py -q -ra
+        run: python -m pytest bean/tests/test_sketch_lab.py bean/tests/test_bean_draw_gallery.py bean/tests/test_drawing_evidence.py bean/tests/test_drawing_benchmark.py -q -ra
       - name: Run the actual Python Core drawing code with a scripted fixture
         shell: bash
         run: |

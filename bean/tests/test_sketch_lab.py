@@ -71,6 +71,10 @@ def test_model_chooses_subject_no_fixed_catalog(tmp_path):
 
 
 def test_external_visual_judge_is_separate_host_report(tmp_path):
+    try:
+        import cairosvg
+    except (ImportError, OSError):
+        pytest.skip("Optional CairoSVG preview backend unavailable")
     model = FakeModel([plan(), drawing(), review()])
     core = NativeReasoningService(tmp_path / "core.db", model=model)
     seen = []
