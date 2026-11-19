@@ -268,6 +268,12 @@ def run_cycle(*, project, target, task, journal_path, output, provider,
         "tests": tests_sha, "holdout_tests": held_sha}))
     baseline = evaluate(project, target, original)
     holdout_baseline = evaluate(held, target, original) if held else None
+    # A green unittest process can report "Ran 0 tests". A missing or
+    # undiscovered evaluator must never certify generated code.
+    if baseline["test_count"] < 1:
+        raise ValueError("training evaluator discovered zero tests")
+    if holdout_baseline is not None and holdout_baseline["test_count"] < 1:
+        raise ValueError("holdout evaluator discovered zero tests")
     journal = Journal(journal_path)
     output = Path(output)
     if output.is_symlink():
