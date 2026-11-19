@@ -337,8 +337,26 @@ def main():
             # original SQLite claim/outcome/restart semantics.
             if goal_cycle is not None:
                 from bean.runtime.digital_experiment import make_local_reasoning_experiment
-                goal_cycle.actions["run_experiment"] = make_local_reasoning_experiment(
+                experiment_action = make_local_reasoning_experiment(
                     native_reasoning_service)
+                # A trusted local curriculum enables genuine Core-model code
+                # writing and independent frozen-test feedback. The native
+                # curiosity/GoalCycle path continues to own goal selection,
+                # execution receipts and non-replay after restart.
+                skill_catalog = os.environ.get("BEAN_SKILL_CATALOG")
+                if skill_catalog:
+                    from bean.runtime.native_skill_experiment import (
+                        load_skill_catalog, make_native_skill_experiment)
+                    base = Path(ctx["db_path"]).parent
+                    experiment_action = make_native_skill_experiment(
+                        native_reasoning_service,
+                        catalog=load_skill_catalog(skill_catalog),
+                        journal_path=os.environ.get(
+                            "BEAN_SKILL_JOURNAL", str(base / "bean_skill_trials.sqlite")),
+                        output=os.environ.get(
+                            "BEAN_SKILL_OUTPUT", str(base / "bean_skill_artifacts")),
+                        fallback=experiment_action)
+                goal_cycle.actions["run_experiment"] = experiment_action
             # Native read-only web research; it makes no network request at
             # startup and uses Core's existing wisdom/reasoning memory owner.
             from bean.research.research_service import (
