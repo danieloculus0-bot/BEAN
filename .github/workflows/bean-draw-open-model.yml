@@ -1,14 +1,6 @@
-name: BEAN Draw - original open-model sketch session
+name: BEAN Draw - live model attempts and retained evidence
 
 on:
-  push:
-    branches: [experiment/bean-draw-real-qwen-iterations-20261113]
-    paths:
-      - '.github/workflows/bean-draw-open-model.yml'
-      - 'bean/creativity/sketch_lab.py'
-      - 'bean/voice/ollama.py'
-      - 'bean/tests/test_sketch_lab.py'
-      - 'scripts/build_bean_draw_gallery.py'
   workflow_dispatch:
 
 concurrency:
@@ -17,11 +9,10 @@ concurrency:
 
 jobs:
   draw-with-qwen:
-    if: github.ref == 'refs/heads/experiment/bean-draw-real-qwen-iterations-20261113'
     runs-on: ubuntu-latest
     timeout-minutes: 50
     permissions:
-      contents: write
+      contents: read
     env:
       BEAN_REASONING_PROVIDER: ollama
       BEAN_OLLAMA_MODEL: qwen2.5:3b
@@ -35,7 +26,7 @@ jobs:
           python-version: '3.12'
       - name: Prove existing Core sketch, journal and gallery regressions
         run: |
-          python -m pip install pytest "drawsvg>=2,<3"
+          python -m pip install pytest "drawsvg>=2,<3" "CairoSVG==2.8.2"
           python -m pytest bean/tests/test_sketch_lab.py bean/tests/test_bean_draw_gallery.py -q -ra
       - name: Give BEAN local Qwen and let it choose and revise its own art
         shell: bash
@@ -67,41 +58,27 @@ jobs:
           curl --silent --fail http://127.0.0.1:11434/api/tags > "$RUNNER_TEMP/bean-draw-evidence/model-tags.json"
           export BEAN_OLLAMA_MODEL_DIGEST="$(python -c 'import json,os; d=json.load(open(os.environ["RUNNER_TEMP"]+"/bean-draw-evidence/model-tags.json")); print(next((m.get("digest","") for m in d.get("models",[]) if m.get("name")==os.environ["BEAN_OLLAMA_MODEL"]),""))')"
           echo "Model: $BEAN_OLLAMA_MODEL, digest: $BEAN_OLLAMA_MODEL_DIGEST"
-          python -m bean.creativity.sketch_lab \
-            --db "$RUNNER_TEMP/bean-draw-core.sqlite3" \
-            --out "$RUNNER_TEMP/bean-draw-attempts" \
-            --task-ref "qwen-self-chosen-${{ github.run_id }}" \
-            --attempts 4 --all-attempts --backend stdlib \
-            | tee "$RUNNER_TEMP/bean-draw-evidence/result.json"
-          python scripts/build_bean_draw_gallery.py \
-            --source "$RUNNER_TEMP/bean-draw-attempts" --site docs/bean-draw \
-            | tee "$RUNNER_TEMP/bean-draw-evidence/curation.json"
-          python - <<'PY'
+          for subject_number in 1 2 3; do
+            python -m bean.creativity.sketch_lab \
+              --db "$RUNNER_TEMP/bean-draw-core.sqlite3" \
+              --out "$RUNNER_TEMP/bean-draw-attempts/subject-$subject_number" \
+              --task-ref "qwen-self-chosen-${{ github.run_id }}-$subject_number" \
+              --require-live --attempts 2 --all-attempts --backend stdlib \
+              --seed "$((20261119 + subject_number))" \
+              > "$RUNNER_TEMP/bean-draw-evidence/result-$subject_number.json"
+          done
+          python - <<'PYVERIFY'
           import json, os
           from pathlib import Path
-          r = Path(os.environ["RUNNER_TEMP"]) / "bean-draw-evidence"
-          report = json.loads((r / "result.json").read_text())
-          curation = json.loads((r / "curation.json").read_text())
-          assert report["attempts"] == 4, "Experiment must retain all four attempts"
-          assert curation["added"] >= 2, "Fewer than two valid model-drawn SVGs"
-          assert all(row["status"] != "host_reported_satisfactory"
-                     for row in report["history"]), "No human reviewer attached"
-          print("BEAN DRAW: four real Qwen attempts, "
-                + str(curation["added"]) + " retained model SVGs; visual success unverified")
-          PY
-      - name: Commit reviewed-by-parser model SVGs to isolated PR branch, not main
-        shell: bash
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          set -euo pipefail
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add docs/bean-draw/index.json docs/bean-draw/entries/
-          git diff --cached --quiet && { echo "No new model sketches to retain"; exit 1; }
-          git commit -m "BEAN Draw: retain four Qwen sketch iterations with SHA receipts"
-          AUTH="$(printf 'x-access-token:%s' "$GH_TOKEN" | base64 -w0)"
-          git -c http.extraheader="AUTHORIZATION: basic $AUTH" push origin HEAD:refs/heads/experiment/bean-draw-real-qwen-iterations-20261113
+          root = Path(os.environ["RUNNER_TEMP"]) / "bean-draw-attempts"
+          runs = [json.loads(p.read_text()) for p in root.glob("subject-*/run.json")]
+          assert len(runs) == 3
+          assert len({r["subject"].casefold() for r in runs}) == 3, "Model repeated a subject"
+          assert all(r["execution_mode"] == "live_model" and r["attempts"] == 2 for r in runs)
+          assert all(len(list(p.glob("attempt_*.png"))) >= 2 for p in root.glob("subject-*"))
+          print("Six live previews retained. Visual evaluation unavailable; no learning claim.")
+          PYVERIFY
+          # No automatic publication: public-safe pixel/metadata review is required.
       - name: Archive raw Core journal, SVG attempts, curation receipts, and model provenance
         if: always()
         uses: actions/upload-artifact@v4

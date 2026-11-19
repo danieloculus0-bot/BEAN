@@ -71,6 +71,10 @@ def test_model_chooses_subject_no_fixed_catalog(tmp_path):
 
 
 def test_external_visual_judge_is_separate_host_report(tmp_path):
+    try:
+        import cairosvg
+    except (ImportError, OSError):
+        pytest.skip("Optional CairoSVG preview backend unavailable")
     model = FakeModel([plan(), drawing(), review()])
     core = NativeReasoningService(tmp_path / "core.db", model=model)
     seen = []
@@ -192,7 +196,7 @@ def test_open_model_sketch_provider_uses_creative_json_not_reasoning_schema():
     assert reply["ok"] is True
     assert reply["adapter_name"] == "ollama"
     assert reply["model_name"] == "qwen2.5:1.5b"
-    assert client.calls[0][2]["options"]["num_predict"] == 2048
+    assert client.calls[0][2]["options"]["num_predict"] == 4096
     assert "schema" not in client.calls[0][2]  # NOT general reasoning response schema
 
 
