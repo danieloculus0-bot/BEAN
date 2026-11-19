@@ -28,8 +28,8 @@ jobs:
       - run: python -m pip install pytest
       - name: Validate real source-writing engine, replay and model API
         run: |
-          python -m compileall -q bean/optimization/autodev.py bean/tests/test_autodev_lab019.py
-          python -m pytest bean/tests/test_autodev_lab019.py -q -ra
+          python -m compileall -q bean/optimization/autodev.py bean/optimization/skill_incubator.py bean/tests/test_autodev_lab019.py bean/tests/test_skill_incubator.py
+          python -m pytest bean/tests/test_autodev_lab019.py bean/tests/test_skill_incubator.py -q -ra
 
   independent-generation:
     runs-on: ubuntu-latest
