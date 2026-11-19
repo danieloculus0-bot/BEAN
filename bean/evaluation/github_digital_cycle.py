@@ -328,6 +328,22 @@ def _summary(records, *, new_evaluation):
             record["correct"]["always_zero"] for record in records),
         "source_evidence_sha256": _hash(
             [record["evaluation_sha256"] for record in records]),
+        # Paired comparisons on identical blind cases, not a claim of AGI.
+        # A tie with grammar-matched cold start does not establish a
+        # memory-specific improvement, even when absolute accuracy is 100%.
+        "candidate_minus_passive_correct_total": sum(
+            row["correct"]["candidate"] - row["correct"]["passive"]
+            for row in records),
+        "candidate_minus_grammar_matched_correct_total": (
+            sum(row["correct"]["candidate"] - row["correct"]["grammar_matched"]
+                for row in records)
+            if all("grammar_matched" in row["correct"] for row in records)
+            else None),
+        "memory_specific_advantage_observed": (
+            sum(row["correct"]["candidate"] - row["correct"]["grammar_matched"]
+                for row in records) > 0
+            if all("grammar_matched" in row["correct"] for row in records)
+            else None),
         "scope": "synthetic_numeric_control_not_general_intelligence",
         "independently_audited": False,
     }
