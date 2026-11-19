@@ -235,3 +235,26 @@ def test_index_paths_cannot_escape_gallery(tmp_path):
     (site / "index.json").write_text(json.dumps(listing))
     with pytest.raises(ValueError, match="Unsafe gallery"):
         curate(source, site)
+
+
+def test_hashes_alone_cannot_certify_a_fake_preview(tmp_path):
+    source = tmp_path / "source"
+    review = reviewed_transport_case(source)
+    from PIL import Image
+    image_path = source / "attempt_01.png"
+    Image.new("RGB", (512, 512), "white").save(image_path)
+    meta_path = source / "attempt_01.json"
+    row = json.loads(meta_path.read_text())
+    row["png_sha256"] = sha256(image_path.read_bytes()).hexdigest()
+    meta_path.write_text(json.dumps(row))
+    run_path = source / "run.json"
+    run = json.loads(run_path.read_text())
+    entry = next(e for e in run["history"] if e["attempt"] == 1)
+    entry.update(png_sha256=row["png_sha256"], metadata_sha256=sha256(meta_path.read_bytes()).hexdigest())
+    run_path.write_text(json.dumps(run))
+    report = json.loads(review.read_text())
+    report["files"].update({p.name: sha256(p.read_bytes()).hexdigest()
+                             for p in (image_path, meta_path, run_path)})
+    review.write_text(json.dumps(report))
+    with pytest.raises(ValueError, match="does not depict"):
+        curate(source, tmp_path / "site", review=review)

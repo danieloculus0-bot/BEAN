@@ -166,6 +166,8 @@ def validate_index(site: Path, listing: dict) -> None:
         if row.get("origin") == "live_model_artifact_verified" and not all(row.get(f) for f in
                 ("png", "attempt_receipt", "run_receipt", "public_review")):
             raise ValueError("Verified live entry is missing evidence")
+        if row.get("origin") == "live_model_artifact_verified":
+            _verify_preview(svg, _asset(site, row["png"], key, ".png").read_bytes())
 
 
 def _review_manifest(review):
