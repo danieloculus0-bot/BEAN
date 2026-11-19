@@ -33,6 +33,8 @@ Use the existing Jetson / desktop BEAN entry point with its already configured r
 
 Optional BEAN_SKILL_JOURNAL and BEAN_SKILL_OUTPUT select output locations; otherwise, private Lab019 SQLite journal and candidate artifacts reside beside the Core database. No live owner data is written to GitHub by this code.
 
+BEAN can now select one of these new skills itself from unstructured, unresolved questions in its canonical SQLite curiosity memory. With the local catalog configured, a scheduled native reasoning-model pass (by default every 300 ticks, tunable with BEAN_SKILL_CURIOSITY_TICKS) sees the bounded question text and available skill descriptions, chooses a relevant catalog ID, or explicitly abstains. It never sees holdout answers or paths in the model prompt. A valid choice becomes the SAME durable GoalStateEngine proposal below. After a proposal has been attempted, the skill is excluded from future selections across restarts. No new memory backend or independent model was added. This is model-mediated autonomous selection from a host-defined curriculum, not arbitrary unsupervised skill creation.
+
 An existing curiosity question with this context becomes an executable persisted GoalCycle investigation:
 
     {
@@ -52,7 +54,7 @@ Next falsifiable steps: let BEAN expand the host-independent curriculum based on
 
 ## BEAN CONTEXT ACK v1
 
-Task: Connect genuine native curiosity goals to existing Core model and Lab019 new-skill generation.
+Task: Connect native curiosity goals and model-chosen new skill objectives to Core and existing Lab019 generation.
 Existing systems checked: AGENTS, AI_GATEKEEPER, bean_run.py, GoalStateEngine, GoalCycle, digital_experiment, NativeReasoningService, Skill Incubator and manifest generation 66.
 Assets reused: Core reasoning model, SQLite goal receipt store, Lab019 model writer/evaluator, SHA journal and candidate recovery.
 Ledger: consulted generation 66 summary; no independent replay of historical compressed data.

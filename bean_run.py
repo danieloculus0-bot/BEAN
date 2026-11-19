@@ -343,20 +343,34 @@ def main():
                 # writing and independent frozen-test feedback. The native
                 # curiosity/GoalCycle path continues to own goal selection,
                 # execution receipts and non-replay after restart.
-                skill_catalog = os.environ.get("BEAN_SKILL_CATALOG")
-                if skill_catalog:
+                skill_catalog_path = os.environ.get("BEAN_SKILL_CATALOG")
+                if skill_catalog_path:
                     from bean.runtime.native_skill_experiment import (
-                        load_skill_catalog, make_native_skill_experiment)
+                        load_skill_catalog, make_native_skill_experiment,
+                        propose_skill_from_curiosity)
+                    skill_catalog = load_skill_catalog(skill_catalog_path)
                     base = Path(ctx["db_path"]).parent
                     experiment_action = make_native_skill_experiment(
                         native_reasoning_service,
-                        catalog=load_skill_catalog(skill_catalog),
+                        catalog=skill_catalog,
                         journal_path=os.environ.get(
                             "BEAN_SKILL_JOURNAL", str(base / "bean_skill_trials.sqlite")),
                         output=os.environ.get(
                             "BEAN_SKILL_OUTPUT", str(base / "bean_skill_artifacts")),
                         fallback=experiment_action)
                 goal_cycle.actions["run_experiment"] = experiment_action
+                if skill_catalog_path:
+                    # Actual BEAN curiosity drives selection, not a prewritten
+                    # script. Registered native GoalCycle executes on later
+                    # ticks with durable claims and non-replay semantics.
+                    discovery_ticks = int(os.environ.get(
+                        "BEAN_SKILL_CURIOSITY_TICKS", "300"))
+                    handlers.register(
+                        "bean_skill_curiosity",
+                        lambda tick, session_uuid, ctx: propose_skill_from_curiosity(
+                            native_reasoning_service, catalog=skill_catalog,
+                            session_uuid=session_uuid),
+                        interval=discovery_ticks)
             # Native read-only web research; it makes no network request at
             # startup and uses Core's existing wisdom/reasoning memory owner.
             from bean.research.research_service import (
