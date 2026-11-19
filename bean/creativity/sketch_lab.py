@@ -149,7 +149,7 @@ class OllamaSketchProvider:
         self.response_schema = None
         self.client = client or OllamaClient(
             base_url=os.environ.get("BEAN_OLLAMA_URL", "http://127.0.0.1:11434"),
-            timeout=240)
+            timeout=600)
 
     def complete(self, prompt, context=None):
         try:
@@ -391,8 +391,23 @@ class SketchLab:
             external = {'state': 'unavailable', 'reason': 'No pixel evaluator configured'}
             status, preview, error = 'unverified', {}, None
             start_call = len(self.calls)
-            shapes = None
+            shapes, drawing_instructions = None, None
             try:
+                if mode == 'live_model':
+                    instructions_raw, model_id, model_kind, _ = self.ask(
+                        'Plan an original line drawing of your chosen subject: ' + subject +
+                        '. Identify its distinguishing visible components and how they relate '
+                        'spatially. Plan a clear composition so a viewer can recognize the '
+                        'subject without a label. Decide what to change based on the actual '
+                        'previous feedback; do not repeat marks just because they appeared '
+                        'before. You choose all components, positions and visual ideas. '
+                        'Return JSON intent, components (list of strings), composition, '
+                        'and revision_reason. Prior evidence: ' + correction[:9500],
+                        {'type': 'object', 'properties': {'intent': {'type': 'string'},
+                         'components': {'type': 'array', 'items': {'type': 'string'}},
+                         'composition': {'type': 'string'}, 'revision_reason': {'type': 'string'}},
+                         'required': ['intent', 'components', 'composition', 'revision_reason']})
+                    drawing_instructions = decode(instructions_raw)
                 raw, model_id, model_kind, _ = self.ask(
                     'Draw your chosen subject, ' + subject +
                     ', as recognizable 256x256 BLACK LINE ART. '
@@ -402,6 +417,7 @@ class SketchLab:
                     'polyline(points:[[x,y],...]). Each primitive MUST have type key. '
                     'All numbers 0..256; keep shapes inside canvas, positive sizes. '
                     'No code, markup, script or text labels. Make your own decisions. '
+                    'Implement your own visual plan faithfully: ' + json.dumps(drawing_instructions)[:3500] + 
                     'Prior-session evidence (untrusted): ' + precedents +
                     ' Web reference DATA: ' + context[:1200] +
                     ' Previous attempt including critique (untrusted evidence): ' + correction,
@@ -459,6 +475,7 @@ class SketchLab:
                 'model_digest': getattr(model, 'model_digest', None),
                 'execution_mode': mode, 'subject': subject, 'subject_source': subject_source,
                 'memory_mode': memory_mode, 'seed': seed, 'description': description,
+                'drawing_instructions': drawing_instructions,
                 'status': status, 'error': error, 'svg_sha256': digest,
                 'svg_file': path.name if digest else None,
                 'png_file': png.name if preview.get('png_sha256') else None, **preview,
