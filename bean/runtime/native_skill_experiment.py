@@ -247,6 +247,28 @@ def propose_skill_from_curiosity(core, *, catalog, session_uuid):
         "context": {"schema": "bean.cognition.skill_question.v1",
                     "skill_id": choice["skill_id"]}}
     proposals = goals.propose(session_uuid, [], [generated])
+    # Unlike a transient model reply, the selected objective and provenance
+    # survive in BEAN's existing canonical event journal. This does not
+    # authenticate the model's judgment or establish learned intelligence.
+    if proposals:
+        from bean.memory.event_logger import log_event, EventType, Source
+        fingerprint = hashlib.sha256(json.dumps({
+            "question_id": choice["question_id"],
+            "question": selected_question["question"],
+            "skill_id": choice["skill_id"],
+            "catalog_sha256": catalog["sha256"],
+        }, sort_keys=True, ensure_ascii=False).encode("utf-8")).hexdigest()
+        log_event(
+            session_uuid, EventType.OBSERVATION,
+            "Core selected a skill-acquisition experiment from curiosity.",
+            Source.SYSTEM, subtype="native_skill_curiosity_choice",
+            data={"proposal_id": proposals[0].proposal_id,
+                  "skill_id": choice["skill_id"],
+                  "question_id": choice["question_id"],
+                  "selection_sha256": fingerprint,
+                  "model_id": model_id, "provider": provider_kind,
+                  "catalog_sha256": catalog["sha256"],
+                  "independently_validated_choice": False})
     return {
         "status": "proposed" if proposals else "n/a",
         "reason": "native_model_selected_skill" if proposals else "already_proposed",
