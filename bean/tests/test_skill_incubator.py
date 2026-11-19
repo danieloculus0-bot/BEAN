@@ -133,3 +133,23 @@ def test_refuses_ambiguous_names_and_existing_skill(tmp_path):
     existing.write_text(GOOD)
     with pytest.raises(ValueError, match="already exists"):
         incubate_skill(**args)
+
+
+def test_undiscovered_training_tests_cannot_certify_skill(tmp_path):
+    writer = Writer(GOOD)
+    args = setup(tmp_path, writer)
+    tests = args["project"] / "tests"
+    (tests / "test_double.py").rename(tests / "checks_double.py")
+    with pytest.raises(ValueError, match="training evaluator discovered zero tests"):
+        incubate_skill(**args)
+    assert writer.calls == 0
+
+
+def test_undiscovered_holdout_tests_cannot_certify_skill(tmp_path):
+    writer = Writer(GOOD)
+    args = setup(tmp_path, writer)
+    tests = args["holdout_project"] / "tests"
+    (tests / "test_double.py").rename(tests / "checks_double.py")
+    with pytest.raises(ValueError, match="holdout evaluator discovered zero tests"):
+        incubate_skill(**args)
+    assert writer.calls == 0
