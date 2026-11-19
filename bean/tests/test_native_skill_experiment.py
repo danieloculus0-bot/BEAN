@@ -204,7 +204,9 @@ class ModelThatSelectsAndWrites:
         self.calls.append((prompt, context))
         if "Unresolved questions:" in prompt:
             result = json.dumps({"skill_id": self.skill_id,
-                                 "question_id": self.question_id})
+                                 "question_id": (self.question_id
+                                                 if self.skill_id is not None
+                                                 else None)})
         else:
             result = GOOD
         return {"ok": True, "raw_text": result,
@@ -278,6 +280,7 @@ def test_model_may_refuse_skill_and_preserve_curiosity(world):
     model = ModelThatSelectsAndWrites(question_id, skill_id=None)
     result = propose_skill_from_curiosity(
         Core(model), catalog=load_skill_catalog(path), session_uuid=session)
-    assert result["status"] == "unverified"
+    assert result["status"] == "n/a"
+    assert result["reason"] == "model_abstained"
     assert get_store().fetchall(
         "SELECT * FROM cognition_goal_proposals WHERE action_type='run_experiment'") == []
