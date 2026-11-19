@@ -192,7 +192,7 @@ def test_open_model_sketch_provider_uses_creative_json_not_reasoning_schema():
     assert reply["ok"] is True
     assert reply["adapter_name"] == "ollama"
     assert reply["model_name"] == "qwen2.5:1.5b"
-    assert client.calls[0][2]["options"]["num_predict"] == 2048
+    assert client.calls[0][2]["options"]["num_predict"] == 4096
     assert "schema" not in client.calls[0][2]  # NOT general reasoning response schema
 
 
