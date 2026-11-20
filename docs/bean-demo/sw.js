@@ -1,6 +1,10 @@
 // Public BEAN demo offline shell. No remote GitHub requests are cached here.
 // IndexedDB owns the local checkpoint and private, device-only notes.
-const CACHE = 'bean-demo-shell-v2';
+const CACHE = 'bean-demo-shell-v3';
+// Compute the actual service-worker scope rather than assuming GitHub's /BEAN/ prefix.
+// This also supports local HTTP servers that mount the same demo at /bean-demo/.
+const DEMO_SCOPE = new URL('./', self.registration.scope).pathname;
+const SITE_BASE = new URL('../', self.registration.scope).pathname;
 const ASSETS = [
   './', './index.html', './device-memory.mjs', './device-ui.mjs',
   './manifest.webmanifest', '../bean-official.webp', '../ecosystem-nav.css?v=20261120'
@@ -25,11 +29,11 @@ self.addEventListener('fetch', event => {
   if (request.method !== 'GET') return;
   const url = new URL(request.url);
   if (url.origin !== self.location.origin) return;
-  if (url.pathname === '/BEAN/bean-official.webp' || url.pathname === '/BEAN/ecosystem-nav.css') {
+  if (url.pathname === SITE_BASE + 'bean-official.webp' || url.pathname === SITE_BASE + 'ecosystem-nav.css') {
     event.respondWith(caches.match(request).then(found => found || fetch(request)));
     return;
   }
-  if (!url.pathname.startsWith('/BEAN/bean-demo/')) return;
+  if (!url.pathname.startsWith(DEMO_SCOPE)) return;
   if (request.mode === 'navigate') {
     event.respondWith(
       fetch(request).then(response => {
