@@ -112,6 +112,15 @@ def sqlite_stats(core: Path) -> tuple[int, int, str, int]:
     return boots, events, last[0], handled
 
 
+def source_revision() -> str:
+    """Record the exact checked-out main revision, even on stale Action re-runs."""
+    source_sha = (os.environ.get("BEAN_SOURCE_SHA")
+                  or os.environ.get("GITHUB_SHA") or "local-validation")
+    if not (source_sha == "local-validation" or re.fullmatch(r"[0-9a-f]{40}", source_sha)):
+        raise ValueError("invalid source revision")
+    return source_sha
+
+
 def checkpoint(state_dir: Path, runtime_dir: Path, prior: dict | None,
                boots: int, events: int, processed: int, ticks: int,
                digital_learning: dict | None = None) -> dict:
@@ -150,9 +159,7 @@ def checkpoint(state_dir: Path, runtime_dir: Path, prior: dict | None,
             staging_archive.replace(destination)
         databases[name] = {"sha256": digest(payload), "bytes": len(payload), "archive": versioned}
         backup.unlink()
-    source_sha = os.environ.get("GITHUB_SHA", "local-validation")
-    if not (source_sha == "local-validation" or re.fullmatch(r"[0-9a-f]{40}", source_sha)):
-        raise ValueError("invalid source revision")
+    source_sha = source_revision()
     receipt = {
         "schema": "bean.github.invoke.v1",
         "synthetic_only": True,
@@ -298,9 +305,7 @@ def invoke(state_dir: Path, runtime_dir: Path, ticks: int = 12, hz: int = 20,
     if request is not None:
         # The receipt digest is a fixed-width SHA256. Substituting the real
         # digest after checkpointing cannot change the encoded reply size.
-        source_sha = os.environ.get("GITHUB_SHA", "local-validation")
-        if not (source_sha == "local-validation" or re.fullmatch(r"[0-9a-f]{40}", source_sha)):
-            raise ValueError("invalid source revision")
+        source_sha = source_revision()
         prepare_public_reply(request, reply_result, generation, source_sha, "0" * 64)
     # Run real native feedback learning in the existing SQLite reasoning Core.
     # A separate deterministic evaluator scores hidden holdouts after reopening
@@ -308,7 +313,7 @@ def invoke(state_dir: Path, runtime_dir: Path, ticks: int = 12, hz: int = 20,
     from bean.evaluation.github_digital_cycle import run_scored_digital_cycle
     digital_learning = run_scored_digital_cycle(
         reasoning, generation=generation,
-        source_sha=os.environ.get("GITHUB_SHA", "local-validation"))
+        source_sha=source_revision())
     receipt = checkpoint(state_dir, runtime_dir, prior, boots, events, processed, ticks,
                          digital_learning=digital_learning)
     if request is not None:
