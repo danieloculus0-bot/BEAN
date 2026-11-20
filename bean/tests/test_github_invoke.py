@@ -5,7 +5,7 @@ import sqlite3
 
 import pytest
 
-from scripts.invoke_bean import checkpoint, digest, unpack, prepare_public_reply
+from scripts.invoke_bean import checkpoint, digest, unpack, prepare_public_reply, source_revision
 
 
 def _sqlite(path: Path, text: str) -> None:
@@ -150,3 +150,15 @@ def test_public_reply_exact_utf8_limit_and_first_overflow():
         with pytest.raises(ValueError, match="response exceeds public limit"):
             prepare_public_reply(request, {"answer": character * (low + 1)}, 4,
                                  "local-validation", "f" * 64)
+
+
+def test_source_revision_prefers_the_actual_checked_out_sha(monkeypatch):
+    """Old scheduled Action GITHUB_SHA must not mislabel newer checked-out code."""
+    monkeypatch.delenv("BEAN_SOURCE_SHA", raising=False)
+    monkeypatch.setenv("GITHUB_SHA", "a" * 40)
+    assert source_revision() == "a" * 40
+    monkeypatch.setenv("BEAN_SOURCE_SHA", "b" * 40)
+    assert source_revision() == "b" * 40
+    monkeypatch.setenv("BEAN_SOURCE_SHA", "not-a-git-sha")
+    with pytest.raises(ValueError, match="invalid source revision"):
+        source_revision()
