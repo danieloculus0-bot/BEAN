@@ -15,9 +15,12 @@ class Assets(HTMLParser):
 
     def handle_starttag(self, tag, attrs):
         props = dict(attrs)
-        for name in ("href", "src"):
-            if name in props and tag in ("link", "script", "img"):
-                self.refs.append(props[name])
+        # Resolve only actual local dependencies. Canonical, help and navigation
+        # links are metadata/exit routes, not assets required for offline use.
+        if tag == "link" and props.get("rel") in ("stylesheet", "icon", "manifest"):
+            self.refs.append(props["href"])
+        elif tag in ("script", "img") and "src" in props:
+            self.refs.append(props["src"])
 
 
 def test_office_demo_is_locally_complete_and_in_menu():

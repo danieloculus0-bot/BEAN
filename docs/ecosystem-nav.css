@@ -14,3 +14,12 @@
 .bean-net-float a:focus-visible,.bean-net-float summary:focus-visible{outline:2px solid #b8ef90}.bean-net-float details{position:relative}.bean-net-float summary{list-style:none}.bean-net-float summary::-webkit-details-marker{display:none}
 .bean-net-float details>div{position:absolute;right:0;top:100%;width:215px;max-height:65vh;overflow:auto;padding:7px;background:#111c16;border:1px solid #486c50;border-radius:9px;display:grid;gap:2px;box-shadow:0 12px 28px #000b}
 .bean-net-float details:not([open])>div{display:none}
+
+/* Contextual source-backed release notes are part of content, not the global toolbar. */
+.bean-build-feature{box-sizing:border-box;width:min(1110px,calc(100% - 40px));margin:26px auto 36px;padding:24px 28px;background:#111714;border:1px solid #293a30;border-radius:14px;color:#edf4ed;font:16px/1.6 system-ui,-apple-system,"Segoe UI",sans-serif}
+.bean-build-feature *{box-sizing:border-box}.bean-build-feature-label{color:#b8ef90;font-size:12px;font-weight:850;text-transform:uppercase;letter-spacing:.13em}
+.bean-build-feature h2{color:#f1f6f1;margin:6px 0 10px;font-size:clamp(22px,3vw,30px);line-height:1.2;letter-spacing:-.025em}
+.bean-build-feature p{color:#bdcbbf;max-width:920px;margin:0 0 15px}.bean-build-feature-links{display:flex;gap:11px 19px;flex-wrap:wrap}
+.bean-build-feature a{color:#b8ef90;text-decoration:underline;text-underline-offset:3px;font-weight:720}
+.bean-build-feature a:focus-visible{outline:2px solid #b8ef90;outline-offset:3px}
+@media(max-width:600px){.bean-build-feature{padding:18px 20px;width:calc(100% - 28px)}}
