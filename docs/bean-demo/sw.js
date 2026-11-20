@@ -1,9 +1,9 @@
 // Public BEAN demo offline shell. No remote GitHub requests are cached here.
 // IndexedDB owns the local checkpoint and private, device-only notes.
-const CACHE = 'bean-demo-shell-v1';
+const CACHE = 'bean-demo-shell-v2';
 const ASSETS = [
   './', './index.html', './device-memory.mjs', './device-ui.mjs',
-  './manifest.webmanifest', '../bean-official.webp'
+  './manifest.webmanifest', '../bean-official.webp', '../ecosystem-nav.css?v=20261120'
 ];
 self.addEventListener('install', event => {
   event.waitUntil(
@@ -25,7 +25,7 @@ self.addEventListener('fetch', event => {
   if (request.method !== 'GET') return;
   const url = new URL(request.url);
   if (url.origin !== self.location.origin) return;
-  if (url.pathname === '/BEAN/bean-official.webp') {
+  if (url.pathname === '/BEAN/bean-official.webp' || url.pathname === '/BEAN/ecosystem-nav.css') {
     event.respondWith(caches.match(request).then(found => found || fetch(request)));
     return;
   }
