@@ -8,6 +8,7 @@ import argparse
 import hashlib
 import json
 import os
+import shutil
 from pathlib import Path
 import tempfile
 
@@ -107,12 +108,22 @@ def reuse(*, vault, name, project):
     if root.is_symlink():
         raise ValueError("linked project")
     root = root.resolve(strict=True)
-    target_file(root, item["target"])
     for p in root.rglob("*"):
         if p.is_symlink():
             raise ValueError("linked test input")
     tests_sha = test_digest(root / "tests")
-    result = evaluate(root, item["target"], item["source"])
+    # A withheld project may contain tests but no implementation yet.
+    # Materialize the retained skill only in a disposable project, never
+    # mutate the caller's project or weaken autodev's target validation.
+    with tempfile.TemporaryDirectory(prefix="bean-reuse-") as scratch:
+        work = Path(scratch) / "project"
+        shutil.copytree(root, work, symlinks=False)
+        target = work / item["target"]
+        target.parent.mkdir(parents=True, exist_ok=True)
+        if not target.exists():
+            target.write_text("", encoding="utf-8")
+        target_file(work, item["target"])
+        result = evaluate(work, item["target"], item["source"])
     return {"schema": "bean.skill_reuse.v1", "name": name,
             "source_sha256": item["source_sha256"],
             "receipt_sha256": item["receipt_sha256"],

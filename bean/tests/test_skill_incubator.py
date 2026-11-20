@@ -188,3 +188,15 @@ def test_symlinked_directory_rejected_before_copy(tmp_path):
     with pytest.raises(ValueError, match="training project contains symlink"):
         incubate_skill(**args)
     assert writer.calls == 0
+
+
+def test_comment_only_holdout_is_not_independent(tmp_path):
+    writer = Writer(GOOD)
+    args = setup(tmp_path, writer)
+    training = args["project"] / "tests/test_double.py"
+    holdout = args["holdout_project"] / "tests/test_double.py"
+    holdout.write_text(training.read_text() + "\n# cosmetic difference only\n")
+    with pytest.raises(ValueError, match="duplicates training assertions"):
+        incubate_skill(**args)
+    assert writer.calls == 0
+    assert not args["journal_path"].exists()
