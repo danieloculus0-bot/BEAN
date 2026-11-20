@@ -1,5 +1,23 @@
 # BEAN — Behavior Enabled Avatar Node
 
+## Current build snapshot | November 20, 2026
+
+**The research is moving, and the evidence is public.** BEAN is a persistent, model-independent cognitive architecture with a working local Python Core, bounded reasoning and learning mechanisms, source-linked outcomes, and real local-model execution. It is not an AGI, a conscious system, or a fully autonomous general-purpose agent.
+
+| Latest milestone | Verified record | What remains open |
+| --- | --- | --- |
+| **Real BEAN Draw attempts** | Local Qwen2.5:3b Ollama sessions produced original model-chosen geometry, SVG/PNG outputs, raw responses and retained failure receipts. The [gallery](docs/bean-draw/index.html) separates **four live-model artifacts from two synthetic fixtures**. [Evidence](docs/bean-draw/PROOF.md) and [merge #442](https://github.com/danieloculus0-bot/BEAN/pull/442). | Drawing quality is weak and genuine artistic improvement has not been demonstrated. |
+| **Persistent ordered cognitive plans** | [Merge #440](https://github.com/danieloculus0-bot/BEAN/pull/440) adds restartable, dependency-aware steps and a synthetic interruption/resumption experiment. [Plan contract](docs/PERSISTENT_GOAL_PLANS.md). | A host authors the plan. Independent plan invention, wide transfer and automatic failure repair remain unproven. |
+| **Physical local inference** | Jetson Orin Nano Super executed local Qwen inference, logged cognition and recovered SQLite journal state. [On-device evidence](docs/JETSON_DEPLOYMENT_MILESTONE_2026-11-01.md). | The integrated vision, speech, face and motion system is not yet demonstrated end to end. |
+| **Reasoning quality controls** | Current main includes stricter fact-checking on real-model CPU smoke tests and a local [challenge preflight](docs/BEAN_CHALLENGE_PREFLIGHT.md) with persistent objections/overrides. | A test harness is not an independent reality checker; the challenge CLI is not universal host-enforced gating. |
+| **Persistent learning experiments** | Source contains tabular Q-learning, measured signed feedback, skill incubation, evidence-backed reasoning and frozen holdouts. [Learning guide](docs/BEAN_LEARNING_CORE_INTEGRATION_2026-10-22.md). | Bounded task performance is not demonstrated continual open-world learning or model-weight retraining. |
+
+**Explore:** [Current public status](https://danieloculus0-bot.github.io/BEAN/status.html) · [Research lab](https://danieloculus0-bot.github.io/BEAN/research-lab.html) · [BEAN Draw](https://danieloculus0-bot.github.io/BEAN/bean-draw/) · [Python quickstart](docs/GETTING_STARTED.md) · [Workshop](https://danieloculus0-bot.github.io/BEAN/portfolio/).
+
+**Runtime separation matters:** Local Python Core, the hosted JavaScript BEAN notes companion, the independent Perplexity evidence MCP, Axiom, and AIscend are distinct environments. None is implicitly connected to the home Jetson, each other, or private Core memory. Date-stamped sections later in this README preserve the original technical history and should be read as milestones, not a fresh deployment check.
+
+---
+
 ### A small name. A huge question.
 
 **What if AI could grow from experience instead of starting over?**

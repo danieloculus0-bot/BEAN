@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#080c0a"><meta name="robots" content="index,follow">
+<meta name="description" content="BEAN status, updated November 20, 2026: genuine model-generated drawings, persistent cognitive plans, Jetson local inference, evidence-linked memory and the limits of current experiments.">
+<link rel="canonical" href="https://danieloculus0-bot.github.io/BEAN/status.html">
+<meta property="og:type" content="website"><meta property="og:title" content="BEAN | Current Build and Evidence"><meta property="og:description" content="An evidence-first status of BEAN Core and its experiments, updated November 20, 2026.">
+<meta property="og:url" content="https://danieloculus0-bot.github.io/BEAN/status.html"><meta property="og:image" content="https://danieloculus0-bot.github.io/BEAN/bean-official.webp">
+<title>BEAN | Current Build and Evidence | November 20, 2026</title>
+<link rel="icon" href="./bean-official.webp" type="image/webp">
+<style>
+:root{color-scheme:dark;--bg:#080c0a;--panel:#101814;--border:#2a4936;--text:#f2f8f1;--muted:#b7c9ba;--lime:#b6f28a}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:radial-gradient(ellipse at 80% 0%,#21412b 0%,transparent 48%),var(--bg);color:var(--text);font:16px/1.65 system-ui,-apple-system,"Segoe UI",sans-serif}
+a{color:var(--lime);text-underline-offset:4px}a:hover{color:white}a:focus-visible{outline:3px solid var(--lime);outline-offset:4px}
+.wrap{max-width:1090px;width:calc(100% - 36px);margin:auto}
+header{border-bottom:1px solid var(--border);background:#0a100df2}header .wrap{display:flex;gap:20px;align-items:center;flex-wrap:wrap;justify-content:space-between;padding:15px 0}
+.brand{display:flex;align-items:center;gap:10px;font-weight:850;letter-spacing:.06em;text-decoration:none;color:white}.brand img{width:40px;height:40px;object-fit:contain}
+nav{display:flex;gap:16px;flex-wrap:wrap}nav a{font-size:.9rem;text-decoration:none}
+.hero{padding:66px 0 34px}.eyebrow{color:var(--lime);text-transform:uppercase;font-size:.78rem;font-weight:800;letter-spacing:.17em}
+h1{font-size:clamp(2.65rem,7vw,5.3rem);line-height:1.05;letter-spacing:-.055em;margin:10px 0 22px}h2{font-size:clamp(1.5rem,3vw,2.1rem);margin:0 0 14px}h3{font-size:1.13rem;margin:0 0 8px}
+p{color:var(--muted)}.lead{font-size:1.23rem;max-width:840px}.stamp{display:inline-block;border:1px solid var(--border);border-radius:999px;padding:5px 13px;color:var(--lime);font-weight:750;font-size:.86rem}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:15px;margin:24px 0 48px}.card{padding:22px;border:1px solid var(--border);background:#121b16;border-radius:16px}.card p{margin-bottom:12px}.card a{font-weight:650}
+section{margin:0 0 48px}ul{padding-left:23px;color:var(--muted)}li{margin-bottom:10px}strong{color:var(--text)}
+table{border-collapse:collapse;width:100%;font-size:.93rem}th,td{padding:13px;text-align:left;vertical-align:top;border-bottom:1px solid var(--border)}th{color:var(--lime)}
+.notice{padding:20px 24px;background:var(--panel);border-left:3px solid var(--lime);border-radius:8px}.links{display:flex;gap:12px;flex-wrap:wrap}
+.cta{display:inline-block;padding:10px 17px;background:var(--lime);color:#071007;border-radius:9px;text-decoration:none;font-weight:800}.cta.alt{background:transparent;border:1px solid var(--border);color:var(--lime)}
+footer{padding:25px 0;border-top:1px solid var(--border);color:var(--muted);font-size:.87rem}
+@media(max-width:600px){th,td{padding:9px 7px}.hero{padding-top:38px}}
+</style>
+</head>
+<body>
+<header><div class="wrap"><a href="./" class="brand"><img src="./bean-official.webp" alt="">BEAN / BUILD STATUS</a>
+<nav aria-label="BEAN navigation"><a href="./">Home</a><a href="./research-lab.html">Research lab</a><a href="./bean-draw/">BEAN Draw</a><a href="./for-ai-developers.html">Developers</a><a href="./portfolio/">Workshop</a></nav></div></header>
+<main class="wrap">
+<section class="hero"><span class="eyebrow">Persistent memory. Measurable experimentation. Independent scrutiny.</span><h1>A brain worth testing.</h1>
+<p class="lead">BEAN, the Behavior Enabled Avatar Node, is an experimental model-independent cognitive architecture that carries history between sessions, proposes actions, tests hypotheses, keeps what survives evaluation, and records what fails. It has real software, real model runs and meaningful unfinished work.</p>
+<span class="stamp">Source review: November 20, 2026</span></section>
+<section aria-labelledby="new"><h2 id="new">What's new in the source</h2>
+<div class="grid">
+<article class="card"><h3>Original drawings, with the misses intact</h3><p>The Python Core ran real local Ollama Qwen2.5:3b drawing sessions. The model selected subjects and geometry. Four live-model artifacts and two synthetic fixtures appear in the gallery index. A failed underwater-forest session is retained. Artifact authenticity is supported by run receipts, but drawing quality and learning gains have not been established.</p><a href="./bean-draw/">Inspect the gallery</a> · <a href="./bean-draw/PROOF.md">Read run evidence</a></article>
+<article class="card"><h3>Plans that survive a restart</h3><p>Ordered, persisted Core plans can release each step only after the previous one completes. Failed and unverified prerequisites do not silently advance. A synthetic Core evaluation exercises interruption, resumption and withheld-query feedback. This is not autonomous invention of new plans.</p><a href="https://github.com/danieloculus0-bot/BEAN/blob/main/docs/PERSISTENT_GOAL_PLANS.md">Read the plan contract</a> · <a href="https://github.com/danieloculus0-bot/BEAN/pull/440">Merge #440</a></article>
+<article class="card"><h3>Locally executed language inference</h3><p>On November 1, the Jetson Orin Nano Super completed local Qwen inference, Core event recovery and an operator-observed boot run. New CPU smoke tests now reject factually incorrect answers instead of treating a well-formatted response as success. Jetson speech, vision and motors are not demonstrated as one deployed end-to-end stack.</p><a href="https://github.com/danieloculus0-bot/BEAN/blob/main/docs/JETSON_DEPLOYMENT_MILESTONE_2026-11-01.md">Jetson evidence</a></article>
+<article class="card"><h3>Review before action</h3><p>BEAN has a local SQLite-backed challenge preflight that stores objections, linked evidence, blocking decisions and explicit overrides. It is a caller-invoked gate, not a GitHub-enforced approval system or independent truth machine.</p><a href="https://github.com/danieloculus0-bot/BEAN/blob/main/docs/BEAN_CHALLENGE_PREFLIGHT.md">Review the preflight interface</a></article>
+</div></section>
+<section aria-labelledby="known"><h2 id="known">What is implemented, and what it proves</h2>
+<table><thead><tr><th>Layer</th><th>Current implementation</th><th>Evidence boundary</th></tr></thead><tbody>
+<tr><td><strong>Persistent Core</strong></td><td>SQLite memory, event history, provenance, SHA-linked reasoning journal, restart recovery</td><td>Persistence and integrity checks, not consciousness or universal truth</td></tr>
+<tr><td><strong>Reasoning</strong></td><td>Local symbolic rules, swappable model providers, source-linked feedback, explicit abstention</td><td>Working mechanisms and bounded tests, not unrestricted general reasoning</td></tr>
+<tr><td><strong>Learning</strong></td><td>Tabular Q-learning, measured evaluator receipts, frozen holdout experiments and limited skill-incubation routines</td><td>Task-specific evidence; no demonstrated open-ended autonomous learning or LLM weight training</td></tr>
+<tr><td><strong>Drawing</strong></td><td>Real model-generated SVG/PNG attempts, raw calls, hashes and gallery export</td><td>Visual review remains weak; a verified artifact is not a verified artistic success</td></tr>
+<tr><td><strong>Physical platform</strong></td><td>Real Jetson Core and local Qwen execution</td><td>Full integrated robot autonomy is still experimental</td></tr>
+<tr><td><strong>Public companion</strong></td><td>A separate hosted JavaScript BEAN notes/evidence adapter</td><td>Not connected to a user's home Jetson or full local Python Core</td></tr>
+</tbody></table></section>
+<section aria-labelledby="next"><h2 id="next">What needs evidence next</h2>
+<ul><li><strong>Artistic development:</strong> complete blinded pixel evaluation and adaptive-versus-frozen-memory drawing controls, with retained failure cases.</li>
+<li><strong>Autonomous capability:</strong> show independently chosen tasks, validated outcomes, durable skill retention and useful transfer to unfamiliar domains.</li>
+<li><strong>Cognitive challenge:</strong> wire the local preflight into actual effectful host actions and measure whether evidence-grounded objections improve decisions.</li>
+<li><strong>Embodiment:</strong> join Jetson inference, speech, perception and motion through a tested, inspectable Core control loop.</li>
+<li><strong>Third-party replication:</strong> independently reproduce key findings using the exact revision, fixtures and scoring criteria.</li></ul>
+<p class="notice"><strong>One project, several distinct systems:</strong> BEAN Python Core, the hosted BEAN notes companion, the Perplexity evidence MCP, Axiom and AIscend do not share one automatically synchronized memory or execution environment. A public demo can be synthetic even when the underlying Core supports real runs. No claim of AGI or consciousness is made.</p></section>
+<section><h2>Explore the original evidence</h2><div class="links"><a class="cta" href="https://github.com/danieloculus0-bot/BEAN">Source repository</a><a class="cta alt" href="./research-lab.html">Experiment archive</a><a class="cta alt" href="./bean-demo/">Core demo</a><a class="cta alt" href="./portfolio/">Project workshop</a></div>
+<p>Published site content represents the repository at the stated review date. Check <a href="https://github.com/danieloculus0-bot/BEAN/commits/main/">newer commits</a> and <a href="https://github.com/danieloculus0-bot/BEAN/actions">CI results</a> for live development state. Old dated research pages remain valuable historical records, not today's deployment claims.</p></section>
+</main>
+<footer><div class="wrap">BEAN | Behavior Enabled Avatar Node | Evidence-backed research | Reviewed November 20, 2026</div></footer>
+</body></html>

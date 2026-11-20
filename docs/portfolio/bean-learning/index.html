@@ -50,10 +50,17 @@ footer{border-top:1px solid var(--line);padding:27px 0 45px;color:var(--sub);fon
 html{background:#050607}
 body{background:#050607}
 </style>
+<style>
+/* Shared November 2026 research-status navigation, intentionally isolated from app styles. */
+.bean-nov20-status{box-sizing:border-box;max-width:1180px;width:calc(100% - 32px);margin:16px auto 8px;padding:12px 18px;border:1px solid #45624a;border-radius:12px;background:#101a13;color:#e2f1e3;font:14px/1.55 system-ui,-apple-system,"Segoe UI",sans-serif;position:relative;z-index:1}
+.bean-nov20-status strong{color:#c0f59b}.bean-nov20-status a{color:#c0f59b;text-decoration:underline;text-underline-offset:3px;font-weight:700}
+.bean-nov20-status a:focus-visible{outline:3px solid #c0f59b;outline-offset:3px}
+</style>
 </head>
 <body>
 <a class="button" style="position:absolute;left:-9999px;top:5px" href="#main" onfocus="this.style.left='8px'" onblur="this.style.left='-9999px'">Skip to results</a>
 <header><nav class="wrap"><a class="brand" href="../"><img src="../../bean-official.webp" alt="" width="38" height="38">THE WORKSHOP</a><div class="links"><a href="../">All projects</a><a href="https://danieloculus0-bot.github.io/Axiom_Beta/erp/">Axiom ERP</a><a href="../../">Meet BEAN</a><a href="https://github.com/danieloculus0-bot/BEAN/pull/149" target="_blank" rel="noopener noreferrer">Lab027 source</a></div></nav></header>
+<aside class="bean-nov20-status" aria-label="Current BEAN project status"><strong>BEAN research update | 20 November 2026.</strong> This learning page preserves its original benchmark results. For November 2026 developments, see retained cognitive plans, real drawing runs and current evidence boundaries. <a href="../../status.html">Current build and evidence</a></aside>
 <main id="main">
 <div class="wrap hero">
 <div><div class="kicker">BEAN research · October 21, 2026</div><h1>Can an AI<br><em>get better with practice?</em></h1><p class="lead">We gave a BEAN learning system 3,000 puzzles to practice on. Then we tested it on 240 fresh puzzles it had never seen. Did practice help? Yes, in this specific experiment, especially when paired with a simple trick to avoid getting stuck in loops. Here's how we know.</p>
