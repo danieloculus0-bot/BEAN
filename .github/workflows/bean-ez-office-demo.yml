@@ -25,7 +25,8 @@ permissions:
 
 jobs:
   browser-suite:
-    runs-on: ubuntu-latest
+    # Playwright 1.55 cannot install browsers on ubuntu26.04 (current ubuntu-latest).
+    runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
