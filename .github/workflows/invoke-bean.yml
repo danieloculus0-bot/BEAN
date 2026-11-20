@@ -151,7 +151,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
+          ref: main
           persist-credentials: false
+      - name: Pin the current checked-out main SHA on scheduled/retried runs
+        shell: bash
+        run: echo "BEAN_SOURCE_SHA=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
