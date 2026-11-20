@@ -8,12 +8,13 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from ..cognition.goal_state import goal_plan
 from ..optimization.skill_incubator import NAME, incubate_skill
 from ..optimization.skill_vault import promote, reuse, retrieve
 
 
 def make_skill_actions(*, projects, vault, journal, output_root, provider,
-                       attempts=5):
+                       attempts=5, fallback=None):
     """Return two registered GoalCycle actions using host-owned project mappings.
 
     Project IDs refer to directories selected by the host. Distinct holdout and
@@ -28,6 +29,8 @@ def make_skill_actions(*, projects, vault, journal, output_root, provider,
         raise ValueError("project directories must be distinct")
     if type(attempts) is not int or not 1 <= attempts <= 10:
         raise ValueError("attempts must be 1..10")
+    if fallback is not None and not callable(fallback):
+        raise ValueError("fallback must be a trusted registered action")
     paths = {key: Path(value).resolve(strict=True) for key, value in projects.items()}
     vault = Path(vault)
     journal = Path(journal)
@@ -41,7 +44,17 @@ def make_skill_actions(*, projects, vault, journal, output_root, provider,
             expected = {"capability", "name", "task", "training", "holdout"}
         else:
             expected = {"capability", "name", "project"}
-        if set(detail) != expected or not isinstance(detail["name"], str) or not NAME.fullmatch(detail["name"]):
+        # GoalStateEngine.propose_plan injects this reserved metadata into
+        # action_detail. Validate its immutable proposal identity rather than
+        # rejecting every native ordered plan as an invalid skill request.
+        if set(detail) - {"goal_plan"} != expected:
+            return None
+        if "goal_plan" in detail:
+            try:
+                goal_plan(detail, goal.get("proposal_id"))
+            except (TypeError, ValueError):
+                return None
+        if not isinstance(detail["name"], str) or not NAME.fullmatch(detail["name"]):
             return None
         keys = ("training", "holdout") if operation == "skill_acquire" else ("project",)
         if any(not isinstance(detail[k], str) or detail[k] not in paths for k in keys):
@@ -100,4 +113,21 @@ def make_skill_actions(*, projects, vault, journal, output_root, provider,
                 "reuse_tests_sha256": result["reuse_tests_sha256"],
                 "provider_invoked": False}
 
-    return {"skill_acquire": acquire, "skill_reuse": execute_retained}
+    def run_experiment(goal):
+        """Bridge the existing ActionType.RUN_EXPERIMENT to skill actions.
+
+        GoalCycle stores ActionType.RUN_EXPERIMENT (not skill_acquire/reuse) in
+        its canonical goal table. Existing experiment handlers can be passed
+        as a trusted fallback, preserving other Core experiment capabilities.
+        """
+        detail = goal.get("action_detail") if isinstance(goal, dict) else None
+        capability = detail.get("capability") if isinstance(detail, dict) else None
+        if capability == "skill_acquire":
+            return acquire(goal)
+        if capability == "skill_reuse":
+            return execute_retained(goal)
+        return (fallback(goal) if fallback is not None else
+                {"status": "unknown", "reason": "unsupported_experiment_capability"})
+
+    return {"skill_acquire": acquire, "skill_reuse": execute_retained,
+            "run_experiment": run_experiment}
