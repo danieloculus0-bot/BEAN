@@ -7,6 +7,8 @@ on:
       - 'bean/reasoning/reasoning_engine.py'
       - 'bean/learning/reasoning_service.py'
       - 'bean/learning/experimental.py'
+      - 'bean/evaluation/arithmetic_smoke.py'
+      - 'bean/tests/test_arithmetic_smoke.py'
       - 'bean/tests/test_local_llamacpp_reasoning.py'
       - 'bean_run.py'
       - '.github/workflows/bean-local-llamacpp.yml'
@@ -60,7 +62,7 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p /tmp/bean-local-qwen-test
-          /tmp/bean-llama-cpp/build/bin/llama-server -hf Qwen/Qwen3-0.6B-GGUF:Q8_0 --host 127.0.0.1 --port 18080 --alias bean-local -c 2048 -n 256 > /tmp/bean-local-qwen-test/llama.log 2>&1 &
+          /tmp/bean-llama-cpp/build/bin/llama-server -hf Qwen/Qwen3-0.6B-GGUF:Q8_0 --host 127.0.0.1 --port 18080 --alias bean-local -c 2048 -n 256 --temp 0 --seed 0 > /tmp/bean-local-qwen-test/llama.log 2>&1 &
           SERVER_PID=$!
           trap 'kill "$SERVER_PID" 2>/dev/null || true' EXIT
           python - <<'PY'
@@ -69,6 +71,7 @@ jobs:
           import time
           from urllib.request import urlopen
           from bean.learning import NativeReasoningService
+          from bean.evaluation.arithmetic_smoke import grade_addition
           from bean.reasoning.local_llamacpp_provider import LocalLlamaCppProvider
           server = "http://127.0.0.1:18080"
           for attempt in range(180):
@@ -89,6 +92,9 @@ jobs:
               status = core.status()
           finally:
               core.close()
+          # This is an inference/factual smoke, not a format-obedience claim.
+          # A faithful full equation is correct; the wrong integer 2 still fails.
+          grade = grade_addition(result.get("answer"), 2, 2)
           evidence = {
               "model": "Qwen/Qwen3-0.6B-GGUF:Q8_0",
               "engine": "llama.cpp v0.7.0 CPU",
@@ -97,7 +103,11 @@ jobs:
               "provider_kind": result.get("provider_kind"),
               "answer": result.get("answer"),
               "expected_answer": "4",
-              "answer_correct": str(result.get("answer", "")).strip() == "4",
+              "answer_correct": grade["answer_correct"],
+              "single_numeral_format": grade["single_numeral_format"],
+              "arithmetic_grade": grade,
+              "sampling_temperature": 0,
+              "sampling_seed": 0,
               "receipt_id": result.get("receipt_id"),
               "journal_inferences": status["inference_receipts"],
               "external_provider_skipped": result.get("external_provider_skipped"),
@@ -109,7 +119,7 @@ jobs:
           print(json.dumps(evidence, sort_keys=True))
           assert result.get("provider_kind") == "local_llamacpp", "No usable actual local inference"
           assert result.get("answer"), "Model did not provide final answer"
-          assert evidence["answer_correct"], "Independent arithmetic check failed: expected exact numeral 4"
+          assert evidence["answer_correct"], "Independent arithmetic check failed: expected value 4"
           assert status["inference_receipts"] == 1, "BEAN did not retain reply"
           assert result.get("external_provider_skipped") is True
           assert result.get("external_cost_usd") == 0

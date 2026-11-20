@@ -12,7 +12,7 @@ import uuid
 from datetime import datetime, timezone
 from typing import Callable, Mapping, Optional
 
-from ..cognition.goal_state import ensure_goal_table
+from ..cognition.goal_state import ensure_goal_table, goal_plan, plan_proposal_id
 from ..memory.store import get_store
 from .task_engine import TaskEngine
 
@@ -91,8 +91,8 @@ class GoalCycle:
                 "SELECT * FROM cognition_goal_proposals "
                 "WHERE status='pending' AND approval_required='none' "
                 f"AND action_type IN ({placeholders}) "
-                "ORDER BY priority,id LIMIT 100", eligible_actions
-            ).fetchall()
+                "ORDER BY priority,id", eligible_actions
+            )
             candidates = []
             for row in rows:
                 action = row["action_type"]
@@ -106,6 +106,9 @@ class GoalCycle:
                     detail = json.loads(row["action_detail"] or "null")
                 except (TypeError, ValueError):
                     detail = None
+                if self._plan_wait(row["proposal_id"], detail) is not None:
+                    continue
+                plan = goal_plan(detail, row["proposal_id"])
                 context = detail.get("learning_context") if isinstance(detail, dict) else None
                 scoped = (isinstance(context, str) and 0 < len(context) <= 128
                           and context.isascii() and
@@ -149,7 +152,12 @@ class GoalCycle:
                     "outcome_scope": "explicit_context" if scoped else "pooled",
                     "context_sha256": (hashlib.sha256(context.encode()).hexdigest()
                                        if scoped else None),
+                    **({"goal_plan": dict(plan)} if plan is not None else {}),
                 }))
+                # Bound scored candidates, not blocked steps: a long queue of
+                # waiting plans must not starve an otherwise executable goal.
+                if len(candidates) == 100:
+                    break
             if not candidates:
                 conn.commit()
                 return None
@@ -177,6 +185,60 @@ class GoalCycle:
         except Exception:
             conn.rollback()
             raise
+
+    def _plan_wait(self, proposal_id: str, detail) -> Optional[dict]:
+        try:
+            plan = goal_plan(detail, proposal_id)
+        except ValueError:
+            return {"reason": "invalid_goal_plan"}
+        if plan is None or plan["step"] == 0:
+            return None
+        predecessor = plan_proposal_id(plan["id"], plan["step"] - 1)
+        row = self.store.fetchone(
+            "SELECT status,action_detail FROM cognition_goal_proposals WHERE proposal_id=?",
+            (predecessor,))
+        # A status alone is insufficient if the predecessor's plan metadata
+        # was damaged. Never release an orphan or a different plan's step.
+        try:
+            previous = goal_plan(json.loads(row["action_detail"]), predecessor) if row else None
+        except (TypeError, ValueError):
+            previous = None
+        if (previous is None or previous["steps"] != plan["steps"]
+                or row["status"] != "completed"):
+            return {"reason": "prerequisite_not_completed",
+                    "prerequisite_id": predecessor,
+                    "prerequisite_status": row["status"] if row else "unknown"}
+        return None
+
+    def plan_status(self, plan_id: str) -> dict:
+        """Read persisted progress; missing evidence never becomes completion."""
+        first_id = plan_proposal_id(plan_id, 0)
+        first = self.store.fetchone(
+            "SELECT action_detail FROM cognition_goal_proposals WHERE proposal_id=?",
+            (first_id,))
+        try:
+            plan = goal_plan(json.loads(first["action_detail"]), first_id) if first else None
+        except (TypeError, ValueError):
+            plan = None
+        if plan is None:
+            return {"plan_id": plan_id, "status": "unknown", "steps": []}
+        steps = []
+        for i in range(plan["steps"]):
+            pid = plan_proposal_id(plan_id, i)
+            row = self.store.fetchone(
+                "SELECT status,action_detail FROM cognition_goal_proposals WHERE proposal_id=?",
+                (pid,))
+            try:
+                metadata = goal_plan(json.loads(row["action_detail"]), pid) if row else None
+            except (TypeError, ValueError):
+                metadata = None
+            valid = metadata is not None and metadata["steps"] == plan["steps"]
+            steps.append({"step": i, "proposal_id": pid,
+                          "status": row["status"] if valid else "unknown"})
+        states = {s["status"] for s in steps}
+        status = next((s for s in ("unknown", "failed", "needs_review", "needs_evidence", "running")
+                       if s in states), "completed" if states == {"completed"} else "pending")
+        return {"plan_id": plan_id, "status": status, "steps": steps}
 
     def _finish(self, goal: dict, result=None, error=None) -> dict:
         state = "failed" if error is not None else TaskEngine._outcome(result)
