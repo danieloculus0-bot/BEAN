@@ -34,6 +34,12 @@ def validate_svg(raw: bytes) -> None:
     """Reject active/external XML before any rasterizer sees these bytes."""
     if not raw or len(raw) > MAX_SVG_BYTES:
         raise ValueError("SVG is empty or oversized")
+    try:
+        decoded = raw.decode("utf-8", errors="strict")
+    except UnicodeDecodeError as exc:
+        raise ValueError("SVG must use UTF-8 encoding") from exc
+    if "\x00" in decoded:
+        raise ValueError("SVG contains NUL bytes or unsupported encoding")
     lower = raw.lower()
     if any(token in lower for token in (b"<!doctype", b"<!entity", b"<?xml-stylesheet")):
         raise ValueError("SVG declarations and stylesheets are not allowed")

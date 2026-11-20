@@ -1,0 +1,19 @@
+{
+  "files": {
+    "attempt_01.json": "bef8e24ac5c62114fa08afe1339239d13a475517e1039494ca47010e73e9035a",
+    "attempt_01.png": "a888b3c02e20b0417b19c2aa54ebad93809e40989b4c645af38694c3266d29f1",
+    "attempt_01.raw.json": "29a44534f241219d33c5b2ff177a619cec8cc5071ac37773bfd187211d153c50",
+    "attempt_01.svg": "4b8b16114fe9f2110fd9b22ccf75e019aa331cd21f25d772a08701d9b82a2961",
+    "attempt_02.json": "3c66c801017437178159998977510bdcecbaa71bd6937e44bb594594da58b483",
+    "attempt_02.png": "8f6fa1e8767654d9f5fd7d7333d589d48f8baee1106d99fa46a292f26048132a",
+    "attempt_02.raw.json": "eb083461d4d4762424c5f3d4a9bc6fa5fa0c371b0a2ffc759aafd6f0122509f6",
+    "attempt_02.svg": "9c60da065224e2f5c759c761d471137820c09e8f20f9a8f3071cb4bc1a807eec",
+    "model_calls.json": "41fc458febf4df7ac5603ecde7d1e1d1a9530196532262a243def04447ae804a",
+    "progress.json": "75570a55b3f74cd4e7b74eb0aad69130b7875c98cb50dda2f1d559899ba7bd64",
+    "run.json": "87492395615f2a6c9cdefabbc783876852db6f21666be9889f88664dba70f658"
+  },
+  "public_safe": true,
+  "reviewed_at_utc": "2026-11-20T12:25:58.353283+00:00",
+  "reviewer": "Codex artifact/content review (not human evaluation)",
+  "schema": "bean.draw.public-review.v1"
+}

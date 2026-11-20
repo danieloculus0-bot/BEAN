@@ -1,0 +1,15 @@
+{
+  "files": {
+    "attempt_01.json": "38846c9c91a263e6bb6e4be5f6b95ed81ca686bcb122d0374dc0d5b04cb8ae78",
+    "attempt_01.raw.json": "90e6b17aa57f07961361dfd18ec22ee56ddfdbc945194d752efe29c2bd17a1ad",
+    "attempt_02.json": "70bc3677feef0741e4d12b0a6052e0e40f9a5a8afc43fa56e03bbc337c55822a",
+    "attempt_02.raw.json": "aa58e96e5923474ae25800b5540aa7523796e4d9f5b7887fee49ca1d793ead67",
+    "model_calls.json": "655db112d9ab34c5517382fd58c18371f67cd9b9294a86646521474b98154c00",
+    "progress.json": "c7271a8eba0d6a74642933eb4967843c0985034cacc344647d5999d67f361ecb",
+    "run.json": "f220d665fc00f8f81521a0d519378ee769a73e05435e72776a7bd16cae96f5e5"
+  },
+  "public_safe": true,
+  "reviewed_at_utc": "2026-11-20T12:25:57.647097+00:00",
+  "reviewer": "Codex artifact/content review (not human evaluation)",
+  "schema": "bean.draw.public-review.v1"
+}

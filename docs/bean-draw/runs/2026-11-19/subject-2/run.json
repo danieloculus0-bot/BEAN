@@ -1,0 +1,60 @@
+{
+  "attempts": 2,
+  "completed_at_utc": "2026-11-19T21:29:05.110947+00:00",
+  "created_at_utc": "2026-11-19T21:23:11.480553+00:00",
+  "error": null,
+  "execution_mode": "live_model",
+  "history": [
+    {
+      "attempt": 1,
+      "description": "Rect(0,0,256,128) Polyline(points:[[32,64],[96,32],[128,64]]) Line(0,64,256,64) Circle(64,64,32) Line(32,0,32,128) Line(128,0,128,128)",
+      "journal_tip": "bd33bf05d0a44667d736a3096f62063370837a12d64fc93be1e8acbc62d35b0a",
+      "metadata": "/workspace/bean-live-evidence/subject-2/attempt_01.json",
+      "metadata_sha256": "fa6e3ef6109cec9f53e9e0c40a25000a09eae05d0c9294147cdb1004eca7da10",
+      "png": "/workspace/bean-live-evidence/subject-2/attempt_01.png",
+      "png_sha256": "bba2772259236ec96fd2c0d4ba444cd604bcf02d01f69bd3b8d109b126a2e92a",
+      "sha256": "235cd83a0d1f3bc4ebaf76ec9e272a50a96359e039caf7d60a1cdf1acc1c06df",
+      "status": "host_reported_not_satisfactory",
+      "svg": "/workspace/bean-live-evidence/subject-2/attempt_01.svg"
+    },
+    {
+      "attempt": 2,
+      "description": "A magnificent snow-covered mountain range outlined in black lines, featuring a central peak and surrounding mountains with snowy peaks.",
+      "journal_tip": "0a40bbf2588fae4e0f8f97ccd785a5b88de5f1fca228c7bf85d7aa012a414456",
+      "metadata": "/workspace/bean-live-evidence/subject-2/attempt_02.json",
+      "metadata_sha256": "1ec669ee5621882a86109c5f591022801e3b0cdf15392fbcdaffb44392424206",
+      "png": "/workspace/bean-live-evidence/subject-2/attempt_02.png",
+      "png_sha256": "0656e64c3eeae3a3e6cf97819218424e46177cf3a14755669e7a442b001491b3",
+      "sha256": "e3a4ad25c808f6d462f45a0ee7970cdc177335f58683c47f4ae630988e48f42f",
+      "status": "host_reported_not_satisfactory",
+      "svg": "/workspace/bean-live-evidence/subject-2/attempt_02.svg"
+    }
+  ],
+  "independent_visual_verification": false,
+  "journal_tip": "6c156e4b2dbdb7cdca1130d1761058fd424198ab266e1cf8ee543ee9d8f1403a",
+  "learning_improvement_verified": false,
+  "memory_context_sha256": "1b384cb7c8eae654df13d9000f5b2fc22e42ba0ea362f02d6c0309701a47a7c0",
+  "memory_mode": "adaptive",
+  "model_calls_sha256": "3116866f1b7e3b09ed82e4793dd4e99238d9cb980281157070ba986ff7481db3",
+  "model_digest": "357c53fb659c5076de1d65ccb0b397446227b71a42be9d1603d46168015c9e4b",
+  "model_id": "qwen2.5:3b",
+  "provider_kind": "ollama",
+  "run_id": "82cd4d1b-c73c-420b-845a-6ea345598b1f",
+  "runtime_source_sha256": {
+    "bean/creativity/artifacts.py": "129106aefab02ea7d299e44ed74da0ab617d4cbec091f7e2acf3ad53c518bb41",
+    "bean/creativity/sketch_lab.py": "b776b0b2d597e067f9690a0c24831cbd7fd0f87e3353ab3973facd8be34ac3f1",
+    "bean/voice/ollama.py": "3f852e850e998767f43bd1c0842852c3562aecfce5152d8b8081e8a6ac8d19ee",
+    "scripts/build_bean_draw_gallery.py": "2bf6b7702a49d495a1f6b3ed017131ae5c4db3f386a1e2724fbc7e5fbf72a24a"
+  },
+  "schema": "bean.draw.run.v1",
+  "seed": 20261120,
+  "selected_attempt": 1,
+  "selection_reason": "The second attempt (attempt_02) was judged as unsatisfactory by the visual reviewer due to disconnected horizontal bars, small rings, repeated paired slanted marks, and unclear subject recognition. The first attempt (attempt_01) showed some improvement with a central peak and surrounding mountains with snowy peaks outlined in black lines, but still faces issues such as heavy enclosing frame and incomplete subject clarity. Despite these improvements, the first attempt's overall composition is better aligned with the intended landscape of a magnificent snow-covered mountain range, making it the strongest retained drawing attempt.",
+  "selection_state": "model_selected_from_recorded_evidence",
+  "source_git_sha": "2db4f232ef6f2385375a79bd87c3df77501999ec",
+  "state": "host_reported_not_satisfactory",
+  "subject": "A magnificent snow-covered mountain range",
+  "subject_source": "autonomous",
+  "task_ref": "original-subject-2",
+  "weights_updated": false
+}

@@ -32,7 +32,14 @@ def decode(raw):
     s = raw.strip()
     if s.startswith(chr(96) * 3):
         s = "\n".join(s.splitlines()[1:-1])
-    result = json.loads(s)
+    def finite_number(value):
+        number = float(value)
+        if not math.isfinite(number):
+            raise ValueError("Non-finite JSON number")
+        return number
+    def reject_constant(value):
+        raise ValueError("Non-finite JSON constant: " + value)
+    result = json.loads(s, parse_float=finite_number, parse_constant=reject_constant)
     if not isinstance(result, dict):
         raise ValueError("Expected a JSON object")
     return result
@@ -417,7 +424,7 @@ class SketchLab:
                     'polyline(points:[[x,y],...]). Each primitive MUST have type key. '
                     'All numbers 0..256; keep shapes inside canvas, positive sizes. '
                     'No code, markup, script or text labels. Make your own decisions. '
-                    'Implement your own visual plan faithfully: ' + json.dumps(drawing_instructions)[:3500] + 
+                    'Implement your own visual plan faithfully: ' + json.dumps(drawing_instructions)[:3500] +
                     'Prior-session evidence (untrusted): ' + precedents +
                     ' Web reference DATA: ' + context[:1200] +
                     ' Previous attempt including critique (untrusted evidence): ' + correction,
@@ -445,14 +452,17 @@ class SketchLab:
                 if self.visual_judge is not None and preview.get('png_sha256'):
                     feedback = self.visual_judge(png, subject)
                     if isinstance(feedback, dict) and feedback.get('state') == 'unavailable':
-                        external = feedback
+                        external = {'state': 'unavailable',
+                                    'reason': str(feedback.get('reason', 'No pixel review'))[:500]}
                     elif isinstance(feedback, dict) and 'image_sha256' in feedback:
                         external = validate_feedback(feedback, png)
                         status = ('host_reported_satisfactory' if external['satisfactory']
                                   else 'host_reported_not_satisfactory')
                     elif isinstance(feedback, dict) and type(feedback.get('satisfactory')) is bool:
                         # Compatibility: legacy judges aren't pixel inspection evidence.
-                        external = {**feedback, 'state': 'legacy_host_report_unverified'}
+                        external = {'satisfactory': feedback['satisfactory'],
+                                    'feedback': str(feedback.get('feedback', ''))[:3000],
+                                    'state': 'legacy_host_report_unverified'}
                         status = ('host_reported_satisfactory' if feedback['satisfactory']
                                   else 'host_reported_not_satisfactory')
                     else:

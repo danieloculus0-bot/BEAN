@@ -1,0 +1,59 @@
+{
+  "attempt": 2,
+  "created_at_utc": "2026-11-19T21:57:56.805945+00:00",
+  "description": "A vibrant sunflower field with a gentle breeze, depicted as a line drawing with recognizable elements without text or labels.",
+  "domain": "sketch",
+  "drawing_instructions": {
+    "components": [
+      "Sunflower fields",
+      "Vibrant colors",
+      "Gentle breeze effect"
+    ],
+    "composition": "The sunflower fields will be composed in a sweeping motion to depict the gentle breeze. The sunflowers will be depicted as vibrant, with different shades of yellow and green. The breeze will be indicated by subtle lines and shading. The overall composition will focus on the movement and vibrancy of the sunflowers in the wind.",
+    "intent": "Create a line drawing of a vibrant sunflower field with a gentle breeze, ensuring the composition is clear and recognizable without labels.",
+    "revision_reason": "The previous shapes are too specific and do not align with the original intent of a vibrant sunflower field. The new composition aims to capture the essence of a dynamic scene without replicating the prior shapes, ensuring clarity and recognition."
+  },
+  "error": null,
+  "execution_mode": "live_model",
+  "experiment": "bean_sketch_v1",
+  "external_feedback": {
+    "reason": "No external pixel evaluator report",
+    "state": "unavailable"
+  },
+  "independent_visual_verification": false,
+  "journal_tip": "ce06cd7d71cede64eebc26344f90e911bdbb8799c5bc70dd5ddd5162ebbcc47f",
+  "memory_mode": "adaptive",
+  "model_digest": "357c53fb659c5076de1d65ccb0b397446227b71a42be9d1603d46168015c9e4b",
+  "model_id": "qwen2.5:3b",
+  "png_file": "attempt_02.png",
+  "png_sha256": "8f6fa1e8767654d9f5fd7d7333d589d48f8baee1106d99fa46a292f26048132a",
+  "preview_size": [
+    512,
+    512
+  ],
+  "provider_kind": "ollama",
+  "rasterizer": "CairoSVG 2.8.2",
+  "raw_file": "attempt_02.raw.json",
+  "raw_sha256": "eb083461d4d4762424c5f3d4a9bc6fa5fa0c371b0a2ffc759aafd6f0122509f6",
+  "reference_urls": [],
+  "research_status": "not_requested",
+  "run_id": "0836c4ee-0955-4c19-a2d9-e8e41fe3d863",
+  "schema": "bean.draw.attempt.v1",
+  "seed": 20261121,
+  "self_review": {
+    "changes": "",
+    "claimed_subject": "A vibrant sunflower field in a gentle breeze",
+    "satisfied": false
+  },
+  "source_git_sha": "3fc06f4777a68b492928d6a08a0dd251977af895",
+  "status": "unverified",
+  "subject": "A vibrant sunflower field in a gentle breeze",
+  "subject_source": "autonomous",
+  "svg_file": "attempt_02.svg",
+  "svg_sha256": "9c60da065224e2f5c759c761d471137820c09e8f20f9a8f3071cb4bc1a807eec",
+  "task_ref": "original-subject-3",
+  "verification_state": "artifacts_verified",
+  "visual_evidence_independently_verified": false,
+  "visual_feedback": null,
+  "weights_updated": false
+}

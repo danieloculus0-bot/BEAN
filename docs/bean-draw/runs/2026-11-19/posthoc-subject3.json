@@ -1,0 +1,45 @@
+{
+  "journal_tip": "0af57f58a9bbe8fae8cd8a7c573692b8f49abbfe5559778557e9751634a1d6e1",
+  "limitation": "These posthoc reviews were created after both attempts and final selection; original unavailable-evaluation sidecars remain unchanged. No human evaluation.",
+  "reviews": [
+    {
+      "attempt": 1,
+      "created_at_utc": "2026-11-20T12:23:15.856408+00:00",
+      "evaluator": "Codex visual reviewer (live_remaining agent)",
+      "feedback": "Observed disconnected circles and many short diagonal strokes concentrated toward the upper left, a large isolated circle below, and a circle clipped at the right edge. I cannot recognize a sunflower field: there are no clear flower structures or coherent field arrangement. Much of the canvas is blank. The two attempts look almost unchanged in visual organization.",
+      "image_sha256": "a888b3c02e20b0417b19c2aa54ebad93809e40989b4c645af38694c3266d29f1",
+      "independently_authenticated": false,
+      "influenced_generation": false,
+      "kind": "vision_model",
+      "satisfactory": false,
+      "scores": {
+        "composition": 1,
+        "spatial_coherence": 1,
+        "subject_recognition": 0
+      },
+      "subject": "A vibrant sunflower field in a gentle breeze",
+      "timing": "posthoc_after_run_completed"
+    },
+    {
+      "attempt": 2,
+      "created_at_utc": "2026-11-20T12:23:15.856472+00:00",
+      "evaluator": "Codex visual reviewer (live_remaining agent)",
+      "feedback": "Observed disconnected circles and many short diagonal strokes concentrated toward the upper left, a large isolated circle below, and a circle clipped at the right edge. I cannot recognize a sunflower field: there are no clear flower structures or coherent field arrangement. Much of the canvas is blank. The two attempts look almost unchanged in visual organization.",
+      "image_sha256": "8f6fa1e8767654d9f5fd7d7333d589d48f8baee1106d99fa46a292f26048132a",
+      "independently_authenticated": false,
+      "influenced_generation": false,
+      "kind": "vision_model",
+      "satisfactory": false,
+      "scores": {
+        "composition": 1,
+        "spatial_coherence": 1,
+        "subject_recognition": 0
+      },
+      "subject": "A vibrant sunflower field in a gentle breeze",
+      "timing": "posthoc_after_run_completed"
+    }
+  ],
+  "revision_improvement_observed": false,
+  "run_receipt": "subject-3/run.json",
+  "schema": "bean.draw.posthoc_review.v1"
+}
