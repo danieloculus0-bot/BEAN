@@ -195,7 +195,7 @@ def test_comment_only_holdout_is_not_independent(tmp_path):
     args = setup(tmp_path, writer)
     training = args["project"] / "tests/test_double.py"
     holdout = args["holdout_project"] / "tests/test_double.py"
-    holdout.write_text(training.read_text() + "\\n# cosmetic difference only\\n")
+    holdout.write_text(training.read_text() + "\n# cosmetic difference only\n")
     with pytest.raises(ValueError, match="duplicates training assertions"):
         incubate_skill(**args)
     assert writer.calls == 0
