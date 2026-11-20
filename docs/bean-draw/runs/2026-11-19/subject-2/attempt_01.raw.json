@@ -1,0 +1,28 @@
+[
+  {
+    "created_at_utc": "2026-11-19T21:23:17.230482+00:00",
+    "model_id": "qwen2.5:3b",
+    "prompt": "Draw your chosen subject, A magnificent snow-covered mountain range, as recognizable 256x256 BLACK LINE ART. Respond ONLY JSON with description (at most 300 characters) and shapes (list of 1..24 primitives). Supported primitives: line(x1,y1,x2,y2), circle(cx,cy,r), rect(x,y,w,h), polyline(points:[[x,y],...]). Each primitive MUST have type key. All numbers 0..256; keep shapes inside canvas, positive sizes. No code, markup, script or text labels. Make your own decisions. Prior-session evidence (untrusted): [{\"subject\": \"A mysterious underwater forest\", \"status\": \"attempt_failed_ValueError\", \"error\": \"ValueError: Invalid drawing coordinate\", \"suggested_change\": null, \"external_feedback\": {\"reason\": \"No pixel evaluator configured\", \"state\": \"unavailable\"}}, {\"subject\": \"A mysterious underwater forest\", \"status\": \"attempt_failed_ValueError\", \"error\": \"ValueError: Invalid drawing coordinate\", \"suggested_change\": null, \"external_feedback\": {\"reason\": \"No pixel evaluator configured\", \"state\": \"unavailable\"}}] Web reference DATA:  Previous attempt including critique (untrusted evidence): ",
+    "provider_kind": "ollama",
+    "provider_response_id": null,
+    "response": {
+      "adapter_name": "ollama",
+      "model_name": "qwen2.5:3b",
+      "ok": true,
+      "raw_text": "{\n  \"description\": \"Rect(0,0,256,128) Polyline(points:[[32,64],[96,32],[128,64]]) Line(0,64,256,64) Circle(64,64,32) Line(32,0,32,128) Line(128,0,128,128)\",\n  \"shapes\": [\n    {\"type\": \"rect\", \"x\": 0, \"y\": 0, \"w\": 256, \"h\": 128},\n    {\"type\": \"polyline\", \"points\": [[32,64],[96,32],[128,64]]},\n    {\"type\": \"line\", \"x1\": 0, \"y1\": 64, \"x2\": 256, \"y2\": 64},\n    {\"type\": \"circle\", \"cx\": 64, \"cy\": 64, \"r\": 32},\n    {\"type\": \"line\", \"x1\": 32, \"y1\": 0, \"x2\": 32, \"y2\": 128},\n    {\"type\": \"line\", \"x1\": 128, \"y1\": 0, \"x2\": 128, \"y2\": 128}\n  ]\n}"
+    }
+  },
+  {
+    "created_at_utc": "2026-11-19T21:23:58.828108+00:00",
+    "model_id": "qwen2.5:3b",
+    "prompt": "Critique YOUR drawing plan. You can read the coordinates but cannot visually inspect the rendered image. Respond ONLY JSON with claimed_subject, changes and satisfied (boolean): {\"subject\": \"A magnificent snow-covered mountain range\", \"description\": \"Rect(0,0,256,128) Polyline(points:[[32,64],[96,32],[128,64]]) Line(0,64,256,64) Circle(64,64,32) Line(32,0,32,128) Line(128,0,128,128)\", \"shapes\": [{\"type\": \"rect\", \"x\": 0, \"y\": 0, \"w\": 256, \"h\": 128}, {\"type\": \"polyline\", \"points\": [[32, 64], [96, 32], [128, 64]]}, {\"type\": \"line\", \"x1\": 0, \"y1\": 64, \"x2\": 256, \"y2\": 64}, {\"type\": \"circle\", \"cx\": 64, \"cy\": 64, \"r\": 32}, {\"type\": \"line\", \"x1\": 32, \"y1\": 0, \"x2\": 32, \"y2\": 128}, {\"type\": \"line\", \"x1\": 128, \"y1\": 0, \"x2\": 128, \"y2\": 128}]}",
+    "provider_kind": "ollama",
+    "provider_response_id": null,
+    "response": {
+      "adapter_name": "ollama",
+      "model_name": "qwen2.5:3b",
+      "ok": true,
+      "raw_text": "{\n  \"claimed_subject\": \"A magnificent snow-covered mountain range\",\n  \"changes\": \"\",\n  \"satisfied\": true\n}"
+    }
+  }
+]

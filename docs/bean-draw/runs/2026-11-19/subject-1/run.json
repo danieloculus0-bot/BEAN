@@ -1,0 +1,51 @@
+{
+  "attempts": 2,
+  "completed_at_utc": "2026-11-19T21:22:08.240133+00:00",
+  "created_at_utc": "2026-11-19T21:18:09.512447+00:00",
+  "error": null,
+  "execution_mode": "live_model",
+  "history": [
+    {
+      "attempt": 1,
+      "description": "A dense underwater forest with twisted tree-like structures and lush foliage, surrounded by deep blue water. The forest is composed of intersecting lines forming a network of interconnected nodes resembling ancient trees.",
+      "journal_tip": "f74a1b6b623017cf89e873fa095a860ef8484d89cfe5bc85aaedc68d1c00ed0b",
+      "metadata": "/workspace/bean-live-evidence/subject-1/attempt_01.json",
+      "metadata_sha256": "38846c9c91a263e6bb6e4be5f6b95ed81ca686bcb122d0374dc0d5b04cb8ae78",
+      "png": null,
+      "png_sha256": null,
+      "sha256": null,
+      "status": "attempt_failed_ValueError",
+      "svg": null
+    },
+    {
+      "attempt": 2,
+      "description": "A mysterious underwater forest with interconnected nodes resembling ancient trees, surrounded by deep blue water. The forest is composed of intersecting lines forming a network of interconnected shapes.",
+      "journal_tip": "649435614076b1cfe7b074f911dcbc42f63b53c0080f167042bdfd1b3e0f51a1",
+      "metadata": "/workspace/bean-live-evidence/subject-1/attempt_02.json",
+      "metadata_sha256": "70bc3677feef0741e4d12b0a6052e0e40f9a5a8afc43fa56e03bbc337c55822a",
+      "png": null,
+      "png_sha256": null,
+      "sha256": null,
+      "status": "attempt_failed_ValueError",
+      "svg": null
+    }
+  ],
+  "independent_visual_verification": false,
+  "journal_tip": "0d07dfbd650530c480aaeb4156fc1e933b7f1505ad1f7ade0d046297dd789691",
+  "learning_improvement_verified": false,
+  "memory_context_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+  "memory_mode": "adaptive",
+  "model_calls_sha256": "655db112d9ab34c5517382fd58c18371f67cd9b9294a86646521474b98154c00",
+  "model_digest": "357c53fb659c5076de1d65ccb0b397446227b71a42be9d1603d46168015c9e4b",
+  "model_id": "qwen2.5:3b",
+  "provider_kind": "ollama",
+  "run_id": "b49f818a-3970-440c-8149-209822777d59",
+  "schema": "bean.draw.run.v1",
+  "seed": 20261119,
+  "source_git_sha": "f0aa5ba64614d1ef5c0fcbc9a851e505ec96d1d8",
+  "state": "attempt_failed_ValueError",
+  "subject": "A mysterious underwater forest",
+  "subject_source": "autonomous",
+  "task_ref": "original-subject-1",
+  "weights_updated": false
+}

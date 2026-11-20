@@ -1,0 +1,29 @@
+{
+  "history": [
+    {
+      "attempt": 1,
+      "description": "A dense underwater forest with twisted tree-like structures and lush foliage, surrounded by deep blue water. The forest is composed of intersecting lines forming a network of interconnected nodes resembling ancient trees.",
+      "journal_tip": "f74a1b6b623017cf89e873fa095a860ef8484d89cfe5bc85aaedc68d1c00ed0b",
+      "metadata": "/workspace/bean-live-evidence/subject-1/attempt_01.json",
+      "metadata_sha256": "38846c9c91a263e6bb6e4be5f6b95ed81ca686bcb122d0374dc0d5b04cb8ae78",
+      "png": null,
+      "png_sha256": null,
+      "sha256": null,
+      "status": "attempt_failed_ValueError",
+      "svg": null
+    },
+    {
+      "attempt": 2,
+      "description": "A mysterious underwater forest with interconnected nodes resembling ancient trees, surrounded by deep blue water. The forest is composed of intersecting lines forming a network of interconnected shapes.",
+      "journal_tip": "649435614076b1cfe7b074f911dcbc42f63b53c0080f167042bdfd1b3e0f51a1",
+      "metadata": "/workspace/bean-live-evidence/subject-1/attempt_02.json",
+      "metadata_sha256": "70bc3677feef0741e4d12b0a6052e0e40f9a5a8afc43fa56e03bbc337c55822a",
+      "png": null,
+      "png_sha256": null,
+      "sha256": null,
+      "status": "attempt_failed_ValueError",
+      "svg": null
+    }
+  ],
+  "subject": "A mysterious underwater forest"
+}

@@ -258,3 +258,12 @@ def test_hashes_alone_cannot_certify_a_fake_preview(tmp_path):
     review.write_text(json.dumps(report))
     with pytest.raises(ValueError, match="does not depict"):
         curate(source, tmp_path / "site", review=review)
+
+
+@pytest.mark.parametrize("encoding", ["utf-16", "utf-16-le", "utf-16-be"])
+def test_alternate_xml_encoding_cannot_bypass_entity_rejection(encoding):
+    source = ('<?xml version="1.0" encoding="UTF-16"?>'
+              '<!DOCTYPE svg [<!ENTITY size "256">]>'
+              '<svg xmlns="http://www.w3.org/2000/svg" width="&size;" height="256"/>')
+    with pytest.raises(ValueError):
+        validate_svg(source.encode(encoding))

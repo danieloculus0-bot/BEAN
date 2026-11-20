@@ -1,0 +1,19 @@
+{
+  "files": {
+    "attempt_01.json": "fa6e3ef6109cec9f53e9e0c40a25000a09eae05d0c9294147cdb1004eca7da10",
+    "attempt_01.png": "bba2772259236ec96fd2c0d4ba444cd604bcf02d01f69bd3b8d109b126a2e92a",
+    "attempt_01.raw.json": "09a8576d796a51637294889c355453db9d1e093029d48b8cab8390b057681bcb",
+    "attempt_01.svg": "235cd83a0d1f3bc4ebaf76ec9e272a50a96359e039caf7d60a1cdf1acc1c06df",
+    "attempt_02.json": "1ec669ee5621882a86109c5f591022801e3b0cdf15392fbcdaffb44392424206",
+    "attempt_02.png": "0656e64c3eeae3a3e6cf97819218424e46177cf3a14755669e7a442b001491b3",
+    "attempt_02.raw.json": "56f8bcb224cfc7d3a27698730a9646cd5c2bc2ade0c4d249f07470aacd8ea910",
+    "attempt_02.svg": "e3a4ad25c808f6d462f45a0ee7970cdc177335f58683c47f4ae630988e48f42f",
+    "model_calls.json": "3116866f1b7e3b09ed82e4793dd4e99238d9cb980281157070ba986ff7481db3",
+    "progress.json": "14e8fdfc8aa57a808660ec0afaf1f265cbd94f7475dbd15a7a7e47b0ddf1b0b2",
+    "run.json": "0a0c941d8d0f275b2aafb0a2ea71495b427bfa6ea9f58cc2f4f9739250b7fec6"
+  },
+  "public_safe": true,
+  "reviewed_at_utc": "2026-11-20T12:25:57.654661+00:00",
+  "reviewer": "Codex artifact/content review (not human evaluation)",
+  "schema": "bean.draw.public-review.v1"
+}

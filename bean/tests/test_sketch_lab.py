@@ -229,3 +229,10 @@ def test_sketch_provider_reports_unreachable_local_model():
     outcome = provider.complete("Choose ANY subject")
     assert outcome["ok"] is False
     assert outcome["adapter_name"] == "ollama"
+
+
+@pytest.mark.parametrize("bad", ['NaN', 'Infinity', '-Infinity', '1e999'])
+def test_nonfinite_model_json_is_rejected_before_journaling(bad):
+    from bean.creativity.sketch_lab import decode
+    with pytest.raises(ValueError, match="Non-finite"):
+        decode('{"changes":' + bad + '}')
