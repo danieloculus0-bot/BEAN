@@ -5,6 +5,7 @@ on:
       - "docs/**/*.html"
       - "docs/*.html"
       - "tests/test_ecosystem_navigation.py"
+      - "tests/test_public_ecosystem_chrome.py"
       - ".github/workflows/ecosystem-navigation.yml"
   push:
     branches: [main]
@@ -12,6 +13,7 @@ on:
       - "docs/**/*.html"
       - "docs/*.html"
       - "tests/test_ecosystem_navigation.py"
+      - "tests/test_public_ecosystem_chrome.py"
       - ".github/workflows/ecosystem-navigation.yml"
   workflow_dispatch:
   schedule:
@@ -28,7 +30,9 @@ jobs:
         with:
           python-version: "3.12"
       - name: Validate canonical Axiom and BEAN routes offline
-        run: python -m unittest discover -s tests -p 'test_ecosystem_navigation.py' -v
+        run: |
+          python -m unittest discover -s tests -p 'test_ecosystem_navigation.py' -v
+          python -m unittest discover -s tests -p 'test_public_ecosystem_chrome.py' -v
   published-site-smoke:
     if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
