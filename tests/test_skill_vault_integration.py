@@ -16,7 +16,7 @@ class Writer:
 
     def propose(self, task, original, history, iteration):
         self.calls += 1
-        return "def solve(value):\\n    return value * 2\\n".replace("\\n", "\n")
+        return "def solve(value):\n    return value * 2\n".replace("\n", "\n")
 
 
 class SkillVaultIntegration(unittest.TestCase):
@@ -38,10 +38,10 @@ class SkillVaultIntegration(unittest.TestCase):
         (root / "bean" / "skills" / "__init__.py").write_text("")
         (root / "tests").mkdir()
         (root / "tests" / "test_case.py").write_text(
-            "import unittest\\nfrom bean.skills.double_value import solve\\n"
-            "class TestCase(unittest.TestCase):\\n"
-            "    def test_value(self):\\n"
-            "        self.assertEqual(solve(" + str(number) + "), " + str(number * 2) + ")\\n")
+            "import unittest\nfrom bean.skills.double_value import solve\n"
+            "class TestCase(unittest.TestCase):\n"
+            "    def test_value(self):\n"
+            "        self.assertEqual(solve(" + str(number) + "), " + str(number * 2) + ")\n")
         return root
 
     def build(self):
