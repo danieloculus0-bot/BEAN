@@ -106,6 +106,11 @@ class GoalCycle:
                     detail = json.loads(row["action_detail"] or "null")
                 except (TypeError, ValueError):
                     detail = None
+                # Malformed action details must never be claimed: a later
+                # json.loads after the atomic commit would strand a run in
+                # 'running' without an executable handler invocation.
+                if detail is None and row["action_detail"] not in (None, "", "null"):
+                    continue
                 if self._plan_wait(row["proposal_id"], detail) is not None:
                     continue
                 plan = goal_plan(detail, row["proposal_id"])
