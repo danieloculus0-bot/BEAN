@@ -15,6 +15,7 @@ import importlib.util
 import json
 import os
 from pathlib import Path
+import platform
 import subprocess
 import sys
 
@@ -86,7 +87,13 @@ def compare(peer_root, expected_sha, output_dir):
     output.mkdir(parents=True, exist_ok=False)
     rows = []
     for system in ("bean", "babyagi3"):
+        peer_unavailable = None
         for scenario in ("normal", "crash_then_restart"):
+            if peer_unavailable is not None:
+                rows.append({"system": system, "scenario": scenario, "status": "not_run",
+                    "effect_count": None, "duplicate_effects": None,
+                    "automatically_completed": None, "reason": "peer_normal_control_unavailable"})
+                continue
             directory = output / system / scenario
             phases = ("complete",) if scenario == "normal" else ("crash", "resume")
             observations = []
@@ -96,11 +103,28 @@ def compare(peer_root, expected_sha, output_dir):
                 result = subprocess.run(command, capture_output=True, text=True, timeout=30)
                 expected_exit = 77 if phase == "crash" else 0
                 if result.returncode != expected_exit:
+                    # The pinned peer documents POSIX atomic rename. On
+                    # Windows its normal control cannot overwrite tasks.json.
+                    # Preserve this baseline failure as unavailable, not as a
+                    # BEAN win or a fabricated crash measurement. Other errors
+                    # still fail the probe, including every BEAN error.
+                    if (system == "babyagi3" and scenario == "normal" and phase == "complete"
+                            and os.name == "nt" and "FileExistsError" in result.stderr
+                            and "WinError 183" in result.stderr and "tasks.json.tmp" in result.stderr):
+                        peer_unavailable = {"phase": phase, "exit_code": result.returncode,
+                            "reason": "pinned_peer_windows_rename_cannot_replace_existing_file",
+                            "error": result.stderr[-2500:]}
+                        break
                     raise RuntimeError(f"{system}/{phase} did not reach the specified boundary: {result.stderr}")
                 observations.append({"phase": phase, "exit_code": result.returncode,
                     "result": json.loads(result.stdout) if phase != "crash" else None})
+            if peer_unavailable is not None:
+                rows.append({"system": system, "scenario": scenario, "status": "unavailable",
+                    "effect_count": None, "duplicate_effects": None, "automatically_completed": None,
+                    "observations": [peer_unavailable]})
+                continue
             effects = len((directory / "effects.txt").read_text(encoding="utf-8").splitlines())
-            rows.append({"system": system, "scenario": scenario, "effect_count": effects,
+            rows.append({"system": system, "scenario": scenario, "status": "measured", "effect_count": effects,
                 "duplicate_effects": max(0, effects - 1),
                 "automatically_completed": observations[-1]["result"]["completed"],
                 "observations": observations})
@@ -108,6 +132,7 @@ def compare(peer_root, expected_sha, output_dir):
                     "bean/cognition/goal_state.py", "research/peer_restart_probe.py"]
     report = {"schema": "bean.peer.crash_probe.v1", "scope": "one_declared_crash_boundary",
         "synthetic_only": True, "inference_calls": 0, "network_calls": 0,
+        "platform": platform.platform(), "python_version": platform.python_version(),
         "general_intelligence_ranking": "not_established", "rows": rows,
         "peer": {"repository": "https://github.com/yoheinakajima/babyagi3", "sha": observed_sha,
             "source_path": "scheduler.py", "license": "MIT",

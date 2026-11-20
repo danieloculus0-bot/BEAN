@@ -35,6 +35,8 @@ Reference: [yoheinakajima/babyagi3](https://github.com/yoheinakajima/babyagi3/tr
 
 Protocol: both real runtimes register an action that appends and fsyncs one fictional marker. Normal control executes once. The crash condition exits the worker process immediately after that effect, before the runtime records completion. A new process reopens original state and invokes the runtime's ordinary recovery/due-task API. No LLM, API token, external service or network request is used by the probe. Only one declared crash boundary is measured; this is a mechanism test rather than a statistically sampled intelligence benchmark.
 
+The measured table below is from Linux; do not extrapolate it to every platform.
+
 | Condition | BEAN effects / duplicate effects | BabyAGI 3 scheduler effects / duplicate effects | Automatic completion |
 | --- | --- | --- | --- |
 | Normal | 1 / 0 | 1 / 0 | Both complete |
@@ -43,6 +45,8 @@ Protocol: both real runtimes register an action that appends and fsyncs one fict
 BEAN preserves at-most-once handling of an ambiguous effect at this boundary; BabyAGI 3 achieves automatic completion by repeating it. Both metrics must be reported. This BEAN crash behavior predates the new plan feature, so it is not attributed to the plan patch. Neither system is declared universally superior.
 
 An initial local attempt timed out in the peer scheduler's asynchronous persistence under restricted sandbox permissions. Repeating with network permission available completed the same model-free probe. The failed environmental run is not counted as a peer performance loss. The successful results and source/license digests are in `babyagi3_restart.json.gz`.
+
+PR #440 first-head run [44733378560](https://github.com/danieloculus0-bot/BEAN/actions/runs/44733378560) passed all plan/native-skill tests and the real cognition probe on Linux and Windows. Linux also completed the peer comparison. Windows job `136278526532` exposed a pinned upstream limitation in the **normal control**: `SchedulerStore.save_tasks()` uses `Path.rename()` to overwrite `tasks.json`, raising `FileExistsError [WinError 183]`. The comparison now records that exact platform failure as peer-unavailable and leaves its crash metrics Unknown/not run; it neither modifies upstream nor counts the unavailable baseline as a BEAN win. All other unexpected errors still fail the probe. The initial red run remains preserved.
 
 ```sh
 python research/peer_restart_probe.py \
