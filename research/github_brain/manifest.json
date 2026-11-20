@@ -1,16 +1,16 @@
 {
-  "boots": 67,
+  "boots": 68,
   "consciousness_proven": false,
   "databases": {
     "core": {
-      "archive": "bean_memory.sqlite3.gz.g00067",
-      "bytes": 11997184,
-      "sha256": "d4b60c79fa84df2c893b3ec5ba6d140aa2ba6c3f1b6604a2dfd2d9894d775b0b"
+      "archive": "bean_memory.sqlite3.gz.g00068",
+      "bytes": 12144640,
+      "sha256": "eac20364abc167a4ee3cb5c470624b8c01c34e8cfde48749c47f23854d1e8cb6"
     },
     "reasoning": {
-      "archive": "bean_reasoning.sqlite3.gz.g00067",
-      "bytes": 4509696,
-      "sha256": "a4e994f69aa5661cb162a24163bef4dd1727fff423f4a98aa46f7486447cbd8c"
+      "archive": "bean_reasoning.sqlite3.gz.g00068",
+      "bytes": 4608000,
+      "sha256": "fec73082763c156d76b9a4ee86edcd80301c17db24163a59e6fdf78615c6deca"
     }
   },
   "digital_learning": {
@@ -18,14 +18,14 @@
     "blind_cases_total": 144,
     "candidate_correct_total": 144,
     "candidate_minus_grammar_matched_correct_total": 0,
-    "candidate_minus_passive_correct_total": 48,
+    "candidate_minus_passive_correct_total": 0,
     "families": {
       "channel": {
         "abstentions": {
           "candidate": 0,
           "grammar_matched": 0,
           "memory_ablated": 0,
-          "passive": 48,
+          "passive": 0,
           "shuffled": 48
         },
         "correct": {
@@ -33,17 +33,17 @@
           "candidate": 48,
           "grammar_matched": 48,
           "memory_ablated": 48,
-          "passive": 0,
+          "passive": 48,
           "shuffled": 0
         },
-        "evaluation_sha256": "58f45985471808a7244e69a0f652f65b5a702018abf52aab64b67e866b82f849",
+        "evaluation_sha256": "c79244338cc8481d7d701c9699b3332a53ee658fd65d876a77a4d13d2c052435",
         "hypothesis_grammar_expanded": false,
         "incomplete_fields": {},
-        "learning_receipt_id": "798c249662b52bdf16d1d166db05e6a413b3f634461b6e2486ed7edfc6aa65a6",
+        "learning_receipt_id": "642211fc1e9dd815818c53583a336e8f72f625eb598b8690e4bf4d8aa4ebd5a2",
         "learning_status": "provisional_rule",
         "learning_strategy": "revise_prior_rule_from_fresh_feedback",
         "prior_generation_transfer_attempted": 48,
-        "prior_generation_transfer_correct": 20,
+        "prior_generation_transfer_correct": 23,
         "revision_decision": "updated_from_fresh_feedback"
       },
       "difference": {
@@ -62,14 +62,14 @@
           "passive": 48,
           "shuffled": 0
         },
-        "evaluation_sha256": "6791e1b9d22d3d8bc48dac65362bb874d1219313196d5491e14893856f38bb4d",
+        "evaluation_sha256": "ecefcf07b5411a5d80a6838563e1a1390274f61d7aa43b5cc0ab7d7beebc926d",
         "hypothesis_grammar_expanded": false,
         "incomplete_fields": {},
-        "learning_receipt_id": "e8e1316d3c1391f4e7fec8ef377ea9abd2fd17813c3d49e6ac953e38e833bdb9",
+        "learning_receipt_id": "3c31aeb1c555a1bb90776039cb5d64a468b5b442926e0411c051585c88b364a2",
         "learning_status": "provisional_rule",
         "learning_strategy": "revise_prior_rule_from_fresh_feedback",
         "prior_generation_transfer_attempted": 48,
-        "prior_generation_transfer_correct": 0,
+        "prior_generation_transfer_correct": 33,
         "revision_decision": "updated_from_fresh_feedback"
       },
       "parity": {
@@ -88,41 +88,41 @@
           "passive": 48,
           "shuffled": 0
         },
-        "evaluation_sha256": "3d25fb886d8b68e649ab3e6027d09fcc409a63c91cb0c4f188053e3115499d9c",
+        "evaluation_sha256": "9603c59f8783c17f3d828760b5467ffa7b00d7fb77577c8546e20ba21831ada9",
         "hypothesis_grammar_expanded": true,
         "incomplete_fields": {},
-        "learning_receipt_id": "3d37571e3e026146554bccc137c43a4e4f8762e90d4be1a41971f9c4d04fa48d",
+        "learning_receipt_id": "22e8abcf9eacb7a956e2884ca163ea1984ae3cb91ef2f281d1b16413cd51627a",
         "learning_status": "provisional_rule",
         "learning_strategy": "revise_prior_rule_from_fresh_feedback",
         "prior_generation_transfer_attempted": 48,
-        "prior_generation_transfer_correct": 18,
+        "prior_generation_transfer_correct": 26,
         "revision_decision": "updated_from_fresh_feedback"
       }
     },
-    "generation": 67,
+    "generation": 68,
     "grammar_matched_correct_total": 144,
     "independently_audited": false,
     "memory_ablated_correct_total": 96,
     "memory_specific_advantage_observed": false,
     "new_evaluation": true,
-    "passive_correct_total": 96,
+    "passive_correct_total": 144,
     "schema": "bean.github.digital_feedback.v1",
     "scope": "synthetic_numeric_control_not_general_intelligence",
     "shuffled_correct_total": 0,
-    "source_evidence_sha256": "2cd881b6935bbdb830ad125e62dd5a685664b12db846cfa35f8f98e9ddc58144",
-    "source_sha": "8d25766180807b5ba305cf70df2f527570946bda"
+    "source_evidence_sha256": "7691702949bf971a994b2a226f9ba7bac53096f05e45c336ff4b468708235a30",
+    "source_sha": "02e56f4a6eba2c216c54dd95fc73de54f4c7eebb"
   },
-  "events": 2250,
-  "generation": 67,
+  "events": 2284,
+  "generation": 68,
   "github_run_attempt": "1",
-  "github_run_id": "44727077495",
+  "github_run_id": "44807195080",
   "model_weights_trained": false,
-  "previous_receipt_sha256": "5f707fa6fa296e0506d7e6aa0ac8b6150d5ffbeb21794cc44cf252a0329532c6",
+  "previous_receipt_sha256": "eb5814c2783024b9f2b17bd0a2a2e35ddf5b6444d70aded165695fce57cb815e",
   "processed_digital_commands": 2,
-  "receipt_sha256": "eb5814c2783024b9f2b17bd0a2a2e35ddf5b6444d70aded165695fce57cb815e",
+  "receipt_sha256": "0425469f840b1434847d1c3b12a8fac3fc5d50aa863563672592233a5187f97e",
   "schema": "bean.github.invoke.v1",
   "scope": "synthetic digital Core runtime and restart continuity, not subjective experience",
-  "source_sha": "8d25766180807b5ba305cf70df2f527570946bda",
+  "source_sha": "02e56f4a6eba2c216c54dd95fc73de54f4c7eebb",
   "synthetic_only": true,
   "ticks": 12
 }
