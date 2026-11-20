@@ -26,7 +26,7 @@ if str(REPO_ROOT) not in sys.path:
 from bean.evaluation.active_abstraction_benchmark import World
 from bean.evaluation.github_digital_cycle import BLIND, FAMILIES, _hash, _prior_evaluations, run_scored_digital_cycle
 from bean.learning.reasoning_service import NativeReasoningService
-from scripts.invoke_bean import invoke, unpack
+from scripts.invoke_bean import invoke, unpack, source_revision
 
 
 def evaluation_rows(db_path: Path) -> list[dict]:
@@ -286,7 +286,7 @@ def run_simulations(source: Path) -> dict:
             "original_receipt_sha256": original["receipt_sha256"],
             "original_manifest_sha256": sha256(raw_original).hexdigest(),
             "original_compressed_archive_sha256": compressed_hashes,
-            "source_git_sha": os.environ.get("GITHUB_SHA", "local-validation"),
+            "source_git_sha": source_revision(),
             "fresh_core_boots_executed": 2,
             "matched_learning_budget_probes": 12,
             "blind_cases_per_generation": 144,
