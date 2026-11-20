@@ -7,6 +7,7 @@ A returned candidate is NOT installed into Core or evidence of AGI.
 from __future__ import annotations
 
 import argparse
+import ast
 import json
 from pathlib import Path
 import re
@@ -14,6 +15,13 @@ import shutil
 import tempfile
 
 from .autodev import ASTBruteForce, ModelWriter, run_cycle
+
+def _test_ast_fingerprints(root):
+    """Ignore comments and formatting when comparing Python evaluator suites."""
+    return sorted(ast.dump(ast.parse(path.read_text(encoding="utf-8")),
+                               include_attributes=False)
+                  for path in (root / "tests").rglob("*.py"))
+
 
 NAME = re.compile(r"^[a-z][a-z0-9_]{1,63}$")
 STUB = '"""Unimplemented BEAN skill. Candidate source must supply the API."""\n'
@@ -43,6 +51,8 @@ def incubate_skill(*, project, name, task, journal_path, output, provider,
             raise ValueError("holdout must be a different project with tests")
         if (other / target).exists() or (other / target).is_symlink():
             raise ValueError("holdout skill target already exists")
+        if _test_ast_fingerprints(source) == _test_ast_fingerprints(other):
+            raise ValueError("holdout evaluator duplicates training assertions")
     else:
         other = None
 
