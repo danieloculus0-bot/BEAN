@@ -153,3 +153,38 @@ def test_undiscovered_holdout_tests_cannot_certify_skill(tmp_path):
     with pytest.raises(ValueError, match="holdout evaluator discovered zero tests"):
         incubate_skill(**args)
     assert writer.calls == 0
+
+
+@pytest.mark.parametrize("where", ["training", "holdout"])
+def test_symlinked_external_input_rejected_before_model_call(tmp_path, where):
+    writer = Writer(GOOD)
+    args = setup(tmp_path, writer)
+    outside = tmp_path / "external-secret.txt"
+    outside.write_text("synthetic private sentinel", encoding="utf-8")
+    root = args["project"] if where == "training" else args["holdout_project"]
+    link = root / "tests" / "external.txt"
+    try:
+        link.symlink_to(outside)
+    except (OSError, NotImplementedError):
+        pytest.skip("symlinks unavailable on this test runner")
+    with pytest.raises(ValueError, match=where + " project contains symlink"):
+        incubate_skill(**args)
+    assert writer.calls == 0
+    assert not args["journal_path"].exists()
+    assert outside.read_text(encoding="utf-8") == "synthetic private sentinel"
+
+
+def test_symlinked_directory_rejected_before_copy(tmp_path):
+    writer = Writer(GOOD)
+    args = setup(tmp_path, writer)
+    outside = tmp_path / "external-dir"
+    outside.mkdir()
+    (outside / "sentinel.py").write_text("SYNTHETIC_ONLY = True\\n")
+    link = args["project"] / "tests" / "linked-dir"
+    try:
+        link.symlink_to(outside, target_is_directory=True)
+    except (OSError, NotImplementedError):
+        pytest.skip("symlinks unavailable on this test runner")
+    with pytest.raises(ValueError, match="training project contains symlink"):
+        incubate_skill(**args)
+    assert writer.calls == 0
