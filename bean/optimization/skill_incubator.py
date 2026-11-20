@@ -46,6 +46,16 @@ def incubate_skill(*, project, name, task, journal_path, output, provider,
     else:
         other = None
 
+    # copytree(symlinks=False) follows source symlinks. Never stage linked
+    # external files or directories, including linked test fixtures.
+    for label, root in (("training", source), ("holdout", other)):
+        if root is None:
+            continue
+        for entry in root.rglob("*"):
+            if entry.is_symlink():
+                raise ValueError(label + " project contains symlink: " +
+                                 str(entry.relative_to(root)))
+
     with tempfile.TemporaryDirectory(prefix="bean-skill-incubator-") as scratch:
         scratch = Path(scratch)
         staged = scratch / "training"
