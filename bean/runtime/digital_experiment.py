@@ -84,6 +84,12 @@ def make_local_reasoning_experiment(core, *, evaluator=None):
                 evaluator_receipt = {"verdict": "unknown",
                                      "reason": "evaluator_failed"}
         return {"status": "unverified",
+                # Reuse the exact Core inference receipt for subsequent
+                # feedback. This ID is a reference, not authenticated truth.
+                "core_receipt_id": observed.get("receipt_id") if (
+                    isinstance(observed.get("receipt_id"), str)
+                    and len(observed["receipt_id"]) == 64
+                    and all(c in "0123456789abcdef" for c in observed["receipt_id"])) else None,
                 "evaluator_receipt": evaluator_receipt,
                 "evaluation_subject_sha256": evaluation_subject_sha256,
                 "reason": "host_expected_answer_not_independent_ground_truth",

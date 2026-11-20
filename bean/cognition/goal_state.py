@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import json
 import uuid
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from datetime import datetime, timezone
 from enum import Enum
 from typing import Optional
@@ -59,6 +59,36 @@ def ensure_goal_table():
     get_store().commit()
 
 
+PLAN_SCHEMA = "bean.goal.plan.v1"
+
+
+def plan_proposal_id(plan_id: str, step: int) -> str:
+    if (not isinstance(plan_id, str) or not 1 <= len(plan_id) <= 100
+            or not plan_id.isascii()
+            or any(not (c.isalnum() or c in "._:-") for c in plan_id)):
+        raise ValueError("plan_id must be a bounded ASCII identifier")
+    if type(step) is not int or not 0 <= step < 16:
+        raise ValueError("plan step must be 0..15")
+    return str(uuid.uuid5(uuid.NAMESPACE_URL, f"{PLAN_SCHEMA}:{plan_id}:{step}"))
+
+
+def goal_plan(detail: Optional[dict], proposal_id: str) -> Optional[dict]:
+    """Validate reserved plan metadata without interpreting arbitrary inputs."""
+    if not isinstance(detail, dict) or "goal_plan" not in detail:
+        return None
+    plan = detail["goal_plan"]
+    if (not isinstance(plan, dict)
+            or set(plan) != {"schema", "id", "step", "steps"}
+            or plan.get("schema") != PLAN_SCHEMA
+            or type(plan.get("steps")) is not int
+            or not 1 <= plan["steps"] <= 16
+            or type(plan.get("step")) is not int
+            or not 0 <= plan["step"] < plan["steps"]
+            or plan_proposal_id(plan.get("id"), plan["step"]) != proposal_id):
+        raise ValueError("invalid persisted goal plan")
+    return plan
+
+
 @dataclass
 class GoalProposal:
     goal_state: str
@@ -81,6 +111,63 @@ class GoalProposal:
 class GoalStateEngine:
     def __init__(self):
         ensure_goal_table()
+
+    def propose_plan(self, session_uuid: str, plan_id: str,
+                     steps: list[GoalProposal]) -> list[GoalProposal]:
+        """Atomically persist a host-authored ordered plan in existing goals.
+
+        A stable plan ID resumes the same immutable step identities across
+        sessions. Revising a plan requires a new ID; it never resets attempts.
+        This creates no capabilities or approvals and invents no model plan.
+        """
+        plan_proposal_id(plan_id, 0)
+        if (not isinstance(steps, list) or not 1 <= len(steps) <= 16
+                or any(not isinstance(s, GoalProposal) or s.status != "pending"
+                       or not isinstance(s.action_detail, (dict, type(None)))
+                       or (s.action_detail and "goal_plan" in s.action_detail)
+                       for s in steps)):
+            raise ValueError("plan requires 1..16 pending GoalProposal templates")
+        planned = [replace(s, proposal_id=plan_proposal_id(plan_id, i),
+                           action_detail={**(s.action_detail or {}), "goal_plan": {
+                               "schema": PLAN_SCHEMA, "id": plan_id,
+                               "step": i, "steps": len(steps)}})
+                   for i, s in enumerate(steps)]
+        # Freeze the caller's objects to the exact JSON representation that
+        # will be persisted (including tuple/list normalization).
+        planned = [replace(p, action_detail=json.loads(json.dumps(
+            p.action_detail, allow_nan=False, sort_keys=True))) for p in planned]
+        from ..memory.store import get_store
+        conn = get_store()._conn()
+        fresh = []
+        conn.execute("BEGIN IMMEDIATE")
+        try:
+            present = sum(conn.execute(
+                "SELECT 1 FROM cognition_goal_proposals WHERE proposal_id=?",
+                (p.proposal_id,)).fetchone() is not None for p in planned)
+            if present not in (0, len(planned)):
+                raise ValueError("incomplete persisted plan; inspect original evidence")
+            fields = ("goal_state", "action_type", "motivation", "drive_source",
+                      "priority", "approval_required")
+            for proposal in planned:
+                old = conn.execute(
+                    "SELECT * FROM cognition_goal_proposals WHERE proposal_id=?",
+                    (proposal.proposal_id,)).fetchone()
+                if old is not None:
+                    desired = proposal.to_dict()
+                    if (any(old[k] != desired[k] for k in fields)
+                            or json.loads(old["action_detail"]) != proposal.action_detail):
+                        raise ValueError("existing plan is immutable; use a new plan_id")
+                else:
+                    self._persist(proposal, session_uuid, commit=False, strict=True)
+                    fresh.append(proposal)
+            conn.commit()
+        except Exception:
+            conn.rollback()
+            raise
+        self._log_proposals(fresh, session_uuid)
+        return [self._row_to_proposal(conn.execute(
+            "SELECT * FROM cognition_goal_proposals WHERE proposal_id=?",
+            (p.proposal_id,)).fetchone()) for p in planned]
 
     def propose(self, session_uuid: str, threatened_drives: list[DriveState], open_questions: Optional[list[dict]] = None) -> list[GoalProposal]:
         proposals: list[GoalProposal] = []
@@ -189,14 +276,17 @@ class GoalStateEngine:
         goal, action, approval, detail = mapping.get(state.name, (f"protect_{state.name}", ActionType.ASK_SUPERVISOR, ApprovalRequired.SUPERVISOR, "Ask supervisor before acting on this drive."))
         return GoalProposal(goal, action, detail, int(state.priority), approval, {"signals": state.signals}, state.name)
 
-    def _persist(self, proposal: GoalProposal, session_uuid: str):
+    def _persist(self, proposal: GoalProposal, session_uuid: str, *, commit=True, strict=False):
         from ..memory.store import get_store
-        get_store().execute("""
-            INSERT OR IGNORE INTO cognition_goal_proposals
+        # A plan transaction must surface constraint failures so all prior
+        # inserts roll back. Ordinary proposals retain legacy deduplication.
+        prefix = "INSERT INTO" if strict else "INSERT OR IGNORE INTO"
+        get_store().execute(prefix + """ cognition_goal_proposals
                 (proposal_id, session_uuid, goal_state, action_type, action_detail, motivation, drive_source, priority, approval_required, status, supervisor_note, created_at, resolved_at)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """, (proposal.proposal_id, session_uuid, proposal.goal_state, proposal.action_type.value, json.dumps(proposal.action_detail), proposal.motivation, proposal.drive_source, proposal.priority, proposal.approval_required.value, proposal.status, proposal.supervisor_note, proposal.created_at, proposal.resolved_at))
-        get_store().commit()
+        if commit:
+            get_store().commit()
 
     def _resolve(self, proposal_id: str, status: str, note: str) -> bool:
         from ..memory.store import get_store

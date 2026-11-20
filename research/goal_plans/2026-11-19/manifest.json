@@ -1,0 +1,24 @@
+{
+  "artifacts": {
+    "babyagi3_restart": {
+      "artifact": "babyagi3_restart.json.gz",
+      "gzip_bytes": 980,
+      "gzip_sha256": "0706658dc282190c5cb1e743bdfe3a24d8dcfaff2800e3bf5f755b3fb0d22b2d",
+      "raw_bytes": 3318,
+      "raw_sha256": "578193f5042162102f58b74d891058434cbffdfd2054b9e26005d7485a16c3a4",
+      "receipt_sha256": "5ef2a2b57c019241d51fba56cf140552c1f451fe06279c2ed6f651f58fc5ab30",
+      "round_trip_verified": true
+    },
+    "cognition": {
+      "artifact": "cognition.json.gz",
+      "gzip_bytes": 4441,
+      "gzip_sha256": "7fc72d65e96be65be0a0855c458fa583dccfe795d566dd2cb3929ad0ebb7e659",
+      "raw_bytes": 19682,
+      "raw_sha256": "6931bb0693061a02a3ee96047466d01636635f43832d39289a8bed0633fbfa8c",
+      "receipt_sha256": "8a7d78bc2b1da8f847c569b54b0a7cf522fbd21334f5f116fc81752602d7b932",
+      "round_trip_verified": true
+    }
+  },
+  "schema": "bean.goal_plan.evidence_bundle.v1",
+  "synthetic_only": true
+}
