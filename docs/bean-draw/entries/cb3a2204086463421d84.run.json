@@ -1,0 +1,60 @@
+{
+  "attempts": 2,
+  "completed_at_utc": "2026-11-19T21:59:12.430750+00:00",
+  "created_at_utc": "2026-11-19T21:29:35.277804+00:00",
+  "error": null,
+  "execution_mode": "live_model",
+  "history": [
+    {
+      "attempt": 1,
+      "description": "A vibrant sunflower field in a gentle breeze, featuring recognizable black line art. The composition includes rows of sunflowers with varying stages of bloom, soft wind gust lines, and small grassy elements.",
+      "journal_tip": "6816f934e645022ae6750d0e550dd7d4ddf21086f2285843fa0c04812561aa03",
+      "metadata": "/workspace/bean-live-evidence/subject-3/attempt_01.json",
+      "metadata_sha256": "bef8e24ac5c62114fa08afe1339239d13a475517e1039494ca47010e73e9035a",
+      "png": "/workspace/bean-live-evidence/subject-3/attempt_01.png",
+      "png_sha256": "a888b3c02e20b0417b19c2aa54ebad93809e40989b4c645af38694c3266d29f1",
+      "sha256": "4b8b16114fe9f2110fd9b22ccf75e019aa331cd21f25d772a08701d9b82a2961",
+      "status": "unverified",
+      "svg": "/workspace/bean-live-evidence/subject-3/attempt_01.svg"
+    },
+    {
+      "attempt": 2,
+      "description": "A vibrant sunflower field with a gentle breeze, depicted as a line drawing with recognizable elements without text or labels.",
+      "journal_tip": "ce06cd7d71cede64eebc26344f90e911bdbb8799c5bc70dd5ddd5162ebbcc47f",
+      "metadata": "/workspace/bean-live-evidence/subject-3/attempt_02.json",
+      "metadata_sha256": "3c66c801017437178159998977510bdcecbaa71bd6937e44bb594594da58b483",
+      "png": "/workspace/bean-live-evidence/subject-3/attempt_02.png",
+      "png_sha256": "8f6fa1e8767654d9f5fd7d7333d589d48f8baee1106d99fa46a292f26048132a",
+      "sha256": "9c60da065224e2f5c759c761d471137820c09e8f20f9a8f3071cb4bc1a807eec",
+      "status": "unverified",
+      "svg": "/workspace/bean-live-evidence/subject-3/attempt_02.svg"
+    }
+  ],
+  "independent_visual_verification": false,
+  "journal_tip": "a33394d83ab7d4f13498db2d9888590728b7ee313987f757a9972e91e31d4f37",
+  "learning_improvement_verified": false,
+  "memory_context_sha256": "e2ac781d9c5a9a3797f32b90d68ff5b654fe00f0a63b79e36ca4175dc42693ad",
+  "memory_mode": "adaptive",
+  "model_calls_sha256": "41fc458febf4df7ac5603ecde7d1e1d1a9530196532262a243def04447ae804a",
+  "model_digest": "357c53fb659c5076de1d65ccb0b397446227b71a42be9d1603d46168015c9e4b",
+  "model_id": "qwen2.5:3b",
+  "provider_kind": "ollama",
+  "run_id": "0836c4ee-0955-4c19-a2d9-e8e41fe3d863",
+  "runtime_source_sha256": {
+    "bean/creativity/artifacts.py": "129106aefab02ea7d299e44ed74da0ab617d4cbec091f7e2acf3ad53c518bb41",
+    "bean/creativity/sketch_lab.py": "7d69b3fbe4fa3824132b150f1d6d5606d59385fdf58cc0aca57ece1045ab43f4",
+    "bean/voice/ollama.py": "3f852e850e998767f43bd1c0842852c3562aecfce5152d8b8081e8a6ac8d19ee",
+    "scripts/build_bean_draw_gallery.py": "42d7b37089775b56acf7512d2e6ce6c6be098813e709d2c9644def51c58e18a1"
+  },
+  "schema": "bean.draw.run.v1",
+  "seed": 20261121,
+  "selected_attempt": 2,
+  "selection_reason": "Attempt 2 maintains the core elements of a vibrant sunflower field in a gentle breeze without specific labels. It focuses on capturing the movement and vibrancy of the sunflowers in the wind, which aligns well with the intent to ensure clarity and recognition.",
+  "selection_state": "model_selected_from_recorded_evidence",
+  "source_git_sha": "3fc06f4777a68b492928d6a08a0dd251977af895",
+  "state": "unverified",
+  "subject": "A vibrant sunflower field in a gentle breeze",
+  "subject_source": "autonomous",
+  "task_ref": "original-subject-3",
+  "weights_updated": false
+}

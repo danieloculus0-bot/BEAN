@@ -1,0 +1,29 @@
+{
+  "history": [
+    {
+      "attempt": 1,
+      "description": "Rect(0,0,256,128) Polyline(points:[[32,64],[96,32],[128,64]]) Line(0,64,256,64) Circle(64,64,32) Line(32,0,32,128) Line(128,0,128,128)",
+      "journal_tip": "bd33bf05d0a44667d736a3096f62063370837a12d64fc93be1e8acbc62d35b0a",
+      "metadata": "/workspace/bean-live-evidence/subject-2/attempt_01.json",
+      "metadata_sha256": "fa6e3ef6109cec9f53e9e0c40a25000a09eae05d0c9294147cdb1004eca7da10",
+      "png": "/workspace/bean-live-evidence/subject-2/attempt_01.png",
+      "png_sha256": "bba2772259236ec96fd2c0d4ba444cd604bcf02d01f69bd3b8d109b126a2e92a",
+      "sha256": "235cd83a0d1f3bc4ebaf76ec9e272a50a96359e039caf7d60a1cdf1acc1c06df",
+      "status": "host_reported_not_satisfactory",
+      "svg": "/workspace/bean-live-evidence/subject-2/attempt_01.svg"
+    },
+    {
+      "attempt": 2,
+      "description": "A magnificent snow-covered mountain range outlined in black lines, featuring a central peak and surrounding mountains with snowy peaks.",
+      "journal_tip": "0a40bbf2588fae4e0f8f97ccd785a5b88de5f1fca228c7bf85d7aa012a414456",
+      "metadata": "/workspace/bean-live-evidence/subject-2/attempt_02.json",
+      "metadata_sha256": "1ec669ee5621882a86109c5f591022801e3b0cdf15392fbcdaffb44392424206",
+      "png": "/workspace/bean-live-evidence/subject-2/attempt_02.png",
+      "png_sha256": "0656e64c3eeae3a3e6cf97819218424e46177cf3a14755669e7a442b001491b3",
+      "sha256": "e3a4ad25c808f6d462f45a0ee7970cdc177335f58683c47f4ae630988e48f42f",
+      "status": "host_reported_not_satisfactory",
+      "svg": "/workspace/bean-live-evidence/subject-2/attempt_02.svg"
+    }
+  ],
+  "subject": "A magnificent snow-covered mountain range"
+}

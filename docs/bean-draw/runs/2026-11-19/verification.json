@@ -1,0 +1,73 @@
+{
+  "observed_at_utc": "2026-11-20T12:27:11.430135+00:00",
+  "runs": [
+    {
+      "attempts": [
+        {
+          "attempt": 1,
+          "journal_binding": "matched_actual_Core_trial",
+          "png_sha256": null,
+          "status": "attempt_failed_ValueError",
+          "svg_sha256": null
+        },
+        {
+          "attempt": 2,
+          "journal_binding": "matched_actual_Core_trial",
+          "png_sha256": null,
+          "status": "attempt_failed_ValueError",
+          "svg_sha256": null
+        }
+      ],
+      "run_id": "b49f818a-3970-440c-8149-209822777d59",
+      "run_sha256": "f220d665fc00f8f81521a0d519378ee769a73e05435e72776a7bd16cae96f5e5",
+      "source_git_sha": "f0aa5ba64614d1ef5c0fcbc9a851e505ec96d1d8",
+      "subject": "A mysterious underwater forest"
+    },
+    {
+      "attempts": [
+        {
+          "attempt": 1,
+          "journal_binding": "matched_actual_Core_trial",
+          "png_sha256": "bba2772259236ec96fd2c0d4ba444cd604bcf02d01f69bd3b8d109b126a2e92a",
+          "status": "host_reported_not_satisfactory",
+          "svg_sha256": "235cd83a0d1f3bc4ebaf76ec9e272a50a96359e039caf7d60a1cdf1acc1c06df"
+        },
+        {
+          "attempt": 2,
+          "journal_binding": "matched_actual_Core_trial",
+          "png_sha256": "0656e64c3eeae3a3e6cf97819218424e46177cf3a14755669e7a442b001491b3",
+          "status": "host_reported_not_satisfactory",
+          "svg_sha256": "e3a4ad25c808f6d462f45a0ee7970cdc177335f58683c47f4ae630988e48f42f"
+        }
+      ],
+      "run_id": "82cd4d1b-c73c-420b-845a-6ea345598b1f",
+      "run_sha256": "0a0c941d8d0f275b2aafb0a2ea71495b427bfa6ea9f58cc2f4f9739250b7fec6",
+      "source_git_sha": "2db4f232ef6f2385375a79bd87c3df77501999ec",
+      "subject": "A magnificent snow-covered mountain range"
+    },
+    {
+      "attempts": [
+        {
+          "attempt": 1,
+          "journal_binding": "matched_actual_Core_trial",
+          "png_sha256": "a888b3c02e20b0417b19c2aa54ebad93809e40989b4c645af38694c3266d29f1",
+          "status": "unverified",
+          "svg_sha256": "4b8b16114fe9f2110fd9b22ccf75e019aa331cd21f25d772a08701d9b82a2961"
+        },
+        {
+          "attempt": 2,
+          "journal_binding": "matched_actual_Core_trial",
+          "png_sha256": "8f6fa1e8767654d9f5fd7d7333d589d48f8baee1106d99fa46a292f26048132a",
+          "status": "unverified",
+          "svg_sha256": "9c60da065224e2f5c759c761d471137820c09e8f20f9a8f3071cb4bc1a807eec"
+        }
+      ],
+      "run_id": "0836c4ee-0955-4c19-a2d9-e8e41fe3d863",
+      "run_sha256": "87492395615f2a6c9cdefabbc783876852db6f21666be9889f88664dba70f658",
+      "source_git_sha": "3fc06f4777a68b492928d6a08a0dd251977af895",
+      "subject": "A vibrant sunflower field in a gentle breeze"
+    }
+  ],
+  "schema": "bean.draw.observed-verification.v1",
+  "scope": "local artifact bytes and Core journal bindings; not authenticated aesthetic quality"
+}

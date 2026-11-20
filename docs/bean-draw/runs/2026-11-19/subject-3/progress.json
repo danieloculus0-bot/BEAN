@@ -1,0 +1,29 @@
+{
+  "history": [
+    {
+      "attempt": 1,
+      "description": "A vibrant sunflower field in a gentle breeze, featuring recognizable black line art. The composition includes rows of sunflowers with varying stages of bloom, soft wind gust lines, and small grassy elements.",
+      "journal_tip": "6816f934e645022ae6750d0e550dd7d4ddf21086f2285843fa0c04812561aa03",
+      "metadata": "/workspace/bean-live-evidence/subject-3/attempt_01.json",
+      "metadata_sha256": "bef8e24ac5c62114fa08afe1339239d13a475517e1039494ca47010e73e9035a",
+      "png": "/workspace/bean-live-evidence/subject-3/attempt_01.png",
+      "png_sha256": "a888b3c02e20b0417b19c2aa54ebad93809e40989b4c645af38694c3266d29f1",
+      "sha256": "4b8b16114fe9f2110fd9b22ccf75e019aa331cd21f25d772a08701d9b82a2961",
+      "status": "unverified",
+      "svg": "/workspace/bean-live-evidence/subject-3/attempt_01.svg"
+    },
+    {
+      "attempt": 2,
+      "description": "A vibrant sunflower field with a gentle breeze, depicted as a line drawing with recognizable elements without text or labels.",
+      "journal_tip": "ce06cd7d71cede64eebc26344f90e911bdbb8799c5bc70dd5ddd5162ebbcc47f",
+      "metadata": "/workspace/bean-live-evidence/subject-3/attempt_02.json",
+      "metadata_sha256": "3c66c801017437178159998977510bdcecbaa71bd6937e44bb594594da58b483",
+      "png": "/workspace/bean-live-evidence/subject-3/attempt_02.png",
+      "png_sha256": "8f6fa1e8767654d9f5fd7d7333d589d48f8baee1106d99fa46a292f26048132a",
+      "sha256": "9c60da065224e2f5c759c761d471137820c09e8f20f9a8f3071cb4bc1a807eec",
+      "status": "unverified",
+      "svg": "/workspace/bean-live-evidence/subject-3/attempt_02.svg"
+    }
+  ],
+  "subject": "A vibrant sunflower field in a gentle breeze"
+}

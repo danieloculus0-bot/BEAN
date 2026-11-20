@@ -1,0 +1,60 @@
+{
+  "attempt": 2,
+  "created_at_utc": "2026-11-19T21:27:37.127251+00:00",
+  "description": "A magnificent snow-covered mountain range outlined in black lines, featuring a central peak and surrounding mountains with snowy peaks.",
+  "domain": "sketch",
+  "error": null,
+  "execution_mode": "live_model",
+  "experiment": "bean_sketch_v1",
+  "external_feedback": {
+    "created_at_utc": "2026-11-19T21:27:37.126937+00:00",
+    "evaluator": "Codex visual reviewer (gallery agent)",
+    "feedback": "I inspected the actual second PNG. It reads as disconnected horizontal bars, small rings, and repeated paired slanted marks. The earlier peak-like silhouette has disappeared; I cannot recognize a snow-covered mountain range from this image. The heavy enclosing frame is reduced, but the marks remain disconnected and the subject is unclear. This revision did not improve subject recognition. Preserve this negative result and reconsider how the overall landscape is communicated.",
+    "image_sha256": "0656e64c3eeae3a3e6cf97819218424e46177cf3a14755669e7a442b001491b3",
+    "independently_authenticated": false,
+    "kind": "vision_model",
+    "satisfactory": false,
+    "scores": {
+      "composition": 1,
+      "spatial_coherence": 1,
+      "subject_recognition": 0
+    },
+    "state": "host_reported_pixel_review"
+  },
+  "independent_visual_verification": false,
+  "journal_tip": "0a40bbf2588fae4e0f8f97ccd785a5b88de5f1fca228c7bf85d7aa012a414456",
+  "memory_mode": "adaptive",
+  "model_digest": "357c53fb659c5076de1d65ccb0b397446227b71a42be9d1603d46168015c9e4b",
+  "model_id": "qwen2.5:3b",
+  "png_file": "attempt_02.png",
+  "png_sha256": "0656e64c3eeae3a3e6cf97819218424e46177cf3a14755669e7a442b001491b3",
+  "preview_size": [
+    512,
+    512
+  ],
+  "provider_kind": "ollama",
+  "rasterizer": "CairoSVG 2.8.2",
+  "raw_file": "attempt_02.raw.json",
+  "raw_sha256": "56f8bcb224cfc7d3a27698730a9646cd5c2bc2ade0c4d249f07470aacd8ea910",
+  "reference_urls": [],
+  "research_status": "not_requested",
+  "run_id": "82cd4d1b-c73c-420b-845a-6ea345598b1f",
+  "schema": "bean.draw.attempt.v1",
+  "seed": 20261120,
+  "self_review": {
+    "changes": "",
+    "claimed_subject": "A magnificent snow-covered mountain range",
+    "satisfied": false
+  },
+  "source_git_sha": "2db4f232ef6f2385375a79bd87c3df77501999ec",
+  "status": "host_reported_not_satisfactory",
+  "subject": "A magnificent snow-covered mountain range",
+  "subject_source": "autonomous",
+  "svg_file": "attempt_02.svg",
+  "svg_sha256": "e3a4ad25c808f6d462f45a0ee7970cdc177335f58683c47f4ae630988e48f42f",
+  "task_ref": "original-subject-2",
+  "verification_state": "artifacts_verified",
+  "visual_evidence_independently_verified": false,
+  "visual_feedback": "I inspected the actual second PNG. It reads as disconnected horizontal bars, small rings, and repeated paired slanted marks. The earlier peak-like silhouette has disappeared; I cannot recognize a snow-covered mountain range from this image. The heavy enclosing frame is reduced, but the marks remain disconnected and the subject is unclear. This revision did not improve subject recognition. Preserve this negative result and reconsider how the overall landscape is communicated.",
+  "weights_updated": false
+}

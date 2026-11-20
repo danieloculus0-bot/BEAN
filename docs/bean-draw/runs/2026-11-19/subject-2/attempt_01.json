@@ -1,0 +1,60 @@
+{
+  "attempt": 1,
+  "created_at_utc": "2026-11-19T21:24:28.618976+00:00",
+  "description": "Rect(0,0,256,128) Polyline(points:[[32,64],[96,32],[128,64]]) Line(0,64,256,64) Circle(64,64,32) Line(32,0,32,128) Line(128,0,128,128)",
+  "domain": "sketch",
+  "error": null,
+  "execution_mode": "live_model",
+  "experiment": "bean_sketch_v1",
+  "external_feedback": {
+    "created_at_utc": "2026-11-19T21:24:28.618024+00:00",
+    "evaluator": "Codex visual reviewer (gallery agent)",
+    "feedback": "I inspected the actual rendered PNG. It shows a small peak-like outline intersecting a large circle and several dominant boundary or grid-like strokes, while much of the canvas is empty. The snow-covered mountain range is not clearly recognizable. The overlaps obscure the main silhouette and the framing dominates the subject. Improve the subject clarity and visual balance; distinguish the intended landscape from incidental construction marks.",
+    "image_sha256": "bba2772259236ec96fd2c0d4ba444cd604bcf02d01f69bd3b8d109b126a2e92a",
+    "independently_authenticated": false,
+    "kind": "vision_model",
+    "satisfactory": false,
+    "scores": {
+      "composition": 1,
+      "spatial_coherence": 1,
+      "subject_recognition": 1
+    },
+    "state": "host_reported_pixel_review"
+  },
+  "independent_visual_verification": false,
+  "journal_tip": "bd33bf05d0a44667d736a3096f62063370837a12d64fc93be1e8acbc62d35b0a",
+  "memory_mode": "adaptive",
+  "model_digest": "357c53fb659c5076de1d65ccb0b397446227b71a42be9d1603d46168015c9e4b",
+  "model_id": "qwen2.5:3b",
+  "png_file": "attempt_01.png",
+  "png_sha256": "bba2772259236ec96fd2c0d4ba444cd604bcf02d01f69bd3b8d109b126a2e92a",
+  "preview_size": [
+    512,
+    512
+  ],
+  "provider_kind": "ollama",
+  "rasterizer": "CairoSVG 2.8.2",
+  "raw_file": "attempt_01.raw.json",
+  "raw_sha256": "09a8576d796a51637294889c355453db9d1e093029d48b8cab8390b057681bcb",
+  "reference_urls": [],
+  "research_status": "not_requested",
+  "run_id": "82cd4d1b-c73c-420b-845a-6ea345598b1f",
+  "schema": "bean.draw.attempt.v1",
+  "seed": 20261120,
+  "self_review": {
+    "changes": "",
+    "claimed_subject": "A magnificent snow-covered mountain range",
+    "satisfied": true
+  },
+  "source_git_sha": "2db4f232ef6f2385375a79bd87c3df77501999ec",
+  "status": "host_reported_not_satisfactory",
+  "subject": "A magnificent snow-covered mountain range",
+  "subject_source": "autonomous",
+  "svg_file": "attempt_01.svg",
+  "svg_sha256": "235cd83a0d1f3bc4ebaf76ec9e272a50a96359e039caf7d60a1cdf1acc1c06df",
+  "task_ref": "original-subject-2",
+  "verification_state": "artifacts_verified",
+  "visual_evidence_independently_verified": false,
+  "visual_feedback": "I inspected the actual rendered PNG. It shows a small peak-like outline intersecting a large circle and several dominant boundary or grid-like strokes, while much of the canvas is empty. The snow-covered mountain range is not clearly recognizable. The overlaps obscure the main silhouette and the framing dominates the subject. Improve the subject clarity and visual balance; distinguish the intended landscape from incidental construction marks.",
+  "weights_updated": false
+}
