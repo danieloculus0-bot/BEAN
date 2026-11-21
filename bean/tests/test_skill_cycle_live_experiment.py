@@ -23,6 +23,10 @@ def test_model_required_before_side_effects(tmp_path):
 
 
 def test_failed_acquisition_persists_negative_receipt_without_reuse(tmp_path):
+    # The runner fingerprints the novel project before attempting model acquisition.
+    # Keep that project present so this test reaches the intended acquisition failure.
+    (tmp_path / "novel").mkdir()
+    (tmp_path / "novel" / "test_case.py").write_text("assert True\n")
     config = tmp_path / "config.json"
     config.write_text(json.dumps({
         "database": str(tmp_path / "db.sqlite"),
