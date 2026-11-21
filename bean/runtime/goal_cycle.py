@@ -333,6 +333,40 @@ class GoalCycle:
                 "recent": [dict(item) for item in recent],
                 "outcomes_are_execution_receipts": True}
 
+    def audit_receipts(self, limit: int = 100) -> list[dict]:
+        """Verify persisted execution evidence without replaying any action.
+
+        A hash verifies that the stored result matches the reported digest;
+        it does not establish that the action's outcome was independently
+        correct. Interrupted and unverified results remain unknown.
+        """
+        if type(limit) is not int or not 1 <= limit <= 1000:
+            raise ValueError("limit must be 1..1000")
+        rows = self.store.fetchall(
+            "SELECT run_id,proposal_id,state,decision_json,result_json "
+            "FROM bean_goal_runs ORDER BY started_at DESC LIMIT ?", (limit,))
+        audits = []
+        for row in rows:
+            result = row["result_json"]
+            digest = (hashlib.sha256(result.encode("utf-8")).hexdigest()
+                      if isinstance(result, str) else None)
+            try:
+                parsed = json.loads(result) if result is not None else None
+                valid_json = True
+            except (TypeError, ValueError):
+                parsed, valid_json = None, False
+            truncated = (isinstance(parsed, dict) and
+                         parsed.get("schema") == "bean.goal.result_truncated.v1")
+            audits.append({
+                "run_id": row["run_id"], "proposal_id": row["proposal_id"],
+                "state": row["state"], "result_sha256": digest,
+                "result_json_valid": valid_json,
+                "result_truncated": truncated,
+                "has_result": result is not None,
+                "independent_outcome_verified": False,
+            })
+        return audits
+
     def history(self, limit: int = 20) -> list[dict]:
         if type(limit) is not int or not 1 <= limit <= 200:
             raise ValueError("limit must be 1..200")
