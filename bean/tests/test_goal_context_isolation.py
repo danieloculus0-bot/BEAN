@@ -25,9 +25,8 @@ def test_context_reversal_retains_failures_without_cross_context_penalty(tmp_pat
             owner._persist(item, "context-test")
             return item
 
-        # Same registered action has opposite observed outcomes in two
-        # independent digital environments. These are execution receipts,
-        # not verified factual learning or an AGI score.
+        # Context-specific external test oracle scores completed executions.
+        # This is controlled synthetic feedback, not a real-model learning claim.
         cycle = GoalCycle({"update_models": lambda g: {
             "status": "failed" if g["action_detail"]["learning_context"] == "world-a"
             else "verified"
@@ -35,6 +34,7 @@ def test_context_reversal_retains_failures_without_cross_context_penalty(tmp_pat
         for i in range(6):
             propose("world-a", i)
             assert cycle.poll_due()[0]["status"] == "failed"
+            cycle.evaluate_run(cycle.history()[0]["run_id"], lambda evidence: {"correct": False, "evaluator": "context-test-oracle"})
         a = propose("world-a", 7)
         b = propose("world-b", 0)
         # Equal priority: unseen world-b must retain its own novelty, rather
