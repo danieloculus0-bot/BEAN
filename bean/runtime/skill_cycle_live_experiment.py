@@ -137,12 +137,35 @@ def run_experiment(*, config: Path, provider: str, model: str,
             evidence["comparison_error"] = "novel evaluation project mutated during comparison"
         elif any(digest(controls[arm]) != control_digests[arm] for arm in ARMS):
             evidence["comparison_error"] = "control source mutated during comparison"
-        elif not comparison["outcomes"]["candidate"]["passed"]:
+        elif (not isinstance(comparison, dict)
+              or not isinstance(comparison.get("outcomes"), dict)
+              or set(comparison["outcomes"]) != {"candidate", *ARMS}
+              or any(not isinstance(row, dict) for row in comparison["outcomes"].values())):
+            evidence["comparison_error"] = "incomplete five-arm outcome matrix"
+        elif not comparison["outcomes"]["candidate"].get("passed"):
             evidence["comparison_error"] = "retained candidate failed independent novel evaluation"
+        elif (any(type(row.get("test_count")) is not int or row["test_count"] < 1
+                  for row in comparison["outcomes"].values())
+              or len({row["test_count"] for row in comparison["outcomes"].values()}) != 1):
+            evidence["comparison_error"] = "five arms did not execute identical test counts"
         elif comparison["outcomes"]["candidate"]["test_count"] < 1:
             evidence["comparison_error"] = "no independently executed novel tests"
         else:
             evidence["completed"] = True
+            # A passing retained skill is not evidence of advantage over
+            # equally tested controls, nor proof of independent authorship.
+            evidence["control_outcome"] = {
+                "candidate_beats_strong_on_all_or_nothing": (
+                    comparison["outcomes"]["candidate"]["passed"]
+                    and not comparison["outcomes"]["strong"]["passed"]
+                ),
+                "strong_control_tie": (
+                    comparison["outcomes"]["candidate"]["passed"]
+                    == comparison["outcomes"]["strong"]["passed"]
+                ),
+                "equal_test_counts_verified": True,
+                "independent_learning_advantage_verified": False,
+            }
     except Exception as exc:
         evidence["comparison_error"] = type(exc).__name__ + ": " + str(exc)
     persist()
