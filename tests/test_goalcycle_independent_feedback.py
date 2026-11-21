@@ -51,3 +51,31 @@ def test_feedback_rejects_unfinished_or_unscored(tmp_path):
     conn.commit()
     with pytest.raises(ValueError):
         cycle.evaluate_run("r", lambda _: {"score": 1})
+
+
+def test_feedback_rejects_changed_execution_evidence(tmp_path):
+    """A grader cannot score stale evidence after a concurrent edit."""
+    conn = sqlite3.connect(str(tmp_path / "goal.db"))
+    conn.row_factory = sqlite3.Row
+    conn.execute("""CREATE TABLE bean_goal_runs (
+        run_id TEXT PRIMARY KEY, proposal_id TEXT, action_type TEXT,
+        state TEXT, result_json TEXT)""")
+    conn.execute("INSERT INTO bean_goal_runs VALUES (?,?,?,?,?)",
+                 ("r1", "p1", "inspect", "success", '{"value":7}'))
+    conn.commit()
+    cycle = object.__new__(GoalCycle)
+    cycle.store = Mock()
+    cycle.store._conn.return_value = conn
+    cycle.store.fetchone.side_effect = lambda sql, params: conn.execute(sql, params).fetchone()
+
+    def concurrent_change(evidence):
+        assert evidence["result"]["value"] == 7
+        conn.execute("UPDATE bean_goal_runs SET result_json=? WHERE run_id=?",
+                     ('{"value":8}', "r1"))
+        conn.commit()
+        return {"correct": True, "evaluator": "external"}
+
+    with pytest.raises(ValueError, match="evidence changed"):
+        cycle.evaluate_run("r1", concurrent_change)
+    count = conn.execute("SELECT COUNT(*) FROM bean_goal_feedback").fetchone()[0]
+    assert count == 0
