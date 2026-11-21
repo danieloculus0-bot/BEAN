@@ -195,6 +195,12 @@ def test_comparison_rejects_incomplete_or_unequal_outcomes(tmp_path, monkeypatch
             "status": "success", "run_id": phase + "-unique",
             "result_sha256": "abc123", "evaluation_seal_sha256": "sealed",
             "provider_available": phase == "acquire",
+            "result": {
+                "status": "success", "skill": settings["name"],
+                "source_sha256": "a" * 64,
+                **({"provider_used": True} if phase == "acquire" else
+                   {"provider_invoked": False, "passed": True, "new_test_set": True}),
+            },
         }
         return SimpleNamespace(returncode=0, stdout=json.dumps(native), stderr="")
     monkeypatch.setattr(live.subprocess, "run", native_phase)
