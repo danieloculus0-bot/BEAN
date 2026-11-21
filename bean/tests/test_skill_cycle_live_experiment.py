@@ -79,8 +79,17 @@ def test_failed_novel_candidate_does_not_mark_experiment_complete(tmp_path, monk
         source = tmp_path / (arm + ".py")
         source.write_text("def solve(x): return x\\n")
         controls[arm] = source
-    monkeypatch.setattr(live.subprocess, "run", lambda *args, **kwargs:
-                        SimpleNamespace(returncode=0, stdout='{"status":"success"}', stderr=""))
+    def native_phase(command, **kwargs):
+        phase = command[command.index("--phase") + 1]
+        receipt = {
+            "schema": "bean.native_skill_cycle.runner.v1",
+            "phase": phase, "plan_id": settings["plan_id"],
+            "status": "success", "run_id": phase + "-run",
+            "result_sha256": "abc123", "evaluation_seal_sha256": "sealed",
+            "provider_available": phase == "acquire",
+        }
+        return SimpleNamespace(returncode=0, stdout=json.dumps(receipt), stderr="")
+    monkeypatch.setattr(live.subprocess, "run", native_phase)
     monkeypatch.setattr(skill_cycle_controls, "compare", lambda **kwargs: {
         "outcomes": {"candidate": {"passed": False, "test_count": 2}},
     })
@@ -89,4 +98,39 @@ def test_failed_novel_candidate_does_not_mark_experiment_complete(tmp_path, monk
                                  controls=controls, receipt=receipt)
     assert result["completed"] is False
     assert result["comparison_error"] == "retained candidate failed independent novel evaluation"
+    assert json.loads(receipt.read_text()) == result
+
+
+def test_zero_exit_forged_native_receipt_never_reaches_comparison(tmp_path, monkeypatch):
+    from types import SimpleNamespace
+    from bean.runtime import skill_cycle_live_experiment as live
+    projects = {}
+    for name in ("training", "holdout", "novel"):
+        root = tmp_path / name
+        root.mkdir()
+        (root / "case.py").write_text("pass\\n")
+        projects[name] = str(root)
+    settings = {
+        "database": str(tmp_path / "db.sqlite"), "projects": projects,
+        "vault": str(tmp_path / "vault"), "journal": str(tmp_path / "journal.sqlite"),
+        "output": str(tmp_path / "output"), "plan_id": "forged-run",
+        "name": "skill", "task": "Solve an unfamiliar task",
+        "training": "training", "holdout": "holdout", "novel": "novel",
+    }
+    config = tmp_path / "config.json"
+    config.write_text(json.dumps(settings))
+    controls = {}
+    for arm in live.ARMS:
+        path = tmp_path / (arm + ".py")
+        path.write_text("def solve(x): return x\\n")
+        controls[arm] = path
+    monkeypatch.setattr(live.subprocess, "run", lambda *args, **kwargs:
+                        SimpleNamespace(returncode=0, stdout='{"status":"success"}', stderr=""))
+    receipt = tmp_path / "receipt.json"
+    result = live.run_experiment(config=config, provider="ollama",
+                                 model="qwen2.5:1.5b", controls=controls, receipt=receipt)
+    assert result["completed"] is False
+    assert result["phases"]["acquire"]["verification_error"] == "invalid native GoalCycle phase provenance"
+    assert "reuse" not in result["phases"]
+    assert "comparison" not in result
     assert json.loads(receipt.read_text()) == result
