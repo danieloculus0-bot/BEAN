@@ -405,7 +405,15 @@ class GoalCycle:
             verdict_json TEXT NOT NULL, verdict_sha256 TEXT NOT NULL)""")
         conn.execute("BEGIN IMMEDIATE")
         try:
-            # Immutable first evaluation: changing graders cannot silently rewrite evidence.
+            # Bind feedback to the exact evidence seen by the evaluator.
+            current = conn.execute(
+                "SELECT proposal_id,action_type,state,result_json "
+                "FROM bean_goal_runs WHERE run_id=?", (run_id,)).fetchone()
+            if (current is None or current["proposal_id"] != evidence["proposal_id"]
+                    or current["action_type"] != evidence["action_type"]
+                    or current["state"] != evidence["state"]
+                    or current["result_json"] != raw):
+                raise ValueError("execution evidence changed during evaluation")
             conn.execute("INSERT INTO bean_goal_feedback VALUES (?,?,?,?,?)",
                          (run_id, _now(), evidence["result_sha256"], encoded,
                           hashlib.sha256(encoded.encode()).hexdigest()))
