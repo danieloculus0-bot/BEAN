@@ -87,6 +87,22 @@ def test_failed_novel_candidate_does_not_mark_experiment_complete(tmp_path, monk
             "status": "success", "run_id": phase + "-run",
             "result_sha256": "abc123", "evaluation_seal_sha256": "sealed",
             "provider_available": phase == "acquire",
+            "result": ({
+                "status": "success", "skill": "skill",
+                "source_sha256": "a" * 64, "provider_used": True,
+            } if phase == "acquire" else {
+                "status": "success", "skill": "skill",
+                "source_sha256": "a" * 64, "provider_invoked": False,
+                "passed": True, "new_test_set": True,
+            }),
+            "result": ({
+                "status": "success", "skill": "skill",
+                "source_sha256": "a" * 64, "provider_used": True,
+            } if phase == "acquire" else {
+                "status": "success", "skill": "skill",
+                "source_sha256": "a" * 64, "provider_invoked": False,
+                "passed": True, "new_test_set": True,
+            }),
         }
         return SimpleNamespace(returncode=0, stdout=json.dumps(receipt), stderr="")
     monkeypatch.setattr(live.subprocess, "run", native_phase)
@@ -188,4 +204,58 @@ def test_comparison_rejects_incomplete_or_unequal_outcomes(tmp_path, monkeypatch
                                  controls=controls, receipt=receipt)
     assert result["completed"] is False
     assert result["comparison_error"] == expected
+    assert json.loads(receipt.read_text()) == result
+
+
+@pytest.mark.parametrize("mismatch", ["source", "not_novel", "writer", "missing_result"])
+def test_restart_requires_same_promoted_skill_and_real_novel_reuse(tmp_path, monkeypatch, mismatch):
+    from types import SimpleNamespace
+    from bean.runtime import skill_cycle_live_experiment as live
+    projects = {}
+    for name in ("training", "holdout", "novel"):
+        root = tmp_path / name
+        root.mkdir()
+        (root / "case.py").write_text("pass\\n")
+        projects[name] = str(root)
+    settings = {
+        "database": str(tmp_path / "db.sqlite"), "projects": projects,
+        "vault": str(tmp_path / "vault"), "journal": str(tmp_path / "journal.sqlite"),
+        "output": str(tmp_path / "output"), "plan_id": "provenance",
+        "name": "skill", "task": "Independently solve a withheld task",
+        "training": "training", "holdout": "holdout", "novel": "novel",
+    }
+    config = tmp_path / "config.json"
+    config.write_text(json.dumps(settings))
+    controls = {}
+    for arm in live.ARMS:
+        p = tmp_path / (arm + ".py")
+        p.write_text("def solve(x): return x\\n")
+        controls[arm] = p
+    def phase_run(command, **kwargs):
+        phase = command[command.index("--phase") + 1]
+        result = ({
+            "status": "success", "skill": "skill",
+            "source_sha256": "a" * 64, "provider_used": True,
+        } if phase == "acquire" else {
+            "status": "success", "skill": "skill",
+            "source_sha256": "b" * 64 if mismatch == "source" else "a" * 64,
+            "provider_invoked": mismatch == "writer",
+            "passed": True, "new_test_set": mismatch != "not_novel",
+        })
+        receipt = {
+            "schema": "bean.native_skill_cycle.runner.v1",
+            "phase": phase, "plan_id": "provenance", "status": "success",
+            "run_id": phase + "-unique", "result_sha256": "sha",
+            "evaluation_seal_sha256": "sealed",
+            "provider_available": phase == "acquire",
+            "result": None if mismatch == "missing_result" and phase == "reuse" else result,
+        }
+        return SimpleNamespace(returncode=0, stdout=json.dumps(receipt), stderr="")
+    monkeypatch.setattr(live.subprocess, "run", phase_run)
+    receipt = tmp_path / "receipt.json"
+    result = live.run_experiment(config=config, provider="ollama", model="fixture-only",
+                                 controls=controls, receipt=receipt)
+    assert result["completed"] is False
+    assert result["verification_error"] == "native skill acquisition/restart provenance mismatch"
+    assert "comparison" not in result
     assert json.loads(receipt.read_text()) == result
