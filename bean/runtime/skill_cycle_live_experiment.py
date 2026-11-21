@@ -84,8 +84,32 @@ def run_experiment(*, config: Path, provider: str, model: str,
             except json.JSONDecodeError:
                 result["parse_error"] = "runner did not emit JSON"
             evidence["phases"][phase] = result
+            # A zero subprocess exit alone cannot certify native GoalCycle
+            # execution. Verify the actual runner's phase and durable receipts.
+            phase_receipt = result.get("receipt")
+            if completed.returncode == 0:
+                if not isinstance(phase_receipt, dict):
+                    result["verification_error"] = "missing native runner JSON receipt"
+                elif (phase_receipt.get("schema") != "bean.native_skill_cycle.runner.v1"
+                      or phase_receipt.get("phase") != phase
+                      or phase_receipt.get("plan_id") != settings["plan_id"]
+                      or phase_receipt.get("status") != "success"
+                      or not phase_receipt.get("run_id")
+                      or not phase_receipt.get("result_sha256")
+                      or not phase_receipt.get("evaluation_seal_sha256")):
+                    result["verification_error"] = "invalid native GoalCycle phase provenance"
+                elif phase == "reuse":
+                    first = evidence["phases"]["acquire"]["receipt"]
+                    if (phase_receipt["run_id"] == first["run_id"]
+                        or phase_receipt["evaluation_seal_sha256"]
+                        != first["evaluation_seal_sha256"]):
+                        result["verification_error"] = "restart reused run ID or changed evaluation seal"
+                    elif phase_receipt.get("provider_available") is not False:
+                        result["verification_error"] = "reuse process unexpectedly had a writer"
+                elif phase_receipt.get("provider_available") is not True:
+                    result["verification_error"] = "acquisition did not have a model writer"
             persist()
-            if completed.returncode != 0:
+            if completed.returncode != 0 or result.get("verification_error"):
                 return evidence
         except (OSError, subprocess.TimeoutExpired) as exc:
             evidence["phases"][phase] = {"error": type(exc).__name__,
