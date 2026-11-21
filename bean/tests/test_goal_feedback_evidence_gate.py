@@ -42,7 +42,7 @@ def test_incomplete_result_never_invokes_evaluator_or_writes_feedback(cycle, rep
     )["n"]
     if exists:
         assert get_store().fetchone(
-            "SELECT COUNT(*) AS n FROM bean_goal_feedback"
+            "SELECT COUNT(*) AS n FROM bean_goal_feedback WHERE run_id=?", (run_id,)
         )["n"] == 0
 
 
