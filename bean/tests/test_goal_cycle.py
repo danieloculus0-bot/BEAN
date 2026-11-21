@@ -259,7 +259,7 @@ def test_failed_experience_can_change_goal_choice_without_erasing_priority(memor
     first = memory(ActionType.UPDATE_MODELS, priority=1, goal="initial")
     second = memory(ActionType.RUN_REFLECTION, priority=2, goal="alternative")
     assert cycle.poll_due()[0]["proposal_id"] == first.proposal_id
-    cycle.evaluate_run(get_store().fetchone("SELECT run_id FROM bean_goal_runs WHERE proposal_id=?", (first.proposal_id if len(seen) == 1 else item.proposal_id,))["run_id"], lambda evidence: {"correct": False, "evaluator": "independent-test-oracle"})
+    cycle.evaluate_run(get_store().fetchone("SELECT run_id FROM bean_goal_runs WHERE proposal_id=?", (first.proposal_id,))["run_id"], lambda evidence: {"correct": False, "evaluator": "independent-test-oracle"})
     assert seen == ["failed"]
     # Resolve the initial alternative so it cannot preempt training attempts.
     assert cycle.poll_due()[0]["proposal_id"] == second.proposal_id
@@ -269,7 +269,7 @@ def test_failed_experience_can_change_goal_choice_without_erasing_priority(memor
     for index in range(19):
         item = memory(ActionType.UPDATE_MODELS, priority=1, goal=f"retry-{index}")
         assert cycle.poll_due()[0]["proposal_id"] == item.proposal_id
-        cycle.evaluate_run(get_store().fetchone("SELECT run_id FROM bean_goal_runs WHERE proposal_id=?", (first.proposal_id if len(seen) == 1 else item.proposal_id,))["run_id"], lambda evidence: {"correct": False, "evaluator": "independent-test-oracle"})
+        cycle.evaluate_run(get_store().fetchone("SELECT run_id FROM bean_goal_runs WHERE proposal_id=?", (item.proposal_id,))["run_id"], lambda evidence: {"correct": False, "evaluator": "independent-test-oracle"})
     assert len(seen) == 19 and all(x == "failed" for x in seen)
 
     # Reopen the existing SQLite store to prove outcome-dependent selection
