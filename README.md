@@ -12,6 +12,8 @@
 | **Reasoning quality controls** | Current main includes stricter fact-checking on real-model CPU smoke tests and a local [challenge preflight](docs/BEAN_CHALLENGE_PREFLIGHT.md) with persistent objections/overrides. | A test harness is not an independent reality checker; the challenge CLI is not universal host-enforced gating. |
 | **Persistent learning experiments** | Source contains tabular Q-learning, measured signed feedback, skill incubation, evidence-backed reasoning and frozen holdouts. [Learning guide](docs/BEAN_LEARNING_CORE_INTEGRATION_2026-10-22.md). | Bounded task performance is not demonstrated continual open-world learning or model-weight retraining. |
 
+**BEAN 3D Studio (experimental):** [Browser generator](docs/bean-3d/index.html) makes real parametric mesh STL/OBJ exports without paid services or GPUs. An optional [local TripoSR adapter](docs/bean-3d/README.md) provides image-to-3D on compatible hardware; GPU inference is not verified by CI and is not hosted on GitHub Pages.
+
 **Explore:** [Current public status](https://danieloculus0-bot.github.io/BEAN/status.html) · [Research lab](https://danieloculus0-bot.github.io/BEAN/research-lab.html) · [BEAN Draw](https://danieloculus0-bot.github.io/BEAN/bean-draw/) · [Python quickstart](docs/GETTING_STARTED.md) · [Workshop](https://danieloculus0-bot.github.io/BEAN/portfolio/).
 
 **Runtime separation matters:** Local Python Core, the hosted JavaScript BEAN notes companion, the independent Perplexity evidence MCP, Axiom, and AIscend are distinct environments. None is implicitly connected to the home Jetson, each other, or private Core memory. Date-stamped sections later in this README preserve the original technical history and should be read as milestones, not a fresh deployment check.

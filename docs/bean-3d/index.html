@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#080b0a">
+<meta name="description" content="BEAN 3D Studio: free parametric mesh generation, printable STL and OBJ exports, with optional local TripoSR image-to-3D reconstruction.">
+<link rel="icon" href="../bean-official.webp" type="image/webp">
+<link rel="stylesheet" href="../ecosystem-nav.css">
+<title>BEAN 3D Studio | Mesh Workshop</title>
+<style>
+:root{color-scheme:dark;--bg:#080b0a;--panel:#131a16;--panel2:#1a231d;--line:#34483b;--text:#f3f9f1;--muted:#b6c7bb;--lime:#b6f889;--sand:#cdb694}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse 70% 560px at 80% 0%,#20372a70,transparent),var(--bg);color:var(--text);font:15px/1.55 system-ui,-apple-system,"Segoe UI",sans-serif}a{color:var(--lime);text-underline-offset:4px}
+button,input,select{font:inherit}button{cursor:pointer;border-radius:10px;border:1px solid #546c59;background:#223128;color:white;min-height:44px;padding:9px 16px;font-weight:760}button.primary{background:var(--lime);color:#10210e;border-color:var(--lime)}button:disabled{cursor:not-allowed;opacity:.48}button:hover:not(:disabled){filter:brightness(1.1)}button:focus-visible,input:focus-visible{outline:3px solid var(--lime);outline-offset:2px}
+.wrap{width:min(1250px,calc(100% - 32px));margin:auto}.headline{padding:45px 0 27px}.eyebrow{font-size:.73rem;font-weight:900;letter-spacing:.15em;text-transform:uppercase;color:var(--lime)}h1{font-size:clamp(2.45rem,7vw,5.5rem);letter-spacing:-.07em;line-height:1.02;margin:9px 0 17px}h1 span{color:var(--lime)}.headline p{color:var(--muted);max-width:760px;font-size:1.03rem;margin:0}
+.workspace{display:grid;grid-template-columns:minmax(310px,.83fr) minmax(0,1.17fr);gap:20px;align-items:start;padding-bottom:60px}.panel,.viewport{border:1px solid var(--line);border-radius:18px;background:#111813;overflow:hidden}.panel{padding:22px}.tabs{display:flex;gap:9px;margin-bottom:20px}.tabs button{flex:1;background:#18231b}.tabs button[aria-selected=true]{background:var(--lime);color:#112012;border-color:var(--lime)}
+h2{font-size:1.15rem;letter-spacing:-.025em;margin:12px 0 14px}label{display:block;color:#d4e6d5;font-size:.87rem;font-weight:700;margin:15px 0 5px}input[type=text],input[type=number],input[type=file],select{width:100%;border-radius:10px;border:1px solid #556b59;background:#0d140f;padding:11px;color:#fff;min-height:44px}input[type=file]{font-size:.77rem}input[type=range]{width:100%;accent-color:var(--lime)}.control{display:grid;grid-template-columns:1fr 90px;align-items:center;gap:14px}.control label{margin:10px 0}.control input{padding:9px}.muted{color:var(--muted);font-size:.83rem}.help{color:#b4c5b8;font-size:.83rem;line-height:1.55}.controls{display:flex;flex-wrap:wrap;gap:9px;margin-top:19px}.controls button{flex:1}.separator{border:0;border-top:1px solid var(--line);margin:22px 0}.radio{display:grid;grid-template-columns:1fr 1fr;gap:9px}.radio button{background:#1a251d}.radio button[aria-pressed=true]{border-color:var(--lime);color:var(--lime)}.viewport{min-height:550px;position:relative;background:radial-gradient(ellipse at 50% 36%,#24342b,#0b100d 73%)}.viewhead{display:flex;flex-wrap:wrap;gap:15px;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid #34483b;background:#0f1511cc}.viewhead strong{font-size:.9rem}.viewhead span{font-size:.75rem;color:#b9ccb9}.canvas-wrap{position:relative;height:420px;touch-action:none}canvas{width:100%;height:100%;display:block;touch-action:none}.canvas-label{position:absolute;left:15px;bottom:12px;font-size:.74rem;color:#cbdcc8;pointer-events:none;background:#0c120eb9;border:1px solid #405745;padding:7px 10px;border-radius:7px}.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));padding:15px 17px;gap:12px;border-top:1px solid #34483b;background:#101712}.stats strong{display:block;font-size:1.2rem;font-variant-numeric:tabular-nums}.stats small{font-size:.69rem;text-transform:uppercase;color:var(--muted);letter-spacing:.05em}.status{padding:12px 18px;color:#c7e5c6;border-top:1px solid #34483b;min-height:48px;font-size:.83rem}.status.error{color:#f5c4b6}.note{font-size:.84rem;color:var(--muted);margin:15px 2px 0}.model-note{background:#17241b;border:1px solid #3b5c42;border-radius:12px;padding:14px;margin-top:16px;color:#d8e7d4;font-size:.87rem}.model-note strong{color:var(--lime)}.hidden{display:none!important}footer{border-top:1px solid #2b3d31;padding:27px 0;color:#a7b8ac;font-size:.81rem}
+@media(max-width:850px){.workspace{grid-template-columns:1fr}.viewport{min-height:410px}.canvas-wrap{height:380px}}@media(max-width:440px){.panel{padding:16px}.stats strong{font-size:.96rem}.headline{padding-top:28px}}
+</style>
+</head>
+<body>
+<nav class="bean-net" aria-label="BEAN ecosystem navigation"><div class="bean-net-inner"><a class="bean-net-home" href="../">BEAN / ECOSYSTEM</a><div class="bean-net-links"><a href="../portfolio/">Workshop</a><a href="../bean-draw/">BEAN Draw</a><a href="https://github.com/danieloculus0-bot/BEAN/tree/main/docs/bean-3d">Source</a></div></div></nav>
+<main class="wrap">
+<header class="headline"><div class="eyebrow">BEAN / CREATIVE WORKSHOP / EXPERIMENTAL</div><h1>3D <span>Studio.</span></h1><p>Make real printable geometry. Parametric models run in your browser with no account, credits, or uploads. Optional TripoSR converts a photo into a 3D mesh on your own computer.</p></header>
+<div class="workspace">
+<section class="panel" aria-label="Generator controls">
+<div class="tabs" role="tablist" aria-label="3D generation mode"><button id="tab-procedural" role="tab" aria-selected="true" aria-controls="procedural">Create from dimensions</button><button id="tab-image" role="tab" aria-selected="false" aria-controls="image">Image to 3D</button></div>
+<div id="procedural" role="tabpanel">
+<h2>Parametric geometry</h2>
+<label for="prompt">Design description</label><input id="prompt" type="text" value="thin woven rope coaster" autocomplete="off">
+<p class="help">Recognizes coaster, ring, hoop, holder and washer. This is a constrained geometry generator, not an AI language model.</p>
+<div class="radio"><button id="preset-coaster" aria-pressed="true">Woven coaster</button><button id="preset-ring" aria-pressed="false">Simple ring</button></div>
+<div class="control"><label for="diameter">Outer diameter (mm)</label><input id="diameter" type="number" min="35" max="250" step="1" value="96"></div>
+<div class="control"><label for="thickness">Overall body thickness (mm)</label><input id="thickness" type="number" min="1.2" max="100" step=".2" value="2.4"></div>
+<div class="control coaster-only"><label for="pitch">Rope repeat (mm)</label><input id="pitch" type="number" min="3" max="30" step=".5" value="7"></div>
+<div class="control coaster-only"><label for="relief">Rope height (mm)</label><input id="relief" type="number" min="0" max="2" step=".1" value=".7"></div>
+<div class="control ring-only hidden"><label for="wall">Ring wall (mm)</label><input id="wall" type="number" min="1" max="30" step=".5" value="5"></div>
+<div class="controls"><button class="primary" id="generate">Generate mesh</button><button id="save-stl">Export STL</button><button id="save-obj">Export OBJ</button></div>
+<div class="model-note"><strong>Print-first:</strong> Single-piece mesh. No AMS, purge tower, color changes, or paid cloud calls.</div>
+</div>
+<div id="image" role="tabpanel" class="hidden">
+<h2>TripoSR image reconstruction</h2>
+<label for="imagefile">Single-object photograph (PNG or JPEG)</label><input id="imagefile" type="file" accept="image/png,image/jpeg">
+<div class="control"><label for="targetmm">Model longest dimension (mm)</label><input id="targetmm" type="number" min="10" max="500" value="100"></div>
+<div class="model-note">Local AI requires the optional Python server and the original MIT-licensed TripoSR model installed on your machine. GitHub Pages cannot run GPU inference. The server is limited to localhost and never uses a paid API.</div>
+<p class="help" id="bridge-status">Checking local inference bridge...</p>
+<div class="controls"><button class="primary" id="reconstruct">Reconstruct image</button><button id="save-ai-stl" disabled>Download reconstructed STL</button></div>
+<p class="help">Reconstruction output is a mesh estimate, not dimensionally accurate CAD. Check/repair mesh topology in your slicer before production prints.</p>
+</div>
+</section>
+<section class="viewport" aria-label="Interactive 3D model preview">
+<div class="viewhead"><strong id="modelname">Woven rope coaster</strong><span>DRAG TO ORBIT · SCROLL TO ZOOM</span></div>
+<div class="canvas-wrap"><canvas id="preview" aria-label="Interactive 3D geometry view"></canvas><div class="canvas-label">Millimeter-scale exported geometry</div></div>
+<div class="stats"><div><strong id="stat-size">96 × 96 × 3.1</strong><small>Bounding box (mm)</small></div><div><strong id="stat-faces">0</strong><small>Triangles</small></div><div><strong id="stat-source">Local</strong><small>Generation mode</small></div></div>
+<div id="status" class="status" role="status" aria-live="polite">Ready to generate.</div>
+</section>
+</div>
+</main><footer><div class="wrap">BEAN 3D Studio · <a href="../portfolio/">Return to the Workshop</a> · <a href="https://github.com/VAST-AI-Research/TripoSR">Original TripoSR project (MIT)</a> · No cloud inference is provided by this page.</div></footer>
+<script type="module">
+import {wovenCoaster,ring,fromPrompt,bounds,binarySTL,obj,decodeSTL} from "./mesh.mjs";
+const $ = id => document.getElementById(id);
+let mesh = null, aiBlob = null, preset = "coaster", gl, prog, buffer, count=0, yaw=0.48, tilt=-0.76, zoom=1.12;
+const canvas = $("preview"), state = {drag:false,x:0,y:0};
+function message(text,error=false){$("status").textContent=text;$("status").classList.toggle("error",error)}
+function save(blob,name){const a=document.createElement("a");const u=URL.createObjectURL(blob);a.href=u;a.download=name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),1000)}
+function choosePreset(kind){
+  preset=kind;
+  $("preset-coaster").setAttribute("aria-pressed",String(kind==="coaster"));
+  $("preset-ring").setAttribute("aria-pressed",String(kind==="ring"));
+  document.querySelectorAll(".coaster-only").forEach(n=>n.classList.toggle("hidden",kind!=="coaster"));
+  document.querySelectorAll(".ring-only").forEach(n=>n.classList.toggle("hidden",kind!=="ring"));
+  $("thickness").max=kind==="ring"?"100":"15";
+}
+function options(){return {diameter:Number($("diameter").value),thickness:Number($("thickness").value),pitch:Number($("pitch").value),relief:Number($("relief").value),wall:Number($("wall").value)}}
+function renderMesh(next,source){
+  mesh=next;const b=bounds(mesh),size=b.size;
+  $("stat-size").textContent=size.map(n=>n.toFixed(1)).join(" × ");
+  $("stat-faces").textContent=(mesh.triangles.length/3).toLocaleString();
+  $("stat-source").textContent=source;
+  $("modelname").textContent=source==="TripoSR"?"Image reconstruction":mesh.kind==="ring"?"Parametric ring":"Woven rope coaster";
+  uploadMesh(mesh);draw();message("Generated "+(mesh.triangles.length/3).toLocaleString()+" triangles. Ready to export.");
+}
+function make(){try{let p=$("prompt").value;let next=preset==="ring"?ring(options()):wovenCoaster(options());if(/\bring\b|\bwasher\b|\bhoop\b/.test(p)&&preset!=="ring"){choosePreset("ring");next=fromPrompt(p,options())}renderMesh(next,"Parametric")}catch(e){message("Could not generate: "+e.message,true)}}
+$("preset-coaster").onclick=()=>{choosePreset("coaster");$("prompt").value="thin woven rope coaster";make()};
+$("preset-ring").onclick=()=>{choosePreset("ring");$("prompt").value="simple ring";make()};
+$("generate").onclick=make;
+$("save-stl").onclick=()=>{if(mesh)save(binarySTL(mesh),"bean-3d-"+mesh.kind+".stl")};
+$("save-obj").onclick=()=>{if(mesh)save(obj(mesh),"bean-3d-"+mesh.kind+".obj")};
+function tab(mode){for(const id of ["procedural","image"]){$(id).classList.toggle("hidden",id!==mode);$("tab-"+id).setAttribute("aria-selected",String(id===mode))}}
+$("tab-procedural").onclick=()=>tab("procedural");
+$("tab-image").onclick=()=>{tab("image");checkBridge()};
+async function checkBridge(){
+  try{const c=await fetch("/health",{cache:"no-store"});const x=await c.json();if(!c.ok||x.service!=="bean-3d-studio")throw Error("Unavailable");$("bridge-status").textContent=x.model_available?"TripoSR script detected. Local server connected.":"Local server connected; install TripoSR and set TRIPOSR_DIR.";return x.model_available}
+  catch(e){$("bridge-status").textContent="Not connected. Launch the optional local Python server to enable image to 3D.";return false}
+}
+$("reconstruct").onclick=async()=>{
+ const file=$("imagefile").files[0];if(!file){message("Choose a PNG/JPEG object image.",true);return}
+ if(file.size>8*1024*1024){message("Use an image under 8 MB.",true);return}
+ const ready=await checkBridge();if(!ready){message("TripoSR backend is not ready. The free parametric generator still works.",true);return}
+ $("reconstruct").disabled=true;$("save-ai-stl").disabled=true;aiBlob=null;message("Running local TripoSR reconstruction...");
+ try{
+  const dataURL=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=reject;reader.readAsDataURL(file)});
+  const response=await fetch("/api/image-to-3d",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({image:dataURL,size_mm:Number($("targetmm").value)})});
+  const data=await response.json();if(!response.ok)throw Error(data.error||"Inference failed");
+  const binary=atob(data.stl_base64),bytes=new Uint8Array(binary.length);for(let i=0;i<binary.length;i++)bytes[i]=binary.charCodeAt(i);
+  aiBlob=new Blob([bytes],{type:"application/sla"});$("save-ai-stl").disabled=false;
+  renderMesh(decodeSTL(bytes.buffer),"TripoSR");message("Reconstruction complete. "+data.triangles+" triangles; normalized to "+data.longest_dimension_mm+" mm longest dimension.");
+ }catch(e){message("Reconstruction failed: "+e.message,true)}finally{$("reconstruct").disabled=false}
+};
+$("save-ai-stl").onclick=()=>{if(aiBlob)save(aiBlob,"bean-3d-triposr.stl")};
+// Local WebGL viewer, no external CDN or scripts.
+const vsrc="attribute vec3 aPos;attribute vec3 aNorm;uniform vec3 uCenter;uniform float uScale;uniform float uZoom;uniform float uAspect;uniform vec2 uAngles;varying vec3 vNormal;void main(){vec3 p=(aPos-uCenter)*uScale;vec3 n=aNorm;float a=uAngles.x,b=uAngles.y;mat3 rz=mat3(cos(a),sin(a),0.,-sin(a),cos(a),0.,0.,0.,1.);mat3 rx=mat3(1.,0.,0.,0.,cos(b),sin(b),0.,-sin(b),cos(b));p=rx*rz*p;n=rx*rz*n;vNormal=n;float perspective=2.9/(3.6-p.z);gl_Position=vec4(p.x*perspective*uZoom*uAspect,p.y*perspective*uZoom,p.z*.14,1.);}";
+const fsrc="precision mediump float;varying vec3 vNormal;void main(){vec3 n=normalize(vNormal);float lit=.25+.72*max(dot(n,normalize(vec3(-.4,.65,1.))),0.);vec3 color=vec3(.79,.68,.53);gl_FragColor=vec4(color*lit+vec3(.06),1.);}";
+function shader(type,source){const s=gl.createShader(type);gl.shaderSource(s,source);gl.compileShader(s);if(!gl.getShaderParameter(s,gl.COMPILE_STATUS))throw Error(gl.getShaderInfoLog(s));return s}
+function initGL(){
+ gl=canvas.getContext("webgl",{antialias:true,alpha:false});if(!gl){message("WebGL unavailable. Export still works.",true);return}
+ prog=gl.createProgram();gl.attachShader(prog,shader(gl.VERTEX_SHADER,vsrc));gl.attachShader(prog,shader(gl.FRAGMENT_SHADER,fsrc));gl.linkProgram(prog);
+ if(!gl.getProgramParameter(prog,gl.LINK_STATUS))throw Error(gl.getProgramInfoLog(prog));
+ gl.useProgram(prog);buffer=gl.createBuffer();gl.enable(gl.DEPTH_TEST);gl.disable(gl.CULL_FACE);
+ const stride=24;gl.bindBuffer(gl.ARRAY_BUFFER,buffer);
+ for(const [name,offset] of [["aPos",0],["aNorm",12]]){const loc=gl.getAttribLocation(prog,name);gl.enableVertexAttribArray(loc);gl.vertexAttribPointer(loc,3,gl.FLOAT,false,stride,offset)}
+}
+function uploadMesh(m){
+ if(!gl)return;
+ const f=m.triangles,v=m.vertices,faceCount=f.length/3,step=Math.max(1,Math.ceil(faceCount/90000)),result=[];
+ for(let i=0;i<f.length;i+=3*step){
+  const ids=[f[i]*3,f[i+1]*3,f[i+2]*3],u=[v[ids[1]]-v[ids[0]],v[ids[1]+1]-v[ids[0]+1],v[ids[1]+2]-v[ids[0]+2]],w=[v[ids[2]]-v[ids[0]],v[ids[2]+1]-v[ids[0]+1],v[ids[2]+2]-v[ids[0]+2]];
+  const n=[u[1]*w[2]-u[2]*w[1],u[2]*w[0]-u[0]*w[2],u[0]*w[1]-u[1]*w[0]],d=Math.hypot(...n)||1;
+  for(const idx of ids)result.push(v[idx],v[idx+1],v[idx+2],n[0]/d,n[1]/d,n[2]/d);
+ }
+ gl.bindBuffer(gl.ARRAY_BUFFER,buffer);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(result),gl.STATIC_DRAW);count=result.length/6;
+}
+function draw(){
+ if(!gl||!mesh)return;
+ const ratio=Math.min(2,window.devicePixelRatio||1),w=Math.max(1,Math.round(canvas.clientWidth*ratio)),h=Math.max(1,Math.round(canvas.clientHeight*ratio));
+ if(canvas.width!==w||canvas.height!==h){canvas.width=w;canvas.height=h}
+ gl.viewport(0,0,w,h);gl.clearColor(.045,.07,.052,1);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);gl.useProgram(prog);
+ const b=bounds(mesh);gl.uniform3fv(gl.getUniformLocation(prog,"uCenter"),b.min.map((a,i)=>(a+b.max[i])/2));
+ gl.uniform1f(gl.getUniformLocation(prog,"uScale"),1.7/Math.max(...b.size,.01));
+ gl.uniform1f(gl.getUniformLocation(prog,"uZoom"),zoom);
+ gl.uniform1f(gl.getUniformLocation(prog,"uAspect"),h/w);
+ gl.uniform2f(gl.getUniformLocation(prog,"uAngles"),yaw,tilt);
+ gl.drawArrays(gl.TRIANGLES,0,count);
+}
+canvas.addEventListener("pointerdown",e=>{state.drag=true;state.x=e.clientX;state.y=e.clientY;canvas.setPointerCapture(e.pointerId)});
+canvas.addEventListener("pointermove",e=>{if(!state.drag)return;yaw+=(e.clientX-state.x)*.012;tilt=Math.max(-1.5,Math.min(1.5,tilt+(e.clientY-state.y)*.01));state.x=e.clientX;state.y=e.clientY;draw()});
+canvas.addEventListener("pointerup",()=>state.drag=false);
+canvas.addEventListener("pointercancel",()=>state.drag=false);
+canvas.addEventListener("wheel",e=>{e.preventDefault();zoom=Math.max(.45,Math.min(3.5,zoom*Math.exp(-e.deltaY*.001)));draw()},{passive:false});
+window.addEventListener("resize",draw);
+try{initGL();make()}catch(e){message("Viewer error: "+e.message+". Exports remain available.",true)}
+</script>
+</body></html>
