@@ -32,9 +32,9 @@ def test_context_reversal_retains_failures_without_cross_context_penalty(tmp_pat
             else "verified"
         }})
         for i in range(6):
-            propose("world-a", i)
+            item = propose("world-a", i)
             assert cycle.poll_due()[0]["status"] == "failed"
-            cycle.evaluate_run(cycle.history()[0]["run_id"], lambda evidence: {"correct": False, "evaluator": "context-test-oracle"})
+            cycle.evaluate_run(get_store().fetchone("SELECT run_id FROM bean_goal_runs WHERE proposal_id=?", (item.proposal_id,))["run_id"], lambda evidence: {"correct": False, "evaluator": "context-test-oracle"})
         a = propose("world-a", 7)
         b = propose("world-b", 0)
         # Equal priority: unseen world-b must retain its own novelty, rather
