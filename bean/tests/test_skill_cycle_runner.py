@@ -59,6 +59,7 @@ def test_native_acquire_then_reuse_in_separate_interpreter(tmp_path):
     assert child.returncode == 0, child.stdout + child.stderr
     second = json.loads(child.stdout)
     assert second["status"] == "success"
+    assert second["evaluation_seal_sha256"] == first["evaluation_seal_sha256"]
     assert second["result"]["provider_invoked"] is False
     assert second["result"]["new_test_set"] is True
     assert second["result"]["passed"] is True
@@ -72,3 +73,28 @@ def test_native_acquire_then_reuse_in_separate_interpreter(tmp_path):
     )
     assert again.returncode != 0
     assert "reuse already attempted" in again.stderr
+
+
+def test_reuse_rejects_changed_withheld_evaluation(tmp_path):
+    projects = {}
+    for key, number in (("training", 3), ("holdout", -11), ("novel", 29)):
+        path = tmp_path / key
+        project(path, number)
+        projects[key] = str(path)
+    config = {
+        "database": str(tmp_path / "core.sqlite"),
+        "projects": projects, "vault": str(tmp_path / "vault"),
+        "journal": str(tmp_path / "journal.sqlite"),
+        "output": str(tmp_path / "output"),
+        "plan_id": "sealed-evaluation",
+        "name": "double_value",
+        "task": "Create a reusable integer doubling function for signed integers",
+        "training": "training", "holdout": "holdout", "novel": "novel",
+    }
+    acquired = execute_phase(config, phase="acquire", provider=FixtureWriter())
+    assert acquired["status"] == "success"
+    withheld = Path(projects["novel"]) / "tests" / "test_skill.py"
+    withheld.write_text(withheld.read_text() + "\\n# changed after acquisition\\n")
+    import pytest
+    with pytest.raises(ValueError, match="evaluation project seal mismatch"):
+        execute_phase(config, phase="reuse")
