@@ -134,3 +134,57 @@ def test_zero_exit_forged_native_receipt_never_reaches_comparison(tmp_path, monk
     assert "reuse" not in result["phases"]
     assert "comparison" not in result
     assert json.loads(receipt.read_text()) == result
+
+
+@pytest.mark.parametrize("outcomes,expected", [
+    ({}, "incomplete five-arm outcome matrix"),
+    (None, "incomplete five-arm outcome matrix"),
+    ({"candidate": {"passed": True, "test_count": 2}}, "incomplete five-arm outcome matrix"),
+    ({"candidate": {"passed": True, "test_count": 2},
+      "frozen": {"passed": False, "test_count": 1},
+      "no_memory": {"passed": False, "test_count": 2},
+      "grammar_matched": {"passed": False, "test_count": 2},
+      "strong": {"passed": False, "test_count": 2}}, "five arms did not execute identical test counts"),
+])
+def test_comparison_rejects_incomplete_or_unequal_outcomes(tmp_path, monkeypatch, outcomes, expected):
+    from types import SimpleNamespace
+    from bean.runtime import skill_cycle_live_experiment as live
+    from bean.runtime import skill_cycle_controls
+    projects = {}
+    for name in ("training", "holdout", "novel"):
+        root = tmp_path / name
+        root.mkdir()
+        (root / "case.py").write_text("pass\\n")
+        projects[name] = str(root)
+    settings = {
+        "database": str(tmp_path / "db.sqlite"), "projects": projects,
+        "vault": str(tmp_path / "vault"), "journal": str(tmp_path / "journal.sqlite"),
+        "output": str(tmp_path / "output"), "plan_id": "parity-check",
+        "name": "skill", "task": "Evaluate an unfamiliar skill",
+        "training": "training", "holdout": "holdout", "novel": "novel",
+    }
+    config = tmp_path / "config.json"
+    config.write_text(json.dumps(settings))
+    controls = {}
+    for arm in live.ARMS:
+        source = tmp_path / (arm + ".py")
+        source.write_text("def solve(x): return x\\n")
+        controls[arm] = source
+    def native_phase(command, **kwargs):
+        phase = command[command.index("--phase") + 1]
+        native = {
+            "schema": "bean.native_skill_cycle.runner.v1",
+            "phase": phase, "plan_id": settings["plan_id"],
+            "status": "success", "run_id": phase + "-unique",
+            "result_sha256": "abc123", "evaluation_seal_sha256": "sealed",
+            "provider_available": phase == "acquire",
+        }
+        return SimpleNamespace(returncode=0, stdout=json.dumps(native), stderr="")
+    monkeypatch.setattr(live.subprocess, "run", native_phase)
+    monkeypatch.setattr(skill_cycle_controls, "compare", lambda **kwargs: {"outcomes": outcomes})
+    receipt = tmp_path / "receipt.json"
+    result = live.run_experiment(config=config, provider="ollama", model="fixture-only",
+                                 controls=controls, receipt=receipt)
+    assert result["completed"] is False
+    assert result["comparison_error"] == expected
+    assert json.loads(receipt.read_text()) == result
