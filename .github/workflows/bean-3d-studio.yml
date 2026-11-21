@@ -30,6 +30,39 @@ jobs:
           node --test docs/bean-3d/mesh.test.mjs
       - name: Python stdlib bridge regression
         run: python -m unittest discover -s tests -p test_studio3d.py -v
+      - name: Parse browser module script without a bundler
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          source=Path("docs/bean-3d/index.html").read_text()
+          assert source.count('<script type="module">') == 1
+          script=source.split('<script type="module">',1)[1].split("</script>",1)[0]
+          Path("/tmp/bean-studio-ui.mjs").write_text(script)
+          PY
+          node --check /tmp/bean-studio-ui.mjs
+      - name: Local bridge health and input rejection smoke
+        run: |
+          python -m bean.studio3d.server >/tmp/bean3d-server.log 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid" 2>/dev/null || true' EXIT
+          python - <<'PY'
+          import json, time, urllib.request, urllib.error
+          for retry in range(30):
+              try:
+                  result=json.load(urllib.request.urlopen("http://127.0.0.1:8768/health",timeout=1))
+                  break
+              except Exception:
+                  time.sleep(.2)
+          else: raise AssertionError("Local bridge never started")
+          assert result["service"] == "bean-3d-studio"
+          assert result["model_available"] is False
+          req=urllib.request.Request("http://127.0.0.1:8768/api/image-to-3d",data=b'{"image":"invalid"}',headers={"Content-Type":"application/json"})
+          try:
+              urllib.request.urlopen(req,timeout=5)
+              raise AssertionError("Invalid image accepted")
+          except urllib.error.HTTPError as error:
+              assert error.code == 400, error.code
+          PY
       - name: Validate browser HTML entry and expected script
         run: |
           python - <<'PY'
