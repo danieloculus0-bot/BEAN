@@ -126,8 +126,8 @@ class GoalCycle:
                 if scoped:
                     stats = conn.execute(
                         "SELECT COUNT(*) AS tries,"
-                        "SUM(CASE WHEN json_extract(f.verdict_json,'$.correct')=1 THEN 1 ELSE 0 END) AS good,"
-                        "SUM(CASE WHEN json_extract(f.verdict_json,'$.correct')=0 THEN 1 ELSE 0 END) AS bad "
+                        "SUM(CASE WHEN (CASE WHEN json_valid(f.verdict_json) THEN json_extract(f.verdict_json,'$.correct') ELSE NULL END)=1 THEN 1 ELSE 0 END) AS good,"
+                        "SUM(CASE WHEN (CASE WHEN json_valid(f.verdict_json) THEN json_extract(f.verdict_json,'$.correct') ELSE NULL END)=0 THEN 1 ELSE 0 END) AS bad "
                         "FROM bean_goal_runs AS r "
                         "JOIN cognition_goal_proposals AS p "
                         "ON p.proposal_id=r.proposal_id "
@@ -139,8 +139,8 @@ class GoalCycle:
                 else:
                     stats = conn.execute(
                         "SELECT COUNT(*) AS tries,"
-                        "SUM(CASE WHEN json_extract(f.verdict_json,'$.correct')=1 THEN 1 ELSE 0 END) AS good,"
-                        "SUM(CASE WHEN json_extract(f.verdict_json,'$.correct')=0 THEN 1 ELSE 0 END) AS bad "
+                        "SUM(CASE WHEN (CASE WHEN json_valid(f.verdict_json) THEN json_extract(f.verdict_json,'$.correct') ELSE NULL END)=1 THEN 1 ELSE 0 END) AS good,"
+                        "SUM(CASE WHEN (CASE WHEN json_valid(f.verdict_json) THEN json_extract(f.verdict_json,'$.correct') ELSE NULL END)=0 THEN 1 ELSE 0 END) AS bad "
                         "FROM bean_goal_runs AS r "
                         "LEFT JOIN bean_goal_feedback AS f ON f.run_id=r.run_id "
                         "WHERE r.action_type=?", (action,)
