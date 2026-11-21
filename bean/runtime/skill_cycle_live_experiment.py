@@ -137,6 +137,8 @@ def run_experiment(*, config: Path, provider: str, model: str,
             evidence["comparison_error"] = "novel evaluation project mutated during comparison"
         elif any(digest(controls[arm]) != control_digests[arm] for arm in ARMS):
             evidence["comparison_error"] = "control source mutated during comparison"
+        elif not comparison["outcomes"]["candidate"]["passed"]:
+            evidence["comparison_error"] = "retained candidate failed independent novel evaluation"
         elif (not isinstance(comparison.get("outcomes"), dict)
               or set(comparison["outcomes"]) != {"candidate", *ARMS}):
             evidence["comparison_error"] = "incomplete five-arm outcome matrix"
@@ -144,8 +146,6 @@ def run_experiment(*, config: Path, provider: str, model: str,
                   for row in comparison["outcomes"].values())
               or len({row["test_count"] for row in comparison["outcomes"].values()}) != 1):
             evidence["comparison_error"] = "five arms did not execute identical test counts"
-        elif not comparison["outcomes"]["candidate"]["passed"]:
-            evidence["comparison_error"] = "retained candidate failed independent novel evaluation"
         elif comparison["outcomes"]["candidate"]["test_count"] < 1:
             evidence["comparison_error"] = "no independently executed novel tests"
         else:
