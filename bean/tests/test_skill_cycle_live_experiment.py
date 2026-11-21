@@ -40,10 +40,6 @@ def test_failed_acquisition_persists_negative_receipt_without_reuse(tmp_path):
         "name": "skill", "task": "Solve a task",
         "training": "training", "holdout": "holdout", "novel": "novel",
     }))
-    # The live runner fingerprints the withheld project before acquisition.
-    # Create the real fixture directory so provider failure is exercised.
-    (tmp_path / "novel").mkdir()
-    (tmp_path / "novel" / "test_case.py").write_text("assert True\n")
     controls = {}
     for arm in ("frozen", "no_memory", "grammar_matched", "strong"):
         path = tmp_path / (arm + ".py")
