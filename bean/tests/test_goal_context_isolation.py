@@ -82,3 +82,36 @@ def test_untagged_goal_retains_legacy_pooled_history(tmp_path):
             assert receipt["decision"]["prior_attempts"] == n
     finally:
         get_store().close()
+
+
+def test_corrupt_feedback_is_unknown_not_a_selection_crash(tmp_path):
+    """Corrupt persisted feedback must not crash GoalCycle or become a reward."""
+    if getattr(_local, "conn", None) is not None:
+        _local.conn.close()
+        _local.conn = None
+    init_store(str(tmp_path / "corrupt-feedback.sqlite"))
+    try:
+        owner = GoalStateEngine()
+        cycle = GoalCycle({"update_models": lambda _: {"status": "verified"}})
+        first = GoalProposal("first", ActionType.UPDATE_MODELS,
+                             "synthetic", 2, ApprovalRequired.NONE)
+        owner._persist(first, "corrupt-feedback")
+        assert cycle.poll_due()[0]["status"] == "success"
+        run_id = get_store().fetchone(
+            "SELECT run_id FROM bean_goal_runs WHERE proposal_id=?",
+            (first.proposal_id,))["run_id"]
+        cycle.evaluate_run(run_id, lambda _: {"correct": True, "evaluator": "synthetic"})
+        get_store()._conn().execute(
+            "UPDATE bean_goal_feedback SET verdict_json=? WHERE run_id=?",
+            ("{invalid", run_id))
+        get_store().commit()
+        second = GoalProposal("second", ActionType.UPDATE_MODELS,
+                              "synthetic", 2, ApprovalRequired.NONE)
+        owner._persist(second, "corrupt-feedback")
+        receipt = cycle.poll_due()[0]
+        assert receipt["proposal_id"] == second.proposal_id
+        assert receipt["decision"]["observed_successes"] == 0
+        assert receipt["decision"]["observed_failures"] == 0
+        assert receipt["decision"]["prior_attempts"] == 1
+    finally:
+        get_store().close()
