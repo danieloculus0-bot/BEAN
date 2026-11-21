@@ -7,6 +7,54 @@ Host-supplied projects must be independently frozen and credential-free.
 from __future__ import annotations
 
 import argparse
+import hashlib
+import os
+
+
+def _project_fingerprint(path: Path) -> str:
+    """Fingerprint evaluation inputs, excluding interpreter-generated caches."""
+    root = path.resolve(strict=True)
+    entries = []
+    for file in sorted(root.rglob("*")):
+        if any(part in {"__pycache__", ".pytest_cache", ".git"} for part in file.relative_to(root).parts):
+            continue
+        if file.is_symlink():
+            raise ValueError("evaluation project contains symlink")
+        if file.is_file() and file.suffix != ".pyc":
+            entries.append([file.relative_to(root).as_posix(),
+                            hashlib.sha256(file.read_bytes()).hexdigest()])
+    return hashlib.sha256(json.dumps(entries, separators=(",", ":")).encode()).hexdigest()
+
+
+def _seal_evaluation(config: dict, projects: dict, phase: str) -> str:
+    """Persist and verify frozen evaluation inputs across interpreter restarts.
+
+    A local tamper-evidence check, not a cryptographic proof of independence.
+    """
+    root = Path(config["vault"])
+    root.mkdir(parents=True, exist_ok=True)
+    seal = root / (".evaluation_" + hashlib.sha256(config["plan_id"].encode()).hexdigest() + ".json")
+    payload = {
+        "plan_id": config["plan_id"], "skill": config["name"],
+        "task": config["task"],
+        "projects": {
+            key: {"path": str(projects[config[key]]),
+                  "sha256": _project_fingerprint(projects[config[key]])}
+            for key in ("holdout", "novel")
+        },
+    }
+    encoded = json.dumps(payload, sort_keys=True, separators=(",", ":"))
+    digest = hashlib.sha256(encoded.encode()).hexdigest()
+    if phase == "acquire":
+        with seal.open("x", encoding="utf-8") as stream:
+            stream.write(encoded)
+            stream.flush()
+            os.fsync(stream.fileno())
+    else:
+        if not seal.is_file() or seal.read_text(encoding="utf-8") != encoded:
+            raise ValueError("evaluation project seal mismatch; refuse reuse")
+    return digest
+
 import json
 from pathlib import Path
 
@@ -43,6 +91,7 @@ def execute_phase(config: dict, *, phase: str, provider=None) -> dict:
             raise ValueError("missing frozen project: " + key)
     if len({projects[config[key]] for key in ("training", "holdout", "novel")}) != 3:
         raise ValueError("training, holdout and novel projects must be distinct")
+    evaluation_seal_sha256 = _seal_evaluation(config, projects, phase)
     database = Path(config["database"])
     database.parent.mkdir(parents=True, exist_ok=True)
     init_store(str(database))
@@ -88,6 +137,7 @@ def execute_phase(config: dict, *, phase: str, provider=None) -> dict:
         return {
             "schema": "bean.native_skill_cycle.runner.v1",
             "phase": phase, "plan_id": plan_id,
+            "evaluation_seal_sha256": evaluation_seal_sha256,
             "run_id": runs[0]["run_id"], "status": runs[0]["status"],
             "result_sha256": runs[0]["result_sha256"],
             "result": result, "plan": cycle.plan_status(plan_id),
