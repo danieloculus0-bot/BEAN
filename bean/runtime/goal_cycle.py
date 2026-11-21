@@ -390,6 +390,12 @@ class GoalCycle:
                     "action_type": row["action_type"], "state": row["state"],
                     "result": result, "result_json_valid": raw is None or result is not None,
                     "result_sha256": hashlib.sha256(raw.encode()).hexdigest() if raw is not None else None}
+        # Incomplete receipts cannot substantiate an independent correctness verdict.
+        if raw is None or result is None or (
+            isinstance(result, dict)
+            and result.get('schema') == 'bean.goal.result_truncated.v1'
+        ):
+            raise ValueError("run has no complete parseable result evidence")
         verdict = evaluator(dict(evidence))
         if not isinstance(verdict, dict) or type(verdict.get("correct")) is not bool:
             raise ValueError("evaluator must return a dict with boolean correct")
