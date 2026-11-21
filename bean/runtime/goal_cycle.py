@@ -30,6 +30,13 @@ CREATE TABLE IF NOT EXISTS bean_goal_runs (
  FOREIGN KEY(proposal_id) REFERENCES cognition_goal_proposals(proposal_id)
 );
 CREATE INDEX IF NOT EXISTS idx_goal_runs_action ON bean_goal_runs(action_type,state);
+CREATE TABLE IF NOT EXISTS bean_goal_feedback (
+ run_id TEXT PRIMARY KEY REFERENCES bean_goal_runs(run_id),
+ evaluated_at TEXT NOT NULL,
+ result_sha256 TEXT,
+ verdict_json TEXT NOT NULL,
+ verdict_sha256 TEXT NOT NULL
+);
 """
 
 
@@ -415,10 +422,6 @@ class GoalCycle:
                    "reason": str(verdict.get("reason", ""))[:1024]}
         encoded = json.dumps(compact, sort_keys=True, ensure_ascii=False)
         conn = self.store._conn()
-        conn.execute("""CREATE TABLE IF NOT EXISTS bean_goal_feedback (
-            run_id TEXT PRIMARY KEY REFERENCES bean_goal_runs(run_id),
-            evaluated_at TEXT NOT NULL, result_sha256 TEXT,
-            verdict_json TEXT NOT NULL, verdict_sha256 TEXT NOT NULL)""")
         conn.execute("BEGIN IMMEDIATE")
         try:
             # Bind feedback to the exact evidence seen by the evaluator.
