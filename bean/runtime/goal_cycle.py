@@ -30,6 +30,11 @@ CREATE TABLE IF NOT EXISTS bean_goal_runs (
  FOREIGN KEY(proposal_id) REFERENCES cognition_goal_proposals(proposal_id)
 );
 CREATE INDEX IF NOT EXISTS idx_goal_runs_action ON bean_goal_runs(action_type,state);
+CREATE TABLE IF NOT EXISTS bean_goal_feedback (
+ run_id TEXT PRIMARY KEY REFERENCES bean_goal_runs(run_id),
+ evaluated_at TEXT NOT NULL, result_sha256 TEXT,
+ verdict_json TEXT NOT NULL, verdict_sha256 TEXT NOT NULL
+);
 """
 
 
@@ -121,11 +126,12 @@ class GoalCycle:
                 if scoped:
                     stats = conn.execute(
                         "SELECT COUNT(*) AS tries,"
-                        "SUM(CASE WHEN r.state='success' THEN 1 ELSE 0 END) AS good,"
-                        "SUM(CASE WHEN r.state='failed' THEN 1 ELSE 0 END) AS bad "
+                        "SUM(CASE WHEN (CASE WHEN json_valid(f.verdict_json) THEN json_extract(f.verdict_json,'$.correct') ELSE NULL END)=1 THEN 1 ELSE 0 END) AS good,"
+                        "SUM(CASE WHEN (CASE WHEN json_valid(f.verdict_json) THEN json_extract(f.verdict_json,'$.correct') ELSE NULL END)=0 THEN 1 ELSE 0 END) AS bad "
                         "FROM bean_goal_runs AS r "
                         "JOIN cognition_goal_proposals AS p "
                         "ON p.proposal_id=r.proposal_id "
+                        "LEFT JOIN bean_goal_feedback AS f ON f.run_id=r.run_id "
                         "WHERE r.action_type=? AND json_valid(p.action_detail) "
                         "AND json_extract(p.action_detail,'$.learning_context')=?",
                         (action, context)
@@ -133,9 +139,11 @@ class GoalCycle:
                 else:
                     stats = conn.execute(
                         "SELECT COUNT(*) AS tries,"
-                        "SUM(CASE WHEN state='success' THEN 1 ELSE 0 END) AS good,"
-                        "SUM(CASE WHEN state='failed' THEN 1 ELSE 0 END) AS bad "
-                        "FROM bean_goal_runs WHERE action_type=?", (action,)
+                        "SUM(CASE WHEN (CASE WHEN json_valid(f.verdict_json) THEN json_extract(f.verdict_json,'$.correct') ELSE NULL END)=1 THEN 1 ELSE 0 END) AS good,"
+                        "SUM(CASE WHEN (CASE WHEN json_valid(f.verdict_json) THEN json_extract(f.verdict_json,'$.correct') ELSE NULL END)=0 THEN 1 ELSE 0 END) AS bad "
+                        "FROM bean_goal_runs AS r "
+                        "LEFT JOIN bean_goal_feedback AS f ON f.run_id=r.run_id "
+                        "WHERE r.action_type=?", (action,)
                     ).fetchone()
                 tries, good, bad = (stats["tries"] or 0,
                                     stats["good"] or 0, stats["bad"] or 0)
@@ -153,6 +161,7 @@ class GoalCycle:
                     "priority": priority, "prior_attempts": tries,
                     "observed_successes": good, "observed_failures": bad,
                     "unknown_not_rewarded": True,
+                    "only_independently_scored_outcomes_rewarded": True,
                     "selection_score": round(score, 6),
                     "outcome_scope": "explicit_context" if scoped else "pooled",
                     "context_sha256": (hashlib.sha256(context.encode()).hexdigest()
@@ -386,6 +395,12 @@ class GoalCycle:
             result = json.loads(raw) if raw is not None else None
         except (TypeError, ValueError):
             result = None
+        # Incomplete or truncated evidence is not independently scoreable.
+        # Reject before invoking an external evaluator or creating feedback.
+        if (raw is None or result is None or
+                (isinstance(result, dict) and
+                 result.get("schema") == "bean.goal.result_truncated.v1")):
+            raise ValueError("complete parseable result required for evaluation")
         evidence = {"run_id": run_id, "proposal_id": row["proposal_id"],
                     "action_type": row["action_type"], "state": row["state"],
                     "result": result, "result_json_valid": raw is None or result is not None,

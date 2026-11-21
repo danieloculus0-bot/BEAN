@@ -25,16 +25,16 @@ def test_context_reversal_retains_failures_without_cross_context_penalty(tmp_pat
             owner._persist(item, "context-test")
             return item
 
-        # Same registered action has opposite observed outcomes in two
-        # independent digital environments. These are execution receipts,
-        # not verified factual learning or an AGI score.
+        # Context-specific external test oracle scores completed executions.
+        # This is controlled synthetic feedback, not a real-model learning claim.
         cycle = GoalCycle({"update_models": lambda g: {
             "status": "failed" if g["action_detail"]["learning_context"] == "world-a"
             else "verified"
         }})
         for i in range(6):
-            propose("world-a", i)
+            item = propose("world-a", i)
             assert cycle.poll_due()[0]["status"] == "failed"
+            cycle.evaluate_run(get_store().fetchone("SELECT run_id FROM bean_goal_runs WHERE proposal_id=?", (item.proposal_id,))["run_id"], lambda evidence: {"correct": False, "evaluator": "context-test-oracle"})
         a = propose("world-a", 7)
         b = propose("world-b", 0)
         # Equal priority: unseen world-b must retain its own novelty, rather
@@ -80,5 +80,38 @@ def test_untagged_goal_retains_legacy_pooled_history(tmp_path):
             receipt = cycle.poll_due()[0]
             assert receipt["decision"]["outcome_scope"] == "pooled"
             assert receipt["decision"]["prior_attempts"] == n
+    finally:
+        get_store().close()
+
+
+def test_corrupt_feedback_is_unknown_not_a_selection_crash(tmp_path):
+    """Corrupt persisted feedback must not crash GoalCycle or become a reward."""
+    if getattr(_local, "conn", None) is not None:
+        _local.conn.close()
+        _local.conn = None
+    init_store(str(tmp_path / "corrupt-feedback.sqlite"))
+    try:
+        owner = GoalStateEngine()
+        cycle = GoalCycle({"update_models": lambda _: {"status": "verified"}})
+        first = GoalProposal("first", ActionType.UPDATE_MODELS,
+                             "synthetic", 2, ApprovalRequired.NONE)
+        owner._persist(first, "corrupt-feedback")
+        assert cycle.poll_due()[0]["status"] == "success"
+        run_id = get_store().fetchone(
+            "SELECT run_id FROM bean_goal_runs WHERE proposal_id=?",
+            (first.proposal_id,))["run_id"]
+        cycle.evaluate_run(run_id, lambda _: {"correct": True, "evaluator": "synthetic"})
+        get_store()._conn().execute(
+            "UPDATE bean_goal_feedback SET verdict_json=? WHERE run_id=?",
+            ("{invalid", run_id))
+        get_store().commit()
+        second = GoalProposal("second", ActionType.UPDATE_MODELS,
+                              "synthetic", 2, ApprovalRequired.NONE)
+        owner._persist(second, "corrupt-feedback")
+        receipt = cycle.poll_due()[0]
+        assert receipt["proposal_id"] == second.proposal_id
+        assert receipt["decision"]["observed_successes"] == 0
+        assert receipt["decision"]["observed_failures"] == 0
+        assert receipt["decision"]["prior_attempts"] == 1
     finally:
         get_store().close()
