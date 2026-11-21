@@ -1,0 +1,42 @@
+name: BEAN 3D Studio
+on:
+  push:
+    paths:
+      - "docs/bean-3d/**"
+      - "bean/studio3d/**"
+      - "tests/test_studio3d.py"
+      - ".github/workflows/bean-3d-studio.yml"
+  pull_request:
+    paths:
+      - "docs/bean-3d/**"
+      - "bean/studio3d/**"
+      - "tests/test_studio3d.py"
+      - ".github/workflows/bean-3d-studio.yml"
+  workflow_dispatch:
+jobs:
+  geometry-and-bridge:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: JavaScript procedural mesh regression
+        run: |
+          node --check docs/bean-3d/mesh.mjs
+          node --test docs/bean-3d/mesh.test.mjs
+      - name: Python stdlib bridge regression
+        run: python -m unittest discover -s tests -p test_studio3d.py -v
+      - name: Validate browser HTML entry and expected script
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          html = Path("docs/bean-3d/index.html").read_text()
+          assert 'from "./mesh.mjs"' in html
+          assert '/api/image-to-3d' in html
+          assert 'save-ai-stl' in html
+          print("Browser entry references and local bridge contract present")
+          PY
