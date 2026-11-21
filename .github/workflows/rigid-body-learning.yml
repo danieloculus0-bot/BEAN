@@ -1,0 +1,35 @@
+name: BEAN rigid-body native learning and transfer
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'bean/engineering/rigid_body.py'
+      - 'bean/tests/test_rigid_body.py'
+      - 'bean/tests/test_rigid_body_adaptive.py'
+      - '.github/workflows/rigid-body-learning.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'bean/engineering/rigid_body.py'
+      - 'bean/tests/test_rigid_body.py'
+      - 'bean/tests/test_rigid_body_adaptive.py'
+      - '.github/workflows/rigid-body-learning.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  rigid-body-transfer:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Run deterministic rigid-body and native BEAN learning tests
+        run: python -m unittest -v bean.tests.test_rigid_body bean.tests.test_rigid_body_adaptive
