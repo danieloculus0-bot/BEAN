@@ -395,7 +395,13 @@ class GoalCycle:
             result = json.loads(raw) if raw is not None else None
         except (TypeError, ValueError):
             result = None
-        # Incomplete or truncated evidence is not independently scoreable.\n        # Reject before invoking an external evaluator or creating feedback.\n        if (raw is None or result is None or\n                (isinstance(result, dict) and\n                 result.get("schema") == "bean.goal.result_truncated.v1")):\n            raise ValueError("complete parseable result required for evaluation")\n        evidence = {"run_id": run_id, "proposal_id": row["proposal_id"],
+        # Incomplete or truncated evidence is not independently scoreable.
+        # Reject before invoking an external evaluator or creating feedback.
+        if (raw is None or result is None or
+                (isinstance(result, dict) and
+                 result.get("schema") == "bean.goal.result_truncated.v1")):
+            raise ValueError("complete parseable result required for evaluation")
+        evidence = {"run_id": run_id, "proposal_id": row["proposal_id"],
                     "action_type": row["action_type"], "state": row["state"],
                     "result": result, "result_json_valid": raw is None or result is not None,
                     "result_sha256": hashlib.sha256(raw.encode()).hexdigest() if raw is not None else None}
