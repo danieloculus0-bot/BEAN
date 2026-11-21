@@ -367,6 +367,56 @@ class GoalCycle:
             })
         return audits
 
+
+    def evaluate_run(self, run_id: str, evaluator: Callable[[dict], dict]) -> dict:
+        """Independently score a completed goal from durable evidence, never replay it.
+
+        The host supplies a separate evaluator. Its verdict is stored alongside
+        the execution receipt, not substituted for the execution outcome.
+        """
+        if not isinstance(run_id, str) or not run_id or not callable(evaluator):
+            raise ValueError("run_id and evaluator required")
+        row = self.store.fetchone(
+            "SELECT run_id,proposal_id,action_type,state,result_json "
+            "FROM bean_goal_runs WHERE run_id=?", (run_id,))
+        if row is None or row["state"] == "running":
+            raise ValueError("run must exist and be finished")
+        raw = row["result_json"]
+        try:
+            result = json.loads(raw) if raw is not None else None
+        except (TypeError, ValueError):
+            result = None
+        evidence = {"run_id": run_id, "proposal_id": row["proposal_id"],
+                    "action_type": row["action_type"], "state": row["state"],
+                    "result": result, "result_json_valid": raw is None or result is not None,
+                    "result_sha256": hashlib.sha256(raw.encode()).hexdigest() if raw is not None else None}
+        verdict = evaluator(dict(evidence))
+        if not isinstance(verdict, dict) or type(verdict.get("correct")) is not bool:
+            raise ValueError("evaluator must return a dict with boolean correct")
+        # Persist a bounded, canonical verdict without trusting model prose as a score.
+        compact = {"correct": verdict["correct"],
+                   "evaluator": str(verdict.get("evaluator", "external"))[:128],
+                   "reason": str(verdict.get("reason", ""))[:1024]}
+        encoded = json.dumps(compact, sort_keys=True, ensure_ascii=False)
+        conn = self.store._conn()
+        conn.execute("""CREATE TABLE IF NOT EXISTS bean_goal_feedback (
+            run_id TEXT PRIMARY KEY REFERENCES bean_goal_runs(run_id),
+            evaluated_at TEXT NOT NULL, result_sha256 TEXT,
+            verdict_json TEXT NOT NULL, verdict_sha256 TEXT NOT NULL)""")
+        conn.execute("BEGIN IMMEDIATE")
+        try:
+            # Immutable first evaluation: changing graders cannot silently rewrite evidence.
+            conn.execute("INSERT INTO bean_goal_feedback VALUES (?,?,?,?,?)",
+                         (run_id, _now(), evidence["result_sha256"], encoded,
+                          hashlib.sha256(encoded.encode()).hexdigest()))
+            conn.commit()
+        except Exception:
+            conn.rollback()
+            raise
+        return {"run_id": run_id, **compact,
+                "verdict_sha256": hashlib.sha256(encoded.encode()).hexdigest(),
+                "execution_state_unchanged": True}
+
     def history(self, limit: int = 20) -> list[dict]:
         if type(limit) is not int or not 1 <= limit <= 200:
             raise ValueError("limit must be 1..200")
