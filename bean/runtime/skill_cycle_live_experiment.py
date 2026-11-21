@@ -31,6 +31,9 @@ def run_experiment(*, config: Path, provider: str, model: str,
         raise ValueError("all four control arms required")
     config = config.resolve(strict=True)
     settings = json.loads(config.read_text(encoding="utf-8"))
+    from bean.runtime.skill_cycle_runner import _project_fingerprint
+    novel_project = Path(settings["projects"][settings["novel"]]).resolve(strict=True)
+    novel_digest = _project_fingerprint(novel_project)
     control_digests = {}
     for arm in ARMS:
         path = controls[arm]
@@ -43,6 +46,7 @@ def run_experiment(*, config: Path, provider: str, model: str,
         "provider": provider, "model": model,
         "config_sha256": digest(config),
         "control_sha256": control_digests,
+        "novel_project_sha256": novel_digest,
         "phases": {}, "completed": False,
         "independent_control_provenance_verified": False,
         "equal_generation_budget_verified": False,
@@ -93,6 +97,10 @@ def run_experiment(*, config: Path, provider: str, model: str,
         evidence["comparison_error"] = "control source mutated during acquisition"
         persist()
         return evidence
+    if _project_fingerprint(novel_project) != novel_digest:
+        evidence["comparison_error"] = "novel evaluation project mutated before comparison"
+        persist()
+        return evidence
     from bean.runtime.skill_cycle_controls import compare
     try:
         comparison = compare(
@@ -101,7 +109,16 @@ def run_experiment(*, config: Path, provider: str, model: str,
             controls={arm: str(controls[arm]) for arm in ARMS},
         )
         evidence["comparison"] = comparison
-        evidence["completed"] = True
+        if _project_fingerprint(novel_project) != novel_digest:
+            evidence["comparison_error"] = "novel evaluation project mutated during comparison"
+        elif any(digest(controls[arm]) != control_digests[arm] for arm in ARMS):
+            evidence["comparison_error"] = "control source mutated during comparison"
+        elif not comparison["outcomes"]["candidate"]["passed"]:
+            evidence["comparison_error"] = "retained candidate failed independent novel evaluation"
+        elif comparison["outcomes"]["candidate"]["test_count"] < 1:
+            evidence["comparison_error"] = "no independently executed novel tests"
+        else:
+            evidence["completed"] = True
     except Exception as exc:
         evidence["comparison_error"] = type(exc).__name__ + ": " + str(exc)
     persist()
