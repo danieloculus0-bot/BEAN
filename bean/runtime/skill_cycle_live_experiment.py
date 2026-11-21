@@ -137,11 +137,13 @@ def run_experiment(*, config: Path, provider: str, model: str,
             evidence["comparison_error"] = "novel evaluation project mutated during comparison"
         elif any(digest(controls[arm]) != control_digests[arm] for arm in ARMS):
             evidence["comparison_error"] = "control source mutated during comparison"
-        elif not comparison["outcomes"]["candidate"]["passed"]:
-            evidence["comparison_error"] = "retained candidate failed independent novel evaluation"
-        elif (not isinstance(comparison.get("outcomes"), dict)
-              or set(comparison["outcomes"]) != {"candidate", *ARMS}):
+        elif (not isinstance(comparison, dict)
+              or not isinstance(comparison.get("outcomes"), dict)
+              or set(comparison["outcomes"]) != {"candidate", *ARMS}
+              or any(not isinstance(row, dict) for row in comparison["outcomes"].values())):
             evidence["comparison_error"] = "incomplete five-arm outcome matrix"
+        elif not comparison["outcomes"]["candidate"].get("passed"):
+            evidence["comparison_error"] = "retained candidate failed independent novel evaluation"
         elif (any(type(row.get("test_count")) is not int or row["test_count"] < 1
                   for row in comparison["outcomes"].values())
               or len({row["test_count"] for row in comparison["outcomes"].values()}) != 1):
