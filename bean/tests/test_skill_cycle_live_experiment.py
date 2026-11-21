@@ -91,7 +91,8 @@ def test_failed_novel_candidate_does_not_mark_experiment_complete(tmp_path, monk
         return SimpleNamespace(returncode=0, stdout=json.dumps(receipt), stderr="")
     monkeypatch.setattr(live.subprocess, "run", native_phase)
     monkeypatch.setattr(skill_cycle_controls, "compare", lambda **kwargs: {
-        "outcomes": {"candidate": {"passed": False, "test_count": 2}},
+        "outcomes": {"candidate": {"passed": False, "test_count": 2},
+                     **{arm: {"passed": True, "test_count": 2} for arm in live.ARMS}},
     })
     receipt = tmp_path / "receipt.json"
     result = live.run_experiment(config=config, provider="ollama", model="local-model",
