@@ -35,10 +35,15 @@ def test_incomplete_result_never_invokes_evaluator_or_writes_feedback(cycle, rep
     with pytest.raises(ValueError, match="complete parseable result"):
         cycle.evaluate_run(run_id, lambda evidence: calls.append(evidence) or {"correct": True})
     assert calls == []
-    # Schema initialization is allowed; invalid evidence must persist no verdict.
-    assert get_store().fetchone(
-        "SELECT COUNT(*) AS n FROM bean_goal_feedback"
-    )["n"] == 0
+    # Both eager and lazy schema initialization are valid, but neither may
+    # persist feedback for incomplete evidence.
+    exists = get_store().fetchone(
+        "SELECT COUNT(*) AS n FROM sqlite_master WHERE type='table' AND name='bean_goal_feedback'"
+    )["n"]
+    if exists:
+        assert get_store().fetchone(
+            "SELECT COUNT(*) AS n FROM bean_goal_feedback"
+        )["n"] == 0
 
 
 def test_complete_result_is_scored_once_and_survives_restart(cycle):
