@@ -56,6 +56,9 @@ def run_probe(receipt: Path) -> dict:
                     cwd=root, capture_output=True, text=True, timeout=8,
                     env={"PATH": os.environ.get("PATH", ""),
                          "PYTHONPATH": "", "PYTHONDONTWRITEBYTECODE": "1"})
+                outcome["heldout_stdout_sha256"] = hashlib.sha256(proc.stdout.encode()).hexdigest()
+                outcome["heldout_stderr_sha256"] = hashlib.sha256(proc.stderr.encode()).hexdigest()
+                outcome["heldout_exit_code"] = proc.returncode
                 outcome["heldout_passed"] = proc.returncode == 0
                 outcome["heldout_cases"] = 4
                 outcome["failure_type"] = (
@@ -73,4 +76,7 @@ def run_probe(receipt: Path) -> dict:
 
 if __name__ == "__main__":
     target = Path(sys.argv[1]) if len(sys.argv) > 1 else Path("local-skill-probe.json")
-    print(json.dumps(run_probe(target), sort_keys=True))
+    result = run_probe(target)
+    print(json.dumps(result, sort_keys=True))
+    if not result.get("heldout_passed", False):
+        sys.exit(1)
