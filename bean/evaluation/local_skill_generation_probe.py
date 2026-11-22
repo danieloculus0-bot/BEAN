@@ -37,12 +37,12 @@ def run_probe(receipt: Path) -> dict:
         outcome["source_sha256"] = hashlib.sha256(source.encode()).hexdigest()
         ast.parse(source)
         # No generated code is executed in the evaluator process.
-        # Isolated subprocess with bounded time; no network or shell tools needed.
+        # Separate subprocess with bounded time; this is not an OS sandbox.
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             (root / "candidate.py").write_text(source)
             tests = (
-                "from candidate import clamp\n"
+                "import runpy\n"\n                "clamp = runpy.run_path(\'candidate.py\')[\'clamp\']\n"
                 "assert clamp(4, 0, 9) == 4\n"
                 "assert clamp(-7, -3, 2) == -3\n"
                 "assert clamp(99, -4, 6) == 6\n"
