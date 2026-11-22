@@ -128,7 +128,7 @@ def summarize_matched_experiment(outcomes, experiment_id):
                 elif len(set(values)) != 1:
                     reasons.append("mismatched_" + field)
         if reasons:
-            excluded({"skill": skill, "tests_sha256": test_sha,
+            excluded.append({"skill": skill, "tests_sha256": test_sha,
                              "reasons": sorted(set(reasons))})
             continue
         valid.append({"skill": skill, "tests_sha256": test_sha,
