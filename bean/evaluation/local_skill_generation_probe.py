@@ -9,6 +9,7 @@ import ast
 import hashlib
 import json
 import os
+import sqlite3
 from pathlib import Path
 import subprocess
 import sys
@@ -27,7 +28,7 @@ def run_probe(receipt: Path) -> dict:
         "Return source code only."
     )
     original = "def clamp(value, lower, upper):\n    raise NotImplementedError\n"
-    outcome = {"schema": "bean.local_skill_probe.v1",
+    outcome = {"schema": "bean.local_skill_probe.v2",
                "provider": "llamacpp", "model": "bean-local",
                "real_model_requested": True,
                "retained_learning_proven": False,
@@ -61,8 +62,50 @@ def run_probe(receipt: Path) -> dict:
                 outcome["heldout_exit_code"] = proc.returncode
                 outcome["heldout_passed"] = proc.returncode == 0
                 outcome["heldout_cases"] = 4
-                outcome["failure_type"] = (
-                    None if proc.returncode == 0 else "heldout_assertion_or_runtime")
+                if proc.returncode == 0:
+                    db_path = root / "acquired.sqlite3"
+                    with sqlite3.connect(db_path) as db:
+                        db.execute("CREATE TABLE skills (name TEXT PRIMARY KEY, source TEXT, sha256 TEXT)")
+                        db.execute("INSERT INTO skills VALUES (?, ?, ?)",
+                                   ("clamp", source, outcome["source_sha256"]))
+                    (root / "candidate.py").unlink()
+                    recovery = (
+                        "import sqlite3, hashlib, pathlib, sys\n"
+                        "with sqlite3.connect(sys.argv[1]) as db:\n"
+                        "    row = db.execute('SELECT source, sha256 FROM skills WHERE name=?', ('clamp',)).fetchone()\n"
+                        "if not row or hashlib.sha256(row[0].encode()).hexdigest() != row[1]:\n"
+                        "    raise SystemExit(3)\n"
+                        "pathlib.Path('candidate.py').write_text(row[0])\n"
+                    )
+                    (root / "recover.py").write_text(recovery)
+                    restart = subprocess.run(
+                        [sys.executable, "-I", "-B", "recover.py", str(db_path)],
+                        cwd=root, capture_output=True, text=True, timeout=8)
+                    outcome["restart_exit_code"] = restart.returncode
+                    outcome["recovered_source_matches"] = (
+                        restart.returncode == 0 and
+                        (root / "candidate.py").exists() and
+                        hashlib.sha256((root / "candidate.py").read_bytes()).hexdigest()
+                        == outcome["source_sha256"])
+                    if outcome["recovered_source_matches"]:
+                        (root / "heldout.py").write_text(
+                            "import runpy\n"
+                            "clamp = runpy.run_path('candidate.py')['clamp']\n"
+                            "assert clamp(0, 0, 0) == 0\n"
+                            "assert clamp(-100, -8, -1) == -8\n"
+                            "assert clamp(17, 12, 15) == 15\n"
+                            "assert clamp(13, 12, 15) == 13\n")
+                        reuse = subprocess.run(
+                            [sys.executable, "-I", "-B", "heldout.py"],
+                            cwd=root, capture_output=True, text=True, timeout=8)
+                        outcome["post_restart_exit_code"] = reuse.returncode
+                        outcome["post_restart_distinct_passed"] = reuse.returncode == 0
+                    else:
+                        outcome["post_restart_distinct_passed"] = False
+                    if not outcome["post_restart_distinct_passed"]:
+                        outcome["failure_type"] = "retained_reuse_failed"
+                if proc.returncode != 0:
+                    outcome["failure_type"] = "heldout_assertion_or_runtime"
             except subprocess.TimeoutExpired:
                 outcome.update(heldout_passed=False, heldout_cases=4,
                                failure_type="execution_timeout")
@@ -78,5 +121,5 @@ if __name__ == "__main__":
     target = Path(sys.argv[1]) if len(sys.argv) > 1 else Path("local-skill-probe.json")
     result = run_probe(target)
     print(json.dumps(result, sort_keys=True))
-    if not result.get("heldout_passed", False):
+    if not (result.get("heldout_passed", False) and result.get("post_restart_distinct_passed", False)):
         sys.exit(1)
