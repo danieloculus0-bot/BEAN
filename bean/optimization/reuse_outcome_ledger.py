@@ -76,6 +76,10 @@ def main(argv=None):
     import argparse
     parser = argparse.ArgumentParser(description="Verify BEAN retained-skill reuse evidence")
     parser.add_argument("database", help="Existing SQLite outcome ledger")
+    parser.add_argument("--expected-count", type=int, default=None,
+                        help="Pinned receipt count from an independently retained checkpoint")
+    parser.add_argument("--expected-head-sha256", default=None,
+                        help="Pinned final receipt digest from an independently retained checkpoint")
     args = parser.parse_args(argv)
     path = Path(args.database)
     if not path.is_file() or path.is_symlink():
@@ -84,6 +88,19 @@ def main(argv=None):
         outcomes = verify_reuse_outcomes(path)
     except (sqlite3.Error, ValueError, json.JSONDecodeError) as exc:
         parser.exit(1, f"integrity verification failed: {type(exc).__name__}: {exc}\n")
+    # A self-contained hash chain cannot detect deletion of its final rows.
+    # An independently retained checkpoint pins both the count and final digest.
+    if args.expected_count is not None and (args.expected_count < 0 or len(outcomes) != args.expected_count):
+        parser.exit(1, "integrity verification failed: checkpoint count mismatch\n")
+    if args.expected_head_sha256 is not None:
+        expected = args.expected_head_sha256
+        if len(expected) != 64 or any(c not in "0123456789abcdef" for c in expected):
+            parser.error("expected head must be a lowercase SHA-256 digest")
+        with closing(sqlite3.connect(path)) as db:
+            row = db.execute("SELECT receipt_sha256 FROM reuse_outcomes ORDER BY sequence DESC LIMIT 1").fetchone()
+        actual_head = row[0] if row else "0" * 64
+        if actual_head != expected:
+            parser.exit(1, "integrity verification failed: checkpoint head mismatch\n")
     print(json.dumps({"verified": True, "count": len(outcomes),
                       "failures": sum(not item["passed"] for item in outcomes)},
                      sort_keys=True))
