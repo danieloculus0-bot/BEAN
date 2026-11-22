@@ -42,7 +42,8 @@ def run_probe(receipt: Path) -> dict:
             root = Path(directory)
             (root / "candidate.py").write_text(source)
             tests = (
-                "import runpy\n"\n                "clamp = runpy.run_path(\'candidate.py\')[\'clamp\']\n"
+                "import runpy\n"
+                "clamp = runpy.run_path(\'candidate.py\')[\'clamp\']\n"
                 "assert clamp(4, 0, 9) == 4\n"
                 "assert clamp(-7, -3, 2) == -3\n"
                 "assert clamp(99, -4, 6) == 6\n"
