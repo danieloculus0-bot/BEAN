@@ -104,8 +104,8 @@ def run_probe(receipt: Path) -> dict:
                         outcome["post_restart_distinct_passed"] = False
                     if not outcome["post_restart_distinct_passed"]:
                         outcome["failure_type"] = "retained_reuse_failed"
-                outcome["failure_type"] = (
-                    None if proc.returncode == 0 else "heldout_assertion_or_runtime")
+                if proc.returncode != 0:
+                    outcome["failure_type"] = "heldout_assertion_or_runtime"
             except subprocess.TimeoutExpired:
                 outcome.update(heldout_passed=False, heldout_cases=4,
                                failure_type="execution_timeout")
