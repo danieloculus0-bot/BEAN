@@ -124,6 +124,12 @@ jobs:
           assert result.get("external_provider_skipped") is True
           assert result.get("external_cost_usd") == 0
           PY
+      - name: Real Qwen-generated Python skill probe with held-out checks
+        shell: bash
+        env:
+          BEAN_LLAMACPP_URL: http://127.0.0.1:18080/v1/chat/completions
+        run: |
+          python -m bean.evaluation.local_skill_generation_probe /tmp/bean-local-qwen-test/skill-probe.json
       - uses: actions/upload-artifact@v4
         if: always()
         with:
