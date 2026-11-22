@@ -71,6 +71,30 @@ class ReuseOutcomeLedgerTests(unittest.TestCase):
             self.assertNotEqual(rejected.returncode, 0)
             self.assertIn("checkpoint count mismatch", rejected.stderr)
 
+    def test_export_checkpoint_then_verify_in_fresh_process(self):
+        with tempfile.TemporaryDirectory() as directory:
+            db = Path(directory) / "outcomes.sqlite"
+            digest = hashlib.sha256(b"skill").hexdigest()
+            append_reuse_outcome(db, skill="retained", source_sha256=digest,
+                                 tests_sha256=digest, passed=False, novel_test_set=True)
+            base = [sys.executable, "-m", "bean.optimization.reuse_outcome_ledger", str(db)]
+            exported = subprocess.run(base + ["--emit-checkpoint"], capture_output=True,
+                                      text=True, check=False)
+            self.assertEqual(exported.returncode, 0, exported.stderr)
+            checkpoint = json.loads(exported.stdout)
+            self.assertEqual(checkpoint["count"], 1)
+            self.assertEqual(len(checkpoint["head_sha256"]), 64)
+            verified = subprocess.run(base + ["--expected-count", str(checkpoint["count"]),
+                                              "--expected-head-sha256", checkpoint["head_sha256"]],
+                                      capture_output=True, text=True, check=False)
+            self.assertEqual(verified.returncode, 0, verified.stderr)
+            with sqlite3.connect(db) as connection:
+                connection.execute("DELETE FROM reuse_outcomes")
+            rejected = subprocess.run(base + ["--expected-count", str(checkpoint["count"]),
+                                              "--expected-head-sha256", checkpoint["head_sha256"]],
+                                      capture_output=True, text=True, check=False)
+            self.assertNotEqual(rejected.returncode, 0)
+
     def test_rejects_invalid_identity_and_boolean(self):
         with tempfile.TemporaryDirectory() as directory:
             with self.assertRaises(ValueError):
