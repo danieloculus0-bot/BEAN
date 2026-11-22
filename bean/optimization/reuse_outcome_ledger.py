@@ -17,7 +17,8 @@ def _canonical(value):
 
 
 def append_reuse_outcome(database, *, skill, source_sha256, tests_sha256, passed,
-                         novel_test_set, provider_invoked=False, experiment_id=None, condition="candidate"):
+                         novel_test_set, provider_invoked=False, experiment_id=None, condition="candidate",
+                         model_id=None, evaluation_budget=None, seed=None):
     """Persist a reproducible result, preserving failures and chained history."""
     if not isinstance(skill, str) or not skill:
         raise ValueError("invalid skill")
@@ -30,6 +31,12 @@ def append_reuse_outcome(database, *, skill, source_sha256, tests_sha256, passed
         raise ValueError("invalid experiment identity")
     if condition not in ("candidate", "frozen", "no_memory", "grammar_matched", "strong_control"):
         raise ValueError("invalid evaluation condition")
+    if model_id is not None and (not isinstance(model_id, str) or not model_id.strip()):
+        raise ValueError("invalid model identity")
+    if evaluation_budget is not None and (type(evaluation_budget) is not int or evaluation_budget < 0):
+        raise ValueError("invalid evaluation budget")
+    if seed is not None and (type(seed) is not int or seed < 0):
+        raise ValueError("invalid seed")
     path = Path(database)
     if path.is_symlink():
         raise ValueError("linked outcome ledger")
@@ -45,7 +52,8 @@ def append_reuse_outcome(database, *, skill, source_sha256, tests_sha256, passed
         payload = {"skill": skill, "source_sha256": source_sha256,
                    "tests_sha256": tests_sha256, "passed": passed,
                    "novel_test_set": novel_test_set, "provider_invoked": provider_invoked,
-                   "experiment_id": experiment_id, "condition": condition}
+                   "experiment_id": experiment_id, "condition": condition,
+                   "model_id": model_id, "evaluation_budget": evaluation_budget, "seed": seed}
         encoded = _canonical(payload).decode("utf-8")
         digest = hashlib.sha256(prior.encode("ascii") + encoded.encode("utf-8")).hexdigest()
         db.execute("INSERT INTO reuse_outcomes(payload, prior_sha256, receipt_sha256) VALUES(?,?,?)",
@@ -110,8 +118,17 @@ def summarize_matched_experiment(outcomes, experiment_id):
                 reasons.append("invalid_outcome")
         if set(by_arm) != set(EVALUATION_ARMS):
             reasons.append("incomplete_arms")
+        # A matched result is not comparable when model, budget or seed differs.
+        # Legacy receipts lacking provenance remain descriptive but are excluded.
+        if not reasons:
+            for field in ("model_id", "evaluation_budget", "seed"):
+                values = [by_arm[arm].get(field) for arm in EVALUATION_ARMS]
+                if any(value is None for value in values):
+                    reasons.append("missing_" + field)
+                elif len(set(values)) != 1:
+                    reasons.append("mismatched_" + field)
         if reasons:
-            excluded.append({"skill": skill, "tests_sha256": test_sha,
+            excluded({"skill": skill, "tests_sha256": test_sha,
                              "reasons": sorted(set(reasons))})
             continue
         valid.append({"skill": skill, "tests_sha256": test_sha,
@@ -123,9 +140,9 @@ def summarize_matched_experiment(outcomes, experiment_id):
             "correct": counts,
             "candidate_minus_controls": {arm: counts["candidate"] - counts[arm]
                                           for arm in EVALUATION_ARMS if arm != "candidate"},
-            "excluded": excluded, "equal_budget_verified": False, "source_equivalence_verified": False,
+            "excluded": excluded, "equal_budget_verified": bool(valid), "source_equivalence_verified": False,
             "independent_learning_verified": False,
-            "interpretation": "descriptive_only_no_budget_or_seed_receipts"}
+            "interpretation": "descriptive_only_provenance_matched_not_independent_learning"}
 
 def main(argv=None):
     """Read-only verification in a fresh interpreter; exit nonzero on tampering."""
