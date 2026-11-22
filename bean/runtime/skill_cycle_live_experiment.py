@@ -25,7 +25,7 @@ def digest(path: Path) -> str:
 
 def run_experiment(*, config: Path, provider: str, model: str,
                    controls: dict[str, Path], receipt: Path) -> dict:
-    if provider not in ("ollama", "openrouter") or not model.strip():
+    if provider not in ("ollama", "openrouter", "llamacpp") or not model.strip():
         raise ValueError("real model provider and model required")
     if set(controls) != set(ARMS):
         raise ValueError("all four control arms required")
@@ -216,7 +216,7 @@ def run_experiment(*, config: Path, provider: str, model: str,
 def main():
     parser = argparse.ArgumentParser(description="Real-model BEAN learning/restart/control experiment")
     parser.add_argument("--config", type=Path, required=True)
-    parser.add_argument("--provider", required=True, choices=("ollama", "openrouter"))
+    parser.add_argument("--provider", required=True, choices=("ollama", "openrouter", "llamacpp"))
     parser.add_argument("--model", required=True)
     parser.add_argument("--receipt", type=Path, required=True)
     for arm in ARMS:
