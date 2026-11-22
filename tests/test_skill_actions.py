@@ -1,5 +1,6 @@
 """Native GoalCycle skill-action contract tests; no live model claims."""
 import tempfile
+import hashlib
 import unittest
 from pathlib import Path
 from unittest.mock import patch
@@ -44,7 +45,8 @@ class SkillActionsTests(unittest.TestCase):
             promote.assert_not_called()
         with patch("bean.runtime.skill_actions.retrieve", side_effect=FileNotFoundError), \
              patch("bean.runtime.skill_actions.incubate_skill", return_value={
-                 "skill_promotion_ready": True
+                 "skill_promotion_ready": True, "accepted_source": "a" * 64,
+                 "retained_skill": {"source_sha256": "a" * 64}
              }), patch("bean.runtime.skill_actions.promote", return_value={
                  "source_sha256": "a" * 64, "receipt_sha256": "b" * 64
              }) as promote:
@@ -58,13 +60,22 @@ class SkillActionsTests(unittest.TestCase):
                                   "name": "sample", "project": "novel"}}
         receipt = {"passed": True, "independent_from_promotion_holdout": False,
                    "source_sha256": "a" * 64, "reuse_tests_sha256": "b" * 64}
-        with patch("bean.runtime.skill_actions.reuse", return_value=receipt):
+        source = "def useful():\n    return 42\n"
+        digest = hashlib.sha256(source.encode("utf-8")).hexdigest()
+        archived = {"objective": "c" * 64, "source_sha256": digest}
+        with patch("bean.runtime.skill_actions.retrieve", return_value=archived), \
+             patch("bean.runtime.skill_actions.retrieve_verified_skill", return_value=source), \
+             patch("bean.runtime.skill_actions.reuse", return_value=receipt):
             self.assertEqual(actions["skill_reuse"](goal)["status"], "failed")
-        receipt["independent_from_promotion_holdout"] = True
-        with patch("bean.runtime.skill_actions.reuse", return_value=receipt):
+            receipt["independent_from_promotion_holdout"] = True
             result = actions["skill_reuse"](goal)
             self.assertEqual(result["status"], "success")
             self.assertFalse(result["provider_invoked"])
+        with patch("bean.runtime.skill_actions.retrieve", return_value=archived), \
+             patch("bean.runtime.skill_actions.retrieve_verified_skill", return_value="tampered"), \
+             patch("bean.runtime.skill_actions.reuse") as reuse:
+            self.assertEqual(actions["skill_reuse"](goal)["reason"], "sqlite_vault_sha_mismatch")
+            reuse.assert_not_called()
 
 
 if __name__ == "__main__":

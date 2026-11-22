@@ -7,6 +7,7 @@ A returned candidate is NOT installed into Core or evidence of AGI.
 from __future__ import annotations
 
 import argparse
+from contextlib import closing
 import ast
 import hashlib
 import json
@@ -45,7 +46,7 @@ def persist_verified_skill(database, *, name, source_path, source_sha256, object
     if database.is_symlink():
         raise ValueError("skill database symlink rejected")
     database.parent.mkdir(parents=True, exist_ok=True)
-    with sqlite3.connect(database) as db:
+    with closing(sqlite3.connect(database)) as db, db:
         db.execute("""CREATE TABLE IF NOT EXISTS verified_skills (
             name TEXT NOT NULL, objective TEXT NOT NULL, source TEXT NOT NULL,
             sha256 TEXT NOT NULL, PRIMARY KEY(name, objective))""")
@@ -61,7 +62,7 @@ def persist_verified_skill(database, *, name, source_path, source_sha256, object
 
 def retrieve_verified_skill(database, *, name, objective):
     """Verify and return retained source, including after an interpreter restart."""
-    with sqlite3.connect(database) as db:
+    with closing(sqlite3.connect(database)) as db, db:
         row = db.execute("SELECT source, sha256 FROM verified_skills "
                          "WHERE name=? AND objective=?", (name, objective)).fetchone()
     if row is None:
