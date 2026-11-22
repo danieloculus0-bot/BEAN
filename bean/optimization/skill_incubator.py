@@ -106,13 +106,15 @@ def main():
     parser.add_argument("--journal", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--provider", choices=("ollama", "llamacpp", "openrouter"), default="ollama")
-    parser.add_argument("--model", default=None,\n                        help="Model identifier; defaults to qwen2.5-coder:7b for Ollama or bean-local for llama.cpp")
+    parser.add_argument("--model", default=None,
+                        help="Model identifier; defaults to qwen2.5-coder:7b for Ollama or bean-local for llama.cpp")
     parser.add_argument("--attempts", type=int, default=10)
     args = parser.parse_args()
     report = incubate_skill(
         project=args.project, holdout_project=args.holdout_project,
         name=args.name, task=args.task, journal_path=args.journal,
-        output=args.output, provider=ModelWriter(args.provider, args.model or\n                             ("bean-local" if args.provider == "llamacpp" else "qwen2.5-coder:7b")),
+        output=args.output, provider=ModelWriter(args.provider, args.model or
+                             ("bean-local" if args.provider == "llamacpp" else "qwen2.5-coder:7b")),
         attempts=args.attempts)
     print(json.dumps(report, indent=2, sort_keys=True))
     if not report["skill_promotion_ready"]:
