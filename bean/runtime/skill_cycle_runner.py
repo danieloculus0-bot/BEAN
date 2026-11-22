@@ -154,7 +154,7 @@ def main():
     parser = argparse.ArgumentParser(description="BEAN real native skill cycle")
     parser.add_argument("--config", type=Path, required=True)
     parser.add_argument("--phase", choices=("acquire", "reuse"), required=True)
-    parser.add_argument("--provider", choices=("ollama", "openrouter"))
+    parser.add_argument("--provider", choices=("ollama", "openrouter", "llamacpp"))
     parser.add_argument("--model")
     args = parser.parse_args()
     if args.phase == "acquire" and (not args.provider or not args.model):
