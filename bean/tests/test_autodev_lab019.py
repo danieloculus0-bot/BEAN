@@ -156,3 +156,33 @@ def test_modified_test_suite_creates_separate_objective(tmp_path):
                        provider=ASTBruteForce((project / TARGET).read_text()), attempts=2)
     assert first["objective"] != second["objective"]
     assert second["prior_attempts"] == 0
+
+
+def test_llamacpp_writer_uses_local_chat_endpoint_without_cloud_key(monkeypatch):
+    monkeypatch.delenv("OPENROUTER_API_KEY", raising=False)
+    monkeypatch.setenv("BEAN_LLAMACPP_URL", "http://127.0.0.1:18080/v1/chat/completions")
+    calls = []
+
+    class Reply:
+        def __enter__(self): return self
+        def __exit__(self, *args): return None
+        def read(self, maximum):
+            return json.dumps({"choices": [{"message": {"content":
+                "def answer():\\n    return 42"}}]}).encode()
+
+    def fake(request, timeout):
+        calls.append((request, timeout))
+        return Reply()
+
+    with patch("urllib.request.urlopen", side_effect=fake):
+        result = ModelWriter("llamacpp", "bean-local").propose(
+            "Repair an independently witnessed bug", "def answer(): return 0", [], 0)
+    assert result == "def answer():\\n    return 42" + "\n"
+    request, timeout = calls[0]
+    assert request.full_url == "http://127.0.0.1:18080/v1/chat/completions"
+    assert request.get_header("Authorization") is None
+    body = json.loads(request.data)
+    assert body["model"] == "bean-local"
+    assert body["messages"][0]["role"] == "user"
+    assert "independently witnessed bug" in body["messages"][0]["content"]
+    assert body["seed"] == 0 and body["max_tokens"] == 1024
