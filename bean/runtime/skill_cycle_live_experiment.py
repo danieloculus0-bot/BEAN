@@ -139,6 +139,17 @@ def run_experiment(*, config: Path, provider: str, model: str,
     evidence["retained_skill_source_sha256"] = acquisition["source_sha256"]
     evidence["restart_skill_reuse_verified"] = True
     persist()
+    # Configuration and control paths are experiment inputs, not mutable state.
+    # A subprocess may rewrite config or replace a control with a symlink.
+    if digest(config) != evidence["config_sha256"]:
+        evidence["comparison_error"] = "experiment configuration mutated during phases"
+        persist()
+        return evidence
+    if any(controls[arm].is_symlink() or not controls[arm].is_file()
+           for arm in ARMS):
+        evidence["comparison_error"] = "control replaced or removed during phases"
+        persist()
+        return evidence
     # Recheck the immutable control files after both phases, fail closed.
     if any(digest(controls[arm]) != control_digests[arm] for arm in ARMS):
         evidence["comparison_error"] = "control source mutated during acquisition"
@@ -156,7 +167,12 @@ def run_experiment(*, config: Path, provider: str, model: str,
             controls={arm: str(controls[arm]) for arm in ARMS},
         )
         evidence["comparison"] = comparison
-        if _project_fingerprint(novel_project) != novel_digest:
+        if digest(config) != evidence["config_sha256"]:
+            evidence["comparison_error"] = "experiment configuration mutated during comparison"
+        elif any(controls[arm].is_symlink() or not controls[arm].is_file()
+                 for arm in ARMS):
+            evidence["comparison_error"] = "control replaced or removed during comparison"
+        elif _project_fingerprint(novel_project) != novel_digest:
             evidence["comparison_error"] = "novel evaluation project mutated during comparison"
         elif any(digest(controls[arm]) != control_digests[arm] for arm in ARMS):
             evidence["comparison_error"] = "control source mutated during comparison"
