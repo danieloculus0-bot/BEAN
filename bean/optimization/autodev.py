@@ -145,12 +145,13 @@ class ModelWriter:
     """Actual provider-backed complete-source writer; not invoked in fixture CI."""
 
     def __init__(self, provider, model, *, url=None):
-        if provider not in ("ollama", "openrouter"):
+        if provider not in ("ollama", "openrouter", "llamacpp"):
             raise ValueError("unknown provider")
         if not re.fullmatch(r"[A-Za-z0-9._:/-]{1,100}", model):
             raise ValueError("invalid model")
         self.provider, self.model = provider, model
         self.url = url or ("http://127.0.0.1:11434/api/generate" if provider == "ollama"
+                           else os.environ.get("BEAN_LLAMACPP_URL", "http://127.0.0.1:18080/v1/chat/completions") if provider == "llamacpp"
                            else "https://openrouter.ai/api/v1/chat/completions")
 
     def propose(self, task, original, history, iteration):
@@ -166,6 +167,10 @@ class ModelWriter:
         if self.provider == "ollama":
             body = {"model": self.model, "prompt": prompt, "stream": False,
                     "options": {"temperature": 0.6, "num_predict": 4096}}
+            headers = {"Content-Type": "application/json"}
+        elif self.provider == "llamacpp":
+            body = {"model": self.model, "messages": [{"role": "user", "content": prompt}],
+                    "temperature": 0, "max_tokens": 1024, "seed": 0}
             headers = {"Content-Type": "application/json"}
         else:
             key = os.environ.get("OPENROUTER_API_KEY")
