@@ -80,6 +80,8 @@ def main(argv=None):
                         help="Pinned receipt count from an independently retained checkpoint")
     parser.add_argument("--expected-head-sha256", default=None,
                         help="Pinned final receipt digest from an independently retained checkpoint")
+    parser.add_argument("--emit-checkpoint", action="store_true",
+                        help="Include count and head digest to pin outside the ledger")
     args = parser.parse_args(argv)
     path = Path(args.database)
     if not path.is_file() or path.is_symlink():
@@ -101,9 +103,14 @@ def main(argv=None):
         actual_head = row[0] if row else "0" * 64
         if actual_head != expected:
             parser.exit(1, "integrity verification failed: checkpoint head mismatch\n")
-    print(json.dumps({"verified": True, "count": len(outcomes),
-                      "failures": sum(not item["passed"] for item in outcomes)},
-                     sort_keys=True))
+    result = {"verified": True, "count": len(outcomes),
+              "failures": sum(not item["passed"] for item in outcomes)}
+    if args.emit_checkpoint:
+        # Export is informational: the caller must pin it independently.
+        with closing(sqlite3.connect(path)) as db:
+            row = db.execute("SELECT receipt_sha256 FROM reuse_outcomes ORDER BY sequence DESC LIMIT 1").fetchone()
+        result["head_sha256"] = row[0] if row else "0" * 64
+    print(json.dumps(result, sort_keys=True))
     return 0
 
 
