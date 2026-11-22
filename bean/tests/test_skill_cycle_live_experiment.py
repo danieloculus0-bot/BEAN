@@ -265,3 +265,65 @@ def test_restart_requires_same_promoted_skill_and_real_novel_reuse(tmp_path, mon
     assert result["verification_error"] == "native skill acquisition/restart provenance mismatch"
     assert "comparison" not in result
     assert json.loads(receipt.read_text()) == result
+
+
+@pytest.mark.parametrize("mutation,expected", [
+    ("config", "experiment configuration mutated during phases"),
+    ("control_link", "control replaced or removed during phases"),
+])
+def test_live_experiment_rejects_mutated_inputs_after_restart(tmp_path, monkeypatch,
+                                                              mutation, expected):
+    from types import SimpleNamespace
+    from bean.runtime import skill_cycle_live_experiment as live
+    projects = {}
+    for name in ("training", "holdout", "novel"):
+        root = tmp_path / name
+        root.mkdir()
+        (root / "case.py").write_text("pass\n")
+        projects[name] = str(root)
+    settings = {
+        "database": str(tmp_path / "db.sqlite"), "projects": projects,
+        "vault": str(tmp_path / "vault"), "journal": str(tmp_path / "journal.sqlite"),
+        "output": str(tmp_path / "output"), "plan_id": "immutable-inputs",
+        "name": "skill", "task": "Novel transfer task",
+        "training": "training", "holdout": "holdout", "novel": "novel",
+    }
+    config = tmp_path / "config.json"
+    config.write_text(json.dumps(settings))
+    controls = {}
+    for arm in live.ARMS:
+        source = tmp_path / (arm + ".py")
+        source.write_text("def solve(x): return x\n")
+        controls[arm] = source
+
+    def native_phase(command, **kwargs):
+        phase = command[command.index("--phase") + 1]
+        if phase == "reuse":
+            if mutation == "config":
+                config.write_text(config.read_text() + "\n")
+            else:
+                original = controls["strong"]
+                original.unlink()
+                original.symlink_to(controls["frozen"])
+        result = {
+            "status": "success", "skill": "skill", "source_sha256": "a" * 64,
+            **({"provider_used": True} if phase == "acquire" else
+               {"provider_invoked": False, "passed": True, "new_test_set": True}),
+        }
+        native = {
+            "schema": "bean.native_skill_cycle.runner.v1",
+            "phase": phase, "plan_id": "immutable-inputs", "status": "success",
+            "run_id": phase + "-unique", "result_sha256": "receipt-sha",
+            "evaluation_seal_sha256": "seal",
+            "provider_available": phase == "acquire", "result": result,
+        }
+        return SimpleNamespace(returncode=0, stdout=json.dumps(native), stderr="")
+
+    monkeypatch.setattr(live.subprocess, "run", native_phase)
+    receipt = tmp_path / "receipt.json"
+    outcome = live.run_experiment(config=config, provider="ollama", model="fixture-only",
+                                  controls=controls, receipt=receipt)
+    assert outcome["completed"] is False
+    assert outcome["comparison_error"] == expected
+    assert "comparison" not in outcome
+    assert json.loads(receipt.read_text()) == outcome
