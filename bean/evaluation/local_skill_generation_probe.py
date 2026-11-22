@@ -70,12 +70,12 @@ def run_probe(receipt: Path) -> dict:
                                    ("clamp", source, outcome["source_sha256"]))
                     (root / "candidate.py").unlink()
                     recovery = (
-                        "import sqlite3, hashlib, pathlib, sys\\n"
-                        "with sqlite3.connect(sys.argv[1]) as db:\\n"
-                        "    row = db.execute('SELECT source, sha256 FROM skills WHERE name=?', ('clamp',)).fetchone()\\n"
-                        "if not row or hashlib.sha256(row[0].encode()).hexdigest() != row[1]:\\n"
-                        "    raise SystemExit(3)\\n"
-                        "pathlib.Path('candidate.py').write_text(row[0])\\n"
+                        "import sqlite3, hashlib, pathlib, sys\n"
+                        "with sqlite3.connect(sys.argv[1]) as db:\n"
+                        "    row = db.execute('SELECT source, sha256 FROM skills WHERE name=?', ('clamp',)).fetchone()\n"
+                        "if not row or hashlib.sha256(row[0].encode()).hexdigest() != row[1]:\n"
+                        "    raise SystemExit(3)\n"
+                        "pathlib.Path('candidate.py').write_text(row[0])\n"
                     )
                     (root / "recover.py").write_text(recovery)
                     restart = subprocess.run(
@@ -89,12 +89,12 @@ def run_probe(receipt: Path) -> dict:
                         == outcome["source_sha256"])
                     if outcome["recovered_source_matches"]:
                         (root / "heldout.py").write_text(
-                            "import runpy\\n"
-                            "clamp = runpy.run_path('candidate.py')['clamp']\\n"
-                            "assert clamp(0, 0, 0) == 0\\n"
-                            "assert clamp(-100, -8, -1) == -8\\n"
-                            "assert clamp(17, 12, 15) == 15\\n"
-                            "assert clamp(13, 12, 15) == 13\\n")
+                            "import runpy\n"
+                            "clamp = runpy.run_path('candidate.py')['clamp']\n"
+                            "assert clamp(0, 0, 0) == 0\n"
+                            "assert clamp(-100, -8, -1) == -8\n"
+                            "assert clamp(17, 12, 15) == 15\n"
+                            "assert clamp(13, 12, 15) == 13\n")
                         reuse = subprocess.run(
                             [sys.executable, "-I", "-B", "heldout.py"],
                             cwd=root, capture_output=True, text=True, timeout=8)
