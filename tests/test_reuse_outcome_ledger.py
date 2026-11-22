@@ -1,6 +1,9 @@
 """Deterministic integrity tests for retained reuse evidence, not model learning."""
 import hashlib
 import sqlite3
+import json
+import subprocess
+import sys
 import tempfile
 import unittest
 from pathlib import Path
@@ -25,6 +28,25 @@ class ReuseOutcomeLedgerTests(unittest.TestCase):
                                    ('{"passed":true}',))
             with self.assertRaises(ValueError):
                 verify_reuse_outcomes(db)
+
+    def test_fresh_process_verifies_failures_and_rejects_tampering(self):
+        with tempfile.TemporaryDirectory() as directory:
+            db = Path(directory) / "outcomes.sqlite"
+            source = hashlib.sha256(b"model-generated-source").hexdigest()
+            tests = hashlib.sha256(b"independent-holdout").hexdigest()
+            append_reuse_outcome(db, skill="retained", source_sha256=source,
+                                 tests_sha256=tests, passed=False, novel_test_set=True)
+            command = [sys.executable, "-m", "bean.optimization.reuse_outcome_ledger", str(db)]
+            result = subprocess.run(command, capture_output=True, text=True, check=False)
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertEqual(json.loads(result.stdout),
+                             {"verified": True, "count": 1, "failures": 1})
+            with sqlite3.connect(db) as connection:
+                connection.execute("UPDATE reuse_outcomes SET payload=? WHERE sequence=1",
+                                   ('{"passed":true}',))
+            rejected = subprocess.run(command, capture_output=True, text=True, check=False)
+            self.assertNotEqual(rejected.returncode, 0)
+            self.assertIn("integrity verification failed", rejected.stderr)
 
     def test_rejects_invalid_identity_and_boolean(self):
         with tempfile.TemporaryDirectory() as directory:
