@@ -6,6 +6,8 @@ The incubator's tests execute in disposable projects, not an OS sandbox.
 """
 from __future__ import annotations
 
+import hashlib
+import sqlite3
 from pathlib import Path
 
 from ..cognition.goal_state import goal_plan
@@ -106,20 +108,24 @@ def make_skill_actions(*, projects, vault, journal, output_root, provider,
         detail = fields(goal, "skill_reuse")
         if detail is None:
             return {"status": "unknown", "reason": "invalid_reuse_goal"}
+        # Verify persisted source identity BEFORE running retained code.
         try:
-            result = reuse(vault=vault, name=detail["name"], project=paths[detail["project"]])
+            archived = retrieve(vault=vault, name=detail["name"])
         except (FileNotFoundError, ValueError, KeyError) as exc:
             return {"status": "failed", "reason": type(exc).__name__}
         # Require both the vault and the separate SQLite retained-source record.
         # A corrupt/missing SQLite record cannot silently fall back to the vault.
         try:
             source = retrieve_verified_skill(
-                skill_db, name=detail["name"], objective=result["objective"])
-        except (LookupError, ValueError, KeyError, __import__("sqlite3").Error) as exc:
+                skill_db, name=detail["name"], objective=archived["objective"])
+        except (LookupError, ValueError, KeyError, sqlite3.Error) as exc:
             return {"status": "failed", "reason": "sqlite_retention_" + type(exc).__name__}
-        import hashlib
-        if hashlib.sha256(source.encode("utf-8")).hexdigest() != result["source_sha256"]:
+        if hashlib.sha256(source.encode("utf-8")).hexdigest() != archived["source_sha256"]:
             return {"status": "failed", "reason": "sqlite_vault_sha_mismatch"}
+        try:
+            result = reuse(vault=vault, name=detail["name"], project=paths[detail["project"]])
+        except (FileNotFoundError, ValueError, KeyError) as exc:
+            return {"status": "failed", "reason": type(exc).__name__}
         # A training or promotion-holdout replay is not independent transfer.
         passed = result["passed"] and result["independent_from_promotion_holdout"]
         return {"status": "success" if passed else "failed",
