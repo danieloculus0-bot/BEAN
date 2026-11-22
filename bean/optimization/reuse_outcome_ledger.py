@@ -140,7 +140,8 @@ def summarize_matched_experiment(outcomes, experiment_id):
             "correct": counts,
             "candidate_minus_controls": {arm: counts["candidate"] - counts[arm]
                                           for arm in EVALUATION_ARMS if arm != "candidate"},
-            "excluded": excluded, "equal_budget_verified": bool(valid), "source_equivalence_verified": False,
+            "excluded": excluded, "provenance_fields_matched": bool(valid),
+            "equal_budget_verified": False, "source_equivalence_verified": False,
             "independent_learning_verified": False,
             "interpretation": "descriptive_only_provenance_matched_not_independent_learning"}
 
