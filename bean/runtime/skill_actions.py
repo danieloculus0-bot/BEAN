@@ -9,7 +9,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from ..cognition.goal_state import goal_plan
-from ..optimization.skill_incubator import NAME, incubate_skill
+from ..optimization.skill_incubator import NAME, incubate_skill, retrieve_verified_skill
 from ..optimization.skill_vault import promote, reuse, retrieve
 
 
@@ -35,6 +35,7 @@ def make_skill_actions(*, projects, vault, journal, output_root, provider,
     vault = Path(vault)
     journal = Path(journal)
     output_root = Path(output_root)
+    skill_db = vault / "verified_skills.sqlite"
 
     def fields(goal, operation):
         detail = goal.get("action_detail")
@@ -84,15 +85,20 @@ def make_skill_actions(*, projects, vault, journal, output_root, provider,
         report = incubate_skill(
             project=paths[detail["training"]], name=name, task=detail["task"],
             journal_path=journal, output=output, provider=provider,
-            attempts=attempts, holdout_project=paths[detail["holdout"]])
+            attempts=attempts, holdout_project=paths[detail["holdout"]],
+            skill_db=skill_db)
         if not report.get("skill_promotion_ready"):
             return {"status": "failed", "reason": "independent_holdout_not_passed",
                     "model_generated": report.get("skill_origin"),
                     "attempts": report.get("attempts")}
+        retained = report.get("retained_skill")
+        if not isinstance(retained, dict) or retained.get("source_sha256") != report.get("accepted_source"):
+            return {"status": "failed", "reason": "sqlite_retention_unverified"}
         receipt = promote(report=report, output=output, journal_path=journal, vault=vault)
         return {"status": "success", "skill": name,
                 "source_sha256": receipt["source_sha256"],
                 "promotion_receipt_sha256": receipt["receipt_sha256"],
+                "sqlite_retained": True,
                 "provider_used": True, "independent_holdout_verified": True,
                 "restart_reuse_verified": False}
 
@@ -104,6 +110,16 @@ def make_skill_actions(*, projects, vault, journal, output_root, provider,
             result = reuse(vault=vault, name=detail["name"], project=paths[detail["project"]])
         except (FileNotFoundError, ValueError, KeyError) as exc:
             return {"status": "failed", "reason": type(exc).__name__}
+        # Require both the vault and the separate SQLite retained-source record.
+        # A corrupt/missing SQLite record cannot silently fall back to the vault.
+        try:
+            source = retrieve_verified_skill(
+                skill_db, name=detail["name"], objective=result["objective"])
+        except (LookupError, ValueError, KeyError, __import__("sqlite3").Error) as exc:
+            return {"status": "failed", "reason": "sqlite_retention_" + type(exc).__name__}
+        import hashlib
+        if hashlib.sha256(source.encode("utf-8")).hexdigest() != result["source_sha256"]:
+            return {"status": "failed", "reason": "sqlite_vault_sha_mismatch"}
         # A training or promotion-holdout replay is not independent transfer.
         passed = result["passed"] and result["independent_from_promotion_holdout"]
         return {"status": "success" if passed else "failed",
