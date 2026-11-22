@@ -116,6 +116,29 @@ def run_experiment(*, config: Path, provider: str, model: str,
                                          "detail": str(exc)[-1500:]}
             persist()
             return evidence
+    # Verify that the actual durable GoalCycle action outcomes, not merely
+    # successful subprocess exits, show the same promoted skill after restart.
+    acquisition = evidence["phases"]["acquire"]["receipt"].get("result")
+    retained = evidence["phases"]["reuse"]["receipt"].get("result")
+    if (not isinstance(acquisition, dict) or not isinstance(retained, dict)
+        or acquisition.get("status") != "success"
+        or retained.get("status") != "success"
+        or acquisition.get("skill") != settings["name"]
+        or retained.get("skill") != settings["name"]
+        or not isinstance(acquisition.get("source_sha256"), str)
+        or len(acquisition["source_sha256"]) != 64
+        or any(c not in "0123456789abcdef" for c in acquisition["source_sha256"])
+        or retained.get("source_sha256") != acquisition["source_sha256"]
+        or acquisition.get("provider_used") is not True
+        or retained.get("provider_invoked") is not False
+        or retained.get("passed") is not True
+        or retained.get("new_test_set") is not True):
+        evidence["verification_error"] = "native skill acquisition/restart provenance mismatch"
+        persist()
+        return evidence
+    evidence["retained_skill_source_sha256"] = acquisition["source_sha256"]
+    evidence["restart_skill_reuse_verified"] = True
+    persist()
     # Recheck the immutable control files after both phases, fail closed.
     if any(digest(controls[arm]) != control_digests[arm] for arm in ARMS):
         evidence["comparison_error"] = "control source mutated during acquisition"
