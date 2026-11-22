@@ -76,6 +76,57 @@ def verify_reuse_outcomes(database):
     return outcomes
 
 
+
+EVALUATION_ARMS = ("candidate", "frozen", "no_memory", "grammar_matched", "strong_control")
+
+
+def summarize_matched_experiment(outcomes, experiment_id):
+    """Score only complete, one-to-one, same-holdout control groups.
+
+    This is descriptive paired correctness, not independent proof of learning.
+    No budget, model identity or seed is stored in the current receipt schema.
+    """
+    if not isinstance(experiment_id, str) or not experiment_id.strip():
+        raise ValueError("experiment_id required")
+    selected = [r for r in outcomes if r.get("experiment_id") == experiment_id]
+    groups = {}
+    for receipt in selected:
+        key = (receipt.get("skill"), receipt.get("tests_sha256"))
+        groups.setdefault(key, []).append(receipt)
+    valid = []
+    excluded = []
+    for (skill, test_sha), records in sorted(groups.items()):
+        by_arm = {}
+        reasons = []
+        for record in records:
+            arm = record.get("condition")
+            if arm not in EVALUATION_ARMS or arm in by_arm:
+                reasons.append("duplicate_or_unknown_arm")
+            else:
+                by_arm[arm] = record
+            if record.get("novel_test_set") is not True:
+                reasons.append("not_marked_novel")
+            if type(record.get("passed")) is not bool:
+                reasons.append("invalid_outcome")
+        if set(by_arm) != set(EVALUATION_ARMS):
+            reasons.append("incomplete_arms")
+        if reasons:
+            excluded.append({"skill": skill, "tests_sha256": test_sha,
+                             "reasons": sorted(set(reasons))})
+            continue
+        valid.append({"skill": skill, "tests_sha256": test_sha,
+                      "results": {arm: by_arm[arm]["passed"] for arm in EVALUATION_ARMS}})
+    counts = {arm: sum(int(item["results"][arm]) for item in valid)
+              for arm in EVALUATION_ARMS}
+    n = len(valid)
+    return {"experiment_id": experiment_id, "matched_tasks": n,
+            "correct": counts,
+            "candidate_minus_controls": {arm: counts["candidate"] - counts[arm]
+                                          for arm in EVALUATION_ARMS if arm != "candidate"},
+            "excluded": excluded, "equal_budget_verified": False, "source_equivalence_verified": False,
+            "independent_learning_verified": False,
+            "interpretation": "descriptive_only_no_budget_or_seed_receipts"}
+
 def main(argv=None):
     """Read-only verification in a fresh interpreter; exit nonzero on tampering."""
     import argparse
@@ -87,6 +138,8 @@ def main(argv=None):
                         help="Pinned final receipt digest from an independently retained checkpoint")
     parser.add_argument("--emit-checkpoint", action="store_true",
                         help="Include count and head digest to pin outside the ledger")
+    parser.add_argument("--summarize-experiment", default=None,
+                        help="Descriptive complete-arm comparison; not proof of learning")
     args = parser.parse_args(argv)
     path = Path(args.database)
     if not path.is_file() or path.is_symlink():
@@ -115,6 +168,8 @@ def main(argv=None):
         with closing(sqlite3.connect(path)) as db:
             row = db.execute("SELECT receipt_sha256 FROM reuse_outcomes ORDER BY sequence DESC LIMIT 1").fetchone()
         result["head_sha256"] = row[0] if row else "0" * 64
+    if args.summarize_experiment is not None:
+        result["matched_summary"] = summarize_matched_experiment(outcomes, args.summarize_experiment)
     print(json.dumps(result, sort_keys=True))
     return 0
 
