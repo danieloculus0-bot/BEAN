@@ -41,7 +41,8 @@ class MatchedSummaryTests(unittest.TestCase):
             self.assertEqual(summary["correct"]["strong_control"], 2)
             self.assertEqual(summary["candidate_minus_controls"]["strong_control"], -1)
             self.assertFalse(summary["independent_learning_verified"])
-            self.assertTrue(summary["equal_budget_verified"])
+            self.assertTrue(summary["provenance_fields_matched"])
+            self.assertFalse(summary["equal_budget_verified"])
 
     def test_incomplete_and_duplicate_arms_are_excluded(self):
         with tempfile.TemporaryDirectory() as directory:
