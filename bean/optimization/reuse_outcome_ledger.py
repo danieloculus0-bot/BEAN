@@ -17,7 +17,7 @@ def _canonical(value):
 
 
 def append_reuse_outcome(database, *, skill, source_sha256, tests_sha256, passed,
-                         novel_test_set, provider_invoked=False):
+                         novel_test_set, provider_invoked=False, experiment_id=None, condition="candidate"):
     """Persist a reproducible result, preserving failures and chained history."""
     if not isinstance(skill, str) or not skill:
         raise ValueError("invalid skill")
@@ -26,6 +26,10 @@ def append_reuse_outcome(database, *, skill, source_sha256, tests_sha256, passed
             raise ValueError("invalid SHA-256")
     if any(type(v) is not bool for v in (passed, novel_test_set, provider_invoked)):
         raise ValueError("boolean outcomes required")
+    if experiment_id is not None and (not isinstance(experiment_id, str) or not experiment_id.strip()):
+        raise ValueError("invalid experiment identity")
+    if condition not in ("candidate", "frozen", "no_memory", "grammar_matched", "strong_control"):
+        raise ValueError("invalid evaluation condition")
     path = Path(database)
     if path.is_symlink():
         raise ValueError("linked outcome ledger")
@@ -40,7 +44,8 @@ def append_reuse_outcome(database, *, skill, source_sha256, tests_sha256, passed
         prior = last[0] if last else "0" * 64
         payload = {"skill": skill, "source_sha256": source_sha256,
                    "tests_sha256": tests_sha256, "passed": passed,
-                   "novel_test_set": novel_test_set, "provider_invoked": provider_invoked}
+                   "novel_test_set": novel_test_set, "provider_invoked": provider_invoked,
+                   "experiment_id": experiment_id, "condition": condition}
         encoded = _canonical(payload).decode("utf-8")
         digest = hashlib.sha256(prior.encode("ascii") + encoded.encode("utf-8")).hexdigest()
         db.execute("INSERT INTO reuse_outcomes(payload, prior_sha256, receipt_sha256) VALUES(?,?,?)",

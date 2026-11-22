@@ -95,6 +95,44 @@ class ReuseOutcomeLedgerTests(unittest.TestCase):
                                       capture_output=True, text=True, check=False)
             self.assertNotEqual(rejected.returncode, 0)
 
+    def test_control_arm_identity_survives_restart_and_tampering(self):
+        with tempfile.TemporaryDirectory() as directory:
+            db = Path(directory) / "outcomes.sqlite"
+            digest = hashlib.sha256(b"same withheld task").hexdigest()
+            for arm, passed in (("candidate", True), ("frozen", False),
+                                ("no_memory", False), ("grammar_matched", True),
+                                ("strong_control", True)):
+                append_reuse_outcome(db, skill="transfer", source_sha256=digest,
+                                     tests_sha256=digest, passed=passed,
+                                     novel_test_set=True, experiment_id="holdout-001",
+                                     condition=arm)
+            cmd = [sys.executable, "-m", "bean.optimization.reuse_outcome_ledger",
+                   str(db), "--expected-count", "5"]
+            checked = subprocess.run(cmd, capture_output=True, text=True, check=False)
+            self.assertEqual(checked.returncode, 0, checked.stderr)
+            outcomes = verify_reuse_outcomes(db)
+            self.assertEqual([item["condition"] for item in outcomes],
+                             ["candidate", "frozen", "no_memory", "grammar_matched", "strong_control"])
+            self.assertTrue(all(item["experiment_id"] == "holdout-001" for item in outcomes))
+            with sqlite3.connect(db) as connection:
+                connection.execute("UPDATE reuse_outcomes SET payload=replace(payload, ?, ?) WHERE sequence=2",
+                                   ('"frozen"', '"candidate"'))
+            rejected = subprocess.run(cmd, capture_output=True, text=True, check=False)
+            self.assertNotEqual(rejected.returncode, 0)
+
+    def test_rejects_unregistered_arm(self):
+        with tempfile.TemporaryDirectory() as directory:
+            with self.assertRaises(ValueError):
+                append_reuse_outcome(Path(directory) / "x.sqlite", skill="sample",
+                                     source_sha256="0" * 64, tests_sha256="0" * 64,
+                                     passed=True, novel_test_set=True,
+                                     condition="uncontrolled")
+            with self.assertRaises(ValueError):
+                append_reuse_outcome(Path(directory) / "x.sqlite", skill="sample",
+                                     source_sha256="0" * 64, tests_sha256="0" * 64,
+                                     passed=True, novel_test_set=True,
+                                     experiment_id="")
+
     def test_rejects_invalid_identity_and_boolean(self):
         with tempfile.TemporaryDirectory() as directory:
             with self.assertRaises(ValueError):
