@@ -12,6 +12,7 @@ from pathlib import Path
 
 from ..cognition.goal_state import goal_plan
 from ..optimization.skill_incubator import NAME, incubate_skill, retrieve_verified_skill
+from ..optimization.reuse_outcome_ledger import append_reuse_outcome
 from ..optimization.skill_vault import promote, reuse, retrieve
 
 
@@ -128,7 +129,14 @@ def make_skill_actions(*, projects, vault, journal, output_root, provider,
             return {"status": "failed", "reason": type(exc).__name__}
         # A training or promotion-holdout replay is not independent transfer.
         passed = result["passed"] and result["independent_from_promotion_holdout"]
+        evidence = append_reuse_outcome(
+            vault / "reuse_outcomes.sqlite", skill=detail["name"],
+            source_sha256=result["source_sha256"],
+            tests_sha256=result["reuse_tests_sha256"], passed=bool(result["passed"]),
+            novel_test_set=bool(result["independent_from_promotion_holdout"]),
+            provider_invoked=False)
         return {"status": "success" if passed else "failed",
+                "reuse_evidence": evidence,
                 "skill": detail["name"], "passed": result["passed"],
                 "new_test_set": result["independent_from_promotion_holdout"],
                 "source_sha256": result["source_sha256"],
