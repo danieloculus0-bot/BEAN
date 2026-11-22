@@ -181,7 +181,9 @@ def run_experiment(*, config: Path, provider: str, model: str,
               or set(comparison["outcomes"]) != {"candidate", *ARMS}
               or any(not isinstance(row, dict) for row in comparison["outcomes"].values())):
             evidence["comparison_error"] = "incomplete five-arm outcome matrix"
-        elif not comparison["outcomes"]["candidate"].get("passed"):
+        elif any(type(row.get("passed")) is not bool for row in comparison["outcomes"].values()):
+            evidence["comparison_error"] = "five arms lack explicit boolean verdicts"
+        elif not comparison["outcomes"]["candidate"]["passed"]:
             evidence["comparison_error"] = "retained candidate failed independent novel evaluation"
         elif (any(type(row.get("test_count")) is not int or row["test_count"] < 1
                   for row in comparison["outcomes"].values())
