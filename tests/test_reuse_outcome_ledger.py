@@ -48,6 +48,29 @@ class ReuseOutcomeLedgerTests(unittest.TestCase):
             self.assertNotEqual(rejected.returncode, 0)
             self.assertIn("integrity verification failed", rejected.stderr)
 
+    def test_pinned_checkpoint_detects_deleted_tail_across_processes(self):
+        with tempfile.TemporaryDirectory() as directory:
+            db = Path(directory) / "outcomes.sqlite"
+            source = hashlib.sha256(b"candidate").hexdigest()
+            tests = hashlib.sha256(b"holdout").hexdigest()
+            append_reuse_outcome(db, skill="retained", source_sha256=source,
+                                 tests_sha256=tests, passed=False, novel_test_set=True)
+            final = append_reuse_outcome(db, skill="retained", source_sha256=source,
+                                         tests_sha256=tests, passed=True, novel_test_set=True)
+            command = [sys.executable, "-m", "bean.optimization.reuse_outcome_ledger",
+                       str(db), "--expected-count", "2",
+                       "--expected-head-sha256", final["receipt_sha256"]]
+            valid = subprocess.run(command, capture_output=True, text=True, check=False)
+            self.assertEqual(valid.returncode, 0, valid.stderr)
+            with sqlite3.connect(db) as connection:
+                connection.execute("DELETE FROM reuse_outcomes WHERE sequence=2")
+            # The remaining chain is internally valid, but a pinned checkpoint
+            # detects the lost successful evaluation receipt.
+            self.assertEqual(len(verify_reuse_outcomes(db)), 1)
+            rejected = subprocess.run(command, capture_output=True, text=True, check=False)
+            self.assertNotEqual(rejected.returncode, 0)
+            self.assertIn("checkpoint count mismatch", rejected.stderr)
+
     def test_rejects_invalid_identity_and_boolean(self):
         with tempfile.TemporaryDirectory() as directory:
             with self.assertRaises(ValueError):
