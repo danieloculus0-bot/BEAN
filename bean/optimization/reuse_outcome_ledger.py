@@ -69,3 +69,26 @@ def verify_reuse_outcomes(database):
         outcomes.append(payload)
         prior = digest
     return outcomes
+
+
+def main(argv=None):
+    """Read-only verification in a fresh interpreter; exit nonzero on tampering."""
+    import argparse
+    parser = argparse.ArgumentParser(description="Verify BEAN retained-skill reuse evidence")
+    parser.add_argument("database", help="Existing SQLite outcome ledger")
+    args = parser.parse_args(argv)
+    path = Path(args.database)
+    if not path.is_file() or path.is_symlink():
+        parser.error("an existing regular ledger file is required")
+    try:
+        outcomes = verify_reuse_outcomes(path)
+    except (sqlite3.Error, ValueError, json.JSONDecodeError) as exc:
+        parser.exit(1, f"integrity verification failed: {type(exc).__name__}: {exc}\n")
+    print(json.dumps({"verified": True, "count": len(outcomes),
+                      "failures": sum(not item["passed"] for item in outcomes)},
+                     sort_keys=True))
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
