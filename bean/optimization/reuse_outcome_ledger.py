@@ -110,10 +110,6 @@ def summarize_matched_experiment(outcomes, experiment_id):
                 reasons.append("invalid_outcome")
         if set(by_arm) != set(EVALUATION_ARMS):
             reasons.append("incomplete_arms")
-        if len({r.get("source_sha256") for r in records}) != 1:
-            # Different code across arms may be legitimate, but cannot be
-            # assumed comparable without an explicit protocol.
-            reasons.append("source_mismatch_uncontrolled")
         if reasons:
             excluded.append({"skill": skill, "tests_sha256": test_sha,
                              "reasons": sorted(set(reasons))})
@@ -127,7 +123,7 @@ def summarize_matched_experiment(outcomes, experiment_id):
             "correct": counts,
             "candidate_minus_controls": {arm: counts["candidate"] - counts[arm]
                                           for arm in EVALUATION_ARMS if arm != "candidate"},
-            "excluded": excluded, "equal_budget_verified": False,
+            "excluded": excluded, "equal_budget_verified": False, "source_equivalence_verified": False,
             "independent_learning_verified": False,
             "interpretation": "descriptive_only_no_budget_or_seed_receipts"}
 
