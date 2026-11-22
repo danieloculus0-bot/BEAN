@@ -8,10 +8,12 @@ from __future__ import annotations
 
 import argparse
 import ast
+import hashlib
 import json
 from pathlib import Path
 import re
 import shutil
+import sqlite3
 import tempfile
 
 from .autodev import ASTBruteForce, ModelWriter, run_cycle
@@ -27,8 +29,52 @@ NAME = re.compile(r"^[a-z][a-z0-9_]{1,63}$")
 STUB = '"""Unimplemented BEAN skill. Candidate source must supply the API."""\n'
 
 
+def persist_verified_skill(database, *, name, source_path, source_sha256, objective):
+    """Store only independently verified source for a future separate-process reuse."""
+    if not NAME.fullmatch(name) or not isinstance(objective, str) or len(objective) != 64:
+        raise ValueError("invalid skill identity or objective")
+    source_path = Path(source_path)
+    if source_path.is_symlink() or not source_path.is_file():
+        raise ValueError("validated skill source missing or linked")
+    source = source_path.read_text(encoding="utf-8")
+    actual = hashlib.sha256(source.encode("utf-8")).hexdigest()
+    if actual != source_sha256:
+        raise ValueError("validated skill source SHA mismatch")
+    ast.parse(source)
+    database = Path(database)
+    if database.is_symlink():
+        raise ValueError("skill database symlink rejected")
+    database.parent.mkdir(parents=True, exist_ok=True)
+    with sqlite3.connect(database) as db:
+        db.execute("""CREATE TABLE IF NOT EXISTS verified_skills (
+            name TEXT NOT NULL, objective TEXT NOT NULL, source TEXT NOT NULL,
+            sha256 TEXT NOT NULL, PRIMARY KEY(name, objective))""")
+        prior = db.execute("SELECT sha256 FROM verified_skills WHERE name=? AND objective=?",
+                           (name, objective)).fetchone()
+        if prior and prior[0] != actual:
+            raise ValueError("existing verified skill conflicts with new source")
+        db.execute("INSERT OR IGNORE INTO verified_skills VALUES (?, ?, ?, ?)",
+                   (name, objective, source, actual))
+    return {"name": name, "objective": objective, "source_sha256": actual,
+            "database": str(database), "installed_into_core": False}
+
+
+def retrieve_verified_skill(database, *, name, objective):
+    """Verify and return retained source, including after an interpreter restart."""
+    with sqlite3.connect(database) as db:
+        row = db.execute("SELECT source, sha256 FROM verified_skills "
+                         "WHERE name=? AND objective=?", (name, objective)).fetchone()
+    if row is None:
+        raise LookupError("verified skill not found")
+    source, expected = row
+    if hashlib.sha256(source.encode("utf-8")).hexdigest() != expected:
+        raise ValueError("retained skill SHA mismatch")
+    ast.parse(source)
+    return source
+
+
 def incubate_skill(*, project, name, task, journal_path, output, provider,
-                   attempts=10, holdout_project=None):
+                   attempts=10, holdout_project=None, skill_db=None):
     """Incubate a new Python skill, without modifying the input project.
 
     Independent, separately-authored holdout tests are needed before a skill
@@ -94,6 +140,10 @@ def incubate_skill(*, project, name, task, journal_path, output, provider,
         "independent_holdout_verified": bool(report["skill_promotion_ready"]),
         "skill_origin": "model_generated_or_supplied_provider_not_proof_of_autonomy",
     })
+    if skill_db is not None and report["skill_promotion_ready"]:
+        report["retained_skill"] = persist_verified_skill(
+            skill_db, name=name, source_path=report["validated_path"],
+            source_sha256=report["accepted_source"], objective=report["objective"])
     return report
 
 
@@ -104,6 +154,8 @@ def main():
     parser.add_argument("--name", required=True)
     parser.add_argument("--task", required=True)
     parser.add_argument("--journal", type=Path, required=True)
+    parser.add_argument("--skill-db", type=Path, default=None,
+                        help="Optional SHA-checked SQLite store for independently verified skills")
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--provider", choices=("ollama", "llamacpp", "openrouter"), default="ollama")
     parser.add_argument("--model", default=None,
@@ -115,7 +167,7 @@ def main():
         name=args.name, task=args.task, journal_path=args.journal,
         output=args.output, provider=ModelWriter(args.provider, args.model or
                              ("bean-local" if args.provider == "llamacpp" else "qwen2.5-coder:7b")),
-        attempts=args.attempts)
+        attempts=args.attempts, skill_db=args.skill_db)
     print(json.dumps(report, indent=2, sort_keys=True))
     if not report["skill_promotion_ready"]:
         raise SystemExit(2)
