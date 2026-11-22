@@ -177,7 +177,7 @@ def test_llamacpp_writer_uses_local_chat_endpoint_without_cloud_key(monkeypatch)
     with patch("urllib.request.urlopen", side_effect=fake):
         result = ModelWriter("llamacpp", "bean-local").propose(
             "Repair an independently witnessed bug", "def answer(): return 0", [], 0)
-    assert result == "def answer():\\n    return 42\\n"
+    assert result == "def answer():\\n    return 42" + "\n"
     request, timeout = calls[0]
     assert request.full_url == "http://127.0.0.1:18080/v1/chat/completions"
     assert request.get_header("Authorization") is None
