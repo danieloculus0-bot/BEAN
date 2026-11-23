@@ -54,6 +54,19 @@ def run_manifest(manifest_file, database):
         tests = manifest.parent / task["tests"]
         if not tests.is_file():
             raise ValueError("missing test file")
+        # A novelty label alone is not evidence of a sealed holdout.
+        # Pin the expected bytes in the manifest before executing any arm.
+        # The manifest itself must be archived independently before acquisition
+        # for a claim of preregistration; this only enforces input identity.
+        holdout_hash = task.get("holdout_sha256")
+        if task.get("novel_test_set", False):
+            if (not isinstance(holdout_hash, str) or len(holdout_hash) != 64
+                    or any(c not in "0123456789abcdef" for c in holdout_hash)):
+                raise ValueError("novel holdout requires lowercase holdout_sha256")
+            if hashlib.sha256(tests.read_bytes()).hexdigest() != holdout_hash:
+                raise ValueError("holdout_sha256 mismatch before execution")
+        elif holdout_hash is not None:
+            raise ValueError("holdout_sha256 only valid for novel_test_set")
         for arm in ARMS:
             source = manifest.parent / sources[arm]
             if not source.is_file() or source.resolve() == tests.resolve():
