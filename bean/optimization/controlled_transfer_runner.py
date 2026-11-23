@@ -95,7 +95,7 @@ def run_manifest(manifest_file, database):
         if any(hashlib.sha256(path.read_bytes()).hexdigest() != digest
                for path, digest in pinned.items()):
             raise ValueError("experiment input drift detected; partial receipts retained")
-    # Require a new interpreter to recover and verify the persisted receipts.
+    # Disclose whether control implementations are actually distinct. Matching\n    # source bytes cannot support a claim of candidate superiority, even if\n    # the manifest assigns different condition names. Do not reject ties: they\n    # are useful negative controls and must remain observable.\n    source_fingerprints = {task["skill"]: {arm: pinned[source.resolve()]\n                           for t, arm, source, _ in planned if t is task}\n                           for task, _, _, _ in planned}\n    control_diversity = {skill: {\n        "distinct_source_count": len(set(hashes.values())),\n        "candidate_equals_strong_control": hashes["candidate"] == hashes["strong_control"],\n        "candidate_equals_grammar_matched": hashes["candidate"] == hashes["grammar_matched"],\n        "all_sources_identical": len(set(hashes.values())) == 1,\n    } for skill, hashes in source_fingerprints.items()}\n    # Require a new interpreter to recover and verify the persisted receipts.
     # An in-process cache or transient result cannot satisfy this check.
     ledger = str(Path(database).resolve())
     # The independent expectation comes from the return values captured
@@ -142,7 +142,7 @@ print(json.dumps(result))
     summary = summarize_matched_experiment(verify_reuse_outcomes(database), experiment_id)
     return {"experiment_id": experiment_id, "receipts": receipts, "summary": summary,
             "independent_learning_verified": False, "model_invoked_by_runner": False,
-            "separate_process_ledger_verified": True}
+            "separate_process_ledger_verified": True,\n            "control_diversity": control_diversity}
 
 
 def main(argv=None):
