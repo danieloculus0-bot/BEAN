@@ -53,10 +53,10 @@ class ControlledTransferRunnerTests(unittest.TestCase):
         # altered payload digests must not certify recovered evidence.
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
-            (root / "good.py").write_text("def twice(x): return x * 2\\n")
+            (root / "good.py").write_text("def twice(x): return x * 2\n")
             (root / "test.py").write_text(
-                "import runpy,sys\\n"
-                "assert runpy.run_path(sys.argv[1])['twice'](7)==14\\n"
+                "import runpy,sys\n"
+                "assert runpy.run_path(sys.argv[1])['twice'](7)==14\n"
             )
             arms = ("candidate", "frozen", "no_memory", "grammar_matched", "strong_control")
             manifest = root / "manifest.json"
