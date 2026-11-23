@@ -35,7 +35,7 @@ class ControlledTransferRunnerTests(unittest.TestCase):
             manifest.write_text(json.dumps(spec))
             db = root / "receipts.sqlite"
             result = run_manifest(manifest, db)
-            self.assertEqual(len(result["receipts"]), 5)
+            self.assertEqual(len(result["receipts"]), 5)\n            self.assertEqual(result["control_diversity"]["twice"]["distinct_source_count"], 2)\n            self.assertFalse(result["control_diversity"]["twice"]["candidate_equals_strong_control"])\n            self.assertFalse(result["control_diversity"]["twice"]["all_sources_identical"])
             self.assertEqual(result["summary"]["matched_tasks"], 0)
             self.assertEqual(len(result["summary"]["excluded"]), 1)
             self.assertIn("not_marked_novel", result["summary"]["excluded"][0]["reasons"])
