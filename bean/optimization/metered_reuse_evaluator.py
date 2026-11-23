@@ -76,3 +76,31 @@ def evaluate_and_record(database, *, skill, source_file, tests_file, argv,
         "novel_test_set": novel_test_set,
         "semantic_correctness_verified": False,
     }
+
+
+def evaluate_python_skill(database, *, skill, source_file, tests_file,
+                          experiment_id, condition, model_id, seed,
+                          timeout_seconds=30, novel_test_set=False):
+    """Execute the supplied Python test file in a fresh isolated interpreter.
+
+    The test file is executable code and must be trusted by the caller. It can
+    access the source through sys.argv[1] and runpy.run_path. This is process
+    isolation, not a security sandbox. No model inference is implied.
+    """
+    import sys
+
+    source_path = Path(source_file).resolve()
+    test_path = Path(tests_file).resolve()
+    if source_path == test_path:
+        raise ValueError("source and evaluator test must be different files")
+    # -I excludes user site packages and ambient PYTHONPATH; -B avoids pyc writes.
+    command = [sys.executable, "-I", "-B", "-c",
+               "import runpy,sys;sys.argv=[sys.argv[2],sys.argv[1]];"
+               "runpy.run_path(sys.argv[0],run_name='__main__')",
+               str(source_path), str(test_path)]
+    return evaluate_and_record(
+        database, skill=skill, source_file=source_path, tests_file=test_path,
+        argv=command, experiment_id=experiment_id, condition=condition,
+        model_id=model_id, seed=seed, timeout_seconds=timeout_seconds,
+        novel_test_set=novel_test_set,
+    )
