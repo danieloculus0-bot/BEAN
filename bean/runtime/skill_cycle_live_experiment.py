@@ -8,6 +8,7 @@ not equivalent model-generation budgets or independent control authorship.
 from __future__ import annotations
 
 import argparse
+import ast
 import hashlib
 import json
 import os
@@ -23,6 +24,17 @@ def digest(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
+def semantic_digest(path: Path) -> str:
+    """Fingerprint executable Python structure, ignoring comments and layout.
+
+    This is an AST equivalence check, not a proof of behavioral independence.
+    Unparseable controls fail preflight instead of being treated as distinct.
+    """
+    tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
+    canonical = ast.dump(tree, annotate_fields=True, include_attributes=False)
+    return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
+
+
 def run_experiment(*, config: Path, provider: str, model: str,
                    controls: dict[str, Path], receipt: Path) -> dict:
     if provider not in ("ollama", "openrouter", "llamacpp") or not model.strip():
@@ -35,16 +47,18 @@ def run_experiment(*, config: Path, provider: str, model: str,
     novel_project = Path(settings["projects"][settings["novel"]]).resolve(strict=True)
     novel_digest = _project_fingerprint(novel_project)
     control_digests = {}
+    control_semantic_digests = {}
     for arm in ARMS:
         path = controls[arm]
         if path.is_symlink() or not path.is_file():
             raise ValueError("missing or linked control: " + arm)
         control_digests[arm] = digest(path)
+        control_semantic_digests[arm] = semantic_digest(path)
     # A five-arm result is uninterpretable when nominally different controls
     # execute identical source. Preserve the collision evidence before returning.
     control_collisions = {
         arm: [other for other in ARMS if other != arm
-              and control_digests[other] == control_digests[arm]]
+              and control_semantic_digests[other] == control_semantic_digests[arm]]
         for arm in ARMS
         if any(other != arm and control_digests[other] == control_digests[arm]
                for other in ARMS)
@@ -55,6 +69,7 @@ def run_experiment(*, config: Path, provider: str, model: str,
         "provider": provider, "model": model,
         "config_sha256": digest(config),
         "control_sha256": control_digests,
+        "control_ast_sha256": control_semantic_digests,
         "novel_project_sha256": novel_digest,
         "phases": {}, "completed": False,
         "independent_control_provenance_verified": False,
@@ -74,7 +89,7 @@ def run_experiment(*, config: Path, provider: str, model: str,
         os.replace(temp, receipt)
 
     if control_collisions:
-        evidence["comparison_error"] = "control arms share identical source implementations"
+        evidence["comparison_error"] = "control arms share identical Python AST implementations"
         evidence["control_source_collisions"] = control_collisions
         persist()
         return evidence
