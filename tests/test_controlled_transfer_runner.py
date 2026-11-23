@@ -48,12 +48,12 @@ class ControlledTransferRunnerTests(unittest.TestCase):
     def test_mutating_holdout_aborts_before_other_arms(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
-            (root / "source.py").write_text("pass\\n")
+            (root / "source.py").write_text("pass\n")
             test = root / "test.py"
             test.write_text(
-                "from pathlib import Path\\n"
-                "p=Path(__file__)\\n"
-                "p.write_text(p.read_text()+'# altered\\\\n')\\n"
+                "from pathlib import Path\n"
+                "p=Path(__file__)\n"
+                "p.write_text(p.read_text()+'# altered\\\n')\n"
             )
             arms = ("candidate", "frozen", "no_memory", "grammar_matched", "strong_control")
             manifest = root / "manifest.json"
