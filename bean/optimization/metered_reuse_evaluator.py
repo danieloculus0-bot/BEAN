@@ -48,6 +48,11 @@ def evaluate_and_record(database, *, skill, source_file, tests_file, argv,
         returncode = None
         stdout = exc.stdout or b""
         stderr = exc.stderr or b""
+    except OSError as exc:
+        # A missing evaluator executable is a failed attempt, not lost evidence.
+        returncode = None
+        stdout = b""
+        stderr = str(exc).encode("utf-8", errors="replace")
     elapsed_ms = (time.monotonic_ns() - start) // 1_000_000
     passed = not timed_out and returncode == 0
     receipt = append_reuse_outcome(
