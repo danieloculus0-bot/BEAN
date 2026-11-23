@@ -56,6 +56,15 @@ def compare(*, vault, name: str, project, controls: dict[str, str]) -> dict:
                 "test_count": result["test_count"],
                 "source_sha256": manifest["arms"][arm],
             }
+    candidate_hash = manifest["arms"]["candidate"]
+    source_overlap = {
+        arm: manifest["arms"][arm] == candidate_hash
+        for arm in ("frozen", "no_memory", "grammar_matched", "strong")
+    }
+    distinct_control_sources = len({
+        manifest["arms"][arm]
+        for arm in ("frozen", "no_memory", "grammar_matched", "strong")
+    })
     candidate = outcomes["candidate"]["passed"]
     strong = outcomes["strong"]["passed"]
     return {
@@ -67,6 +76,18 @@ def compare(*, vault, name: str, project, controls: dict[str, str]) -> dict:
         "manifest": manifest,
         "outcomes": outcomes,
         "candidate_beats_strong": bool(candidate and not strong),
+        "candidate_source_identical_to_control": source_overlap,
+        "distinct_control_source_count": distinct_control_sources,
+        "candidate_advantage_interpretable": bool(
+            candidate and not strong
+            and not source_overlap["strong"]
+            and not source_overlap["grammar_matched"]
+            and distinct_control_sources == 4
+        ),
+        "candidate_advantage_interpretation_limit": (
+            "Source distinction does not establish independent control authorship, "
+            "matched generation budgets, or learning transfer."
+        ),
         "equal_test_harness": True,
         "equal_generation_budget_verified": False,
         "independent_control_provenance_verified": False,
