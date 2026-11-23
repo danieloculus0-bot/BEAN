@@ -336,3 +336,73 @@ def test_live_experiment_rejects_mutated_inputs_after_restart(tmp_path, monkeypa
     assert outcome["comparison_error"] == expected
     assert "comparison" not in outcome
     assert json.loads(receipt.read_text()) == outcome
+
+
+@pytest.mark.parametrize("mismatch", ["manifest", "outcome", "none"])
+def test_five_arm_source_is_bound_to_acquired_skill(tmp_path, monkeypatch, mismatch):
+    """A different candidate cannot be substituted after a successful restart."""
+    from types import SimpleNamespace
+    from bean.runtime import skill_cycle_live_experiment as live
+    from bean.runtime import skill_cycle_controls
+
+    projects = {}
+    for key in ("training", "holdout", "novel"):
+        root = tmp_path / key
+        root.mkdir()
+        (root / "case.py").write_text("pass\n")
+        projects[key] = str(root)
+    settings = {
+        "database": str(tmp_path / "db.sqlite"), "projects": projects,
+        "vault": str(tmp_path / "vault"), "journal": str(tmp_path / "journal.sqlite"),
+        "output": str(tmp_path / "output"), "plan_id": "candidate-binding",
+        "name": "skill", "task": "Novel withheld task",
+        "training": "training", "holdout": "holdout", "novel": "novel",
+    }
+    config = tmp_path / "config.json"
+    config.write_text(json.dumps(settings))
+    controls = {}
+    for arm in live.ARMS:
+        path = tmp_path / (arm + ".py")
+        path.write_text("def solve(x): return x\n")
+        controls[arm] = path
+
+    def phase_run(command, **kwargs):
+        phase = command[command.index("--phase") + 1]
+        result = {
+            "status": "success", "skill": "skill", "source_sha256": "a" * 64,
+            **({"provider_used": True} if phase == "acquire" else
+               {"provider_invoked": False, "passed": True, "new_test_set": True}),
+        }
+        native = {
+            "schema": "bean.native_skill_cycle.runner.v1",
+            "phase": phase, "plan_id": settings["plan_id"],
+            "status": "success", "run_id": phase + "-unique",
+            "result_sha256": "sha", "evaluation_seal_sha256": "seal",
+            "provider_available": phase == "acquire", "result": result,
+        }
+        return SimpleNamespace(returncode=0, stdout=json.dumps(native), stderr="")
+    monkeypatch.setattr(live.subprocess, "run", phase_run)
+
+    candidate_manifest = ("b" if mismatch == "manifest" else "a") * 64
+    candidate_outcome = ("b" if mismatch == "outcome" else "a") * 64
+    monkeypatch.setattr(skill_cycle_controls, "compare", lambda **kwargs: {
+        "manifest": {"arms": {"candidate": candidate_manifest}},
+        "outcomes": {
+            "candidate": {"passed": True, "test_count": 2,
+                          "source_sha256": candidate_outcome},
+            **{arm: {"passed": False, "test_count": 2} for arm in live.ARMS},
+        },
+    })
+    receipt = tmp_path / "receipt.json"
+    evidence = live.run_experiment(
+        config=config, provider="ollama", model="fixture-only",
+        controls=controls, receipt=receipt,
+    )
+    if mismatch == "none":
+        assert evidence["completed"] is True
+    else:
+        assert evidence["completed"] is False
+        assert evidence["comparison_error"] == (
+            "evaluated candidate source differs from acquired and restarted skill"
+        )
+    assert json.loads(receipt.read_text()) == evidence
