@@ -1,16 +1,16 @@
 {
-  "boots": 78,
+  "boots": 79,
   "consciousness_proven": false,
   "databases": {
     "core": {
-      "archive": "bean_memory.sqlite3.gz.g00078",
-      "bytes": 13910016,
-      "sha256": "9f489bcc827e89f5dfb9ac5c2567488dccba98d78162c6f0e110701777531464"
+      "archive": "bean_memory.sqlite3.gz.g00079",
+      "bytes": 14073856,
+      "sha256": "aad56a4a92ef1786db6fda104d5c2798f67301e053a9266603207c7fad337d01"
     },
     "reasoning": {
-      "archive": "bean_reasoning.sqlite3.gz.g00078",
-      "bytes": 5591040,
-      "sha256": "d4a32a060b490ea027a97e7462ed221b4edd9aac10f7769acd85998af86ecb84"
+      "archive": "bean_reasoning.sqlite3.gz.g00079",
+      "bytes": 5689344,
+      "sha256": "cdb780a40a4021bbb5615dcf72894c02e1d3e1569a6ac668a861a5653afc957a"
     }
   },
   "digital_learning": {
@@ -18,7 +18,7 @@
     "blind_cases_total": 144,
     "candidate_correct_total": 144,
     "candidate_minus_grammar_matched_correct_total": 0,
-    "candidate_minus_passive_correct_total": 48,
+    "candidate_minus_passive_correct_total": 0,
     "families": {
       "channel": {
         "abstentions": {
@@ -36,22 +36,22 @@
           "passive": 48,
           "shuffled": 0
         },
-        "evaluation_sha256": "9b28d1e534057f8bc92bad12c4bf8eb461fca6be549c19d2621d679a854a1051",
+        "evaluation_sha256": "25715612642697f7000e765feb914daf0b1dd8668f28b088980981eb7fafd3f0",
         "hypothesis_grammar_expanded": false,
         "incomplete_fields": {},
-        "learning_receipt_id": "0a8f520b1682183161c8072d8714c88cf3ce5a88d39a8912e2f0e2eb4014b45b",
+        "learning_receipt_id": "f8be8957e8a1b0ab7e28d7dc89f323606e2e47685356ab4e9bf0ed01920aa911",
         "learning_status": "provisional_rule",
         "learning_strategy": "revise_prior_rule_from_fresh_feedback",
         "prior_generation_transfer_attempted": 48,
-        "prior_generation_transfer_correct": 24,
-        "revision_decision": "updated_from_fresh_feedback"
+        "prior_generation_transfer_correct": 48,
+        "revision_decision": "retained_after_fresh_feedback"
       },
       "difference": {
         "abstentions": {
           "candidate": 0,
           "grammar_matched": 0,
           "memory_ablated": 0,
-          "passive": 48,
+          "passive": 0,
           "shuffled": 48
         },
         "correct": {
@@ -59,17 +59,17 @@
           "candidate": 48,
           "grammar_matched": 48,
           "memory_ablated": 48,
-          "passive": 0,
+          "passive": 48,
           "shuffled": 0
         },
-        "evaluation_sha256": "20f17108b01ee3b2e1001010e992b5d034c0389475d827bb138b9461a31562b4",
+        "evaluation_sha256": "4160e8f8b8dfb93a3f50136fdc864eb4048ae9e76d02a96b35fc83b78c6d23be",
         "hypothesis_grammar_expanded": false,
         "incomplete_fields": {},
-        "learning_receipt_id": "e1d483b78c61a0ea1c217538dc2d80ec08c9e62d9439611e283f9291125de333",
+        "learning_receipt_id": "6ef532b167eb9808dca33c61bcc87e988ba848be4b31f4fedd74c0d9117b18d6",
         "learning_status": "provisional_rule",
         "learning_strategy": "revise_prior_rule_from_fresh_feedback",
         "prior_generation_transfer_attempted": 48,
-        "prior_generation_transfer_correct": 24,
+        "prior_generation_transfer_correct": 32,
         "revision_decision": "updated_from_fresh_feedback"
       },
       "parity": {
@@ -88,41 +88,41 @@
           "passive": 48,
           "shuffled": 0
         },
-        "evaluation_sha256": "dc9ed4b9c5353130f4f775e1b54bd35f3c2ad77a72a6f9290f2cc39d31afbb35",
+        "evaluation_sha256": "ee9fd87d2e3a474dbc942f6d230ab6f40b05587cf4de739cd62089511ab5071d",
         "hypothesis_grammar_expanded": true,
         "incomplete_fields": {},
-        "learning_receipt_id": "3d7111f03c6381204f6cfde747e7951c982b06555e9a4acf07847ffe71ab9aaa",
+        "learning_receipt_id": "08f1b2c8ed8627d06c073e123761c2f0bb6c71897cdcb16028d6da6ac2af317c",
         "learning_status": "provisional_rule",
         "learning_strategy": "revise_prior_rule_from_fresh_feedback",
         "prior_generation_transfer_attempted": 48,
-        "prior_generation_transfer_correct": 23,
+        "prior_generation_transfer_correct": 15,
         "revision_decision": "updated_from_fresh_feedback"
       }
     },
-    "generation": 78,
+    "generation": 79,
     "grammar_matched_correct_total": 144,
     "independently_audited": false,
     "memory_ablated_correct_total": 96,
     "memory_specific_advantage_observed": false,
     "new_evaluation": true,
-    "passive_correct_total": 96,
+    "passive_correct_total": 144,
     "schema": "bean.github.digital_feedback.v1",
     "scope": "synthetic_numeric_control_not_general_intelligence",
     "shuffled_correct_total": 0,
-    "source_evidence_sha256": "269244bdbcff39bc37ac836eefd1568e6434eb9be52c33e1e8571a5ee388dc4f",
-    "source_sha": "df7cd5724fec856a30cb4c91350b7f6bf3fc5f9d"
+    "source_evidence_sha256": "816afeaba9b48b686cac1b933d58d62c8769bf3c1150ff6def586755bad98364",
+    "source_sha": "9821851ef5ae1f38999c10a45ef600bf1434eb23"
   },
-  "events": 2624,
-  "generation": 78,
+  "events": 2658,
+  "generation": 79,
   "github_run_attempt": "1",
-  "github_run_id": "45142399894",
+  "github_run_id": "45267480655",
   "model_weights_trained": false,
-  "previous_receipt_sha256": "dc050644a47e58f54fe1397306365f36d0e9b2f1d690dbf9292e9c5eeece7c2f",
+  "previous_receipt_sha256": "3c3e79f1194f2e9df5e34c9ed79bec7adf745e9fe4c578cad6fdb0e8fa77f30f",
   "processed_digital_commands": 2,
-  "receipt_sha256": "3c3e79f1194f2e9df5e34c9ed79bec7adf745e9fe4c578cad6fdb0e8fa77f30f",
+  "receipt_sha256": "99d2066e5a45e8914b7fa21c2c7db6b46bec4f6e7cba4fc5da3af8c5f5e2b161",
   "schema": "bean.github.invoke.v1",
   "scope": "synthetic digital Core runtime and restart continuity, not subjective experience",
-  "source_sha": "df7cd5724fec856a30cb4c91350b7f6bf3fc5f9d",
+  "source_sha": "9821851ef5ae1f38999c10a45ef600bf1434eb23",
   "synthetic_only": true,
   "ticks": 12
 }
