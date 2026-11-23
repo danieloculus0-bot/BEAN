@@ -111,7 +111,9 @@ def evaluate_retained_skill(database, *, name, objective, evaluation_project,
             completed = subprocess.run(
                 [sys.executable, "-m", "unittest", "discover", "-s", "tests", "-v"],
                 cwd=staged, capture_output=True, text=True, timeout=timeout,
-                env={"PATH": __import__("os").environ.get("PATH", ""),
+                env={**{key: __import__("os").environ[key] for key in (
+                         "PATH", "SYSTEMROOT", "WINDIR", "SYSTEMDRIVE",
+                         "TEMP", "TMP", "PATHEXT") if key in __import__("os").environ},
                      "PYTHONPATH": str(staged)},
                 check=False)
         except subprocess.TimeoutExpired:
