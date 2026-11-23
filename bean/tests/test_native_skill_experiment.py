@@ -1,5 +1,7 @@
 """Native BEAN goal-to-skill learning, controlled synthetic integration tests."""
 import json
+import subprocess
+import sys
 from pathlib import Path
 
 import pytest
@@ -115,6 +117,28 @@ def test_curiosity_proposes_executes_and_persists_real_skill_without_replay(worl
     assert restarted.poll_due() == []
     assert GoalStateEngine().propose(begin_session(), [], [question()]) == []
     assert len(restarted.history()) == 1
+
+
+def test_native_goalcycle_retains_verified_source_across_fresh_process(world):
+    root, session, path = world
+    GoalStateEngine().propose(session, [], [question()])
+    cycle = GoalCycle({"run_experiment": handler(root, path, Model())})
+    assert cycle.poll_due()[0]["status"] == "success"
+    receipt = json.loads(cycle.history()[0]["result_json"])
+    assert receipt["retained_skill_sha256"] == receipt["candidate_sha256"]
+    assert receipt["retained_skill"]["installed_into_core"] is False
+    db = root / "verified_skills.sqlite"
+    assert db.is_file()
+    code = (
+        "import hashlib,sys;"
+        "from bean.optimization.skill_incubator import retrieve_verified_skill;"
+        "source=retrieve_verified_skill(sys.argv[1],name='double',objective=sys.argv[2]);"
+        "print(hashlib.sha256(source.encode()).hexdigest())"
+    )
+    fresh = subprocess.run(
+        [sys.executable, "-c", code, str(db), receipt["objective_sha256"]],
+        check=True, capture_output=True, text=True)
+    assert fresh.stdout.strip() == receipt["candidate_sha256"]
 
 
 def test_unseen_skill_id_is_never_executed(world):

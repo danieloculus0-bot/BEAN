@@ -100,7 +100,7 @@ class NativeCoreSkillWriter:
 
 
 def make_native_skill_experiment(core, *, catalog, journal_path, output,
-                                 fallback=None, attempts=10):
+                                 fallback=None, attempts=10, skill_db=None):
     """Register a GoalCycle-compatible curiosity skill handler.
 
     Catalog is host-controlled. A goal can select a skill ID but cannot write
@@ -110,6 +110,8 @@ def make_native_skill_experiment(core, *, catalog, journal_path, output,
         raise ValueError("validated skill catalog is required")
     if type(attempts) is not int or not 1 <= attempts <= 25:
         raise ValueError("invalid skill proposal budget")
+    if skill_db is None:
+        skill_db = Path(journal_path).with_name("verified_skills.sqlite")
     if fallback is not None and not callable(fallback):
         raise ValueError("fallback must be a previously registered action")
 
@@ -133,7 +135,7 @@ def make_native_skill_experiment(core, *, catalog, journal_path, output,
             project=skill["training_project"], holdout_project=skill["holdout_project"],
             name=skill["name"], task=skill["objective"],
             journal_path=journal_path, output=output, provider=writer,
-            attempts=attempts)
+            attempts=attempts, skill_db=skill_db)
         passed = report["skill_promotion_ready"]
         return {
             "status": "verified" if passed else "unverified",
@@ -150,6 +152,8 @@ def make_native_skill_experiment(core, *, catalog, journal_path, output,
             "author_provider": writer.provider_kind,
             "created_executable_code": bool(report.get("skill_newly_created")),
             "source_archived_and_sha_journaled": passed,
+            "retained_skill": report.get("retained_skill"),
+            "retained_skill_sha256": (report.get("retained_skill") or {}).get("source_sha256"),
             "installed_into_core": False,
             "model_weights_trained": False,
             "independent_outcome_verified": False,
