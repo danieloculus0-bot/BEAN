@@ -155,7 +155,7 @@ def test_retained_skill_executes_on_distinct_fresh_process_task(world):
         root / "verified_skills.sqlite", name="double",
         objective=receipt["objective_sha256"], evaluation_project=new_task)
     assert result["fresh_process"] is True
-    assert result["passed"] is True
+    assert result["passed"] is True, result
     assert result["source_sha256"] == receipt["candidate_sha256"]
     # A fresh interpreter must also expose negative transfer on an incompatible task.
     incompatible = make_project(root / "negative_task", [(11, 23)])
