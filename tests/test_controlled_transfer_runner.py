@@ -176,6 +176,35 @@ class ControlledTransferRunnerTests(unittest.TestCase):
                 run_manifest(manifest, db)
             self.assertFalse(db.exists())
 
+    def test_novel_holdout_requires_pinned_digest_before_execution(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "source.py").write_text("def twice(x): return x * 2\\n")
+            (root / "test.py").write_text("pass\\n")
+            arms = ("candidate", "frozen", "no_memory", "grammar_matched", "strong_control")
+            spec = {"experiment_id": "holdout-lock", "model_id": "none", "seed": 1,
+                    "tasks": [{"skill": "twice", "tests": "test.py",
+                               "novel_test_set": True,
+                               "sources": {arm: "source.py" for arm in arms}}]}
+            manifest = root / "manifest.json"
+            db = root / "receipts.sqlite"
+            manifest.write_text(json.dumps(spec))
+            with self.assertRaisesRegex(ValueError, "holdout_sha256"):
+                run_manifest(manifest, db)
+            self.assertFalse(db.exists())
+            spec["tasks"][0]["holdout_sha256"] = "0" * 64
+            manifest.write_text(json.dumps(spec))
+            with self.assertRaisesRegex(ValueError, "holdout_sha256 mismatch"):
+                run_manifest(manifest, db)
+            self.assertFalse(db.exists())
+            spec["tasks"][0]["holdout_sha256"] = hashlib.sha256(
+                (root / "test.py").read_bytes()).hexdigest()
+            manifest.write_text(json.dumps(spec))
+            result = run_manifest(manifest, db)
+            self.assertEqual(len(result["receipts"]), 5)
+            self.assertTrue(result["separate_process_ledger_verified"])
+            self.assertFalse(result["independent_learning_verified"])
+
     def test_incomplete_manifest_never_executes(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
