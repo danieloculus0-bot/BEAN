@@ -98,12 +98,27 @@ def run_manifest(manifest_file, database):
     # Require a new interpreter to recover and verify the persisted receipts.
     # An in-process cache or transient result cannot satisfy this check.
     ledger = str(Path(database).resolve())
+    # Pin full verified payloads outside the child process. Checking only
+    # (skill, condition) lets a rewritten but internally valid chain pass.
+    def payload_digest(row):
+        return hashlib.sha256(json.dumps(
+            row, sort_keys=True, separators=(",", ":"), allow_nan=False,
+        ).encode("utf-8")).hexdigest()
+
+    expected_rows = [
+        row for row in verify_reuse_outcomes(database)
+        if row.get("experiment_id") == experiment_id
+    ]
+    expected = sorted(payload_digest(row) for row in expected_rows)
+    if len(expected) != len(receipts):
+        raise RuntimeError("persisted receipt count mismatch before restart")
     probe = (
-        "import json,sys;"
+        "import hashlib,json,sys;"
         "from bean.optimization.reuse_outcome_ledger import verify_reuse_outcomes;"
         "rows=verify_reuse_outcomes(sys.argv[1]);"
-        "print(json.dumps([[r.get('skill'),r.get('condition')] "
-        "for r in rows if r.get('experiment_id')==sys.argv[2]]))"
+        "print(json.dumps(sorted(hashlib.sha256(json.dumps(r,sort_keys=True,"
+        "separators=(',',':'),allow_nan=False).encode()).hexdigest() "
+        "for r in rows if r.get('experiment_id')==sys.argv[2])))"
     )
     restarted = subprocess.run(
         [sys.executable, "-c", probe, ledger, experiment_id],
@@ -116,8 +131,7 @@ def run_manifest(manifest_file, database):
         recovered = json.loads(restarted.stdout)
     except (ValueError, TypeError) as exc:
         raise RuntimeError("separate-process ledger verification produced invalid evidence") from exc
-    expected = sorted([r["skill"], r["condition"]] for r in receipts)
-    if sorted(recovered) != expected:
+    if recovered != expected:
         raise RuntimeError("separate-process ledger verification mismatch; receipts retained")
     summary = summarize_matched_experiment(verify_reuse_outcomes(database), experiment_id)
     return {"experiment_id": experiment_id, "receipts": receipts, "summary": summary,
