@@ -31,12 +31,13 @@ class ControlledTransferRunnerTests(unittest.TestCase):
             db = root / "receipts.sqlite"
             result = run_manifest(manifest, db)
             self.assertEqual(len(result["receipts"]), 5)
-            self.assertEqual(result["summary"]["matched_tasks"], 1)
-            self.assertEqual(result["summary"]["correct"]["candidate"], 1)
+            self.assertEqual(result["summary"]["matched_tasks"], 0)\n            self.assertEqual(len(result["summary"]["excluded"]), 1)\n            self.assertIn("not_marked_novel", result["summary"]["excluded"][0]["reasons"])
+            self.assertEqual(result["summary"]["correct"]["candidate"], 0)
             self.assertFalse(result["independent_learning_verified"])
             self.assertEqual(len(verify_reuse_outcomes(db)), 5)
             self.assertEqual(set(x["condition"] for x in result["receipts"]), set(arms))
             self.assertNotEqual([x["condition"] for x in result["receipts"]], list(arms))
+            # Reusing an experiment ID would blend old and new outcomes.\n            # Reject it before any new receipts are appended.\n            with self.assertRaisesRegex(ValueError, "experiment_id already exists"):\n                run_manifest(manifest, db)\n            self.assertEqual(len(verify_reuse_outcomes(db)), 5)
 
     def test_duplicate_skill_is_rejected_before_execution(self):
         with tempfile.TemporaryDirectory() as directory:
