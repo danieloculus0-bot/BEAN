@@ -43,7 +43,7 @@ def test_failed_acquisition_persists_negative_receipt_without_reuse(tmp_path):
     controls = {}
     for arm in ("frozen", "no_memory", "grammar_matched", "strong"):
         path = tmp_path / (arm + ".py")
-        path.write_text(f"def solve(x): return x + {("frozen", "no_memory", "grammar_matched", "strong").index(arm)}\n")
+        path.write_text(f"def solve(x): return x + {('frozen', 'no_memory', 'grammar_matched', 'strong').index(arm)}\n")
         controls[arm] = path
     receipt = tmp_path / "receipt.json"
     result = run_experiment(config=config, provider="ollama",
@@ -77,7 +77,7 @@ def test_failed_novel_candidate_does_not_mark_experiment_complete(tmp_path, monk
     controls = {}
     for arm in live.ARMS:
         source = tmp_path / (arm + ".py")
-        source.write_text(f"def solve(x): return x + {("frozen", "no_memory", "grammar_matched", "strong").index(arm)}\\n")
+        source.write_text(f"def solve(x): return x + {('frozen', 'no_memory', 'grammar_matched', 'strong').index(arm)}\n")
         controls[arm] = source
     def native_phase(command, **kwargs):
         phase = command[command.index("--phase") + 1]
@@ -139,7 +139,7 @@ def test_zero_exit_forged_native_receipt_never_reaches_comparison(tmp_path, monk
     controls = {}
     for arm in live.ARMS:
         path = tmp_path / (arm + ".py")
-        path.write_text(f"def solve(x): return x + {("frozen", "no_memory", "grammar_matched", "strong").index(arm)}\\n")
+        path.write_text(f"def solve(x): return x + {('frozen', 'no_memory', 'grammar_matched', 'strong').index(arm)}\n")
         controls[arm] = path
     monkeypatch.setattr(live.subprocess, "run", lambda *args, **kwargs:
                         SimpleNamespace(returncode=0, stdout='{"status":"success"}', stderr=""))
@@ -194,7 +194,7 @@ def test_comparison_rejects_incomplete_or_unequal_outcomes(tmp_path, monkeypatch
     controls = {}
     for arm in live.ARMS:
         source = tmp_path / (arm + ".py")
-        source.write_text(f"def solve(x): return x + {("frozen", "no_memory", "grammar_matched", "strong").index(arm)}\\n")
+        source.write_text(f"def solve(x): return x + {('frozen', 'no_memory', 'grammar_matched', 'strong').index(arm)}\n")
         controls[arm] = source
     def native_phase(command, **kwargs):
         phase = command[command.index("--phase") + 1]
@@ -244,7 +244,7 @@ def test_restart_requires_same_promoted_skill_and_real_novel_reuse(tmp_path, mon
     controls = {}
     for arm in live.ARMS:
         p = tmp_path / (arm + ".py")
-        p.write_text(f"def solve(x): return x + {("frozen", "no_memory", "grammar_matched", "strong").index(arm)}\\n")
+        p.write_text(f"def solve(x): return x + {('frozen', 'no_memory', 'grammar_matched', 'strong').index(arm)}\n")
         controls[arm] = p
     def phase_run(command, **kwargs):
         phase = command[command.index("--phase") + 1]
@@ -302,7 +302,7 @@ def test_live_experiment_rejects_mutated_inputs_after_restart(tmp_path, monkeypa
     controls = {}
     for arm in live.ARMS:
         source = tmp_path / (arm + ".py")
-        source.write_text(f"def solve(x): return x + {("frozen", "no_memory", "grammar_matched", "strong").index(arm)}\n")
+        source.write_text(f"def solve(x): return x + {('frozen', 'no_memory', 'grammar_matched', 'strong').index(arm)}\n")
         controls[arm] = source
 
     def native_phase(command, **kwargs):
@@ -363,7 +363,7 @@ def test_five_arm_source_is_bound_to_acquired_skill(tmp_path, monkeypatch, misma
     controls = {}
     for arm in live.ARMS:
         path = tmp_path / (arm + ".py")
-        path.write_text(f"def solve(x): return x + {("frozen", "no_memory", "grammar_matched", "strong").index(arm)}\n")
+        path.write_text(f"def solve(x): return x + {('frozen', 'no_memory', 'grammar_matched', 'strong').index(arm)}\n")
         controls[arm] = path
 
     def phase_run(command, **kwargs):
@@ -448,7 +448,7 @@ def test_comment_only_variation_is_not_independent_control(tmp_path, monkeypatch
     controls = {}
     for arm in live.ARMS:
         source = tmp_path / (arm + ".py")
-        source.write_text(f"def solve(x): return x  # {arm}\\n")
+        source.write_text(f"def solve(x): return x  # {arm}\n")
         controls[arm] = source
     assert len({live.digest(p) for p in controls.values()}) == len(live.ARMS)
     assert len({live.semantic_digest(p) for p in controls.values()}) == 1
