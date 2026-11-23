@@ -56,7 +56,15 @@ def run_manifest(manifest_file, database):
             if not source.is_file() or source.resolve() == tests.resolve():
                 raise ValueError("missing or identical source/test file")
             planned.append((task, arm, source, tests))
-    # Refuse a reused experiment identity before executing any code. Otherwise\n    # prior receipts can silently contaminate a new matched-control summary.\n    ledger_path = Path(database)\n    if ledger_path.exists():\n        if not ledger_path.is_file() or ledger_path.is_symlink():\n            raise ValueError("ledger must be a regular file")\n        previous = verify_reuse_outcomes(ledger_path)\n        if any(row.get("experiment_id") == experiment_id for row in previous):\n            raise ValueError("experiment_id already exists in outcome ledger")\n    # Randomize evaluation order with a local seeded generator to reduce
+    # Refuse a reused experiment identity before executing any code. Otherwise
+    # prior receipts can silently contaminate a new matched-control summary.
+    ledger_path = Path(database)
+    if ledger_path.exists():
+        if not ledger_path.is_file() or ledger_path.is_symlink():
+            raise ValueError("ledger must be a regular file")\n        previous = verify_reuse_outcomes(ledger_path)
+        if any(row.get("experiment_id") == experiment_id for row in previous):
+            raise ValueError("experiment_id already exists in outcome ledger")
+    # Randomize evaluation order with a local seeded generator to reduce
     # systematic candidate-first order effects; retain condition labels.
     random.Random(seed).shuffle(planned)
     # Prevalidate all paths before running any evaluator.
