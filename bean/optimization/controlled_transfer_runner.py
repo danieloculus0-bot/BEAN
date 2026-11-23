@@ -98,28 +98,32 @@ def run_manifest(manifest_file, database):
     # Require a new interpreter to recover and verify the persisted receipts.
     # An in-process cache or transient result cannot satisfy this check.
     ledger = str(Path(database).resolve())
-    # Pin full verified payloads outside the child process. Checking only
-    # (skill, condition) lets a rewritten but internally valid chain pass.
-    def payload_digest(row):
-        return hashlib.sha256(json.dumps(
-            row, sort_keys=True, separators=(",", ":"), allow_nan=False,
-        ).encode("utf-8")).hexdigest()
-
-    expected_rows = [
-        row for row in verify_reuse_outcomes(database)
-        if row.get("experiment_id") == experiment_id
-    ]
-    expected = sorted(payload_digest(row) for row in expected_rows)
-    if len(expected) != len(receipts):
-        raise RuntimeError("persisted receipt count mismatch before restart")
-    probe = (
-        "import hashlib,json,sys;"
-        "from bean.optimization.reuse_outcome_ledger import verify_reuse_outcomes;"
-        "rows=verify_reuse_outcomes(sys.argv[1]);"
-        "print(json.dumps(sorted(hashlib.sha256(json.dumps(r,sort_keys=True,"
-        "separators=(',',':'),allow_nan=False).encode()).hexdigest() "
-        "for r in rows if r.get('experiment_id')==sys.argv[2])))"
+    # The independent expectation comes from the return values captured
+    # after each arm, not from re-reading the potentially rewritten ledger.
+    # Receipt hashes commit to the complete outcome payload and chain head.
+    expected = sorted(
+        (r["receipt"]["sequence"], r["receipt"]["prior_sha256"],
+         r["receipt"]["receipt_sha256"], r["skill"], r["condition"], r["passed"])
+        for r in receipts
     )
+    probe = """
+import json, sqlite3, sys
+from bean.optimization.reuse_outcome_ledger import verify_reuse_outcomes
+rows = verify_reuse_outcomes(sys.argv[1])
+with sqlite3.connect(sys.argv[1]) as db:
+    chain = db.execute(
+        "SELECT sequence, prior_sha256, receipt_sha256 "
+        "FROM reuse_outcomes ORDER BY sequence"
+    ).fetchall()
+if len(rows) != len(chain):
+    raise RuntimeError("ledger count drift")
+result = sorted(
+    (sequence, prior, digest, payload["skill"], payload["condition"], payload["passed"])
+    for payload, (sequence, prior, digest) in zip(rows, chain)
+    if payload.get("experiment_id") == sys.argv[2]
+)
+print(json.dumps(result))
+"""
     restarted = subprocess.run(
         [sys.executable, "-c", probe, ledger, experiment_id],
         cwd=Path(__file__).resolve().parents[2],
@@ -131,7 +135,9 @@ def run_manifest(manifest_file, database):
         recovered = json.loads(restarted.stdout)
     except (ValueError, TypeError) as exc:
         raise RuntimeError("separate-process ledger verification produced invalid evidence") from exc
-    if recovered != expected:
+    # JSON decodes tuples as lists. Do not silently accept changed payloads,
+    # sequence numbers or a chain that was recomputed after the arm returned.
+    if recovered != [list(row) for row in expected]:
         raise RuntimeError("separate-process ledger verification mismatch; receipts retained")
     summary = summarize_matched_experiment(verify_reuse_outcomes(database), experiment_id)
     return {"experiment_id": experiment_id, "receipts": receipts, "summary": summary,
