@@ -179,8 +179,8 @@ class ControlledTransferRunnerTests(unittest.TestCase):
     def test_novel_holdout_requires_pinned_digest_before_execution(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
-            (root / "source.py").write_text("def twice(x): return x * 2\\n")
-            (root / "test.py").write_text("pass\\n")
+            (root / "source.py").write_text("def twice(x): return x * 2\n")
+            (root / "test.py").write_text("pass\n")
             arms = ("candidate", "frozen", "no_memory", "grammar_matched", "strong_control")
             spec = {"experiment_id": "holdout-lock", "model_id": "none", "seed": 1,
                     "tasks": [{"skill": "twice", "tests": "test.py",
