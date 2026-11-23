@@ -3,6 +3,8 @@ import json
 from pathlib import Path
 import tempfile
 import unittest
+from unittest.mock import patch
+from subprocess import CompletedProcess
 
 from bean.optimization.controlled_transfer_runner import run_manifest
 from bean.optimization.reuse_outcome_ledger import verify_reuse_outcomes
@@ -36,6 +38,7 @@ class ControlledTransferRunnerTests(unittest.TestCase):
             self.assertIn("not_marked_novel", result["summary"]["excluded"][0]["reasons"])
             self.assertEqual(result["summary"]["correct"]["candidate"], 0)
             self.assertFalse(result["independent_learning_verified"])
+            self.assertTrue(result["separate_process_ledger_verified"])
             self.assertEqual(len(verify_reuse_outcomes(db)), 5)
             self.assertEqual(set(x["condition"] for x in result["receipts"]), set(arms))
             self.assertNotEqual([x["condition"] for x in result["receipts"]], list(arms))
@@ -43,6 +46,32 @@ class ControlledTransferRunnerTests(unittest.TestCase):
             # Reject it before any new receipts are appended.
             with self.assertRaisesRegex(ValueError, "experiment_id already exists"):
                 run_manifest(manifest, db)
+            self.assertEqual(len(verify_reuse_outcomes(db)), 5)
+
+    def test_restart_rejects_same_identity_with_changed_outcome(self):
+        # A valid-looking child response with matching arm identities but
+        # altered payload digests must not certify recovered evidence.
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "good.py").write_text("def twice(x): return x * 2\n")
+            (root / "test.py").write_text(
+                "import runpy,sys\n"
+                "assert runpy.run_path(sys.argv[1])['twice'](7)==14\n"
+            )
+            arms = ("candidate", "frozen", "no_memory", "grammar_matched", "strong_control")
+            manifest = root / "manifest.json"
+            manifest.write_text(json.dumps({
+                "experiment_id": "restart-tamper", "model_id": "none", "seed": 1,
+                "tasks": [{"skill": "twice", "tests": "test.py",
+                           "sources": {arm: "good.py" for arm in arms}}],
+            }))
+            db = root / "receipts.sqlite"
+            # Simulate a separate interpreter returning different full
+            # payload digests despite the same five persisted arm identities.
+            with patch("bean.optimization.controlled_transfer_runner.subprocess.run",
+                       return_value=CompletedProcess([], 0, '["altered"]', "")):
+                with self.assertRaisesRegex(RuntimeError, "verification mismatch"):
+                    run_manifest(manifest, db)
             self.assertEqual(len(verify_reuse_outcomes(db)), 5)
 
     def test_mutating_holdout_aborts_before_other_arms(self):

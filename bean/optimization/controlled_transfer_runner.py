@@ -9,6 +9,8 @@ import argparse
 import hashlib
 import json
 import random
+import subprocess
+import sys
 from pathlib import Path
 
 from bean.optimization.metered_reuse_evaluator import evaluate_python_skill
@@ -93,9 +95,48 @@ def run_manifest(manifest_file, database):
         if any(hashlib.sha256(path.read_bytes()).hexdigest() != digest
                for path, digest in pinned.items()):
             raise ValueError("experiment input drift detected; partial receipts retained")
+    # Require a new interpreter to recover and verify the persisted receipts.
+    # An in-process cache or transient result cannot satisfy this check.
+    ledger = str(Path(database).resolve())
+    # Pin full verified payloads outside the child process. Checking only
+    # (skill, condition) lets a rewritten but internally valid chain pass.
+    def payload_digest(row):
+        return hashlib.sha256(json.dumps(
+            row, sort_keys=True, separators=(",", ":"), allow_nan=False,
+        ).encode("utf-8")).hexdigest()
+
+    expected_rows = [
+        row for row in verify_reuse_outcomes(database)
+        if row.get("experiment_id") == experiment_id
+    ]
+    expected = sorted(payload_digest(row) for row in expected_rows)
+    if len(expected) != len(receipts):
+        raise RuntimeError("persisted receipt count mismatch before restart")
+    probe = (
+        "import hashlib,json,sys;"
+        "from bean.optimization.reuse_outcome_ledger import verify_reuse_outcomes;"
+        "rows=verify_reuse_outcomes(sys.argv[1]);"
+        "print(json.dumps(sorted(hashlib.sha256(json.dumps(r,sort_keys=True,"
+        "separators=(',',':'),allow_nan=False).encode()).hexdigest() "
+        "for r in rows if r.get('experiment_id')==sys.argv[2])))"
+    )
+    restarted = subprocess.run(
+        [sys.executable, "-c", probe, ledger, experiment_id],
+        cwd=Path(__file__).resolve().parents[2],
+        capture_output=True, text=True, timeout=30, check=False,
+    )
+    if restarted.returncode != 0:
+        raise RuntimeError("separate-process ledger verification failed; receipts retained")
+    try:
+        recovered = json.loads(restarted.stdout)
+    except (ValueError, TypeError) as exc:
+        raise RuntimeError("separate-process ledger verification produced invalid evidence") from exc
+    if recovered != expected:
+        raise RuntimeError("separate-process ledger verification mismatch; receipts retained")
     summary = summarize_matched_experiment(verify_reuse_outcomes(database), experiment_id)
     return {"experiment_id": experiment_id, "receipts": receipts, "summary": summary,
-            "independent_learning_verified": False, "model_invoked_by_runner": False}
+            "independent_learning_verified": False, "model_invoked_by_runner": False,
+            "separate_process_ledger_verified": True}
 
 
 def main(argv=None):
