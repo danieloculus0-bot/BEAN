@@ -420,7 +420,7 @@ def test_identical_control_implementations_rejected_before_acquisition(tmp_path,
     controls = {}
     for arm in live.ARMS:
         source = tmp_path / (arm + ".py")
-        source.write_text("def solve(x): return x\\n")
+        source.write_text("def solve(x): return x\n")
         controls[arm] = source
 
     def forbidden(*args, **kwargs):
