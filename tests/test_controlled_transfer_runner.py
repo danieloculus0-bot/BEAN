@@ -53,8 +53,7 @@ class ControlledTransferRunnerTests(unittest.TestCase):
             test.write_text(
                 "from pathlib import Path\n"
                 "p=Path(__file__)\n"
-                "p.write_text(p.read_text()+'# altered\\\n')\n"
-            )
+                "p.write_text(p.read_text()+chr(35)+chr(32)+chr(97))\n"
             arms = ("candidate", "frozen", "no_memory", "grammar_matched", "strong_control")
             manifest = root / "manifest.json"
             manifest.write_text(json.dumps({
