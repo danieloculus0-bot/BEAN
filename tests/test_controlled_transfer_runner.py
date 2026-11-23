@@ -1,5 +1,8 @@
 """Regression for the executable five-arm transfer runner (synthetic, not learning)."""
 import json
+import hashlib
+import sqlite3
+import subprocess
 from pathlib import Path
 import tempfile
 import unittest
@@ -72,6 +75,60 @@ class ControlledTransferRunnerTests(unittest.TestCase):
                        return_value=CompletedProcess([], 0, '["altered"]', "")):
                 with self.assertRaisesRegex(RuntimeError, "verification mismatch"):
                     run_manifest(manifest, db)
+            self.assertEqual(len(verify_reuse_outcomes(db)), 5)
+
+    def test_rechained_ledger_cannot_replace_arm_receipts(self):
+        # A modified outcome with a freshly valid SHA chain must not be
+        # accepted as the original observed result after interpreter restart.
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "source.py").write_text("def twice(x): return x * 2\\n")
+            (root / "test.py").write_text(
+                "import runpy,sys\\n"
+                "assert runpy.run_path(sys.argv[1])['twice'](7)==14\\n"
+            )
+            arms = ("candidate", "frozen", "no_memory", "grammar_matched", "strong_control")
+            manifest = root / "manifest.json"
+            manifest.write_text(json.dumps({
+                "experiment_id": "rechain", "model_id": "none", "seed": 9,
+                "tasks": [{"skill": "twice", "tests": "test.py",
+                           "sources": {arm: "source.py" for arm in arms}}],
+            }))
+            db = root / "receipts.sqlite"
+            original_run = subprocess.run
+            mutated = []
+
+            def mutate_before_restart(argv, **kwargs):
+                if len(argv) > 1 and argv[1] == "-c":
+                    with sqlite3.connect(db) as conn:
+                        rows = conn.execute(
+                            "SELECT sequence,payload FROM reuse_outcomes ORDER BY sequence"
+                        ).fetchall()
+                        prior = "0" * 64
+                        for index, (sequence, encoded) in enumerate(rows):
+                            payload = json.loads(encoded)
+                            if index == 0:
+                                payload["passed"] = not payload["passed"]
+                            encoded = json.dumps(
+                                payload, sort_keys=True, separators=(",", ":"), allow_nan=False
+                            )
+                            digest = hashlib.sha256(
+                                prior.encode("ascii") + encoded.encode("utf-8")
+                            ).hexdigest()
+                            conn.execute(
+                                "UPDATE reuse_outcomes SET payload=?,prior_sha256=?,"
+                                "receipt_sha256=? WHERE sequence=?",
+                                (encoded, prior, digest, sequence),
+                            )
+                            prior = digest
+                    mutated.append(True)
+                return original_run(argv, **kwargs)
+
+            with patch("bean.optimization.controlled_transfer_runner.subprocess.run",
+                       side_effect=mutate_before_restart):
+                with self.assertRaisesRegex(RuntimeError, "verification mismatch"):
+                    run_manifest(manifest, db)
+            self.assertTrue(mutated)
             self.assertEqual(len(verify_reuse_outcomes(db)), 5)
 
     def test_mutating_holdout_aborts_before_other_arms(self):
