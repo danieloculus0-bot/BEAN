@@ -23,7 +23,7 @@ class ControlledTransferRunnerTests(unittest.TestCase):
             spec = {"experiment_id": "synthetic-control-regression", "model_id": "none",
                     "seed": 19, "timeout_seconds": 5,
                     "tasks": [{"skill": "twice", "tests": "test.py",
-                               "novel_test_set": True,
+                               "novel_test_set": False,
                                "sources": {arm: ("good.py" if arm == "candidate" else "bad.py")
                                            for arm in arms}}]}
             manifest = root / "manifest.json"
@@ -35,6 +35,26 @@ class ControlledTransferRunnerTests(unittest.TestCase):
             self.assertEqual(result["summary"]["correct"]["candidate"], 1)
             self.assertFalse(result["independent_learning_verified"])
             self.assertEqual(len(verify_reuse_outcomes(db)), 5)
+            self.assertEqual(set(x["condition"] for x in result["receipts"]), set(arms))
+            self.assertNotEqual([x["condition"] for x in result["receipts"]], list(arms))
+
+    def test_duplicate_skill_is_rejected_before_execution(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "source.py").write_text("pass\n")
+            (root / "test.py").write_text("pass\n")
+            arms = ("candidate", "frozen", "no_memory", "grammar_matched", "strong_control")
+            task = {"skill": "repeated", "tests": "test.py",
+                    "sources": {arm: "source.py" for arm in arms}}
+            manifest = root / "manifest.json"
+            manifest.write_text(json.dumps({
+                "experiment_id": "duplicate", "model_id": "none", "seed": 19,
+                "tasks": [task, task],
+            }))
+            db = root / "receipts.sqlite"
+            with self.assertRaisesRegex(ValueError, "duplicate skill"):
+                run_manifest(manifest, db)
+            self.assertFalse(db.exists())
 
     def test_incomplete_manifest_never_executes(self):
         with tempfile.TemporaryDirectory() as directory:
