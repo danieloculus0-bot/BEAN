@@ -183,6 +183,13 @@ def run_experiment(*, config: Path, provider: str, model: str,
             evidence["comparison_error"] = "incomplete five-arm outcome matrix"
         elif any(type(row.get("passed")) is not bool for row in comparison["outcomes"].values()):
             evidence["comparison_error"] = "five arms lack explicit boolean verdicts"
+        elif (comparison.get("manifest", {}).get("arms", {}).get("candidate")
+              != evidence["retained_skill_source_sha256"]
+              or comparison["outcomes"]["candidate"].get("source_sha256")
+              != evidence["retained_skill_source_sha256"]):
+            evidence["comparison_error"] = (
+                "evaluated candidate source differs from acquired and restarted skill"
+            )
         elif not comparison["outcomes"]["candidate"]["passed"]:
             evidence["comparison_error"] = "retained candidate failed independent novel evaluation"
         elif (any(type(row.get("test_count")) is not int or row["test_count"] < 1
