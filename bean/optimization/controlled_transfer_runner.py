@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import random
 from pathlib import Path
 
 from bean.optimization.metered_reuse_evaluator import evaluate_python_skill
@@ -33,9 +34,15 @@ def run_manifest(manifest_file, database):
     if isinstance(timeout, bool) or not isinstance(timeout, (int, float)) or not 0 < timeout <= 3600:
         raise ValueError("invalid timeout")
     planned = []
+    seen_skills = set()
     for task in spec["tasks"]:
         if not isinstance(task, dict) or not isinstance(task.get("skill"), str) or not task["skill"]:
             raise ValueError("each task requires a skill identity")
+        if task["skill"] in seen_skills:
+            raise ValueError("duplicate skill identity would corrupt matched controls")
+        seen_skills.add(task["skill"])
+        if not isinstance(task.get("tests"), str) or not task["tests"]:
+            raise ValueError("each task requires a test file path")
         if type(task.get("novel_test_set", False)) is not bool:
             raise ValueError("novel_test_set must be boolean")
         sources = task.get("sources")
@@ -49,6 +56,9 @@ def run_manifest(manifest_file, database):
             if not source.is_file() or source.resolve() == tests.resolve():
                 raise ValueError("missing or identical source/test file")
             planned.append((task, arm, source, tests))
+    # Randomize evaluation order with a local seeded generator to reduce
+    # systematic candidate-first order effects; retain condition labels.
+    random.Random(seed).shuffle(planned)
     # Prevalidate all paths before running any evaluator.
     receipts = []
     for task, arm, source, tests in planned:
