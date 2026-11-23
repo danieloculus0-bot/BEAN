@@ -141,6 +141,32 @@ def test_native_goalcycle_retains_verified_source_across_fresh_process(world):
     assert fresh.stdout.strip() == receipt["candidate_sha256"]
 
 
+
+def test_retained_skill_executes_on_distinct_fresh_process_task(world):
+    from bean.optimization.skill_incubator import evaluate_retained_skill
+    root, session, path = world
+    GoalStateEngine().propose(session, [], [question()])
+    cycle = GoalCycle({"run_experiment": handler(root, path, Model())})
+    assert cycle.poll_due()[0]["status"] == "success"
+    receipt = json.loads(cycle.history()[0]["result_json"])
+    # A third host-authored task family fixture is not supplied to the model.
+    new_task = make_project(root / "later_task", [(11, 22), (-9, -18)])
+    result = evaluate_retained_skill(
+        root / "verified_skills.sqlite", name="double",
+        objective=receipt["objective_sha256"], evaluation_project=new_task)
+    assert result["fresh_process"] is True
+    assert result["passed"] is True
+    assert result["source_sha256"] == receipt["candidate_sha256"]
+    # A fresh interpreter must also expose negative transfer on an incompatible task.
+    incompatible = make_project(root / "negative_task", [(11, 23)])
+    negative = evaluate_retained_skill(
+        root / "verified_skills.sqlite", name="double",
+        objective=receipt["objective_sha256"], evaluation_project=incompatible)
+    assert negative["status"] == "failed"
+    assert negative["passed"] is False
+
+
+
 def test_unseen_skill_id_is_never_executed(world):
     root, session, path = world
     model = Model()
