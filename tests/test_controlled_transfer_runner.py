@@ -82,10 +82,10 @@ class ControlledTransferRunnerTests(unittest.TestCase):
         # accepted as the original observed result after interpreter restart.
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
-            (root / "source.py").write_text("def twice(x): return x * 2\\n")
+            (root / "source.py").write_text("def twice(x): return x * 2\n")
             (root / "test.py").write_text(
-                "import runpy,sys\\n"
-                "assert runpy.run_path(sys.argv[1])['twice'](7)==14\\n"
+                "import runpy,sys\n"
+                "assert runpy.run_path(sys.argv[1])['twice'](7)==14\n"
             )
             arms = ("candidate", "frozen", "no_memory", "grammar_matched", "strong_control")
             manifest = root / "manifest.json"
