@@ -61,7 +61,8 @@ def run_manifest(manifest_file, database):
     ledger_path = Path(database)
     if ledger_path.exists():
         if not ledger_path.is_file() or ledger_path.is_symlink():
-            raise ValueError("ledger must be a regular file")\n        previous = verify_reuse_outcomes(ledger_path)
+            raise ValueError("ledger must be a regular file")
+        previous = verify_reuse_outcomes(ledger_path)
         if any(row.get("experiment_id") == experiment_id for row in previous):
             raise ValueError("experiment_id already exists in outcome ledger")
     # Randomize evaluation order with a local seeded generator to reduce
