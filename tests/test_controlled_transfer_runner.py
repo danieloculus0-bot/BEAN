@@ -45,6 +45,30 @@ class ControlledTransferRunnerTests(unittest.TestCase):
                 run_manifest(manifest, db)
             self.assertEqual(len(verify_reuse_outcomes(db)), 5)
 
+    def test_mutating_holdout_aborts_before_other_arms(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "source.py").write_text("pass\\n")
+            test = root / "test.py"
+            test.write_text(
+                "from pathlib import Path\\n"
+                "p=Path(__file__)\\n"
+                "p.write_text(p.read_text()+'# altered\\\\n')\\n"
+            )
+            arms = ("candidate", "frozen", "no_memory", "grammar_matched", "strong_control")
+            manifest = root / "manifest.json"
+            manifest.write_text(json.dumps({
+                "experiment_id": "drift", "model_id": "none", "seed": 2,
+                "tasks": [{"skill": "mutator", "tests": "test.py",
+                           "sources": {arm: "source.py" for arm in arms}}],
+            }))
+            db = root / "receipts.sqlite"
+            with self.assertRaisesRegex(ValueError, "input drift"):
+                run_manifest(manifest, db)
+            # The first observed attempt is retained, but subsequent arms
+            # must not consume the mutated test file.
+            self.assertEqual(len(verify_reuse_outcomes(db)), 1)
+
     def test_duplicate_skill_is_rejected_before_execution(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
