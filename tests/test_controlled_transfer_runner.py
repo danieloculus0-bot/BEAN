@@ -36,6 +36,7 @@ class ControlledTransferRunnerTests(unittest.TestCase):
             self.assertIn("not_marked_novel", result["summary"]["excluded"][0]["reasons"])
             self.assertEqual(result["summary"]["correct"]["candidate"], 0)
             self.assertFalse(result["independent_learning_verified"])
+            self.assertTrue(result["separate_process_ledger_verified"])
             self.assertEqual(len(verify_reuse_outcomes(db)), 5)
             self.assertEqual(set(x["condition"] for x in result["receipts"]), set(arms))
             self.assertNotEqual([x["condition"] for x in result["receipts"]], list(arms))
