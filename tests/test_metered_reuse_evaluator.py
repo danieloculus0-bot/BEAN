@@ -5,7 +5,7 @@ import sys
 import tempfile
 import unittest
 
-from bean.optimization.metered_reuse_evaluator import evaluate_and_record
+from bean.optimization.metered_reuse_evaluator import evaluate_and_record, evaluate_python_skill
 from bean.optimization.reuse_outcome_ledger import verify_reuse_outcomes
 
 
@@ -92,6 +92,35 @@ class MeteredEvaluatorTests(unittest.TestCase):
                     model_id="none", seed=0,
                 )
             self.assertFalse(database.exists())
+
+
+    def test_direct_python_skill_runs_real_tests_in_fresh_process(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source = root / "skill.py"
+            tests = root / "withheld.py"
+            database = root / "results.sqlite"
+            source.write_text("def double(x): return x * 2\n", encoding="utf-8")
+            tests.write_text(
+                "import runpy, sys\n"
+                "skill = runpy.run_path(sys.argv[1])\n"
+                "assert skill['double'](11) == 22\n", encoding="utf-8"
+            )
+            common = dict(database=database, skill="direct-python",
+                          source_file=source, tests_file=tests,
+                          experiment_id="direct-python-regression",
+                          model_id="none", seed=1, timeout_seconds=5)
+            passed = evaluate_python_skill(**common, condition="candidate")
+            self.assertTrue(passed["passed"], passed)
+            source.write_text("def double(x): return x + 2\n", encoding="utf-8")
+            failed = evaluate_python_skill(**common, condition="frozen")
+            self.assertFalse(failed["passed"])
+            self.assertNotEqual(failed["returncode"], 0)
+            self.assertEqual([r["passed"] for r in verify_reuse_outcomes(database)],
+                             [True, False])
+            with self.assertRaises(ValueError):
+                evaluate_python_skill(**{**common, "tests_file": source},
+                                      condition="candidate")
 
 
 if __name__ == "__main__":
