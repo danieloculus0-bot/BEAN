@@ -40,6 +40,15 @@ def run_experiment(*, config: Path, provider: str, model: str,
         if path.is_symlink() or not path.is_file():
             raise ValueError("missing or linked control: " + arm)
         control_digests[arm] = digest(path)
+    # A five-arm result is uninterpretable when nominally different controls
+    # execute identical source. Preserve the collision evidence before returning.
+    control_collisions = {
+        arm: [other for other in ARMS if other != arm
+              and control_digests[other] == control_digests[arm]]
+        for arm in ARMS
+        if any(other != arm and control_digests[other] == control_digests[arm]
+               for other in ARMS)
+    }
     receipt.parent.mkdir(parents=True, exist_ok=True)
     evidence = {
         "schema": "bean.native_live_experiment.v1",
@@ -64,6 +73,11 @@ def run_experiment(*, config: Path, provider: str, model: str,
             temp = Path(stream.name)
         os.replace(temp, receipt)
 
+    if control_collisions:
+        evidence["comparison_error"] = "control arms share identical source implementations"
+        evidence["control_source_collisions"] = control_collisions
+        persist()
+        return evidence
     persist()
     base = [sys.executable, "-m", "bean.runtime.skill_cycle_runner",
             "--config", str(config)]
