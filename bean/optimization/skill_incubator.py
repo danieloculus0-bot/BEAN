@@ -14,6 +14,8 @@ import json
 from pathlib import Path
 import re
 import shutil
+import subprocess
+import sys
 import sqlite3
 import tempfile
 
@@ -72,6 +74,55 @@ def retrieve_verified_skill(database, *, name, objective):
         raise ValueError("retained skill SHA mismatch")
     ast.parse(source)
     return source
+
+
+
+def evaluate_retained_skill(database, *, name, objective, evaluation_project,
+                            timeout=30):
+    """Run SHA-verified retained source against host-owned tests in a fresh interpreter.
+
+    This is an execution/evaluation interface, not an OS security sandbox.
+    Never pass an untrusted project or treat passing tests as independent learning.
+    """
+    if not isinstance(name, str) or not NAME.fullmatch(name):
+        raise ValueError("invalid retained skill name")
+    if type(timeout) is not int or not 1 <= timeout <= 120:
+        raise ValueError("invalid evaluation timeout")
+    source = retrieve_verified_skill(database, name=name, objective=objective)
+    digest = hashlib.sha256(source.encode("utf-8")).hexdigest()
+    project = Path(evaluation_project).resolve(strict=True)
+    if not (project / "tests").is_dir():
+        raise ValueError("evaluation project requires tests")
+    target = Path("bean") / "skills" / (name + ".py")
+    if (project / target).exists() or (project / target).is_symlink():
+        raise ValueError("evaluation project already contains skill")
+    for entry in project.rglob("*"):
+        if entry.is_symlink():
+            raise ValueError("evaluation project contains symlink")
+    with tempfile.TemporaryDirectory(prefix="bean-retained-evaluation-") as temp:
+        staged = Path(temp) / "project"
+        shutil.copytree(project, staged, symlinks=False,
+                        ignore=shutil.ignore_patterns(
+                            ".git", ".venv", "venv", "__pycache__", ".pytest_cache"))
+        module = staged / target
+        module.parent.mkdir(parents=True, exist_ok=True)
+        module.write_text(source, encoding="utf-8")
+        try:
+            completed = subprocess.run(
+                [sys.executable, "-m", "unittest", "discover", "-s", "tests", "-v"],
+                cwd=staged, capture_output=True, text=True, timeout=timeout,
+                env={**{key: __import__("os").environ[key] for key in (
+                         "PATH", "SYSTEMROOT", "WINDIR", "SYSTEMDRIVE",
+                         "TEMP", "TMP", "PATHEXT") if key in __import__("os").environ},
+                     "PYTHONPATH": str(staged)},
+                check=False)
+        except subprocess.TimeoutExpired:
+            return {"status": "timeout", "source_sha256": digest,
+                    "passed": False, "fresh_process": True}
+    return {"status": "passed" if completed.returncode == 0 else "failed",
+            "source_sha256": digest, "passed": completed.returncode == 0,
+            "fresh_process": True, "exit_code": completed.returncode,
+            "output_tail": (completed.stdout + completed.stderr)[-3000:]}
 
 
 def incubate_skill(*, project, name, task, journal_path, output, provider,
