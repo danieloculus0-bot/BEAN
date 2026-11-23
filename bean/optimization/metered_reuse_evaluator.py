@@ -15,11 +15,13 @@ from bean.optimization.reuse_outcome_ledger import append_reuse_outcome
 
 def evaluate_and_record(database, *, skill, source_file, tests_file, argv,
                         experiment_id, condition, model_id, seed,
-                        timeout_seconds=30, cwd=None):
+                        timeout_seconds=30, cwd=None, novel_test_set=False):
     """Execute an evaluator once, then persist its result, including failures.
 
     The timeout is an enforced upper bound, not measured model-token usage.
     The caller supplies the evaluator and is responsible for holdout isolation.
+    Novelty defaults to false; only an externally established holdout may be
+    explicitly marked novel. The adapter cannot independently verify novelty.
     No shell expansion, implicit provider call or model invocation is performed.
     """
     if not isinstance(argv, (list, tuple)) or not argv or any(
@@ -28,6 +30,8 @@ def evaluate_and_record(database, *, skill, source_file, tests_file, argv,
         raise ValueError("argv must be a nonempty list of nonempty strings")
     if isinstance(timeout_seconds, bool) or not isinstance(timeout_seconds, (int, float)) or not 0 < timeout_seconds <= 3600:
         raise ValueError("timeout_seconds must be in (0, 3600]")
+    if type(novel_test_set) is not bool:
+        raise ValueError("novel_test_set must be a boolean")
     if type(seed) is not int or seed < 0:
         raise ValueError("seed must be a nonnegative integer")
     source = Path(source_file).read_bytes()
@@ -57,7 +61,7 @@ def evaluate_and_record(database, *, skill, source_file, tests_file, argv,
     passed = not timed_out and returncode == 0
     receipt = append_reuse_outcome(
         database, skill=skill, source_sha256=source_sha,
-        tests_sha256=tests_sha, passed=passed, novel_test_set=True,
+        tests_sha256=tests_sha, passed=passed, novel_test_set=novel_test_set,
         provider_invoked=False, experiment_id=experiment_id,
         condition=condition, model_id=model_id,
         evaluation_budget=int(timeout_seconds * 1000), seed=seed,
@@ -69,5 +73,6 @@ def evaluate_and_record(database, *, skill, source_file, tests_file, argv,
         "stdout_sha256": hashlib.sha256(stdout).hexdigest(),
         "stderr_sha256": hashlib.sha256(stderr).hexdigest(),
         "receipt": receipt, "provider_invoked": False,
+        "novel_test_set": novel_test_set,
         "semantic_correctness_verified": False,
     }
