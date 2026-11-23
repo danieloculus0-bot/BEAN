@@ -191,6 +191,13 @@ def run_experiment(*, config: Path, provider: str, model: str,
             evidence["comparison_error"] = "five arms did not execute identical test counts"
         elif comparison["outcomes"]["candidate"]["test_count"] < 1:
             evidence["comparison_error"] = "no independently executed novel tests"
+        elif (comparison.get("manifest", {}).get("arms", {}).get("candidate")
+              != evidence["retained_skill_source_sha256"]
+              or comparison["outcomes"]["candidate"].get("source_sha256")
+              != evidence["retained_skill_source_sha256"]):
+            evidence["comparison_error"] = (
+                "evaluated candidate source differs from acquired and restarted skill"
+            )
         else:
             evidence["completed"] = True
             # A passing retained skill is not evidence of advantage over
