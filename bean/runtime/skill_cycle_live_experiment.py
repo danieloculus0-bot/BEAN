@@ -60,7 +60,7 @@ def run_experiment(*, config: Path, provider: str, model: str,
         arm: [other for other in ARMS if other != arm
               and control_semantic_digests[other] == control_semantic_digests[arm]]
         for arm in ARMS
-        if any(other != arm and control_digests[other] == control_digests[arm]
+        if any(other != arm and control_semantic_digests[other] == control_semantic_digests[arm]
                for other in ARMS)
     }
     receipt.parent.mkdir(parents=True, exist_ok=True)
