@@ -42,6 +42,27 @@ class MeteredEvaluatorTests(unittest.TestCase):
             self.assertEqual([r["passed"] for r in outcomes], [True, False])
             self.assertEqual([r["condition"] for r in outcomes], ["candidate", "frozen"])
             self.assertEqual(outcomes[0]["evaluation_budget"], 5000)
+            self.assertFalse(outcomes[0]["novel_test_set"])
+            self.assertFalse(good["novel_test_set"])
+
+    def test_explicit_novelty_and_invalid_flag(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source = root / "source.py"
+            source.write_text("pass\n", encoding="utf-8")
+            database = root / "ledger.sqlite"
+            common = dict(
+                database=database, skill="attested-holdout", source_file=source,
+                tests_file=source, argv=[sys.executable, "-c", "pass"],
+                experiment_id="attestation", condition="candidate",
+                model_id="none", seed=4,
+            )
+            with self.assertRaises(ValueError):
+                evaluate_and_record(**common, novel_test_set="true")
+            self.assertFalse(database.exists())
+            observed = evaluate_and_record(**common, novel_test_set=True)
+            self.assertTrue(observed["novel_test_set"])
+            self.assertTrue(verify_reuse_outcomes(database)[0]["novel_test_set"])
 
     def test_timeout_retained_as_failure(self):
         with tempfile.TemporaryDirectory() as directory:
