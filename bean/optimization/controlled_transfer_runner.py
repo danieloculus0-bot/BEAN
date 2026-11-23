@@ -6,6 +6,7 @@ tasks, certify holdout independence, or invoke a language model.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import random
 from pathlib import Path
@@ -56,6 +57,13 @@ def run_manifest(manifest_file, database):
             if not source.is_file() or source.resolve() == tests.resolve():
                 raise ValueError("missing or identical source/test file")
             planned.append((task, arm, source, tests))
+    # Pin every input before the first arm. Evaluator code can alter files on
+    # disk, so later arms must never silently consume changed tests or sources.
+    pinned = {}
+    for _, _, source, tests in planned:
+        for path in (source, tests):
+            resolved = path.resolve()
+            pinned[resolved] = hashlib.sha256(resolved.read_bytes()).hexdigest()
     # Refuse a reused experiment identity before executing any code. Otherwise
     # prior receipts can silently contaminate a new matched-control summary.
     ledger_path = Path(database)
@@ -71,6 +79,9 @@ def run_manifest(manifest_file, database):
     # Prevalidate all paths before running any evaluator.
     receipts = []
     for task, arm, source, tests in planned:
+        if any(hashlib.sha256(path.read_bytes()).hexdigest() != digest
+               for path, digest in pinned.items()):
+            raise ValueError("experiment input drift detected; partial receipts retained")
         result = evaluate_python_skill(
             database, skill=task["skill"], source_file=source,
             tests_file=tests, experiment_id=experiment_id, condition=arm,
@@ -79,6 +90,9 @@ def run_manifest(manifest_file, database):
         )
         receipts.append({"skill": task["skill"], "condition": arm,
                          "passed": result["passed"], "receipt": result["receipt"]})
+        if any(hashlib.sha256(path.read_bytes()).hexdigest() != digest
+               for path, digest in pinned.items()):
+            raise ValueError("experiment input drift detected; partial receipts retained")
     summary = summarize_matched_experiment(verify_reuse_outcomes(database), experiment_id)
     return {"experiment_id": experiment_id, "receipts": receipts, "summary": summary,
             "independent_learning_verified": False, "model_invoked_by_runner": False}
