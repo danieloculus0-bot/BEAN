@@ -39,8 +39,10 @@ class ControlledTransferRunnerTests(unittest.TestCase):
             self.assertEqual(len(verify_reuse_outcomes(db)), 5)
             self.assertEqual(set(x["condition"] for x in result["receipts"]), set(arms))
             self.assertNotEqual([x["condition"] for x in result["receipts"]], list(arms))
-            # Reusing an experiment ID would blend old and new outcomes.\n            # Reject it before any new receipts are appended.
-            with self.assertRaisesRegex(ValueError, "experiment_id already exists"):\n                run_manifest(manifest, db)
+            # Reusing an experiment ID would blend old and new outcomes.
+            # Reject it before any new receipts are appended.
+            with self.assertRaisesRegex(ValueError, "experiment_id already exists"):
+                run_manifest(manifest, db)
             self.assertEqual(len(verify_reuse_outcomes(db)), 5)
 
     def test_duplicate_skill_is_rejected_before_execution(self):
