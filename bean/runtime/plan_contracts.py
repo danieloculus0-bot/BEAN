@@ -19,6 +19,9 @@ CONTRACTS = {
     "group_csv_sum": ({"text": "text", "group": "name", "value": "name"}, {}),
     "search_transcript": ({"records": "list", "query": "name"}, {"limit": "limit"}),
     "search_registered_skills": ({"query": "name"}, {"limit": "limit"}),
+    "learn_skill": ({"skill_id": "name"}, {}),
+    "retained_skill_inventory": ({"skill_id": "name"}, {}),
+    "evaluate_skill": ({"skill_id": "name", "objective_sha256": "sha256"}, {}),
 }
 
 
@@ -100,6 +103,8 @@ def valid(kind, value):
         return isinstance(value, str) and len(value) <= 64000
     if kind == "name":
         return isinstance(value, str) and 0 < len(value.strip()) <= 512
+    if kind == "sha256":
+        return isinstance(value, str) and re.fullmatch(r"[0-9a-f]{64}", value) is not None
     if kind == "list":
         return isinstance(value, list)
     raise ValueError("unknown host contract kind")
@@ -133,7 +138,7 @@ _ACCEPTED_OUTPUT_KINDS = {
     "history": {"history"}, "list": {"history"},
     "number": {"number", "integer"}, "nonnegative": {"number", "integer"},
     "relative": {"number", "integer"}, "window": {"integer"}, "limit": {"integer"},
-    "text": {"text"}, "name": {"text"},
+    "text": {"text"}, "name": {"text"}, "sha256": {"text"},
 }
 
 
@@ -167,6 +172,19 @@ def preflight(tool, args, inputs, prior_tools):
                     kind = _known_output_kind(item, prior_tools)
                     if kind is not None and kind not in {"number", "integer"}:
                         raise ValueError(tool + " incompatible history element")
+
+
+def validate_skill_selection(tool, args, skills, transfer):
+    """Recover dynamic catalog identity validation from PR #539/#562."""
+    if tool not in {"learn_skill", "retained_skill_inventory", "evaluate_skill"}:
+        return
+    validate_args(tool, args)
+    skill_id = args["skill_id"]
+    if skill_id is DEFERRED:
+        return
+    choices = transfer if tool == "evaluate_skill" else skills
+    if skill_id not in (choices or {}):
+        raise ValueError(tool + ".skill_id is not in the installed catalog")
 
 
 def repair_unambiguous_refs(tool, args, inputs, prior_tools):
