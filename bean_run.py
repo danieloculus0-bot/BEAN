@@ -375,6 +375,14 @@ def main():
                     native_reasoning_service, goal_cycle, session_uuid=session_uuid,
                     skill_catalog=skill_catalog, skill_action=experiment_action,
                     skill_db=skill_db, transfer_projects=transfer_projects)
+                # Bind existing domain services to the same model and GoalCycle.
+                from bean.runtime.orchestration_domains import register_domain_tools
+                register_domain_tools(
+                    orchestrator, body_state=body_state, motion_safety=safety,
+                    simulator=simulator, model_store=model_store,
+                    artifact_root=os.environ.get(
+                        "BEAN_ORCHESTRATION_ARTIFACTS",
+                        str(Path(ctx["db_path"]).parent / "bean_artifacts")))
                 register_orchestration_handlers(inbox, orchestrator)
                 ctx["native_orchestrator"] = orchestrator
                 if skill_catalog_path:
