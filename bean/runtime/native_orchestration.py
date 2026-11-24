@@ -16,7 +16,10 @@ from bean.cognition.goal_state import (
     ActionType, ApprovalRequired, GoalProposal, GoalStateEngine, goal_plan,
     plan_proposal_id,
 )
-from bean.engineering.spaceflight import orbital_reference, two_body_reference, vis_viva_speed, acceleration_reference
+from bean.engineering.spaceflight import (
+    orbital_reference, two_body_reference, vis_viva_speed, acceleration_reference,
+    earth_projectile_reference, hohmann_reference,
+)
 from bean.memory.store import get_store
 from bean.learning.reasoning_service import _model_response
 from bean.modules import builtin
@@ -103,6 +106,35 @@ class NativeOrchestrator:
                       "Compare two same-unit numeric observations: {left:number,right:number,"
                       "abs_tol:number,rel_tol:number}; mismatch fails the step",
                       self._compare_numeric)
+        # ORCH-20261124-B: connect retained cognition and remaining reference solvers.
+        # Prior registry preserved at 27276cdb02fd33d396e93c02a8eae26c7018939c.
+        self.register("recall_lessons",
+                      "Retrieve retained same-domain lessons and evidence: "
+                      "{domain:str,query:str,strategy?:str,limit?:int}; returns lessons,count",
+                      self._recall_lessons)
+        self.register("recall_analogies",
+                      "Retrieve cross-domain lesson candidates, not proven transfer: "
+                      "{domain:str,query:str,limit?:int}; returns lessons,count",
+                      self._recall_analogies)
+        self.register("reason_composed",
+                      "Execute existing native symbolic rule compositions: "
+                      "{domain:str,query:str}; may abstain",
+                      self._reason_composed)
+        self.register("reasoning_status",
+                      "Inventory actual native lesson, rule, trial and feedback counts: {}",
+                      self._reasoning_status)
+        self.register("capability_inventory",
+                      "List callable tools in this running orchestrator: {}",
+                      self._capability_inventory)
+        self.register("earth_projectile_reference",
+                      "Ideal uniform-gravity classroom physics with linear drag: "
+                      "{launch_speed_m_s:number,angle_deg:number,initial_height_m:number,"
+                      "gravity_m_s2:number,linear_drag_s_inv:number}",
+                      self._calculation(earth_projectile_reference))
+        self.register("hohmann_reference",
+                      "Ideal circular coplanar orbital transfer: "
+                      "{mu_km3_s2:number,start_radius_km:number,end_radius_km:number}",
+                      self._calculation(hohmann_reference))
         if skill_catalog and skill_action and skill_db:
             skills = skill_catalog["skills"]
             self.skill_action = skill_action
@@ -159,6 +191,33 @@ class NativeOrchestrator:
                 "absolute_difference": abs(left - right),
                 "abs_tol": abs_tol, "rel_tol": rel_tol,
                 "independently_validated": False}
+
+    def _recall_lessons(self, args, task_ref):
+        lessons = self.core.recall(**args)
+        return {"lessons": lessons, "count": len(lessons)}
+
+    def _recall_analogies(self, args, task_ref):
+        lessons = self.core.recall_analogies(**args)
+        return {"lessons": lessons, "count": len(lessons)}
+
+    def _reason_composed(self, args, task_ref):
+        return self.core.reason_composed(domain=args["domain"], task_ref=task_ref,
+                                         query=args["query"])
+
+    def _reasoning_status(self, args, task_ref):
+        if args:
+            raise ValueError("reasoning_status takes no arguments")
+        return self.core.status()
+
+    def _capability_inventory(self, args, task_ref):
+        if args:
+            raise ValueError("capability_inventory takes no arguments")
+        return {"count": len(self.tools),
+                "tools": [{"name": name, "description": entry[0],
+                           "handler_registered": callable(entry[1])}
+                          for name, entry in sorted(self.tools.items())],
+                "scope": "current_native_orchestrator",
+                "runtime_execution_verified": False}
 
     def _reason(self, args, task_ref):
         query = args["query"]
@@ -375,6 +434,8 @@ class NativeOrchestrator:
 
 
 def register_orchestration_handlers(inbox, orchestrator):
+    inbox.register("cognition_capabilities", lambda msg, session:
+                   orchestrator._capability_inventory(msg.args, "inbox"))
     inbox.register("cognition_plan", lambda msg, session: orchestrator.submit(
         msg.args["objective"], inputs=msg.args.get("inputs"),
         plan_id=msg.args.get("plan_id")))
