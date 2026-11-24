@@ -344,21 +344,47 @@ def main():
                 # curiosity/GoalCycle path continues to own goal selection,
                 # execution receipts and non-replay after restart.
                 skill_catalog_path = os.environ.get("BEAN_SKILL_CATALOG")
+                skill_catalog = None
+                skill_db = None
+                transfer_projects = None
                 if skill_catalog_path:
                     from bean.runtime.native_skill_experiment import (
                         load_skill_catalog, make_native_skill_experiment,
                         propose_skill_from_curiosity)
                     skill_catalog = load_skill_catalog(skill_catalog_path)
                     base = Path(ctx["db_path"]).parent
+                    skill_journal = os.environ.get(
+                        "BEAN_SKILL_JOURNAL", str(base / "bean_skill_trials.sqlite"))
+                    skill_db = Path(skill_journal).with_name("verified_skills.sqlite")
+                    transfer_projects = json.loads(os.environ.get(
+                        "BEAN_SKILL_TRANSFER_PROJECTS", "{}"))
                     experiment_action = make_native_skill_experiment(
                         native_reasoning_service,
                         catalog=skill_catalog,
-                        journal_path=os.environ.get(
-                            "BEAN_SKILL_JOURNAL", str(base / "bean_skill_trials.sqlite")),
+                        journal_path=skill_journal,
+                        skill_db=skill_db,
                         output=os.environ.get(
                             "BEAN_SKILL_OUTPUT", str(base / "bean_skill_artifacts")),
                         fallback=experiment_action)
                 goal_cycle.actions["run_experiment"] = experiment_action
+                # 2026-11-23: wire the existing Core model and capability
+                # handlers into durable multi-step execution, not a second agent.
+                from bean.runtime.native_orchestration import (
+                    NativeOrchestrator, register_orchestration_handlers)
+                orchestrator = NativeOrchestrator(
+                    native_reasoning_service, goal_cycle, session_uuid=session_uuid,
+                    skill_catalog=skill_catalog, skill_action=experiment_action,
+                    skill_db=skill_db, transfer_projects=transfer_projects)
+                # Bind existing domain services to the same model and GoalCycle.
+                from bean.runtime.orchestration_domains import register_domain_tools
+                register_domain_tools(
+                    orchestrator, body_state=body_state, motion_safety=safety,
+                    simulator=simulator, model_store=model_store,
+                    artifact_root=os.environ.get(
+                        "BEAN_ORCHESTRATION_ARTIFACTS",
+                        str(Path(ctx["db_path"]).parent / "bean_artifacts")))
+                register_orchestration_handlers(inbox, orchestrator)
+                ctx["native_orchestrator"] = orchestrator
                 if skill_catalog_path:
                     # Actual BEAN curiosity drives selection, not a prewritten
                     # script. Registered native GoalCycle executes on later
