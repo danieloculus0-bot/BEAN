@@ -428,6 +428,8 @@ def test_continuous_curriculum_does_not_trigger_external_paid_model(world):
     _, session, path = world
     model = Model()
     model.adapter_name = "openai"
+    # Initialize the same goal schema as the running Core before querying it.
+    GoalStateEngine()
     result = advance_skill_curriculum(Core(model), catalog=load_skill_catalog(path), session_uuid=session)
     assert result["reason"] == "continuous_curriculum_requires_local_provider"
     assert model.calls == []
