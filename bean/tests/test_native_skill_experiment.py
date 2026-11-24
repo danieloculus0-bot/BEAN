@@ -378,3 +378,57 @@ def test_independent_holdout_failure_not_retried_as_training(world):
     assert result["reason"] == "no_open_curiosity"
     assert model.calls == []
     assert cycle.poll_due() == []
+
+
+def test_continuous_curriculum_runs_without_curiosity_or_hourly_wait(world):
+    from bean.runtime.native_skill_experiment import advance_skill_curriculum
+    root, session, path = world
+    catalog = load_skill_catalog(path)
+    model = Model()
+    model.adapter_name = "synthetic_fixture"
+    core = Core(model)
+    cycle = GoalCycle({"run_experiment": handler(root, path, model)})
+    first = advance_skill_curriculum(core, catalog=catalog, session_uuid=session)
+    assert first["reason"] == "next_curriculum_skill"
+    assert advance_skill_curriculum(core, catalog=catalog, session_uuid=session)["reason"] == "acquisition_already_queued"
+    assert model.calls == []
+    assert cycle.poll_due()[0]["status"] == "success"
+    assert len(model.calls) == 1
+    result = advance_skill_curriculum(core, catalog=catalog, session_uuid=begin_session())
+    assert result["reason"] == "curriculum_attempts_exhausted"
+    assert result["attempted_count"] == 1
+    assert result["all_skills_verified"] is False
+    assert cycle.poll_due() == []
+
+
+def test_continuous_curriculum_advances_to_second_skill_without_idle_cycle(world):
+    from bean.runtime.native_skill_experiment import advance_skill_curriculum
+    root, session, path = world
+    catalog = load_skill_catalog(path)
+    catalog["skills"]["second"] = dict(catalog["skills"]["double"], skill_id="second", name="second")
+    model = Model()
+    model.adapter_name = "synthetic_fixture"
+    core = Core(model)
+    seen = []
+    def record(goal):
+        seen.append(goal["action_detail"]["skill_id"])
+        return {"status": "verified"}
+    cycle = GoalCycle({"run_experiment": record})
+    for expected in ("double", "second"):
+        result = advance_skill_curriculum(core, catalog=catalog, session_uuid=session)
+        assert result["skill_id"] == expected
+        assert cycle.poll_due()[0]["status"] == "success"
+    assert seen == ["double", "second"]
+    assert advance_skill_curriculum(core, catalog=catalog, session_uuid=begin_session())["reason"] == "curriculum_attempts_exhausted"
+    assert cycle.poll_due() == []
+
+
+def test_continuous_curriculum_does_not_trigger_external_paid_model(world):
+    from bean.runtime.native_skill_experiment import advance_skill_curriculum
+    _, session, path = world
+    model = Model()
+    model.adapter_name = "openai"
+    result = advance_skill_curriculum(Core(model), catalog=load_skill_catalog(path), session_uuid=session)
+    assert result["reason"] == "continuous_curriculum_requires_local_provider"
+    assert model.calls == []
+    assert get_store().fetchall("SELECT * FROM cognition_goal_proposals WHERE action_type='run_experiment'") == []
