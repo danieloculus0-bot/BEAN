@@ -80,6 +80,14 @@ def register_retained_reasoning(orchestrator):
                 transfer_receipt_id=args["receipt_id"], sensors=args["sensors"])
         raise ValueError("unrecognized retained policy kind")
 
+    from bean.learning.relational_grounding import infer_relations
+
+    orchestrator.register("infer_relations",
+        "Compose observed evidence-linked triples using variable patterns: "
+        "{facts:[[subject,predicate,object,evidence_id]],patterns:[[s,p,o]],"
+        "conclusion:[s,p,o]}; variables begin with ?; returns grounded inferences",
+        lambda args, task_ref: infer_relations(**args))
+
     orchestrator.register("reason_auto",
         "BEAN symbolic reasoning then existing local inference if available: {domain:str,query:str}; no external provider authorization",
         automatic)
