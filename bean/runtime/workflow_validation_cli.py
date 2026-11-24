@@ -5,6 +5,7 @@ must come from an independent evaluator. No model is allowed to grade itself.
 Candidate replay requires the cognition_workflow_validate inbox handler.
 """
 import argparse
+from contextlib import closing
 import hashlib
 import json
 import math
@@ -62,7 +63,7 @@ def connect(database):
 
 
 def read_trial(database, plan_id):
-    with connect(database) as conn:
+    with closing(connect(database)) as conn:
         try:
             row = conn.execute(
                 "SELECT family,graph_sha,input_sha,evidence_json,passed "
@@ -80,7 +81,7 @@ def read_trial(database, plan_id):
 
 
 def verify_identity(database, plan_id, case):
-    with connect(database) as conn:
+    with closing(connect(database)) as conn:
         row = conn.execute(
             "SELECT action_detail FROM cognition_goal_proposals WHERE proposal_id=?",
             (plan_proposal_id(plan_id, 0),)
@@ -89,7 +90,7 @@ def verify_identity(database, plan_id, case):
         raise ValueError("no durable proposal")
     detail = json.loads(row["action_detail"])
     if (detail.get("workflow_sha") != case["graph_sha"]
-            or detail.get("inputs") != case["inputs"]
+            or canonical(detail.get("inputs")) != canonical(case["inputs"])
             or detail.get("planner_provider") != "candidate_validation"):
         raise ValueError("plan is not the requested candidate replay")
 
@@ -149,7 +150,7 @@ def run_case(database, inbox_path, case, *, timeout=180, interval=0.25):
                 raw = json.loads(path.read_text(encoding="utf-8"))
             except (FileNotFoundError, ValueError):
                 continue
-            if raw.get("command") == command and raw.get("args") == args:
+            if isinstance(raw, dict) and raw.get("command") == command and raw.get("args") == args:
                 return path
         return inbox.drop(command, args, sender="independent_workflow_evaluator")
 
