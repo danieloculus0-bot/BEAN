@@ -43,7 +43,7 @@ jobs:
       - name: Run complete suite with branch coverage
         run: python -m pytest bean/tests -q -ra --tb=short --junitxml=bean-core-tests.xml --cov=bean --cov-branch --cov-report=term-missing --cov-report=xml:bean-core-coverage.xml
       - name: Verify planned skill acquisition and fresh-process reuse
-        run: python -m pytest tests/test_skill_goalcycle_integration.py tests/test_skill_actions.py tests/test_skill_vault_integration.py -q -ra --tb=short
+        run: python -m pytest tests/test_skill_goalcycle_integration.py tests/test_skill_actions.py tests/test_skill_vault_integration.py tests/test_retained_skill_discovery.py tests/test_orchestration_recovery_retry.py tests/test_retained_reasoning_tools.py -q -ra --tb=short
       - name: Attach test evidence
         if: always()
         uses: actions/upload-artifact@v4
