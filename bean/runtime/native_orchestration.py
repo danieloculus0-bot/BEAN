@@ -181,6 +181,9 @@ class NativeOrchestrator:
                               "Execute retained skill on host transfer project: "
                               "{skill_id:str,objective_sha256:str}; choices: " +
                               _json(sorted(self.transfer)), self._reuse)
+        # 2026-11-24: independently implemented portable data skills and registry search.
+        from bean.runtime.portable_skills import register_portable_skills
+        register_portable_skills(self)
         self.fallback = cycle.actions.get("run_experiment")
         cycle.actions["run_experiment"] = self.execute
 
