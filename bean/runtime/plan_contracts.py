@@ -59,6 +59,14 @@ def preview(value, inputs, prior_tools):
             fields = outputs.get(prior_tools[index])
             if path and fields is not None and (type(path[0]) is not str or path[0] not in fields):
                 raise ValueError("prior tool has no such output field")
+            # Recover scalar/index validation from the superseded reference repair
+            # PR #538, 81361246e859bfe19d823d4edc14907fd7526647 (2026-11-24).
+            # Known scalar outputs cannot be subscripted; history is a flat list.
+            if fields is not None and len(path) > 1:
+                if prior_tools[index] != "numeric_context" or path[0] != "history":
+                    raise ValueError("cannot index scalar output field")
+                if len(path) != 2 or type(path[1]) is not int:
+                    raise ValueError("history requires a single integer index")
             return DEFERRED
         return {k: preview(v, inputs, prior_tools) for k, v in value.items()}
     if isinstance(value, list):
