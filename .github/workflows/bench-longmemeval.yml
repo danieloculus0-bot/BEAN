@@ -1,0 +1,110 @@
+name: BEAN LongMemEval manual benchmark
+on:
+  workflow_dispatch:
+    inputs:
+      arm:
+        description: Prepare immutable study or evaluate one arm
+        type: choice
+        options: [prepare, A0, A1, A2, A3, A4]
+        default: prepare
+      subset:
+        type: choice
+        options: [eval, dev, all]
+        default: eval
+      model_endpoint_secret:
+        description: Allowed secret containing authenticated HTTPS endpoint
+        type: choice
+        options: [LME_MODEL_URL, LME_VPS_MODEL_URL]
+        default: LME_MODEL_URL
+      dataset_revision:
+        description: Official cleaned dataset immutable 40-character revision
+        type: string
+        required: true
+      judge_model:
+        description: Exact installed Ollama judge model tag
+        type: string
+        default: qwen2.5:7b
+        required: true
+      study_id:
+        type: string
+        default: LME-20261124-A01
+        required: true
+permissions:
+  contents: read
+concurrency:
+  group: bean-longmemeval-owner-vps
+  cancel-in-progress: false
+jobs:
+  benchmark:
+    if: github.ref == 'refs/heads/bench/longmemeval'
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    env:
+      LME_MODEL_URL: ${{ secrets[inputs.model_endpoint_secret] }}
+      LME_MODEL_TOKEN: ${{ secrets.LME_MODEL_TOKEN }}
+      LME_JUDGE_URL: ${{ secrets.LME_JUDGE_URL }}
+      LME_JUDGE_TOKEN: ${{ secrets.LME_JUDGE_TOKEN }}
+      LME_ARM: ${{ inputs.arm }}
+      LME_SUBSET: ${{ inputs.subset }}
+      LME_DATASET_REVISION: ${{ inputs.dataset_revision }}
+      LME_JUDGE_MODEL: ${{ inputs.judge_model }}
+      LME_STUDY: ${{ inputs.study_id }}
+      LME_ARTIFACT: lme-${{ inputs.arm }}-${{ inputs.subset }}-${{ github.run_id }}-${{ github.run_attempt }}
+      HF_HUB_DISABLE_PROGRESS_BARS: '1'
+      HF_HUB_DISABLE_TELEMETRY: '1'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install pinned tokenizer tooling
+        run: python -m pip install transformers==4.46.3 huggingface_hub==0.26.5
+      - name: Verify harness
+        run: python -m unittest bench.longmemeval.test_runner -v
+      - name: Verify and freeze benchmark inputs
+        shell: bash
+        run: |
+          set -euo pipefail
+          # Values supplied via environment, never interpolated into shell source.
+          mkdir -p lme-output
+          if [[ "$LME_ARM" == prepare ]]; then
+            python -m bench.longmemeval.prepare --dataset-revision "$LME_DATASET_REVISION" --study "$LME_STUDY" --judge-model "$LME_JUDGE_MODEL" --output-dir lme-output
+          else
+            # Publish and commit the preparation manifest before any scoring.
+            python -m bench.longmemeval.prepare --dataset-revision "$LME_DATASET_REVISION" --study "$LME_STUDY" --judge-model "$LME_JUDGE_MODEL" --output-dir lme-output --frozen-dir bench/longmemeval/frozen
+          fi
+      - name: Run selected arm
+        if: inputs.arm != 'prepare'
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ "$LME_ARM" == A2 ]]; then
+            echo "BLOCKED: S5 must pin and verify official Hindsight SDK and server."
+            exit 1
+          fi
+          python - <<'PY'
+          import json, os, subprocess, sys
+          from pathlib import Path
+          out=Path("lme-output")
+          cfg=json.loads((out/"study.json").read_text())
+          paths=json.loads((out/"paths.json").read_text())
+          subprocess.run([sys.executable,"-m","bench.longmemeval.runner",
+              "--dataset",paths["dataset"],"--manifest",str(out/"ids.json"),
+              "--study",cfg["study_id"],"--arm",os.environ["LME_ARM"],
+              "--subset",os.environ["LME_SUBSET"],"--model",cfg["model"],
+              "--model-digest",cfg["model_digest"],"--judge-model",cfg["judge_model"],
+              "--judge-digest",cfg["judge_digest"],"--tokenizer",paths["tokenizer"],
+              "--output",str(out/"results.jsonl")],check=True)
+          PY
+      - name: Preserve public benchmark artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.LME_ARTIFACT }}
+          path: |
+            lme-output/ids.json
+            lme-output/study.json
+            lme-output/results.jsonl
+          if-no-files-found: warn
