@@ -4,6 +4,7 @@ on:
     branches: [main]
     paths:
       - 'bean/creativity/**'
+      - 'bean/runtime/orchestration_domains.py'
       - 'bean/tests/test_*draw*.py'
       - 'bean/tests/test_sketch_lab.py'
       - 'bean/tests/test_orchestrator_drawing.py'
@@ -17,6 +18,7 @@ on:
     branches: [main]
     paths:
       - 'bean/creativity/**'
+      - 'bean/runtime/orchestration_domains.py'
       - 'bean/tests/test_*draw*.py'
       - 'bean/tests/test_sketch_lab.py'
       - 'bean/tests/test_orchestrator_drawing.py'

@@ -1,0 +1,50 @@
+{
+  "attempts": [
+    {
+      "attempt": 1,
+      "image_file": "attempt_01.png",
+      "image_sha256": "b38d9cca3e4772f7173d3ee93fedb4e712725b9764192d53a9d12ece637257be",
+      "observations": "A large circle sits above an upper horizontal line, with two smaller circles and zigzags below it. With the supplied title I can weakly associate the upper circle and line with sun/horizon, but I cannot recognize a convincing quiet beach or coherent sunset scene.",
+      "scores": {
+        "composition": 2,
+        "spatial_coherence": 1,
+        "subject_recognition": 1
+      }
+    },
+    {
+      "attempt": 2,
+      "image_file": "attempt_02.png",
+      "image_sha256": "8757534a9daa746fbca40717cbe0d36cfecc3de60fe5e0f3d2108c4ae71eac27",
+      "observations": "Two large circles float above a low horizontal line, with a central vertical stroke and clipped zigzags near the bottom. The large empty upper area and disconnected marks do not read as a sunset over a beach to this observer. Recognition did not improve.",
+      "scores": {
+        "composition": 1,
+        "spatial_coherence": 1,
+        "subject_recognition": 0
+      }
+    }
+  ],
+  "blinded": false,
+  "conclusion": "Genuine VPS generation and image-feedback delivery are established separately. This observer did not confirm a recognizable final sunset or iterative improvement. The change from3Bto7B and host hardware cannot establish retained learning.",
+  "created_at_utc": "2026-11-24T15:17:57.945583+00:00",
+  "evaluator": "Codex host visual observer",
+  "evaluator_disagreement": "Gemma described a balance scale and a circuit, and explicitly denied a sunset/beach match, yet reported subject recognition3 then2. These contradictory ratings are preserved, not corrected retroactively.",
+  "human_evaluation": "unavailable",
+  "independently_authenticated": false,
+  "inspection_method": "Both actual individual PNGs displayed through view_image before writing this review",
+  "iteration_recognition_last_minus_first": -1,
+  "kind": "vision_model",
+  "learning_improvement_verified": false,
+  "portfolio_diversity": {
+    "bound_png_sha256": [
+      "b38d9cca3e4772f7173d3ee93fedb4e712725b9764192d53a9d12ece637257be",
+      "8757534a9daa746fbca40717cbe0d36cfecc3de60fe5e0f3d2108c4ae71eac27"
+    ],
+    "scope": "One-subject two-draft study; no across-subject generalization test",
+    "score": 1
+  },
+  "posthoc": true,
+  "schema": "bean.draw.host_image_audit.v1",
+  "subject": "A Sunset Over a Quiet Beach",
+  "used_for_generation": false,
+  "weights_updated": false
+}

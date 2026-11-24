@@ -1,0 +1,61 @@
+{
+  "blind_prompt": "Inspect the ATTACHED IMAGE pixels without a title or claimed subject. Identify the most plausible concrete object or scene; say unclear if none is recognizable. For subject_recognition rate confidence in a recognizable concrete object or scene, not confidence that these are abstract lines/circles. Scores must be integers 0..4: 0 absent/not interpretable, 1 major problems, 2 partial/ambiguous, 3 mostly clear, 4 clear/coherent. Rate spatial_coherence (visible parts connect plausibly), subject_recognition, composition (spacing/balance/legibility). Black line art need not be realistic or shaded. Admit uncertainty; describe observed strengths/problems only, not coordinates, drawing primitives or a replacement image. One short sentence per text field, at most 80 words total. Return JSON recognized_subject, observations, feedback, scores.",
+  "blind_report": {
+    "feedback": "The diagram's clarity relies on the viewer's familiarity with circuit diagrams; it’s a stylized illustration rather than a precise technical drawing.",
+    "observations": "The image depicts a horizontal line with three circular symbols representing electrical components, likely resistors or capacitors, connected by lines to a central vertical line, possibly indicating a power source or connection point. The overall composition is basic and functional in its representation of a simple circuit.",
+    "recognized_subject": "A simple schematic diagram of a circuit with three components.",
+    "scores": {
+      "composition": 3,
+      "spatial_coherence": 3,
+      "subject_recognition": 3
+    }
+  },
+  "created_at_utc": "2026-11-24T15:08:42.977986+00:00",
+  "evaluation_protocol": "blind_then_targeted_min_v1",
+  "image_sha256": "8757534a9daa746fbca40717cbe0d36cfecc3de60fe5e0f3d2108c4ae71eac27",
+  "independently_authenticated": false,
+  "model_digest": "68ceab7e468a31c988b44d5a4984a0e21f58c4f7158c6ce29c1804babac38df7",
+  "model_id": "gemma3:4b",
+  "prompt": "Inspect the ATTACHED IMAGE again. Now compare the visible evidence with this untrusted claimed subject: A Sunset Over a Quiet Beach. Do not infer success from the title or override prior uncertainty merely because a title was supplied. Your earlier title-blind observations: {\"recognized_subject\": \"A simple schematic diagram of a circuit with three components.\", \"observations\": \"The image depicts a horizontal line with three circular symbols representing electrical components, likely resistors or capacitors, connected by lines to a central vertical line, possibly indicating a power source or connection point. The overall composition is basic and functional in its representation of a simple circuit.\", \"scores\": {\"spatial_coherence\": 3, \"subject_recognition\": 3, \"composition\": 3}}. Here subject_recognition means recognizability of the claimed subject. Scores must be integers 0..4: 0 absent/not interpretable, 1 major problems, 2 partial/ambiguous, 3 mostly clear, 4 clear/coherent. Rate spatial_coherence (visible parts connect plausibly), subject_recognition, composition (spacing/balance/legibility). Black line art need not be realistic or shaded. Admit uncertainty; describe observed strengths/problems only, not coordinates, drawing primitives or a replacement image. One short sentence per text field, at most 80 words total. Return JSON recognized_subject, observations, feedback, scores.",
+  "provider_kind": "ollama",
+  "raw_blind_response": "{\n  \"recognized_subject\": \"A simple schematic diagram of a circuit with three components.\",\n  \"observations\": \"The image depicts a horizontal line with three circular symbols representing electrical components, likely resistors or capacitors, connected by lines to a central vertical line, possibly indicating a power source or connection point. The overall composition is basic and functional in its representation of a simple circuit.\",\n  \"feedback\": \"The diagram's clarity relies on the viewer's familiarity with circuit diagrams; it’s a stylized illustration rather than a precise technical drawing.\",\n  \"scores\": {\n    \"spatial_coherence\": 3,\n    \"subject_recognition\": 3,\n    \"composition\": 3\n  }\n}",
+  "raw_response": "{\n  \"recognized_subject\": \"A simple schematic diagram of a circuit with three components.\",\n  \"observations\": \"The image shows a basic electrical circuit diagram featuring three circular symbols connected by lines to a central vertical line, representing a simplified electronic system.\",\n  \"feedback\": \"While the image depicts a circuit diagram, it has no relation to the claimed subject of a sunset over a beach; the scene is entirely unrelated and lacks any visual elements associated with the title.\",\n  \"scores\": {\n    \"spatial_coherence\": 1,\n    \"subject_recognition\": 2,\n    \"composition\": 2\n  }\n}",
+  "report": {
+    "blind_observations": "The image depicts a horizontal line with three circular symbols representing electrical components, likely resistors or capacitors, connected by lines to a central vertical line, possibly indicating a power source or connection point. The overall composition is basic and functional in its representation of a simple circuit.",
+    "blind_recognized_subject": "A simple schematic diagram of a circuit with three components.",
+    "created_at_utc": "2026-11-24T15:09:23.696510+00:00",
+    "evaluation_protocol": "blind_then_targeted_min_v1",
+    "evaluator": "Ollama vision reviewer: gemma3:4b",
+    "feedback": "Title-blind review: The diagram's clarity relies on the viewer's familiarity with circuit diagrams; it’s a stylized illustration rather than a precise technical drawing. Target-aware review: While the image depicts a circuit diagram, it has no relation to the claimed subject of a sunset over a beach; the scene is entirely unrelated and lacks any visual elements associated with the title.",
+    "image_sha256": "8757534a9daa746fbca40717cbe0d36cfecc3de60fe5e0f3d2108c4ae71eac27",
+    "independently_authenticated": false,
+    "kind": "vision_model",
+    "model_digest": "68ceab7e468a31c988b44d5a4984a0e21f58c4f7158c6ce29c1804babac38df7",
+    "model_id": "gemma3:4b",
+    "observations": "The image depicts a horizontal line with three circular symbols representing electrical components, likely resistors or capacitors, connected by lines to a central vertical line, possibly indicating a power source or connection point. The overall composition is basic and functional in its representation of a simple circuit.",
+    "provider_kind": "ollama",
+    "recognized_subject": "A simple schematic diagram of a circuit with three components.",
+    "satisfactory": false,
+    "score_rule": "minimum_of_blind_object_clarity_and_targeted_scores_not_authenticated_truth",
+    "scores": {
+      "composition": 2,
+      "spatial_coherence": 1,
+      "subject_recognition": 2
+    },
+    "state": "host_reported_pixel_review"
+  },
+  "schema": "bean.draw.vision_call.v1",
+  "state": "model_reported_pixel_review",
+  "subject": "A Sunset Over a Quiet Beach",
+  "targeted_report": {
+    "feedback": "While the image depicts a circuit diagram, it has no relation to the claimed subject of a sunset over a beach; the scene is entirely unrelated and lacks any visual elements associated with the title.",
+    "observations": "The image shows a basic electrical circuit diagram featuring three circular symbols connected by lines to a central vertical line, representing a simplified electronic system.",
+    "recognized_subject": "A simple schematic diagram of a circuit with three components.",
+    "scores": {
+      "composition": 2,
+      "spatial_coherence": 1,
+      "subject_recognition": 2
+    }
+  },
+  "used_for_generation": true
+}

@@ -1,0 +1,107 @@
+{
+  "attempt_2_feedback_delivery": [
+    {
+      "attempt_1_feedback_delivered": true,
+      "attempt_1_image_hash_delivered": true,
+      "prompt_kind": "Plan an original line drawing",
+      "prompt_sha256": "32ac5b96e222dd07dd8ca3cda0862cff27e1db1725f8e98119aad09c54e0b9ed"
+    },
+    {
+      "attempt_1_feedback_delivered": true,
+      "attempt_1_image_hash_delivered": true,
+      "prompt_kind": "Draw your chosen subject, ",
+      "prompt_sha256": "45366073e94965ec0d92c191d23c47c4c84c0567740e23e90ae7d5ab7d3fc03e"
+    }
+  ],
+  "attempts": [
+    {
+      "attempt": 1,
+      "journal_payload_match": "unavailable_without_exported_journal",
+      "local_png_rerender": "identical_RGB_pixels",
+      "model_reported_scores": {
+        "composition": 3,
+        "spatial_coherence": 2,
+        "subject_recognition": 3
+      },
+      "model_shapes_to_svg": "exact_bytes",
+      "png_sha256": "b38d9cca3e4772f7173d3ee93fedb4e712725b9764192d53a9d12ece637257be",
+      "raw_calls_present_in_model_calls": true,
+      "raw_sha256": "a30250b54ba211e272c97e0b2f9de0dc16b18dc44381e01c962230cc80ce8407",
+      "recorded_journal_tip": "e2989d1c2979ec59172e10018830bedf8d5fbaf90847a17300004d67942b8cbc",
+      "sidecar_sha256": "b4b100efb02d91bf06e23c2cdab654f1a46e1503672a4077925762234a9b95a8",
+      "source_git_sha": "54b0a4d2c17face7ffbf3d016ef348c5a055164a",
+      "subject": "A Sunset Over a Quiet Beach",
+      "svg_sha256": "469f23aefa23a8c78112db4aec865892735fb8f4668399d6f966222909d81be6",
+      "vision_receipt_sha256": "8da2f9f76cddd8f6c6be8c638cebc22b8db28f2f678eaeea4c419cf21440c8a1"
+    },
+    {
+      "attempt": 2,
+      "journal_payload_match": "unavailable_without_exported_journal",
+      "local_png_rerender": "identical_RGB_pixels",
+      "model_reported_scores": {
+        "composition": 2,
+        "spatial_coherence": 1,
+        "subject_recognition": 2
+      },
+      "model_shapes_to_svg": "exact_bytes",
+      "png_sha256": "8757534a9daa746fbca40717cbe0d36cfecc3de60fe5e0f3d2108c4ae71eac27",
+      "raw_calls_present_in_model_calls": true,
+      "raw_sha256": "f849160ab619381b81fbf65be87c56c670d4c92d3b158cec64f461ff34b46d5c",
+      "recorded_journal_tip": "fd60c3c944402a18bbe26375ac39fcbdc4dda7c666dea10a11d9b1b5eb7104f3",
+      "sidecar_sha256": "cc33e2848dc7d20c048bdef4c3b0bf2cea6c2223763ac71dcdb5d2144b777e47",
+      "source_git_sha": "54b0a4d2c17face7ffbf3d016ef348c5a055164a",
+      "subject": "A Sunset Over a Quiet Beach",
+      "svg_sha256": "e41d2d599141280dac56484beac426ce2264afee93ba0f07d5776ccdd7cd7134",
+      "vision_receipt_sha256": "edd6b170b4aea6da2cc8608dc694bd8944fd7585c2c479a8f089aff5588cf3b9"
+    }
+  ],
+  "core_orchestrator_patch_live_verified": false,
+  "export_hashes_sha256": "8adeb742c74e389fdd02e5093a61ccb6c030774ec115261d2b8c89fed8a62833",
+  "export_hashes_verified": 19,
+  "independently_authenticated": false,
+  "journal_verification": {
+    "omission_receipt_sha256": "736d33615c4b6f1ad12333fd6c612af70ac709c8a31a1e957004a75fb983fe31",
+    "payload_matching_verified": false,
+    "reason": "Journal contains events outside this bounded pilot; raw drawing failure receipts retained",
+    "sha_chain_verified": false,
+    "state": "unavailable"
+  },
+  "learning_improvement_verified": false,
+  "observed_at_utc": "2026-11-24T15:16:38.473471+00:00",
+  "provider_integrity_receipt": {
+    "blob_records": 13,
+    "internally_consistent": true,
+    "raw_model_blobs_locally_available_for_independent_rehash": false,
+    "sha256": "060c4bbd7d95c162a09413552f029918f3a72f4581b309f3b11b87bc48f9b118"
+  },
+  "schema": "bean.draw.vps_pilot.local_audit.v1",
+  "scope": "exported-file hashes, raw-model replay, local PNG pixels, linked vision receipts, source modules and feedback delivery; no remote connection, provider authentication or artwork-quality judgment",
+  "source_git_sha": "54b0a4d2c17face7ffbf3d016ef348c5a055164a",
+  "source_modules": [
+    {
+      "matches_local_replay_module": true,
+      "matches_pinned_git_blob": true,
+      "path": "bean/creativity/artifacts.py",
+      "sha256": "c72923730d7048fe4a502cb1d2c9ecec993f22e1ec64319d5cb1a9109ccec938"
+    },
+    {
+      "matches_local_replay_module": true,
+      "matches_pinned_git_blob": true,
+      "path": "bean/creativity/sketch_lab.py",
+      "sha256": "4ed12705d94669c005ee6279d30619e502a15a2e4e7ad39e99a2f922ef53d7b3"
+    },
+    {
+      "matches_local_replay_module": true,
+      "matches_pinned_git_blob": true,
+      "path": "bean/voice/ollama.py",
+      "sha256": "3f852e850e998767f43bd1c0842852c3562aecfce5152d8b8081e8a6ac8d19ee"
+    },
+    {
+      "matches_local_replay_module": true,
+      "matches_pinned_git_blob": true,
+      "path": "scripts/build_bean_draw_gallery.py",
+      "sha256": "f306b06c9db0c2d095895c01fc927f646c311a41b6be6fe88ca5ed7a1a888915"
+    }
+  ],
+  "weights_updated": false
+}

@@ -13,8 +13,9 @@ BEAN's Python Core generated these drawing instructions and geometric primitives
 | Sunflower field | 2 | 2 SVG + 2 PNG | Image review unavailable during execution; later host-model inspection 1/0/1 for both |
 | Whimsical flying dragon | 2 | 2 SVG + 2 PNG | Actual pixel feedback reached the revision; host-model ratings stayed 1/0/1 |
 | Repeated dragon, automatic-review pilot | 2 | 2 SVG + 2 PNG | Gemma overreported recognition; host inspection did not confirm improvement |
+| Sunset over a quiet beach, Contabo VPS | 2 | 2 SVG + 2 PNG | Qwen 7B chose the subject; image feedback reached revision, but host recognition fell from 1/4 to 0/4 |
 
-These are three distinct successful **model-chosen subject labels**, not three verified recognizable depictions. The pilot repeated a subject; it is not additional subject diversity. The artist's final selection is preserved even when visual inspection disagrees with its claims.
+The original 3B series produced three distinct **model-chosen subject labels** with SVG/PNG output; the Contabo 7B run adds a fourth. These labels do not establish recognizable depictions. The dragon pilot repeated a subject; it is not additional subject diversity. The artist's final selection is preserved even when visual inspection disagrees with its claims.
 
 Original receipts: [forest failures](runs/2026-11-19/subject-1/run.json), [mountains](runs/2026-11-19/subject-2/run.json), [sunflowers](runs/2026-11-19/subject-3/run.json), [dragon](runs/2026-11-20/subject-4/run.json). [Posthoc sunflower review](runs/2026-11-19/posthoc-subject3.json) did not influence those drafts.
 
@@ -29,16 +30,21 @@ Original receipts: [forest failures](runs/2026-11-19/subject-1/run.json), [mount
 
 The corrected experiment has only **one eligible adaptive/frozen challenge**. Gemma reports bicycle differences of spatial coherence **0**, subject recognition **+1**, composition **+1** on its 0–4 scale. These are evaluator reports, not independently established improvement. [Actual-image host inspection of all 14 attempts](runs/recent-memory-benchmark-2026-11-24/audit/final-visual-review.json) found no recognizable final teapot, umbrella or bicycle, and no final recognition advantage over either control. The adaptive first bicycle draft had weak wheel cues that its revision lost. Saved feedback delivery now works; retained-learning and generalization benefits remain unproven. Higher Gemma scores overstate recognition on these images.
 
+5. [Actual Contabo VPS pilot](runs/vps-pilot-2026-11-24/README.md): the existing SketchLab CLI ran with real **qwen2.5:7b**, independently chose **“A Sunset Over a Quiet Beach”**, and produced two original SVG/PNG drafts. The existing local model service was reused. Gemma received each actual image twice, and its first feedback text and image hash reached both the planning and drawing prompts for attempt 2. Exact primitive replay, PNG pixels, receipts, model-blob verification records and a separate three-event Core journal backup are retained. The title describes BEAN's intended subject; the final image did not clearly depict it. Gemma described unrelated objects while assigning nonzero subject scores, and both contradictory reports remain unchanged. The host observer rated recognition 1/4 then 0/4. This is genuine VPS execution, **not demonstrated improvement**. The larger artist, changed provider version and new host were not matched controls for learning. This old-source CLI run does not validate the later orchestrator adapter patch in PR #513.
+
 All experiments keep `weights_updated=false` and `learning_improvement_verified=false`. Changed geometry, more files, self-satisfaction and higher model scores do not establish learning. Human aesthetic evaluation is unavailable. External Codex/Gemma observations are model reports, not authenticated ground truth.
 
 ## Runtime and source provenance
 
-- Artist: Ollama **0.40.16**, **qwen2.5:3b**, 3.1B Q4_K_M, CPU. Model digest `357c53fb659c5076de1d65ccb0b397446227b71a42be9d1603d46168015c9e4b`.
+- Original artist: Ollama **0.40.16**, **qwen2.5:3b**, 3.1B Q4_K_M, CPU. Model digest `357c53fb659c5076de1d65ccb0b397446227b71a42be9d1603d46168015c9e4b`.
+- Contabo artist: Ollama **0.40.18**, **qwen2.5:7b**, 7.6B Q4_K_M, CPU. Model digest `845dbda0ea48ed749caafd9e6037047aa19acfcfd82e704d7ca97d631a0b697e`. [Actual launch command and source](runs/vps-pilot-2026-11-24/launch-receipt.json), [model verification receipt](runs/vps-pilot-2026-11-24/original/provider-integrity.json), [rendered attempts and full evidence](runs/vps-pilot-2026-11-24/README.md).
 - Automatic evaluator: **gemma3:4b**, 3.9B Q4_K_M with actual image projector. Digest `68ceab7e468a31c988b44d5a4984a0e21f58c4f7158c6ce29c1804babac38df7`.
 - [Artist model blob integrity](runs/runtime/model-integrity.json), [evaluator blob integrity](runs/vision-provider-2026-11-24/model-integrity.json), [actual title-blind image-payload sanity request](runs/vision-provider-2026-11-24/sanity-request.json) and [raw evaluator response](runs/vision-provider-2026-11-24/sanity-response.raw.json).
 - Source commits: forest `f0aa5ba64614d1ef5c0fcbc9a851e505ec96d1d8`; mountains `2db4f232ef6f2385375a79bd87c3df77501999ec`; sunflower/first dragon/first controls `3fc06f4777a68b492928d6a08a0dd251977af895`; title-visible pilot `ccd40b022cb1d6ad2646758f3ed53ac10de1b68f`; truncated-memory two-pass experiment `01090ba7c8c97855a7e3d352c3e9003e7278e972`; corrected retrieval run `bb7128d76a6c210d84234326576ef6bc7f1e2509`.
 
 UTC timestamps, subject/source, model/provider/digest, attempt number, original model replies, self-critique, actual pixel reports, SVG/PNG hashes, journal tips and verification state are recorded per attempt. Later runs use unchanged worktrees. The first two sessions occurred while source was evolving; a Git SHA alone does not attest a clean working tree. Exact module hashes are retained where available.
+
+The Contabo CLI source was `54b0a4d2c17face7ffbf3d016ef348c5a055164a`; its four recorded module hashes match that revision. Its fresh public drawing journal is separate from the primary service's private memory. An initial exporter withheld the journal because it missed the legitimate run-completion event; that omission is preserved alongside the later bounded verification of two draft events and one completion event. No drawing was regenerated to correct the exporter.
 
 ## Reproduce through the existing Core
 
@@ -85,4 +91,4 @@ python -m pytest bean/tests/test_sketch_lab.py \
   bean/tests/test_drawing_memory_context.py -q -ra
 ```
 
-Green mechanism tests do not establish artistic quality or retained learning. Original source SHAs remain pinned above even after integration.
+The gallery now labels each live entry with **intended subject** and **attempt number**. A title records what the model set out to draw. Pixel review assesses what the resulting image actually depicts. [PR #513](https://github.com/danieloculus0-bot/BEAN/pull/513) records the later adapter, label and Contabo evidence integration. Green mechanism tests do not establish artistic quality or retained learning. Original source SHAs remain pinned above even after integration.
