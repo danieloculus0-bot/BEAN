@@ -29,7 +29,7 @@ The [local audit](audit/initial-export-audit.json) verified that the first attem
 
 The later [host visual review](audit/host-visual-review.json) was written after both actual PNGs were displayed. With the title supplied, its observer weakly associated attempt 1's upper circle and line with a sun and horizon, rating recognition **1/4**. It could not recognize a sunset in attempt 2, rating recognition **0/4**. Its coherence / recognition / composition ratings were **1 / 1 / 2** then **1 / 0 / 1**. These unblinded host-model observations do not confirm a successful revision. They were not fed to the artist and do not replace the original Gemma reports or artist selection.
 
-No model weights were updated. The delivered prior-session memory was an empty JSON array, and this single-subject pilot has no adaptive/frozen/no-memory controls or held-out generalization test. All original receipts retain `learning_improvement_verified=false` and `independent_visual_verification=false`. Human aesthetic evaluation is unavailable.
+No model weights were updated. The delivered prior-session memory was an empty JSON array, and this single-subject pilot has no adaptive/frozen/no-memory controls or held-out generalization test. Attempt receipts retain `weights_updated=false` and `independent_visual_verification=false`. The separate audit reports explicitly mark learning improvement unverified. Human aesthetic evaluation is unavailable.
 
 ## Exact executed entry point
 

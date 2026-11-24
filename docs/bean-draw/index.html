@@ -176,7 +176,7 @@ var term=search.value.trim().toLowerCase(),kind=filter.value;
 var matched=entries.filter(function(e){return(kind==="all"||e.origin===kind)&&((e.title||"")+" "+(e.description||"")).toLowerCase().includes(term)&&asset(e.svg,"svg")&&asset(e.metadata,"json");});
 gallery.replaceChildren();
 matched.forEach(function(e){
-var card=document.createElement("button");card.className="card";card.type="button";card.setAttribute("aria-label","Open attempt "+e.attempt+", intended subject: "+(e.title||"Untitled"));
+var card=document.createElement("button");card.className="card";card.type="button";card.setAttribute("aria-label","Open "+labelFor(e)+", attempt "+e.attempt+", "+(e.origin==="synthetic_fixture"?"fixture subject: ":"intended subject: ")+(e.title||"Untitled"));
 var art=textEl("div","art","");var img=document.createElement("img");img.src=asset(e.png,"png")||e.svg;img.alt="";img.loading="lazy";art.appendChild(img);card.appendChild(art);
 var cap=textEl("div","caption","");cap.appendChild(textEl("span","pill"+(e.origin==="synthetic_fixture"?" fixture":""),labelFor(e)));
 if(e.origin!=="synthetic_fixture")cap.appendChild(textEl("span","pill",e.subject_source==="autonomous"?"MODEL-CHOSEN SUBJECT":e.subject_source==="human"?"HUMAN SUBJECT CHALLENGE":"SUBJECT SOURCE UNRECORDED"));

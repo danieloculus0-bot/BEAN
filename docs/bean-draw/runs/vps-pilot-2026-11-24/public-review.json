@@ -1,7 +1,7 @@
 {
   "credential_shaped_findings": [],
   "files": {
-    "README.md": "88bb507900540a5482a9a72525b4dc5f412802a3eb536a05ae6ee17e975ddf84",
+    "README.md": "aa8bb18e0e14cf913cc872ecab7d36ebfacf8c8d96dd42be3ed8737471b89055",
     "artifact-public-review.json": "1cf21f5604f0dd2729e53b3fe4e47dfcb5cbc2de7549dde6f8e9d0d49a479db7",
     "audit/audit_pilot_export.py": "78b970343587a775a7e8a9ac14b1acc88eed80b2eaf095295a370fc235996e90",
     "audit/collect-journal-followup.sh": "4dfeadc447a3f249f331df08971645ca091b0e86cffc2bcad6792eeab0e6bfaa",
@@ -37,7 +37,7 @@
   "independently_authenticated": false,
   "primary_private_memory_exported": false,
   "public_safe": true,
-  "reviewed_at_utc": "2026-11-24T16:24:32.869919+00:00",
+  "reviewed_at_utc": "2026-11-24T16:32:29.283087+00:00",
   "reviewer": "Codex content and actual-image review; fresh public drawing experiment only; not human aesthetic approval",
   "schema": "bean.draw.public-review.v1"
 }
