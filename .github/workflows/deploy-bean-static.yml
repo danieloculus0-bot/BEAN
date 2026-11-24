@@ -1,0 +1,58 @@
+name: Deploy BEAN website directly
+on:
+  push:
+    branches: [main]
+    paths: ['docs/**', '.github/workflows/deploy-bean-static.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+concurrency:
+  group: bean-pages-deployment
+  cancel-in-progress: false
+jobs:
+  deploy:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Switch failed legacy build to explicit static deployment
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          if gh api "repos/$GITHUB_REPOSITORY/pages" > /tmp/pages.json; then
+            if ! jq -e '.build_type == "workflow"' /tmp/pages.json; then
+              gh api --method PUT "repos/$GITHUB_REPOSITORY/pages" -f build_type=workflow
+            fi
+          else
+            gh api --method POST "repos/$GITHUB_REPOSITORY/pages" -f build_type=workflow
+          fi
+      - name: Check actual static entry points
+        run: |
+          test -s docs/index.html
+          test -s docs/talk.html
+          grep -Fq 'native-goalcycle-v1' docs/talk.html
+          grep -Fq '>Use BEAN</a>' docs/index.html
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs
+      - uses: actions/deploy-pages@v4
+        id: deployment
+      - name: Verify externally served release
+        run: |
+          set -euo pipefail
+          for attempt in $(seq 1 18); do
+            if curl -fsS --max-time 10 "https://danieloculus0-bot.github.io/BEAN/talk.html?verify=$GITHUB_RUN_ID-$attempt" -o /tmp/talk.html &&
+               grep -Fq 'native-goalcycle-v1' /tmp/talk.html; then
+              echo 'Current Use BEAN release is publicly served.'
+              exit 0
+            fi
+            sleep 5
+          done
+          exit 1
