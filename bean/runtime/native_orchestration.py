@@ -479,7 +479,8 @@ class NativeOrchestrator:
             completed = output.get("passed") is True
         elif isinstance(output, dict):
             completed = str(output.get("status", "")).lower() not in (
-                "failed", "failure", "error", "invalid", "unknown",\n                "abstain", "local_model_unavailable")
+                "failed", "failure", "error", "invalid", "unknown",
+                "abstain", "local_model_unavailable")
         return {"status": "success" if completed else "failed", "tool": name,
                 "output_sha256": digest, "output_bytes": len(raw.encode("utf-8")),
                 "independent_outcome_verified": False}
