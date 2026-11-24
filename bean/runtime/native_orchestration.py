@@ -131,10 +131,13 @@ def _check_tool_arguments(name, args, skills=None, transfer=None, *, resolved=Fa
     contract = _ARGUMENT_CONTRACTS.get(name)
     if contract is None:
         return
-    if not isinstance(args, dict) or set(args) != set(contract):
-        raise ValueError(name + " requires named arguments " + repr(list(contract)) +
+    required = set(contract) - ({"window"} if name == "numeric_context" else set())
+    if not isinstance(args, dict) or not required <= set(args) <= set(contract):
+        raise ValueError(name + " requires named arguments " + repr(sorted(required)) +
                          "; received " + repr(list(args) if isinstance(args, dict) else type(args).__name__))
     for key, expected in contract.items():
+        if key not in args:
+            continue
         value = args[key]
         if not resolved and isinstance(value, dict) and ("$step" in value or "$input" in value):
             continue
