@@ -287,6 +287,9 @@ def run_cycle(*, project, target, task, journal_path, output, provider,
     output.mkdir(parents=True, exist_ok=True)
     archive = output / "candidates" / objective
     archive.mkdir(parents=True, exist_ok=True)
+    # A target may be repaired repeatedly under different frozen test suites.
+    # Keep each accepted artifact bound to its immutable objective.
+    accepted_file = output / "validated" / objective / target
     try:
         history = journal.events(objective)
         report = {
@@ -304,7 +307,6 @@ def run_cycle(*, project, target, task, journal_path, output, provider,
         previous = next((row for row in history if row["outcome"] == "validated"), None)
         if previous:
             sha = previous["candidate_sha256"]
-            accepted_file = output / "validated" / target
             archived_file = archive / (sha + ".py")
             if accepted_file.exists():
                 if accepted_file.is_symlink() or source_digest(
@@ -325,7 +327,11 @@ def run_cycle(*, project, target, task, journal_path, output, provider,
             report.update({
                 "status": "previously_validated_in_memory", "accepted_source": sha,
                 "validated_path": str(accepted_file), "recovered_from_archive": recovered,
-                "skill_promotion_ready": bool(held and previous.get("holdout_passed"))})
+                "skill_promotion_ready": bool(held and previous.get("holdout_passed")),
+                "tests_passed": previous.get("test_count"),
+                "holdout_tests_passed": previous.get("holdout_test_count"),
+                "holdout_passed": previous.get("holdout_passed"),
+                "accepted_iteration": previous["iteration"]})
             return report
         if any(row.get("outcome") == "holdout_rejected" for row in history):
             report["status"] = "holdout_rejected"
@@ -392,7 +398,6 @@ def run_cycle(*, project, target, task, journal_path, output, provider,
                 report["holdout_passed"] = False
                 break
             if accepted:
-                accepted_file = output / "validated" / target
                 accepted_file.parent.mkdir(parents=True, exist_ok=True)
                 accepted_file.write_text(source, encoding="utf-8")
                 report.update({
