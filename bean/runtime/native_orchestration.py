@@ -556,17 +556,22 @@ def read_plan_result(database, plan_id):
         conn.close()
 
 
-def wait_for_plan(database, plan_id, *, timeout=120, interval=0.5):
+def wait_for_plan(database, plan_id, *, timeout=120, interval=0.5, queued_path=None):
     """Wait for real durable execution; a timeout never implies cancellation."""
     import time
     if (not math.isfinite(timeout) or not math.isfinite(interval)
             or timeout <= 0 or interval <= 0):
         raise ValueError("timeout and interval must be finite positive values")
     deadline = time.monotonic() + timeout
+    failed_path = None if queued_path is None else (
+        Path(queued_path).parent / "failed" / Path(queued_path).name)
     while True:
         result = read_plan_result(database, plan_id)
         if result["status"] in {"completed", "failed", "needs_review", "needs_evidence"}:
             return result
+        if failed_path is not None and failed_path.is_file() and not result["steps"]:
+            return {**result, "status": "rejected", "reason": "core_inbox_rejected",
+                    "cancelled": False}
         remaining = deadline - time.monotonic()
         if remaining <= 0:
             return {**result, "wait_timed_out": True, "cancelled": False}
@@ -589,13 +594,25 @@ def main():
         command.add_argument("--inputs", default="{}")
         command.add_argument("--inbox", default="bean/runtime/inbox_drop")
         command.add_argument("--plan-id")
+        memory = command.add_mutually_exclusive_group()
+        memory.add_argument("--family", help="Prefer independently verified workflows for this task family")
+        memory.add_argument("--memory", action="store_true", help="Recall a verified workflow from the original objective; otherwise plan fresh")
         if name == "run":
             command.add_argument("--db", type=Path, required=True)
             command.add_argument("--timeout", type=float, default=120)
     status = sub.add_parser("status")
     status.add_argument("plan_id")
     status.add_argument("--db", type=Path, required=True)
+    wait = sub.add_parser("wait", help="Reconnect to a previously submitted plan")
+    wait.add_argument("plan_id")
+    wait.add_argument("--db", type=Path, required=True)
+    wait.add_argument("--timeout", type=float, default=120)
     args = parser.parse_args()
+    if args.command == "wait":
+        result = wait_for_plan(args.db, args.plan_id, timeout=args.timeout)
+        print(json.dumps(result, indent=2))
+        raise SystemExit(2 if result.get("wait_timed_out") else
+                         0 if result["status"] == "completed" else 1)
     if args.command in ("submit", "run"):
         plan_id = args.plan_id or "workflow:" + uuid.uuid4().hex
         plan_proposal_id(plan_id, 0)
@@ -609,12 +626,19 @@ def main():
             existing = read_plan_result(args.db, plan_id)
             if existing["steps"]:
                 parser.error("plan ID already exists; use status or a fresh ID")
-        path = CommandInbox(args.inbox).drop("cognition_plan", {
-            "objective": args.objective, "inputs": inputs, "plan_id": plan_id})
+        payload = {"objective": args.objective, "inputs": inputs, "plan_id": plan_id}
+        inbox_command = "cognition_plan"
+        if args.family is not None or args.memory:
+            if args.family is not None:
+                if not 1 <= len(args.family) <= 100:
+                    parser.error("family must contain 1..100 characters")
+                payload["family"] = args.family
+            inbox_command = "cognition_plan_with_memory"
+        path = CommandInbox(args.inbox).drop(inbox_command, payload)
         if args.command == "submit":
             print(json.dumps({"plan_id": plan_id, "queued": str(path)}))
             return
-        result = wait_for_plan(args.db, plan_id, timeout=args.timeout)
+        result = wait_for_plan(args.db, plan_id, timeout=args.timeout, queued_path=path)
         print(json.dumps(result, indent=2))
         raise SystemExit(2 if result.get("wait_timed_out") else
                          0 if result["status"] == "completed" else 1)

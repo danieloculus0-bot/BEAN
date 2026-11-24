@@ -9,6 +9,9 @@ import math
 
 from bean.cognition.goal_state import ActionType, ApprovalRequired, GoalProposal, plan_proposal_id
 from bean.runtime.native_orchestration import CAPABILITY
+from bean.runtime.workflow_discovery import (discover_verified_workflow, transfer_candidates,
+                                             select_transfer)
+from bean.runtime.workflow_composition import catalog, propose_composition
 
 SAFE_TOOLS = frozenset(("numeric_context","last_sign","mean_sign","orbit_reference",
     "vis_viva_reference","acceleration_reference","compare_numeric",
@@ -149,7 +152,7 @@ class VerifiedWorkflows:
             "SELECT graph_sha,graph_json,COUNT(DISTINCT CASE WHEN passed=1 THEN input_sha END),SUM(CASE WHEN passed=0 THEN 1 ELSE 0 END) FROM bean_verified_workflow_trials WHERE family=? GROUP BY graph_sha,graph_json ORDER BY 3 DESC,graph_sha",(family,)).fetchall()
         return [{"graph_sha":r[0],"graph":json.loads(r[1]),"distinct_verified_inputs":r[2],"failures":r[3]} for r in rows if r[2]>=minimum and r[3]==0 and digest(json.loads(r[1]))==r[0]]
 
-    def reuse(self,*,family,inputs,plan_id,graph_sha=None,validation=False):
+    def reuse(self,*,family,inputs,plan_id,graph_sha=None,validation=False,objective=None,transfer=None):
         if not isinstance(inputs,dict):raise ValueError("inputs object required")
         chosen=[r for r in self.candidates(family,minimum=1 if validation else 2) if graph_sha is None or r["graph_sha"]==graph_sha]
         if len(chosen)!=1:return {"status":"abstain","reason":"no uniquely verified workflow"}
@@ -164,23 +167,129 @@ class VerifiedWorkflows:
                 for x in value:validate(x)
         for i,step in enumerate(graph):
             if step["tool"] not in SAFE_TOOLS or step["tool"] not in self.owner.tools:
-                raise ValueError("tool unavailable")
-            self.owner._validate_refs(step["args"],i);validate(step["args"])
+                return {"status":"abstain","reason":"retained tool unavailable"}
+            try:
+                self.owner._validate_refs(step["args"],i);validate(step["args"])
+            except (ValueError,KeyError,IndexError,TypeError):
+                return {"status":"abstain","reason":"retained input binding incompatible"}
             proposals.append(GoalProposal("orchestrate_objective",ActionType.RUN_EXPERIMENT,
                 "Execute independently checked retained procedure",3,ApprovalRequired.NONE,
                 {"capability":CAPABILITY,"tool":step["tool"],"args":step["args"],
-                 "objective":"Verified workflow reuse: "+family,"inputs":inputs,
-                 "planner_model":None,"planner_provider":"candidate_validation" if validation else "verified_workflow",
-                 "workflow_sha":row["graph_sha"],"learning_context":"workflow:"+family},
+                 "objective":objective if objective is not None else "Verified workflow reuse: "+family,"inputs":inputs,
+                 "planner_model":transfer["model"] if transfer else None,
+                 "planner_provider":"semantic_workflow" if transfer else ("candidate_validation" if validation else "verified_workflow"),
+                 "transfer_selection":transfer,
+                 "workflow_sha":row["graph_sha"],"workflow_family":family,"learning_context":"workflow:"+family},
                 "orchestration"))
         self.owner.engine.propose_plan(self.owner.session_uuid,plan_id,proposals)
-        return {"status":"submitted","plan_id":plan_id,"graph_sha":row["graph_sha"],"model_invoked":False}
+        return {"status":"submitted","plan_id":plan_id,"graph_sha":row["graph_sha"],"model_invoked":bool(transfer)}
+
+
+    def compose_with_memory(self, *, objective, inputs, plan_id):
+        """Propose a new graph from independently checked components."""
+        model=getattr(getattr(self.owner,"core",None),"model",None)
+        if getattr(model,"adapter_name",None) not in ("ollama","local_llamacpp"):
+            return None
+        from bean.learning.reasoning_service import _model_response
+        options=catalog(self.store._conn(),self.candidates)
+        allowed=SAFE_TOOLS.intersection(self.owner.tools)
+        def ask(prompt):
+            raw,name,provider,_=_model_response(model,prompt,"BEAN procedural composition")
+            return raw,name,provider
+        result=propose_composition(objective,inputs,options,ask,allowed,
+            {k:v[0] for k,v in self.owner.tools.items() if k in allowed})
+        if result is None:
+            return None
+        graph=result["graph"]
+        graph_sha=digest(graph)
+        proposals=[]
+        for i,step in enumerate(graph):
+            self.owner._validate_refs(step["args"],i)
+            proposals.append(GoalProposal("orchestrate_objective",ActionType.RUN_EXPERIMENT,
+                "Execute proposed composition of retained procedures",3,ApprovalRequired.NONE,
+                {"capability":CAPABILITY,"tool":step["tool"],"args":step["args"],
+                 "objective":objective,"inputs":inputs,
+                 "planner_model":result["model"],"planner_provider":"composed_workflow",
+                 "workflow_sha":graph_sha,"composition_lineage":result["lineage"],
+                 "composition_selection_provider":result["provider"],
+                 "learning_context":"workflow_composition:"+graph_sha},"orchestration"))
+        self.owner.engine.propose_plan(self.owner.session_uuid,plan_id,proposals)
+        return {"route":"composed_workflow","model_invoked":True,"result":{
+            "status":"submitted","plan_id":plan_id,"graph_sha":graph_sha,
+            "independently_verified":False,"lineage":result["lineage"]}}
+
+    def plan_with_memory(self, *, objective, inputs, plan_id, family=None):
+        """Production route: try verified memory, then use the native model.
+
+        Strict reuse remains separate so a fallback cannot earn retention credit.
+        Only pre-submission abstention is recoverable here; submitted plans use
+        the existing GoalCycle recovery mechanism.
+        """
+        if family is not None and (not isinstance(family,str) or not 1<=len(family)<=100):
+            raise ValueError("bounded family required")
+        if not isinstance(objective,str) or not objective.strip():
+            raise ValueError("objective required")
+        if not isinstance(inputs,dict) or not isinstance(plan_id,str) or not plan_id:
+            raise ValueError("inputs object and explicit plan_id required")
+        old=self.store.fetchone(
+            "SELECT action_detail FROM cognition_goal_proposals WHERE proposal_id=?",
+            (plan_proposal_id(plan_id,0),))
+        if old:
+            detail=json.loads(old["action_detail"])
+            if (detail.get("capability")!=CAPABILITY
+                or detail.get("objective")!=objective or detail.get("inputs")!=inputs
+                or (family is not None and detail.get("workflow_family",family)!=family)):
+                raise ValueError("plan ID already belongs to a different task")
+            return {"route":"existing","model_invoked":False,
+                    "result":self.owner.status(plan_id)}
+        transfer=None
+        automatic=family is None
+        if family is None:
+            discovered=discover_verified_workflow(self.store._conn(),objective,self.candidates)
+            if discovered is None:
+                retained={"status":"abstain","reason":"no unique verified objective match"}
+                model=getattr(getattr(self.owner,"core",None),"model",None)
+                if getattr(model,"adapter_name",None) in ("ollama","local_llamacpp"):
+                    from bean.learning.reasoning_service import _model_response
+                    options=transfer_candidates(self.store._conn(),inputs,self.candidates)
+                    def ask(prompt):
+                        raw,name,provider,_=_model_response(model,prompt,"BEAN procedural transfer")
+                        return raw,name,provider
+                    choice=select_transfer(objective,inputs,options,ask,
+                        tool_descriptions={k:v[0] for k,v in self.owner.tools.items()})
+                    if choice is not None:
+                        family=choice["family"]
+                        transfer={k:choice[k] for k in ("model","provider","selection_index","graph_sha")}
+                        retained=self.reuse(family=family,inputs=inputs,plan_id=plan_id,
+                            graph_sha=choice["graph_sha"],objective=objective,transfer=transfer)
+            else:
+                family,graph_sha=discovered
+                retained=self.reuse(family=family,inputs=inputs,plan_id=plan_id,
+                                    graph_sha=graph_sha,objective=objective)
+        else:
+            retained=self.reuse(family=family,inputs=inputs,plan_id=plan_id,
+                                objective=objective)
+        if retained["status"]=="submitted":
+            return {"route":"semantic_transfer" if transfer else "retained",
+                    "model_invoked":bool(transfer),"result":retained}
+        if retained["status"]!="abstain":
+            raise RuntimeError("unexpected retained workflow result")
+        if automatic:
+            composed=self.compose_with_memory(objective=objective,inputs=inputs,plan_id=plan_id)
+            if composed is not None:
+                return composed
+        result=self.owner.submit(objective,inputs=inputs,plan_id=plan_id,
+                    recovery_context={"workflow_family":family,
+                                      "retained_abstention":retained["reason"]})
+        return {"route":"fresh_fallback","model_invoked":True,
+                "retained_abstention":retained["reason"],"result":result}
 
 
 def register_verified_workflows(inbox,owner):
     memory=VerifiedWorkflows(owner)
     inbox.register("cognition_workflow_feedback",lambda msg,session:memory.feedback(**msg.args))
-    inbox.register("cognition_workflow_reuse",lambda msg,session:memory.reuse(**{k:v for k,v in msg.args.items() if k!="validation"}))
-    inbox.register("cognition_workflow_validate",lambda msg,session:memory.reuse(**{k:v for k,v in msg.args.items() if k!="validation"},validation=True))
+    inbox.register("cognition_workflow_reuse",lambda msg,session:memory.reuse(**{k:v for k,v in msg.args.items() if k not in ("validation","transfer")}))
+    inbox.register("cognition_workflow_validate",lambda msg,session:memory.reuse(**{k:v for k,v in msg.args.items() if k not in ("validation","transfer")},validation=True))
     inbox.register("cognition_workflow_inventory",lambda msg,session:{"candidates":memory.candidates(msg.args["family"])})
+    inbox.register("cognition_plan_with_memory",lambda msg,session:memory.plan_with_memory(**msg.args))
     owner.verified_workflows=memory
