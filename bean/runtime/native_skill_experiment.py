@@ -180,7 +180,10 @@ def recover_unfinished_training(core, *, catalog, session_uuid):
         GoalStateEngine, GoalProposal, ActionType, ApprovalRequired)
     from bean.memory.store import get_store
 
-    rows = get_store().fetchall(
+    store = get_store()
+    if store.fetchone("SELECT name FROM sqlite_master WHERE type='table' AND name='bean_goal_runs'") is None:
+        return None
+    rows = store.fetchall(
         "SELECT p.proposal_id,p.status,p.action_detail,r.result_json "
         "FROM cognition_goal_proposals p LEFT JOIN bean_goal_runs r "
         "ON r.proposal_id=p.proposal_id "
@@ -188,7 +191,10 @@ def recover_unfinished_training(core, *, catalog, session_uuid):
         "AND p.action_type='run_experiment' ORDER BY p.id")
     grouped = {}
     for row in rows:
-        detail = json.loads(row["action_detail"] or "null")
+        try:
+            detail = json.loads(row["action_detail"] or "null")
+        except (ValueError, TypeError):
+            continue
         if isinstance(detail, dict) and detail.get("capability") == "native_skill_incubator":
             grouped.setdefault(detail.get("skill_id"), []).append(row)
     for skill_id, history in grouped.items():
@@ -196,7 +202,10 @@ def recover_unfinished_training(core, *, catalog, session_uuid):
             continue
         if any(row["status"] != "needs_evidence" for row in history):
             continue
-        receipts = [json.loads(row["result_json"] or "null") for row in history]
+        try:
+            receipts = [json.loads(row["result_json"] or "null") for row in history]
+        except (ValueError, TypeError):
+            continue
         # Only known incomplete training or a confirmed missing model can
         # resume. Preserve all prior receipts and never reuse hidden outcomes.
         if not all(isinstance(result, dict) and (
