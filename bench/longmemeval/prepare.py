@@ -6,7 +6,8 @@ import re
 from pathlib import Path
 from urllib.parse import urlsplit
 
-from .runner import CAP, ANSWER_TOKENS, WINDOW, UPSTREAM, freeze, Ollama
+from .runner import CAP, ANSWER_TOKENS, WINDOW, UPSTREAM, Ollama
+from .freeze_dataset import DATASET_REV, freeze_verified
 
 TOKENIZER_REPO = "Qwen/Qwen2.5-3B-Instruct"
 TOKENIZER_REV = "aa8e72537993ba99e69dfaafa59ed015b17504d1"
@@ -43,8 +44,8 @@ def main():
     p.add_argument("--output-dir", required=True)
     p.add_argument("--frozen-dir")
     args = p.parse_args()
-    if not re.fullmatch(r"[0-9a-f]{40}", args.dataset_revision):
-        raise ValueError("dataset revision must be immutable commit SHA")
+    if args.dataset_revision != DATASET_REV:
+        raise ValueError("dataset revision does not match the pinned official release")
     from huggingface_hub import hf_hub_download, snapshot_download
     folder = Path(args.output_dir)
     folder.mkdir(parents=True, exist_ok=True)
@@ -54,7 +55,7 @@ def main():
                                   allow_patterns=["tokenizer.json", "tokenizer_config.json",
                                                   "vocab.json", "merges.txt", "config.json"],
                                   token=False)
-    manifest = freeze(dataset)
+    manifest = freeze_verified(dataset)
     model = "qwen2.5:3b"
     model_digest = endpoint_identity(os.environ["LME_MODEL_URL"], os.environ["LME_MODEL_TOKEN"], model)
     judge_digest = endpoint_identity(os.environ["LME_JUDGE_URL"], os.environ["LME_JUDGE_TOKEN"], args.judge_model)
