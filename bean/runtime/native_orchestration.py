@@ -198,6 +198,11 @@ class NativeOrchestrator:
         # Assimilation 2026-11-24: existing adaptive policy APIs now participate in GoalCycle.
         from bean.runtime.retained_reasoning_tools import register_retained_reasoning
         register_retained_reasoning(self)
+        from bean.runtime.collaborative_reasoning import deliberate
+        self.register("collaborative_reason",
+                      "Critique and revise a solution using proposer, critic and reviser roles: "
+                      "{objective:str,observations?:object}; use actual tool outputs as observations",
+                      lambda args, ref: deliberate(self.core.model, **args))
         if skill_catalog and skill_action and skill_db:
             skills = skill_catalog["skills"]
             self.skill_action = skill_action
