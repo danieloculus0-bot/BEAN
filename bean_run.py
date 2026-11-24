@@ -350,7 +350,7 @@ def main():
                 if skill_catalog_path:
                     from bean.runtime.native_skill_experiment import (
                         load_skill_catalog, make_native_skill_experiment,
-                        propose_skill_from_curiosity)
+                        propose_skill_from_curiosity, advance_skill_curriculum)
                     skill_catalog = load_skill_catalog(skill_catalog_path)
                     base = Path(ctx["db_path"]).parent
                     skill_journal = os.environ.get(
@@ -394,17 +394,25 @@ def main():
                 register_orchestration_handlers(inbox, orchestrator)
                 ctx["native_orchestrator"] = orchestrator
                 if skill_catalog_path:
-                    # Actual BEAN curiosity drives selection, not a prewritten
-                    # script. Registered native GoalCycle executes on later
-                    # ticks with durable claims and non-replay semantics.
-                    discovery_ticks = int(os.environ.get(
-                        "BEAN_SKILL_CURIOSITY_TICKS", "300"))
-                    handlers.register(
-                        "bean_skill_curiosity",
-                        lambda tick, session_uuid, ctx: propose_skill_from_curiosity(
-                            native_reasoning_service, catalog=skill_catalog,
-                            session_uuid=session_uuid),
-                        interval=discovery_ticks)
+                    # A configured host curriculum is drained by the existing
+                    # GoalCycle, without waiting for hourly external automation.
+                    # Keep curiosity-only selection available as an explicit mode.
+                    if os.environ.get("BEAN_SKILL_CURRICULUM_MODE", "continuous") == "continuous":
+                        handlers.register(
+                            "bean_skill_curriculum",
+                            lambda tick, session_uuid, ctx: advance_skill_curriculum(
+                                native_reasoning_service, catalog=skill_catalog,
+                                session_uuid=session_uuid),
+                            interval=1)
+                    else:
+                        discovery_ticks = int(os.environ.get(
+                            "BEAN_SKILL_CURIOSITY_TICKS", "300"))
+                        handlers.register(
+                            "bean_skill_curiosity",
+                            lambda tick, session_uuid, ctx: propose_skill_from_curiosity(
+                                native_reasoning_service, catalog=skill_catalog,
+                                session_uuid=session_uuid),
+                            interval=discovery_ticks)
             # Native read-only web research; it makes no network request at
             # startup and uses Core's existing wisdom/reasoning memory owner.
             from bean.research.research_service import (
