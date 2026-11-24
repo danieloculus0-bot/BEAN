@@ -122,7 +122,11 @@ def make_native_skill_experiment(core, *, catalog, journal_path, output,
         if detail.get("capability") != "native_skill_incubator":
             return (fallback(goal) if fallback else {
                 "status": "unknown", "reason": "unsupported_experiment_capability"})
-        if set(detail) - {"capability", "skill_id", "learning_context"}:
+        if "goal_plan" in detail:
+            from bean.cognition.goal_state import goal_plan
+            if goal_plan(detail, goal["proposal_id"]) is None:
+                raise ValueError("invalid persisted skill recovery plan")
+        if set(detail) - {"capability", "skill_id", "learning_context", "goal_plan"}:
             return {"status": "unknown", "reason": "untrusted_skill_arguments"}
         skill_id = detail.get("skill_id")
         if not isinstance(skill_id, str) or skill_id not in catalog["skills"]:
@@ -164,6 +168,68 @@ def make_native_skill_experiment(core, *, catalog, journal_path, output,
     return run_experiment
 
 
+def recover_unfinished_training(core, *, catalog, session_uuid):
+    """Resume known incomplete training; never replay an unknown or blind failure.
+
+    Existing GoalCycle owns each new durable attempt. A rejected independent
+    holdout is terminal for that objective, not feedback for another candidate.
+    """
+    if getattr(core, "model", None) is None:
+        return None
+    from bean.cognition.goal_state import (
+        GoalStateEngine, GoalProposal, ActionType, ApprovalRequired)
+    from bean.memory.store import get_store
+
+    store = get_store()
+    if store.fetchone("SELECT name FROM sqlite_master WHERE type='table' AND name='bean_goal_runs'") is None:
+        return None
+    rows = store.fetchall(
+        "SELECT p.proposal_id,p.status,p.action_detail,r.result_json "
+        "FROM cognition_goal_proposals p LEFT JOIN bean_goal_runs r "
+        "ON r.proposal_id=p.proposal_id "
+        "WHERE p.goal_state='investigate_open_question' "
+        "AND p.action_type='run_experiment' ORDER BY p.id")
+    grouped = {}
+    for row in rows:
+        try:
+            detail = json.loads(row["action_detail"] or "null")
+        except (ValueError, TypeError):
+            continue
+        if isinstance(detail, dict) and detail.get("capability") == "native_skill_incubator":
+            grouped.setdefault(detail.get("skill_id"), []).append(row)
+    for skill_id, history in grouped.items():
+        if skill_id not in catalog["skills"] or len(history) >= 3:
+            continue
+        if any(row["status"] != "needs_evidence" for row in history):
+            continue
+        try:
+            receipts = [json.loads(row["result_json"] or "null") for row in history]
+        except (ValueError, TypeError):
+            continue
+        # Only known incomplete training or a confirmed missing model can
+        # resume. Preserve all prior receipts and never reuse hidden outcomes.
+        if not all(isinstance(result, dict) and (
+            result.get("reason") == "no_live_core_model" or (
+                result.get("incubation_status") in ("unresolved", "candidate_space_exhausted")
+                and result.get("skill_promotion_ready") is False
+                and result.get("catalog_sha256") == catalog["sha256"]))
+            for result in receipts):
+            continue
+        parent = history[-1]["proposal_id"]
+        plan_id = "skill-recovery:" + hashlib.sha256(parent.encode()).hexdigest()
+        proposal = GoalProposal(
+            "investigate_open_question", ActionType.RUN_EXPERIMENT,
+            "Resume unfinished skill training with retained feedback", 3,
+            ApprovalRequired.NONE,
+            {"capability": "native_skill_incubator", "skill_id": skill_id,
+             "learning_context": "skill:" + skill_id}, "curiosity")
+        plan = GoalStateEngine().propose_plan(session_uuid, plan_id, [proposal])
+        return {"status": "proposed", "reason": "resume_unfinished_skill_training",
+                "skill_id": skill_id, "proposal_id": plan[0].proposal_id,
+                "parent_proposal_id": parent, "attempt": len(history) + 1}
+    return None
+
+
 def propose_skill_from_curiosity(core, *, catalog, session_uuid):
     """Let BEAN's OWN configured model select a skill worth learning.
 
@@ -180,6 +246,9 @@ def propose_skill_from_curiosity(core, *, catalog, session_uuid):
         raise ValueError("validated skill catalog required")
     if not isinstance(session_uuid, str) or not session_uuid:
         raise ValueError("session ID required")
+    recovered = recover_unfinished_training(core, catalog=catalog, session_uuid=session_uuid)
+    if recovered is not None:
+        return recovered
     goals = GoalStateEngine()
     store = get_store()
     questions = [dict(row) for row in store.fetchall(
