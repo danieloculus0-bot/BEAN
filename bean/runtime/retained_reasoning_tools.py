@@ -57,6 +57,10 @@ def list_policies(core, *, domain, limit=10):
 def register_retained_reasoning(orchestrator):
     """Expose actual existing implementations, not a second skill ledger."""
     core = orchestrator.core
+    from bean.learning.state_planner import plan_state
+    orchestrator.register("plan_state",
+        "Cost-optimal digital action sequencing. {facts:[str],initial:[str],goal:{present:[str],absent:[str]},actions:[{name,requires:{present,absent},adds:[str],removes:[str],cost:int}],node_limit?:int}. Returns optimal action sequence, states and cost or unknown. No physical execution.",
+        lambda args,task_ref: plan_state(**args))
 
     def automatic(args, task_ref):
         return core.reason_auto(domain=args["domain"], task_ref=task_ref,
