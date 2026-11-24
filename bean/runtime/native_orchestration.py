@@ -502,60 +502,114 @@ def register_orchestration_handlers(inbox, orchestrator):
                    orchestrator.recovery.status(msg.args["plan_id"]))
 
 
-def read_plan_result(database, plan_id):
-    """Read a consistent, hash-checked snapshot without executing any action."""
+def _read_plan_snapshot(conn, plan_id):
+    first_id = plan_proposal_id(plan_id, 0)
+    first = conn.execute(
+        "SELECT action_detail FROM cognition_goal_proposals WHERE proposal_id=?",
+        (first_id,)).fetchone()
+    if first is None:
+        return {"plan_id": plan_id, "status": "pending", "steps": []}
+    detail = json.loads(first["action_detail"])
+    meta = goal_plan(detail, first_id)
+    if (meta is None or detail.get("capability") != CAPABILITY
+            or meta["steps"] > 8):
+        raise ValueError("not a native orchestration plan")
+    rows = []
+    for index in range(meta["steps"]):
+        pid = plan_proposal_id(plan_id, index)
+        row = conn.execute(
+            "SELECT p.status,p.action_detail,o.output_json,o.output_sha256,"
+            "(SELECT r.error FROM bean_goal_runs r WHERE r.proposal_id=p.proposal_id "
+            "ORDER BY r.rowid DESC LIMIT 1) AS error "
+            "FROM cognition_goal_proposals p "
+            "LEFT JOIN bean_orchestration_outputs o ON o.proposal_id=p.proposal_id "
+            "WHERE p.proposal_id=?", (pid,)).fetchone()
+        if row is None:
+            raise ValueError("missing persisted plan step")
+        detail = json.loads(row["action_detail"])
+        step_meta = goal_plan(detail, pid)
+        if (step_meta is None or step_meta["steps"] != meta["steps"]
+                or detail.get("capability") != CAPABILITY):
+            raise ValueError("inconsistent persisted plan step")
+        raw = row["output_json"]
+        if raw is not None and _digest(raw) != row["output_sha256"]:
+            raise ValueError("stored output digest mismatch")
+        if row["status"] == "completed" and raw is None:
+            raise ValueError("completed step lacks output")
+        rows.append({"step": index, "status": row["status"],
+                     "tool": detail.get("tool"), "error": row["error"],
+                     "output": json.loads(raw) if raw is not None else None,
+                     "output_sha256": row["output_sha256"]})
+    states = {row["status"] for row in rows}
+    status = next((state for state in ("failed", "needs_review", "needs_evidence",
+                                     "running") if state in states),
+                  "completed" if states == {"completed"} else "pending")
+    return {"plan_id": plan_id, "status": status, "steps": rows}
+
+
+
+def read_plan_result(database, plan_id, *, follow_recovery=False):
+    """Read durable outputs and optionally follow the Core's recovery lineage.
+
+    A single read transaction covers every plan in the lineage. The root ID
+    remains stable; effective_plan_id identifies the returned step outputs.
+    """
     import sqlite3
     database = Path(database)
-    first_id = plan_proposal_id(plan_id, 0)
     conn = sqlite3.connect(database.resolve().as_uri() + "?mode=ro", uri=True,
                            timeout=2)
     conn.row_factory = sqlite3.Row
     try:
         conn.execute("BEGIN")
-        first = conn.execute(
-            "SELECT action_detail FROM cognition_goal_proposals WHERE proposal_id=?",
-            (first_id,)).fetchone()
-        if first is None:
-            return {"plan_id": plan_id, "status": "pending", "steps": []}
-        detail = json.loads(first["action_detail"])
-        meta = goal_plan(detail, first_id)
-        if (meta is None or detail.get("capability") != CAPABILITY
-                or meta["steps"] > 8):
-            raise ValueError("not a native orchestration plan")
-        rows = []
-        for index in range(meta["steps"]):
-            pid = plan_proposal_id(plan_id, index)
-            row = conn.execute(
-                "SELECT p.status,p.action_detail,o.output_json,o.output_sha256,"
-                "(SELECT r.error FROM bean_goal_runs r WHERE r.proposal_id=p.proposal_id "
-                "ORDER BY r.rowid DESC LIMIT 1) AS error "
-                "FROM cognition_goal_proposals p "
-                "LEFT JOIN bean_orchestration_outputs o ON o.proposal_id=p.proposal_id "
-                "WHERE p.proposal_id=?", (pid,)).fetchone()
-            if row is None:
-                raise ValueError("missing persisted plan step")
-            detail = json.loads(row["action_detail"])
-            step_meta = goal_plan(detail, pid)
-            if (step_meta is None or step_meta["steps"] != meta["steps"]
-                    or detail.get("capability") != CAPABILITY):
-                raise ValueError("inconsistent persisted plan step")
-            raw = row["output_json"]
-            if raw is not None and _digest(raw) != row["output_sha256"]:
-                raise ValueError("stored output digest mismatch")
-            if row["status"] == "completed" and raw is None:
-                raise ValueError("completed step lacks output")
-            rows.append({"step": index, "status": row["status"],
-                         "tool": detail.get("tool"), "error": row["error"],
-                         "output": json.loads(raw) if raw is not None else None,
-                         "output_sha256": row["output_sha256"]})
-        states = {row["status"] for row in rows}
-        status = next((state for state in ("failed", "needs_review", "needs_evidence",
-                                         "running") if state in states),
-                      "completed" if states == {"completed"} else "pending")
-        return {"plan_id": plan_id, "status": status, "steps": rows}
+        result = _read_plan_snapshot(conn, plan_id)
+        if not follow_recovery or result["status"] != "failed":
+            return result
+        if not conn.execute(
+                "SELECT 1 FROM sqlite_master WHERE type='table' "
+                "AND name='bean_orchestration_recovery'").fetchone():
+            return result  # Earlier Core without recovery support.
+        lineage = []
+        current = result
+        # Recovery's own depth bound is three. Never execute or submit here.
+        for depth in range(4):
+            parent = current["plan_id"]
+            if current["status"] != "failed":
+                break
+            if any(step["status"] in ("running", "needs_review", "needs_evidence")
+                   for step in current["steps"]):
+                break
+            if depth == 3:
+                break
+            link = conn.execute(
+                "SELECT child_id,depth,state,error FROM bean_orchestration_recovery "
+                "WHERE parent_id=?", (parent,)).fetchone()
+            if link is None:
+                current = {**current, "status": "recovering"}
+                break
+            child = link["child_id"]
+            expected = "recovery:" + _digest(parent)
+            if child != expected or link["depth"] != depth + 1:
+                raise ValueError("inconsistent recovery lineage")
+            state = link["state"]
+            lineage.append({"parent_id": parent, "child_id": child,
+                            "state": state, "error": link["error"],
+                            "parent_steps": current["steps"]})
+            if state == "planner_failed":
+                break
+            if state == "pending":
+                current = {**current, "status": "recovering"}
+                break
+            if state != "submitted":
+                raise ValueError("unknown recovery state")
+            current = _read_plan_snapshot(conn, child)
+            if not current["steps"]:
+                raise ValueError("submitted recovery lacks durable plan")
+        return {**current, "plan_id": plan_id,
+                "effective_plan_id": current["plan_id"],
+                "initial_status": result["status"],
+                "recovery_lineage": lineage}
     finally:
         conn.close()
-
 
 def wait_for_plan(database, plan_id, *, timeout=120, interval=0.5, queued_path=None):
     """Wait for real durable execution; a timeout never implies cancellation."""
@@ -567,7 +621,7 @@ def wait_for_plan(database, plan_id, *, timeout=120, interval=0.5, queued_path=N
     failed_path = None if queued_path is None else (
         Path(queued_path).parent / "failed" / Path(queued_path).name)
     while True:
-        result = read_plan_result(database, plan_id)
+        result = read_plan_result(database, plan_id, follow_recovery=True)
         if result["status"] in {"completed", "failed", "needs_review", "needs_evidence"}:
             return result
         if failed_path is not None and failed_path.is_file() and not result["steps"]:
@@ -633,7 +687,7 @@ def main():
         print(json.dumps(result, indent=2))
         raise SystemExit(2 if result.get("wait_timed_out") else
                          0 if result["status"] == "completed" else 1)
-    print(json.dumps(read_plan_result(args.db, args.plan_id), indent=2))
+    print(json.dumps(read_plan_result(args.db, args.plan_id, follow_recovery=True), indent=2))
 
 
 if __name__ == "__main__":
