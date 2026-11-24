@@ -113,6 +113,42 @@ def _preflight_references(value, inputs, previous_tools):
             _preflight_references(item, inputs, previous_tools)
 
 
+# The model receives actionable corrections before a malformed tool call is
+# queued. These contracts describe existing handlers, not new permissions.
+_ARGUMENT_CONTRACTS = {
+    "numeric_context": {"history": list, "window": int},
+    "mean_sign": {"history": list},
+    "last_sign": {"history": list},
+    "retained_skill_inventory": {"skill_id": str},
+    "evaluate_skill": {"skill_id": str, "objective_sha256": str},
+    "learn_skill": {"skill_id": str},
+    "compare_numeric": {"left": (int, float), "right": (int, float),
+                        "abs_tol": (int, float), "rel_tol": (int, float)},
+}
+
+
+def _check_tool_arguments(name, args, skills=None, transfer=None, *, resolved=False):
+    contract = _ARGUMENT_CONTRACTS.get(name)
+    if contract is None:
+        return
+    if not isinstance(args, dict) or set(args) != set(contract):
+        raise ValueError(name + " requires named arguments " + repr(list(contract)) +
+                         "; received " + repr(list(args) if isinstance(args, dict) else type(args).__name__))
+    for key, expected in contract.items():
+        value = args[key]
+        if not resolved and isinstance(value, dict) and ("$step" in value or "$input" in value):
+            continue
+        if type(value) is bool or not isinstance(value, expected):
+            raise ValueError(name + "." + key + " has invalid type " + type(value).__name__)
+        if key == "skill_id" and skills is not None:
+            allowed = transfer if name == "evaluate_skill" else skills
+            if value not in allowed:
+                raise ValueError(name + ".skill_id must be one of " + repr(sorted(allowed)))
+        if key == "objective_sha256":
+            if len(value) != 64 or any(c not in "0123456789abcdef" for c in value):
+                raise ValueError("Use the exact objective_sha256 returned by retained_skill_inventory")
+
+
 class NativeOrchestrator:
     """Plan with the configured model, execute with GoalCycle, reuse outputs."""
 
@@ -312,6 +348,7 @@ class NativeOrchestrator:
         key = args["skill_id"]
         rows = list_retained_skills(self.skill_db, name=self.skills[key]["name"])
         return {"skill_id": key, "count": len(rows), "skills": rows,
+                "status": "success" if rows else "failed",
                 "transfer_available": key in self.transfer}
 
     def _reuse(self, args, task_ref):
@@ -433,6 +470,7 @@ class NativeOrchestrator:
                 raise ValueError("invalid model-selected tool step")
             self._validate_refs(step["args"], index)
             _preflight_references(step["args"], inputs, previous_tools)
+            _check_tool_arguments(step["tool"], step["args"], getattr(self, "skills", None), getattr(self, "transfer", None))
             previous_tools.append(step["tool"])
             proposals.append(GoalProposal(
                 "orchestrate_objective", ActionType.RUN_EXPERIMENT,
@@ -478,6 +516,7 @@ class NativeOrchestrator:
         name = detail["tool"]
         self._validate_refs(detail["args"], plan["step"])
         args = self._resolve(detail["args"], plan, detail["inputs"])
+        _check_tool_arguments(name, args, getattr(self, "skills", None), getattr(self, "transfer", None), resolved=True)
         try:
             output = self._read_output(pid)
         except LookupError:
