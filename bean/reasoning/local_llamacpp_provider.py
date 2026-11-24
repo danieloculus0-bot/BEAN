@@ -65,7 +65,11 @@ class LocalLlamaCppProvider(LLMAdapterBase):
         self._requester = requester or self._opener.open
         self.last_failure_kind = None
 
-    def complete(self, prompt, context=None):
+    def complete_json(self, prompt, context=None):
+        """Request grammar-constrained JSON from the local OpenAI-compatible server."""
+        return self.complete(prompt, context, json_object=True)
+
+    def complete(self, prompt, context=None, *, json_object=False):
         if not isinstance(prompt, str) or not prompt.strip() or len(prompt) > 22000:
             raise ValueError("Bounded local model prompt required")
         if context is None:
@@ -95,6 +99,9 @@ class LocalLlamaCppProvider(LLMAdapterBase):
                 {"role": "user", "content": user},
             ],
         }
+        if json_object:
+            payload["response_format"] = {"type": "json_object"}
+            payload["temperature"] = 0
         request = Request(
             self.endpoint, method="POST",
             data=json.dumps(payload, ensure_ascii=False).encode("utf-8"),
