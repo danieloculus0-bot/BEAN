@@ -65,7 +65,16 @@ class LocalLlamaCppProvider(LLMAdapterBase):
         self._requester = requester or self._opener.open
         self.last_failure_kind = None
 
-    def complete(self, prompt, context=None):
+    # Recover PR #538 (81361246, 2026-11-24); normal chat stays unchanged.
+    def complete_json(self, prompt, context=None):
+        return self.complete(prompt, context, json_object=True)
+
+    def complete_schema(self, prompt, context=None, *, schema):
+        if not isinstance(schema, dict):
+            raise ValueError("schema must be a JSON object")
+        return self.complete(prompt, context, json_object=True, schema=schema)
+
+    def complete(self, prompt, context=None, *, json_object=False, schema=None):
         if not isinstance(prompt, str) or not prompt.strip() or len(prompt) > 22000:
             raise ValueError("Bounded local model prompt required")
         if context is None:
@@ -95,6 +104,11 @@ class LocalLlamaCppProvider(LLMAdapterBase):
                 {"role": "user", "content": user},
             ],
         }
+        if json_object:
+            payload["response_format"] = {"type": "json_object"}
+            payload["temperature"] = 0
+        if schema is not None:
+            payload["response_format"] = {"type": "json_schema", "json_schema": {"name": "bean_native_plan", "schema": schema}}
         request = Request(
             self.endpoint, method="POST",
             data=json.dumps(payload, ensure_ascii=False).encode("utf-8"),
