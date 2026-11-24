@@ -135,7 +135,7 @@ class NativeOrchestrator:
                       "Ideal circular coplanar orbital transfer: "
                       "{mu_km3_s2:number,start_radius_km:number,end_radius_km:number}",
                       self._calculation(hohmann_reference))
-        if skill_catalog and skill_action and skill_db:
+        # Assimilation 2026-11-24: existing adaptive policy APIs now participate in GoalCycle.\n        from bean.runtime.retained_reasoning_tools import register_retained_reasoning\n        register_retained_reasoning(self)\n        if skill_catalog and skill_action and skill_db:
             skills = skill_catalog["skills"]
             self.skill_action = skill_action
             self.skill_db = Path(skill_db)
@@ -412,7 +412,7 @@ class NativeOrchestrator:
             completed = output.get("passed") is True
         elif isinstance(output, dict):
             completed = str(output.get("status", "")).lower() not in (
-                "failed", "failure", "error", "invalid", "unknown")
+                "failed", "failure", "error", "invalid", "unknown",\n                "abstain", "local_model_unavailable")
         return {"status": "success" if completed else "failed", "tool": name,
                 "output_sha256": digest, "output_bytes": len(raw.encode("utf-8")),
                 "independent_outcome_verified": False}
