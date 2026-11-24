@@ -304,16 +304,19 @@ def drawing_memory_context(prior, budget=2400):
 
 
 class SketchLab:
-    def __init__(self, core, research=None, visual_judge=None):
+    def __init__(self, core, research=None, visual_judge=None, *, drawing_model=None):
         if not isinstance(core, NativeReasoningService):
             raise TypeError('Expected existing BEAN Core reasoning service')
         if visual_judge is not None and not callable(visual_judge):
             raise TypeError('visual_judge must be callable')
         self.core, self.research, self.visual_judge = core, research, visual_judge
+        # A drawing-specific response schema must not replace the running
+        # Core's analytical provider or create a second memory writer.
+        self.drawing_model = drawing_model
         self.calls = []
 
     def ask(self, prompt, schema=None):
-        model = self.core._model()
+        model = self.core._model(self.drawing_model)
         if type(model) is OllamaSketchProvider:
             model.response_schema = schema
         event = {'prompt': prompt, 'created_at_utc': utc_now()}
@@ -359,6 +362,7 @@ class SketchLab:
         history = []
         subject_source = 'human' if subject is not None else 'autonomous'
         model_id, model_kind = 'unavailable', 'unavailable'
+        model = None
         research_state, source_urls = 'not_requested', []
         context, correction = '', ''
         runtime_files = ['bean/creativity/sketch_lab.py', 'bean/creativity/artifacts.py',
@@ -375,7 +379,7 @@ class SketchLab:
             raw_digest = write_json(out / 'model_calls.json', self.calls)
             manifest.update(subject=subject, execution_mode=mode,
                             model_id=model_id, provider_kind=model_kind,
-                            model_digest=getattr(self.core.model, 'model_digest', None),
+                            model_digest=getattr(model, 'model_digest', None),
                             history=history, attempts=len(history), state=state,
                             completed_at_utc=utc_now(), error=error,
                             model_calls_sha256=raw_digest)
@@ -391,7 +395,7 @@ class SketchLab:
                     'attempts': len(history), 'run_receipt': str(out / 'run.json'),
                     'visual_success_independently_verified': False}
         try:
-            model = self.core._model()
+            model = self.core._model(self.drawing_model)
             mode = execution_mode(model)
             if require_live and mode != 'live_model':
                 raise ValueError('Live run requires an existing BEAN provider; no fixture fallback')

@@ -311,6 +311,22 @@ report is neither human evaluation nor authenticated ground truth. All
 original self-critiques and external observations stay separate in Core.
 Reports may be imprecise and require independent inspection.
 
+The running Core orchestrator's `draw` tool reuses its configured Ollama
+artist and transport through the drawing-specific JSON adapter. It keeps the
+same Core memory bank and journal, leaves the ordinary analytical provider
+unchanged, and retains every requested attempt. The shared client keeps its
+configured timeout; CPU latency must be measured before unattended use. To request actual-image
+review for this tool, configure `BEAN_DRAW_VISION_MODEL=gemma3:4b` in the
+runtime environment after installing that image-capable model. Without this
+setting, attempt receipts explicitly record that no pixel evaluator is
+configured. A missing or invalid evaluator remains unavailable in its
+receipts; configuration alone does not establish successful review.
+
+Run the tool through Core's existing serialized orchestration path. Do not
+start a second CLI writer against its live reasoning journal. Standalone
+SketchLab sessions can reuse a separate durable drawing journal with an
+absolute `--db` path and a fresh output directory per session.
+
 The matched benchmark also accepts `--vision-model gemma3:4b`. All arms use
 the same evaluator and budgets. Prompts omit review timestamps and local file
 paths to avoid unnecessary differences between matched conditions; the full

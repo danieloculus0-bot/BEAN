@@ -1,12 +1,14 @@
 """Native domain tools for the Core orchestrator.
 
 Revision 2026-11-23: connect existing engineering, physics, SketchLab,
-world model and simulated embodiment to the same GoalCycle. No second
-model, network service or real actuator is introduced.
+world model and simulated embodiment to the same GoalCycle. Drawing keeps
+the configured Core artist; optional image review uses its named evaluator.
+No network service or real actuator is introduced by registering tools.
 """
 from __future__ import annotations
 
 import json
+import os
 from pathlib import Path
 
 
@@ -59,12 +61,24 @@ def register_domain_tools(orchestrator, *, body_state, motion_safety, simulator,
                 "physical_motion_executed": False, "sensor_verified": False}
 
     def draw(args, task_ref):
-        from bean.creativity.sketch_lab import SketchLab
+        from bean.creativity.sketch_lab import SketchLab, OllamaSketchProvider
+        from bean.creativity.artifacts import OllamaVisionReviewer
+        from bean.reasoning.ollama_provider import OllamaProvider
+        model = orchestrator.core.model
+        if type(model) is OllamaProvider:
+            # Reuse the configured artist and exact transport, changing only
+            # the drawing response schema. SketchLab still rejects injected
+            # transports; Core's model and memory bank remain untouched.
+            model = OllamaSketchProvider(model_name=model.model_name, client=model.client)
+        vision_model = os.environ.get("BEAN_DRAW_VISION_MODEL", "").strip()
+        judge = (OllamaVisionReviewer(vision_model, client=(
+            model.client if type(model) is OllamaSketchProvider else None))
+            if vision_model else None)
         out = root / "draw" / task_ref
-        report = SketchLab(orchestrator.core).run(
+        report = SketchLab(orchestrator.core, drawing_model=model, visual_judge=judge).run(
             task_ref=task_ref, output_dir=out, subject=args.get("subject"),
             max_attempts=args.get("attempts", 2), backend="stdlib",
-            allow_online=False, require_live=True)
+            complete_all_attempts=True, allow_online=False, require_live=True)
         manifest = json.loads((out / "run.json").read_text(encoding="utf-8"))
         successful = [item for item in report["history"] if item.get("sha256")]
         selected = next((item for item in successful
@@ -73,6 +87,7 @@ def register_domain_tools(orchestrator, *, body_state, motion_safety, simulator,
                 "subject": report["subject"], "attempts": report["attempts"],
                 "artifacts": successful, "selected": selected,
                 "receipt": report["run_receipt"],
+                "visual_review_requested": bool(vision_model),
                 "visual_success_independently_verified": False}
 
     orchestrator.register("engineering_jobsite",
