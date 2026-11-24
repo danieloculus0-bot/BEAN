@@ -74,6 +74,15 @@ SVG subset, and rasterized locally by CairoSVG with `unsafe=False` into a
 512×512 white-background PNG. Pillow decodes the PNG before its hash is
 recorded. A failed rasterizer leaves an error and no claimed preview.
 
+Drawing coordinates use image orientation: x increases right and y increases
+down. The model chooses the components, layout and all geometry. Coordinate
+schemas use numeric ranges rather than enumerating every possible coordinate;
+runtime validation also rejects circles and rectangles whose extents leave the
+canvas. Such an attempt retains its original response and exact validation
+error for the next revision; the host does not move or resize its geometry.
+These checks prevent silent clipping, not unrecognizable drawings. Image
+observations take priority over textual confidence in the revision prompt.
+
 ## What the evidence establishes
 
 Each attempt retains `attempt_XX.svg` when valid, `attempt_XX.png` when rendered,

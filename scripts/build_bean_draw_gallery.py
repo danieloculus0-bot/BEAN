@@ -7,9 +7,11 @@ Public model output requires a review manifest bound to the exact published file
 from __future__ import annotations
 
 import argparse
+import base64
 from io import BytesIO
 from datetime import datetime, timezone
 from hashlib import sha256
+from html import escape
 import json
 import math
 from pathlib import Path
@@ -176,6 +178,85 @@ def validate_index(site: Path, listing: dict) -> None:
             _verify_preview(svg, _asset(site, row["png"], key, ".png").read_bytes())
 
 
+def render_static_gallery(site: Path, *, asset_ref: str = "main") -> int:
+    """Put reviewed live drawings in the document before JavaScript runs.
+
+    The same checked index supplies progressive enhancement. A missing or
+    blocked network refresh must not turn an inspectable gallery into a blank
+    page. Fixtures remain available only in their explicitly selected view.
+    """
+    site = Path(site)
+    if not re.fullmatch(r"(?:main|[a-f0-9]{40})", asset_ref):
+        raise ValueError("Public gallery asset ref must be main or an exact Git SHA")
+    asset_base = ("https://raw.githubusercontent.com/danieloculus0-bot/BEAN/" +
+                  asset_ref + "/docs/bean-draw/")
+    listing = json.loads((site / "index.json").read_bytes())
+    validate_index(site, listing)
+    page = site / "index.html"
+    if not page.is_file():
+        return 0
+    markup = page.read_text(encoding="utf-8")
+    cards, previews = [], {}
+    for row in listing["entries"]:
+        if row.get("png"):
+            raw = _asset(site, row["png"], row["id"], ".png").read_bytes()
+            previews[row["id"]] = {
+                "png_sha256": row["png_sha256"],
+                "data_url": "data:image/png;base64," + base64.b64encode(raw).decode("ascii"),
+            }
+        if row.get("origin") != "live_model_artifact_verified":
+            continue
+        title = escape(str(row.get("title") or "Untitled"))
+        attempt = escape(str(row["attempt"]))
+        label = "BEAN draft intended to depict " + title + ", attempt " + attempt
+        source = {"autonomous": "MODEL-CHOSEN SUBJECT", "human": "HUMAN SUBJECT CHALLENGE"}.get(
+            row.get("subject_source"), "SUBJECT SOURCE UNRECORDED")
+        # validate_index above binds these exact relative filenames to reviewed
+        # bytes and forbids path traversal; escape text independently for HTML.
+        image, svg, receipt = (escape(asset_base + row[key], quote=True)
+                               for key in ("png", "svg", "metadata"))
+        cards.append(
+            '<article class="card" data-entry-id="' + row["id"] + '">'
+            '<a class="art" href="' + image + '" aria-label="Open ' + label + '">'
+            '<img src="' + previews[row["id"]]["data_url"] + '" alt="' + label + '" loading="eager"></a>'
+            '<div class="caption"><span class="pill">LIVE MODEL · ARTIFACT HASHES CHECKED</span> '
+            '<span class="pill">' + source + '</span><div class="sub">Intended subject</div>'
+            '<span class="title">' + title + '</span><div class="sub">Attempt ' + attempt + ' · ' +
+            escape(str(row.get("status") or "unverified")) + '</div>'
+            '<div class="static-links"><a href="' + svg + '">Original SVG</a> · '
+            '<a href="' + receipt + '">Provenance and review</a></div></div></article>')
+    block = '\n'.join(cards)
+    markup, replaced = re.subn(
+        r'(<div id="gallery" class="gallery">)[\s\S]*?(</div>\s*<p id="empty")',
+        lambda match: match[1] + '\n' + block + '\n' + match[2], markup, count=1)
+    if replaced != 1:
+        raise ValueError("Gallery HTML is missing its static drawing container")
+    markup = re.sub(r'(<span id="count" aria-live="polite">).*?(</span>)',
+                    lambda match: match[1] + '(' + str(len(cards)) + ')' + match[2], markup, count=1)
+    markup, replaced = re.subn(
+        r'(<meta name="bean-draw-public-asset-base" content=")[^"]*(">)',
+        lambda match: match[1] + asset_base + match[2], markup, count=1)
+    if replaced != 1:
+        raise ValueError("Gallery HTML is missing its public artifact base")
+    # JSON script data is inert. Escape HTML delimiters so even model-authored
+    # text containing </script> cannot terminate this element.
+    bundled = json.dumps(listing, ensure_ascii=False, separators=(",", ":"))
+    bundled = bundled.replace("&", "\\u0026").replace("<", "\\u003c").replace(">", "\\u003e")
+    markup, replaced = re.subn(
+        r'(<script id="gallery-data" type="application/json">)[\s\S]*?(</script>)',
+        lambda match: match[1] + bundled + match[2], markup, count=1)
+    if replaced != 1:
+        raise ValueError("Gallery HTML is missing its bundled index element")
+    markup, replaced = re.subn(
+        r'(<script id="gallery-previews" type="application/json">)[\s\S]*?(</script>)',
+        lambda match: match[1] + json.dumps(previews, separators=(",", ":")) + match[2],
+        markup, count=1)
+    if replaced != 1:
+        raise ValueError("Gallery HTML is missing its bundled original PNG previews")
+    page.write_text(markup, encoding="utf-8")
+    return len(cards)
+
+
 def _review_manifest(review):
     if review is None:
         return None
@@ -199,7 +280,7 @@ def _utc(value):
         raise ValueError("UTC provenance timestamp required")
 
 
-def curate(source: Path, site: Path, *, review: Path | None = None) -> dict:
+def curate(source: Path, site: Path, *, review: Path | None = None, asset_ref: str = "main") -> dict:
     source, site = Path(source), Path(site)
     metas = sorted(source.glob("attempt_[0-9][0-9].json"))
     if not metas:
@@ -335,16 +416,28 @@ def curate(source: Path, site: Path, *, review: Path | None = None) -> dict:
     validate_index(site, listing)
     site.mkdir(parents=True, exist_ok=True)
     output_index.write_bytes(_json_bytes(listing))
+    render_static_gallery(site, asset_ref=asset_ref)
     return {"entries": len(listing["entries"]), "added": len(pending), "index": str(output_index), "schema": SCHEMA}
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Build reviewable BEAN Draw gallery")
-    parser.add_argument("--source", type=Path, required=True)
+    parser.add_argument("--source", type=Path)
     parser.add_argument("--site", type=Path, required=True)
     parser.add_argument("--review", type=Path, help="Public-safe review manifest bound to exact files")
+    parser.add_argument("--refresh-html", action="store_true",
+                        help="Refresh visible HTML from the already reviewed gallery index")
+    parser.add_argument("--asset-ref", default="main",
+                        help="Public artifact Git SHA (or main); keeps single-HTML previews visible")
     args = parser.parse_args()
-    print(json.dumps(curate(args.source, args.site, review=args.review), sort_keys=True))
+    if args.refresh_html:
+        if args.source or args.review:
+            parser.error("--refresh-html uses the existing index, without --source or --review")
+        print(json.dumps({"static_live_cards": render_static_gallery(args.site, asset_ref=args.asset_ref)}, sort_keys=True))
+        return
+    if args.source is None:
+        parser.error("--source is required unless --refresh-html is selected")
+    print(json.dumps(curate(args.source, args.site, review=args.review, asset_ref=args.asset_ref), sort_keys=True))
 
 
 if __name__ == "__main__":
