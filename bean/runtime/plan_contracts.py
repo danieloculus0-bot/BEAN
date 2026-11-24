@@ -53,10 +53,7 @@ def preview(value, inputs, prior_tools):
                     for key in path):
                 raise ValueError("invalid output reference path")
             # Reject impossible field names for exact, stable output contracts.
-            outputs = {"last_sign": {"prediction", "method"},
-                       "mean_sign": {"prediction", "method"},
-                       "numeric_context": {"history", "count", "mean", "last", "trend"}}
-            fields = outputs.get(prior_tools[index])
+            fields = _OUTPUT_KINDS.get(prior_tools[index])
             if path and fields is not None and (type(path[0]) is not str or path[0] not in fields):
                 raise ValueError("prior tool has no such output field")
             # Recover scalar/index validation from the superseded reference repair
@@ -121,8 +118,55 @@ def validate_args(tool, args):
             raise ValueError(tool + " invalid argument: " + key)
 
 
+# Exact result shapes of built-in numeric tools; unknown providers remain deferred.
+_OUTPUT_KINDS = {
+    "numeric_context": {"history": "history", "count": "integer",
+                        "mean": "number", "last": "number", "trend": "text"},
+    "mean_sign": {"prediction": "integer", "method": "text"},
+    "last_sign": {"prediction": "integer", "method": "text"},
+    "compare_numeric": {"status": "text", "matched": "boolean",
+                        "left": "number", "right": "number",
+                        "absolute_difference": "number", "abs_tol": "number",
+                        "rel_tol": "number", "independently_validated": "boolean"},
+}
+_ACCEPTED_OUTPUT_KINDS = {
+    "history": {"history"}, "list": {"history"},
+    "number": {"number", "integer"}, "nonnegative": {"number", "integer"},
+    "relative": {"number", "integer"}, "window": {"integer"}, "limit": {"integer"},
+    "text": {"text"}, "name": {"text"},
+}
+
+
+def _known_output_kind(value, prior_tools):
+    if not isinstance(value, dict) or "$step" not in value:
+        return None
+    fields = _OUTPUT_KINDS.get(prior_tools[value["$step"]])
+    if fields is None:
+        return None
+    path = value.get("path", [])
+    if not path:
+        return "object"
+    kind = fields.get(path[0])
+    if kind == "history" and len(path) == 2:
+        return "number"
+    return kind
+
+
 def preflight(tool, args, inputs, prior_tools):
-    validate_args(tool, preview(args, inputs, prior_tools))
+    resolved = preview(args, inputs, prior_tools)
+    validate_args(tool, resolved)
+    if tool in CONTRACTS:
+        required, optional = CONTRACTS[tool]
+        for key, value in args.items():
+            expected = (required | optional)[key]
+            kind = _known_output_kind(value, prior_tools)
+            if kind is not None and kind not in _ACCEPTED_OUTPUT_KINDS[expected]:
+                raise ValueError(tool + " incompatible output shape for " + key)
+            if expected == "history" and isinstance(value, list):
+                for item in value:
+                    kind = _known_output_kind(item, prior_tools)
+                    if kind is not None and kind not in {"number", "integer"}:
+                        raise ValueError(tool + " incompatible history element")
 
 
 def repair_unambiguous_refs(tool, args, inputs, prior_tools):
@@ -144,6 +188,13 @@ def repair_unambiguous_refs(tool, args, inputs, prior_tools):
                 and list(inputs) == [key]):
             result[key] = {"$input": [key]}
             continue
+        # Preserve PR #538's explicit typed reference notation in the
+        # canonical compiler. Do not reinterpret ordinary textual arguments.
+        if kind in {"history", "number", "nonnegative", "relative", "window", "limit"} and isinstance(value, str):
+            typed = re.fullmatch(r"@([0-7])\.([a-z_]+)", value)
+            if typed:
+                result[key] = {"$step": int(typed[1]), "path": [typed[2]]}
+                continue
         if kind != "number":
             continue
         index = None
