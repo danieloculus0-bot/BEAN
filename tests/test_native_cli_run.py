@@ -23,10 +23,10 @@ def plan_db(tmp_path):
     return path
 
 
-def insert_step(db, index, total, status, output=None, digest=None):
-    pid = plan_proposal_id("test-plan", index)
+def insert_step(db, index, total, status, output=None, digest=None, plan_id="test-plan"):
+    pid = plan_proposal_id(plan_id, index)
     detail = {"capability": CAPABILITY, "tool": "numeric_context",
-              "goal_plan": {"schema": PLAN_SCHEMA, "id": "test-plan",
+              "goal_plan": {"schema": PLAN_SCHEMA, "id": plan_id,
                             "step": index, "steps": total}}
     db.execute("INSERT INTO cognition_goal_proposals VALUES (?,?,?)",
                (pid, status, json.dumps(detail)))
@@ -118,3 +118,76 @@ def test_resume_after_timeout_reads_original_plan_without_resubmission(plan_db):
     result = wait_for_plan(plan_db, "test-plan", timeout=0.1)
     assert result["status"] == "completed"
     assert result["steps"][0]["output"] == {"answer": 12}
+
+
+def _recovery_table(db):
+    db.execute("CREATE TABLE bean_orchestration_recovery (parent_id TEXT PRIMARY KEY,"
+               "child_id TEXT, depth INTEGER, state TEXT, error TEXT)")
+
+
+def _link(db, parent, depth, state, error=None):
+    child = "recovery:" + hashlib.sha256(parent.encode()).hexdigest()
+    db.execute("INSERT INTO bean_orchestration_recovery VALUES (?,?,?,?,?)",
+               (parent, child, depth, state, error))
+    return child
+
+
+def test_follow_completed_recovery_returns_real_child_outputs(plan_db):
+    with sqlite3.connect(plan_db) as db:
+        _recovery_table(db)
+        insert_step(db, 0, 1, "failed")
+        child = _link(db, "test-plan", 1, "submitted")
+        insert_step(db, 0, 1, "completed", {"answer": 21}, plan_id=child)
+    result = wait_for_plan(plan_db, "test-plan", timeout=0.1)
+    assert result["status"] == "completed"
+    assert result["plan_id"] == "test-plan"
+    assert result["effective_plan_id"] == child
+    assert result["initial_status"] == "failed"
+    assert result["steps"][0]["output"] == {"answer": 21}
+    assert result["recovery_lineage"][0]["parent_steps"][0]["status"] == "failed"
+    assert read_plan_result(plan_db, "test-plan")["status"] == "failed"
+
+
+def test_pending_recovery_times_out_without_cancelling(plan_db):
+    with sqlite3.connect(plan_db) as db:
+        _recovery_table(db)
+        insert_step(db, 0, 1, "failed")
+    r = wait_for_plan(plan_db, "test-plan", timeout=0.01, interval=0.002)
+    assert r["status"] == "recovering" and r["wait_timed_out"]
+    assert r["cancelled"] is False
+
+
+def test_exhausted_recovery_reports_failure(plan_db):
+    with sqlite3.connect(plan_db) as db:
+        _recovery_table(db)
+        insert_step(db, 0, 1, "failed")
+        _link(db, "test-plan", 1, "planner_failed", "invalid plan")
+    r = wait_for_plan(plan_db, "test-plan", timeout=0.1)
+    assert r["status"] == "failed"
+    assert r["recovery_lineage"][0]["error"] == "invalid plan"
+    assert "wait_timed_out" not in r
+
+
+def test_recovery_corruption_is_not_success(plan_db):
+    with sqlite3.connect(plan_db) as db:
+        _recovery_table(db)
+        insert_step(db, 0, 1, "failed")
+        child = _link(db, "test-plan", 1, "submitted")
+        insert_step(db, 0, 1, "completed", {"answer": 21}, digest="bad", plan_id=child)
+    with pytest.raises(ValueError, match="digest mismatch"):
+        read_plan_result(plan_db, "test-plan", follow_recovery=True)
+
+
+def test_recovery_depth_is_bounded(plan_db):
+    with sqlite3.connect(plan_db) as db:
+        _recovery_table(db)
+        parent = "test-plan"
+        insert_step(db, 0, 1, "failed")
+        for depth in range(1, 4):
+            child = _link(db, parent, depth, "submitted")
+            insert_step(db, 0, 1, "failed", plan_id=child)
+            parent = child
+    r = wait_for_plan(plan_db, "test-plan", timeout=0.1)
+    assert r["status"] == "failed"
+    assert len(r["recovery_lineage"]) == 3
+    assert r["effective_plan_id"] == parent
