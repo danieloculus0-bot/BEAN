@@ -341,3 +341,40 @@ def test_model_may_refuse_skill_and_preserve_curiosity(world):
     assert result["reason"] == "model_abstained"
     assert get_store().fetchall(
         "SELECT * FROM cognition_goal_proposals WHERE action_type='run_experiment'") == []
+
+
+def test_known_incomplete_training_recovers_without_replaying_completed_goal(world):
+    root, session, path = world
+    catalog = load_skill_catalog(path)
+    first = GoalStateEngine().propose(session, [], [question()])[0]
+    cycle = GoalCycle({"run_experiment": handler(root, path, Model("not python @@@"))})
+    assert cycle.poll_due()[0]["status"] == "n/a"
+    prior = json.loads(cycle.history()[0]["result_json"])
+    assert prior["incubation_status"] == "unresolved"
+    model = Model()
+    recovery = propose_skill_from_curiosity(
+        Core(model), catalog=catalog, session_uuid=begin_session())
+    assert recovery["reason"] == "resume_unfinished_skill_training"
+    assert recovery["parent_proposal_id"] == first.proposal_id
+    assert recovery["attempt"] == 2
+    assert recovery["proposal_id"] != first.proposal_id
+    resumed = GoalCycle({"run_experiment": handler(root, path, model)})
+    assert resumed.poll_due()[0]["status"] == "success"
+    assert len(model.calls) == 1
+    assert resumed.poll_due() == []
+    assert propose_skill_from_curiosity(
+        Core(model), catalog=catalog, session_uuid=begin_session())["reason"] == "no_open_curiosity"
+
+
+def test_independent_holdout_failure_not_retried_as_training(world):
+    root, session, path = world
+    catalog = load_skill_catalog(path)
+    GoalStateEngine().propose(session, [], [question()])
+    cycle = GoalCycle({"run_experiment": handler(root, path, Model(OVERFIT))})
+    assert cycle.poll_due()[0]["status"] == "n/a"
+    model = Model()
+    result = propose_skill_from_curiosity(
+        Core(model), catalog=catalog, session_uuid=begin_session())
+    assert result["reason"] == "no_open_curiosity"
+    assert model.calls == []
+    assert cycle.poll_due() == []
