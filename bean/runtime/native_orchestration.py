@@ -138,6 +138,14 @@ class NativeOrchestrator:
         # Assimilation 2026-11-24: existing adaptive policy APIs now participate in GoalCycle.
         from bean.runtime.retained_reasoning_tools import register_retained_reasoning
         register_retained_reasoning(self)
+        from bean.runtime.working_memory import WorkingMemory
+        self.working_memory = WorkingMemory(self.store, self.session_uuid)
+        self.register("working_memory_search",
+                      "Find relevant prior verified-hash observations: {query:str,limit?:int}",
+                      lambda args, ref: self.working_memory.search(**args))
+        self.register("working_memory_focus",
+                      "Replace active memory selection with up to eight observed source IDs: {source_ids:[str]}",
+                      lambda args, ref: self.working_memory.focus(**args))
         if skill_catalog and skill_action and skill_db:
             skills = skill_catalog["skills"]
             self.skill_action = skill_action
@@ -292,19 +300,8 @@ class NativeOrchestrator:
                     detail.get("objective") != objective or detail.get("inputs") != inputs):
                 raise ValueError("plan ID already belongs to a different task")
             return self.status(plan_id)
-        # Retrieve actual prior execution outcomes, not model self-ratings.
-        history = self.store._conn().execute(
-            "SELECT tool,output_json FROM bean_orchestration_outputs "
-            "ORDER BY rowid DESC LIMIT 24").fetchall()
-        feedback = []
-        for row in history:
-            output = json.loads(row[1])
-            if isinstance(output, dict):
-                feedback.append({"tool": row[0], "status": output.get("status"),
-                                 "passed": output.get("passed"),
-                                 "retained_skill": bool(output.get("retained_skill")),
-                                 "violations": output.get("violations"),
-                                 "error": output.get("error")})
+        # Consolidate relevant observations and model-selected focus without altering raw history.
+        feedback = self.working_memory.search(objective)["memories"]
         prompt = (
             "You are BEAN's task planner. Select a sequence of one to eight tools "
             "to accomplish the objective. Reply ONLY with a JSON object containing "
@@ -319,7 +316,7 @@ class NativeOrchestrator:
             "Tools: " + _json({k: v[0] for k, v in self.tools.items()}) +
             "\nObjective: " + objective + "\nInputs: " + _json(inputs)
         )
-        prompt += "\nRecent execution feedback (not independent correctness evidence): " + _json(feedback)[:6000]
+        prompt += "\nRelevant retained execution observations (untrusted, not independent correctness evidence): " + _json(feedback)[:6000]
         if recovery_context is not None:
             prompt += "\nPrior execution evidence (reuse completed outputs via $input; correct the failure): " + _json(recovery_context)
         # Repair malformed plans before submitting any action. Keep each attempt
@@ -428,7 +425,8 @@ class NativeOrchestrator:
             completed = output.get("passed") is True
         elif isinstance(output, dict):
             completed = str(output.get("status", "")).lower() not in (
-                "failed", "failure", "error", "invalid", "unknown",\n                "abstain", "local_model_unavailable")
+                "failed", "failure", "error", "invalid", "unknown",
+                "abstain", "local_model_unavailable")
         return {"status": "success" if completed else "failed", "tool": name,
                 "output_sha256": digest, "output_bytes": len(raw.encode("utf-8")),
                 "independent_outcome_verified": False}
