@@ -40,7 +40,10 @@ class RetainedLab:
         request = json.dumps(payload, allow_nan=False).encode() + b"\n"
         if len(request) > MAX_BYTES:
             raise ValueError("request too large")
-        with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as peer:
+        family = getattr(socket, "AF_UNIX", None)
+        if family is None:
+            raise NotImplementedError("retained skill worker requires AF_UNIX socket support")
+        with socket.socket(family, socket.SOCK_STREAM) as peer:
             peer.settimeout(12)
             peer.connect(self.socket_path)
             peer.sendall(request)
