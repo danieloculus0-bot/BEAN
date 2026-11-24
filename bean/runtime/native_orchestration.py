@@ -48,9 +48,69 @@ def _digest(raw):
 def _path(value, parts):
     if not isinstance(parts, list):
         raise ValueError("reference path must be a list")
-    for part in parts:
-        value = value[part]
+    for index, part in enumerate(parts):
+        if isinstance(value, dict):
+            # JSON object keys are strings, including persisted recovery step IDs.
+            key = str(part) if type(part) is int else part
+            if not isinstance(key, str) or key not in value:
+                raise ValueError("reference " + repr(parts[:index + 1]) +
+                                 " missing; available keys: " + repr(list(value)[:20]))
+            value = value[key]
+        elif isinstance(value, list):
+            if type(part) is not int or not 0 <= part < len(value):
+                raise ValueError("reference " + repr(parts[:index + 1]) +
+                                 " requires a valid list index")
+            value = value[part]
+        else:
+            raise ValueError("reference " + repr(parts[:index + 1]) +
+                             " descends into scalar " + type(value).__name__ +
+                             "; stop at " + repr(parts[:index]))
     return value
+
+
+# Representative output shapes for deterministic builtins. These are used
+# only to validate references, never as fabricated tool execution results.
+_REFERENCE_SHAPES = {
+    "numeric_context": {"count": 0, "history": [0.0], "last": 0.0,
+                        "mean": 0.0, "trend": ""},
+    "mean_sign": {"method": "", "prediction": 0},
+    "last_sign": {"method": "", "prediction": 0},
+    "compare_numeric": {"status": "", "matched": False, "left": 0.0,
+                        "right": 0.0, "absolute_difference": 0.0,
+                        "abs_tol": 0.0, "rel_tol": 0.0},
+}
+
+
+def _check_reference_shape(value, parts):
+    if not parts:
+        return
+    head, *tail = parts
+    if isinstance(value, list):
+        if type(head) is not int or head < 0:
+            raise ValueError("output array requires a nonnegative integer index")
+        if value:
+            _check_reference_shape(value[0], tail)
+        return
+    if isinstance(value, dict):
+        _check_reference_shape(_path(value, [head]), tail)
+        return
+    _path(value, parts)
+
+
+def _preflight_references(value, inputs, previous_tools):
+    if isinstance(value, dict):
+        if "$input" in value:
+            _path(inputs, value["$input"])
+        elif "$step" in value:
+            tool = previous_tools[value["$step"]]
+            if tool in _REFERENCE_SHAPES:
+                _check_reference_shape(_REFERENCE_SHAPES[tool], value.get("path", []))
+        else:
+            for item in value.values():
+                _preflight_references(item, inputs, previous_tools)
+    elif isinstance(value, list):
+        for item in value:
+            _preflight_references(item, inputs, previous_tools)
 
 
 class NativeOrchestrator:
@@ -312,7 +372,10 @@ class NativeOrchestrator:
             "Use a prior result with {\"$step\":0,\"path\":[\"field\"]}; "
             "use input data with {\"$input\":[\"field\"]}. "
             "References may point only to earlier steps. A whole prior result uses "
-            "an empty path. Do not invent tool names or observations. "
+            "an empty path. Do not descend into scalar numbers. Use the exact output field. "
+            "numeric_context returns count,history,last,mean,trend; mean_sign and last_sign "
+            "return method,prediction; prediction is a scalar integer. "
+            "Do not invent tool names or observations. "
             "When reusing a previously acquired skill, use retained_skill_inventory "
             "to retrieve its exact objective_sha256; never guess hashes. "
             "Use the final reason tool if synthesis is needed.\n"
@@ -321,7 +384,7 @@ class NativeOrchestrator:
         )
         prompt += "\nRecent execution feedback (not independent correctness evidence): " + _json(feedback)[:6000]
         if recovery_context is not None:
-            prompt += "\nPrior execution evidence (reuse completed outputs via $input; correct the failure): " + _json(recovery_context)
+            prompt += "\nPrior execution evidence (reuse completed outputs via $input with path [\"__recovery\",\"completed\",\"0\",\"field\"] for a field from completed step 0; use only available fields; correct the failure): " + _json(recovery_context)
         # Repair malformed plans before submitting any action. Keep each attempt
         # in the existing SQLite store so failures survive restart.
         self.store._conn().execute("""CREATE TABLE IF NOT EXISTS bean_planner_attempts (
@@ -358,11 +421,14 @@ class NativeOrchestrator:
         if not isinstance(steps, list) or not 1 <= len(steps) <= 8:
             raise ValueError("model must return one to eight steps")
         proposals = []
+        previous_tools = []
         for index, step in enumerate(steps):
             if (not isinstance(step, dict) or set(step) != {"tool", "args"} or
                     step["tool"] not in self.tools or not isinstance(step["args"], dict)):
                 raise ValueError("invalid model-selected tool step")
             self._validate_refs(step["args"], index)
+            _preflight_references(step["args"], inputs, previous_tools)
+            previous_tools.append(step["tool"])
             proposals.append(GoalProposal(
                 "orchestrate_objective", ActionType.RUN_EXPERIMENT,
                 "Execute model-selected capability", 3, ApprovalRequired.NONE,
@@ -428,7 +494,8 @@ class NativeOrchestrator:
             completed = output.get("passed") is True
         elif isinstance(output, dict):
             completed = str(output.get("status", "")).lower() not in (
-                "failed", "failure", "error", "invalid", "unknown",\n                "abstain", "local_model_unavailable")
+                "failed", "failure", "error", "invalid", "unknown",
+                "abstain", "local_model_unavailable")
         return {"status": "success" if completed else "failed", "tool": name,
                 "output_sha256": digest, "output_bytes": len(raw.encode("utf-8")),
                 "independent_outcome_verified": False}
