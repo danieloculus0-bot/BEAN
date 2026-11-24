@@ -14,7 +14,7 @@ class Store:
         self.conn = sqlite3.connect(path)
         self.conn.row_factory = sqlite3.Row
         self.conn.execute("CREATE TABLE IF NOT EXISTS cognition_goal_proposals "
-                          "(proposal_id TEXT PRIMARY KEY, action_detail TEXT)")
+                          "(proposal_id TEXT PRIMARY KEY, action_detail TEXT, status TEXT)")
         self.conn.commit()
 
     def _conn(self):
@@ -53,9 +53,11 @@ class WorkflowSQLiteTests(unittest.TestCase):
         expected = sum(v*w for v,w in zip(values, weights)) / sum(weights)
         actual = expected if correct else expected + 1
         detail = {"capability": CAPABILITY, "tool": "retained_weighted_mean",
-                  "args": inputs, "inputs": inputs}
-        self.store.execute("INSERT INTO cognition_goal_proposals VALUES (?,?)",
-                           (pid, json.dumps(detail)))
+                  "args": inputs, "inputs": inputs, "objective": "Estimate",
+                  "goal_plan": {"id": pid, "step": 0},
+                  "planner_provider": "local_llamacpp"}
+        self.store.execute("INSERT INTO cognition_goal_proposals VALUES (?,?,?)",
+                           (pid, json.dumps(detail), "completed"))
         self.store.commit()
         self.owner.status.return_value = {"status": "completed", "steps": [
             {"proposal_id": pid, "output": {"value": actual}}]}
@@ -97,6 +99,24 @@ class WorkflowSQLiteTests(unittest.TestCase):
             inputs={"values": [1, 2], "weights": [2, 1]}, plan_id="new")
         self.assertEqual(result["route"], "fresh_fallback")
         self.owner.engine.propose_plan.assert_not_called()
+        self.owner.submit.assert_called_once()
+
+
+    def test_objective_discovers_learned_workflow_without_family(self):
+        self.observe("a", [3, 7], [1, 2])
+        self.observe("b", [8, 2, 1], [2, 3, 4])
+        self.store.conn.close()
+        self.open_memory()
+        result = self.memory.plan_with_memory(objective="Estimate",
+            inputs={"values": [9, 4], "weights": [2, 3]}, plan_id="automatic")
+        self.assertEqual(result["route"], "retained")
+        self.owner.submit.assert_not_called()
+        proposal = self.owner.engine.propose_plan.call_args.args[2][0]
+        self.assertEqual(proposal.action_detail["workflow_family"], "weighted")
+        self.assertEqual(proposal.action_detail["planner_provider"], "verified_workflow")
+        result = self.memory.plan_with_memory(objective="Different objective",
+            inputs={"values": [9, 4], "weights": [2, 3]}, plan_id="unknown")
+        self.assertEqual(result["route"], "fresh_fallback")
         self.owner.submit.assert_called_once()
 
 
