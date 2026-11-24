@@ -22,6 +22,7 @@ from bean.engineering.spaceflight import (
 )
 from bean.memory.store import get_store
 from bean.learning.reasoning_service import _model_response
+from bean.runtime.typed_plan_contract import plan_schema, compile_typed_args
 from bean.modules import builtin
 from bean.optimization.skill_incubator import evaluate_retained_skill, list_retained_skills
 
@@ -411,6 +412,8 @@ class NativeOrchestrator:
             "Tools: " + _json({k: v[0] for k, v in self.tools.items()}) +
             "\nObjective: " + objective + "\nInputs: " + _json(inputs)
         )
+        if callable(getattr(self.core.model, "complete_schema", None)):
+            prompt += "\nTyped numeric tool arguments: use @0.history for a prior numeric list and @1.prediction for a prior scalar. Use exactly these simple strings in place of nested reference objects in numeric arguments. The number is the zero-based earlier step index. Other tools retain their documented argument contract."
         prompt += "\nRecent execution feedback (not independent correctness evidence): " + _json(feedback)[:6000]
         if recovery_context is not None:
             prompt += "\nPrior execution evidence (reuse completed outputs via $input; correct the failure). "
@@ -444,7 +447,8 @@ class NativeOrchestrator:
 
     def _compile_plan(self, prompt, objective, inputs):
         raw, model, provider, _ = _model_response(
-            self.core.model, prompt, "BEAN native capability orchestration", json_object=True)
+            self.core.model, prompt, "BEAN native capability orchestration", json_object=True,
+            schema=plan_schema(self.tools))
         if raw.startswith(chr(96) * 3):
             raw = "\n".join(raw.splitlines()[1:-1]).strip()
         try:
@@ -462,6 +466,7 @@ class NativeOrchestrator:
             if (not isinstance(step, dict) or set(step) != {"tool", "args"} or
                     step["tool"] not in self.tools or not isinstance(step["args"], dict)):
                 raise ValueError("invalid model-selected tool step")
+            step["args"] = compile_typed_args(step["tool"], step["args"])
             self._validate_refs(step["args"], index)
             try:
                 previous_tools = [s["tool"] for s in steps[:index]]
