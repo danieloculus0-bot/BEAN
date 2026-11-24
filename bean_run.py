@@ -391,6 +391,11 @@ def main():
                     str(Path(ctx["db_path"]).parent / "research-archive")))
                 register_archive(orchestrator, inbox, archive)
                 ctx["research_archive"] = archive
+                # Acquired code stays in a host-isolated worker, not Core.
+                retained_socket = os.environ.get("BEAN_RETAINED_SKILL_SOCKET")
+                if retained_socket:
+                    from bean.runtime.retained_lab import register_retained_lab
+                    register_retained_lab(orchestrator, inbox, retained_socket)
                 register_orchestration_handlers(inbox, orchestrator)
                 ctx["native_orchestrator"] = orchestrator
                 if skill_catalog_path:
