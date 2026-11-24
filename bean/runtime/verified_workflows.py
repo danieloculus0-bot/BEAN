@@ -220,7 +220,8 @@ class VerifiedWorkflows:
                     def ask(prompt):
                         raw,name,provider,_=_model_response(model,prompt,"BEAN procedural transfer")
                         return raw,name,provider
-                    choice=select_transfer(objective,inputs,options,ask)
+                    choice=select_transfer(objective,inputs,options,ask,
+                        tool_descriptions={k:v[0] for k,v in self.owner.tools.items()})
                     if choice is not None:
                         family=choice["family"]
                         transfer={k:choice[k] for k in ("model","provider","selection_index","graph_sha")}
