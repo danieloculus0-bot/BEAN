@@ -338,7 +338,12 @@ class NativeOrchestrator:
             "Use a prior result with {\"$step\":0,\"path\":[\"field\"]}; "
             "use input data with {\"$input\":[\"field\"]}. "
             "References may point only to earlier steps. A whole prior result uses "
-            "an empty path. Do not invent tool names or observations. "
+            "an empty path ONLY for an argument expecting an object. "
+            "Never use string shorthand for references. Input paths use actual object keys, not positional indexes. "
+            "For example, with inputs {\"history\":[1,2]}, last_sign takes "
+            "{\"history\":{\"$input\":[\"history\"]}} and returns a numeric field named prediction. "
+            "If that is step 0, its numeric result is {\"$step\":0,\"path\":[\"prediction\"]}. "
+            "Do not invent tool names or observations. "
             "When reusing a previously acquired skill, use retained_skill_inventory "
             "to retrieve its exact objective_sha256; never guess hashes. "
             "Use the final reason tool if synthesis is needed.\n"
@@ -388,16 +393,17 @@ class NativeOrchestrator:
         steps = plan["steps"]
         if not isinstance(steps, list) or not 1 <= len(steps) <= 8:
             raise ValueError("model must return one to eight steps")
-        from bean.runtime.plan_contracts import preflight
+        from bean.runtime.plan_contracts import preflight, repair_unambiguous_refs
         proposals = []
         prior_tools = []
         for index, step in enumerate(steps):
             if (not isinstance(step, dict) or set(step) != {"tool", "args"} or
                     step["tool"] not in self.tools or not isinstance(step["args"], dict)):
                 raise ValueError("invalid model-selected tool step")
-            self._validate_refs(step["args"], index)
+            args = repair_unambiguous_refs(step["tool"], step["args"], inputs, prior_tools)
+            self._validate_refs(args, index)
             try:
-                preflight(step["tool"], step["args"], inputs, prior_tools)
+                preflight(step["tool"], args, inputs, prior_tools)
             except (ValueError, TypeError, KeyError, IndexError) as exc:
                 exc.planner_raw = raw
                 raise
@@ -405,7 +411,7 @@ class NativeOrchestrator:
             proposals.append(GoalProposal(
                 "orchestrate_objective", ActionType.RUN_EXPERIMENT,
                 "Execute model-selected capability", 3, ApprovalRequired.NONE,
-                {"capability": CAPABILITY, "tool": step["tool"], "args": step["args"],
+                {"capability": CAPABILITY, "tool": step["tool"], "args": args,
                  "objective": objective, "inputs": inputs,
                  "planner_model": model, "planner_provider": provider,
                  "learning_context": "orchestration:" + step["tool"]},
