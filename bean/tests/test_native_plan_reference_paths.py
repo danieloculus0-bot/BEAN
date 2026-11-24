@@ -61,6 +61,43 @@ class NumericArgumentShapeTest(unittest.TestCase):
         _validate_numeric_tool_args("compare_numeric", args, ["mean_sign"], {})
 
 
+class TypedPlanContractTest(unittest.TestCase):
+    def test_compiles_explicit_reference_without_inventing_values(self):
+        from bean.runtime.typed_plan_contract import compile_typed_args
+        self.assertEqual(compile_typed_args("mean_sign", {"history": "@0.history"}),
+                         {"history": {"$step": 0, "path": ["history"]}})
+        self.assertEqual(compile_typed_args("compare_numeric", {"left": "@1.prediction", "right": 1}),
+                         {"left": {"$step": 1, "path": ["prediction"]}, "right": 1})
+        self.assertEqual(compile_typed_args("reason", {"query": "@0.history"}),
+                         {"query": "@0.history"})
+        with self.assertRaises(ValueError):
+            compile_typed_args("mean_sign", {"history": "@0.prediction"})
+
+    def test_schema_only_exposes_registered_tools(self):
+        from bean.runtime.typed_plan_contract import plan_schema
+        options = plan_schema(["mean_sign"])["properties"]["steps"]["items"]["anyOf"]
+        self.assertEqual(len(options), 1)
+        self.assertEqual(options[0]["properties"]["tool"]["enum"], ["mean_sign"])
+        args = options[0]["properties"]["args"]
+        self.assertEqual(args["required"], ["history"])
+        self.assertIn("@0.history", args["properties"]["history"]["anyOf"][1]["enum"])
+
+    def test_schema_transport(self):
+        from bean.runtime.typed_plan_contract import plan_schema
+        requests = []
+        def request(req, timeout):
+            requests.append(json.loads(req.data))
+            return io.BytesIO(json.dumps({
+                "model": "qwen2.5:7b", "id": "test",
+                "choices": [{"message": {"content": '{"steps":[]}'}}]
+            }).encode())
+        provider = LocalLlamaCppProvider(base_url="http://127.0.0.1:11434",
+                                         model_name="qwen2.5:7b", requester=request)
+        schema = plan_schema(["mean_sign"])
+        _model_response(provider, "plan", None, json_object=True, schema=schema)
+        self.assertEqual(requests[-1]["response_format"]["json_schema"]["schema"], schema)
+
+
 class StructuredPlannerProviderTest(unittest.TestCase):
     def test_json_mode_and_normal_chat_remain_distinct(self):
         requests = []
