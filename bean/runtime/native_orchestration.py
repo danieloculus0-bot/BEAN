@@ -469,6 +469,8 @@ class NativeOrchestrator:
 
 
 def register_orchestration_handlers(inbox, orchestrator):
+    from bean.runtime.verified_workflows import register_verified_workflows
+    register_verified_workflows(inbox, orchestrator)
     inbox.register("cognition_capabilities", lambda msg, session:
                    orchestrator._capability_inventory(msg.args, "inbox"))
     inbox.register("cognition_plan", lambda msg, session: orchestrator.submit(
