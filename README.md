@@ -1,11 +1,12 @@
 # BEAN — Behavior Enabled Avatar Node
 
-## Current build snapshot | November 20, 2026
+## Current build snapshot | November 24, 2026
 
 **The research is moving, and the evidence is public.** BEAN is a persistent, model-independent cognitive architecture with a working local Python Core, bounded reasoning and learning mechanisms, source-linked outcomes, and real local-model execution. It is not an AGI, a conscious system, or a fully autonomous general-purpose agent.
 
 | Latest milestone | Verified record | What remains open |
 | --- | --- | --- |
+| **Dedicated cloud Python Core** | Six-vCPU Linux VPS, 12 GB RAM, 10/10 boot-readiness checks and active, enabled service. [Deployment record](docs/CLOUD_CORE_DEPLOYMENT_2026-11-24.md). | Live database progress, integrated cognition, model providers and client links remain unverified. |
 | **Real BEAN Draw attempts** | Local Qwen2.5:3b Ollama sessions produced original model-chosen geometry, SVG/PNG outputs, raw responses and retained failure receipts. The [gallery](docs/bean-draw/index.html) separates **four live-model artifacts from two synthetic fixtures**. [Evidence](docs/bean-draw/PROOF.md) and [merge #442](https://github.com/danieloculus0-bot/BEAN/pull/442). | Drawing quality is weak and genuine artistic improvement has not been demonstrated. |
 | **Persistent ordered cognitive plans** | [Merge #440](https://github.com/danieloculus0-bot/BEAN/pull/440) adds restartable, dependency-aware steps and a synthetic interruption/resumption experiment. [Plan contract](docs/PERSISTENT_GOAL_PLANS.md). | A host authors the plan. Independent plan invention, wide transfer and automatic failure repair remain unproven. |
 | **Physical local inference** | Jetson Orin Nano Super executed local Qwen inference, logged cognition and recovered SQLite journal state. [On-device evidence](docs/JETSON_DEPLOYMENT_MILESTONE_2026-11-01.md). | The integrated vision, speech, face and motion system is not yet demonstrated end to end. |
@@ -16,7 +17,7 @@
 
 **Explore:** [Current public status](https://danieloculus0-bot.github.io/BEAN/status.html) · [Research lab](https://danieloculus0-bot.github.io/BEAN/research-lab.html) · [BEAN Draw](https://danieloculus0-bot.github.io/BEAN/bean-draw/) · [Python quickstart](docs/GETTING_STARTED.md) · [Workshop](https://danieloculus0-bot.github.io/BEAN/portfolio/).
 
-**Runtime separation matters:** Local Python Core, the hosted JavaScript BEAN notes companion, the independent Perplexity evidence MCP, Axiom, and AIscend are distinct environments. None is implicitly connected to the home Jetson, each other, or private Core memory. Date-stamped sections later in this README preserve the original technical history and should be read as milestones, not a fresh deployment check.
+**Runtime separation matters:** The dedicated cloud Python Core is now the primary host. The Jetson/local Python Core, the hosted JavaScript BEAN notes companion, the independent Perplexity evidence MCP, Axiom, and AIscend are distinct environments. None is implicitly connected to the home Jetson, each other, or private Core memory. Date-stamped sections later in this README preserve the original technical history and should be read as milestones, not a fresh deployment check.
 
 ---
 
