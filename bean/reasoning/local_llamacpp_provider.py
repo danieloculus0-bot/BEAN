@@ -69,7 +69,13 @@ class LocalLlamaCppProvider(LLMAdapterBase):
         """Request grammar-constrained JSON from the local OpenAI-compatible server."""
         return self.complete(prompt, context, json_object=True)
 
-    def complete(self, prompt, context=None, *, json_object=False):
+    def complete_schema(self, prompt, context=None, *, schema):
+        """Constrain generation to the caller's machine-readable JSON contract."""
+        if not isinstance(schema, dict):
+            raise ValueError("schema must be a JSON object")
+        return self.complete(prompt, context, json_object=True, schema=schema)
+
+    def complete(self, prompt, context=None, *, json_object=False, schema=None):
         if not isinstance(prompt, str) or not prompt.strip() or len(prompt) > 22000:
             raise ValueError("Bounded local model prompt required")
         if context is None:
@@ -102,6 +108,8 @@ class LocalLlamaCppProvider(LLMAdapterBase):
         if json_object:
             payload["response_format"] = {"type": "json_object"}
             payload["temperature"] = 0
+        if schema is not None:
+            payload["response_format"] = {"type": "json_schema", "json_schema": {"name": "bean_native_plan", "schema": schema}}
         request = Request(
             self.endpoint, method="POST",
             data=json.dumps(payload, ensure_ascii=False).encode("utf-8"),
