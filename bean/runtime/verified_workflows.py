@@ -9,6 +9,7 @@ import math
 
 from bean.cognition.goal_state import ActionType, ApprovalRequired, GoalProposal, plan_proposal_id
 from bean.runtime.native_orchestration import CAPABILITY
+from bean.runtime.workflow_discovery import discover_verified_workflow
 
 SAFE_TOOLS = frozenset(("numeric_context","last_sign","mean_sign","orbit_reference",
     "vis_viva_reference","acceleration_reference","compare_numeric",
@@ -180,14 +181,14 @@ class VerifiedWorkflows:
         return {"status":"submitted","plan_id":plan_id,"graph_sha":row["graph_sha"],"model_invoked":False}
 
 
-    def plan_with_memory(self, *, family, objective, inputs, plan_id):
+    def plan_with_memory(self, *, objective, inputs, plan_id, family=None):
         """Production route: try verified memory, then use the native model.
 
         Strict reuse remains separate so a fallback cannot earn retention credit.
         Only pre-submission abstention is recoverable here; submitted plans use
         the existing GoalCycle recovery mechanism.
         """
-        if not isinstance(family,str) or not 1<=len(family)<=100:
+        if family is not None and (not isinstance(family,str) or not 1<=len(family)<=100):
             raise ValueError("bounded family required")
         if not isinstance(objective,str) or not objective.strip():
             raise ValueError("objective required")
@@ -200,12 +201,21 @@ class VerifiedWorkflows:
             detail=json.loads(old["action_detail"])
             if (detail.get("capability")!=CAPABILITY
                 or detail.get("objective")!=objective or detail.get("inputs")!=inputs
-                or detail.get("workflow_family",family)!=family):
+                or (family is not None and detail.get("workflow_family",family)!=family)):
                 raise ValueError("plan ID already belongs to a different task")
             return {"route":"existing","model_invoked":False,
                     "result":self.owner.status(plan_id)}
-        retained=self.reuse(family=family,inputs=inputs,plan_id=plan_id,
-                            objective=objective)
+        if family is None:
+            discovered=discover_verified_workflow(self.store._conn(),objective,self.candidates)
+            if discovered is None:
+                retained={"status":"abstain","reason":"no unique verified objective match"}
+            else:
+                family,graph_sha=discovered
+                retained=self.reuse(family=family,inputs=inputs,plan_id=plan_id,
+                                    graph_sha=graph_sha,objective=objective)
+        else:
+            retained=self.reuse(family=family,inputs=inputs,plan_id=plan_id,
+                                objective=objective)
         if retained["status"]=="submitted":
             return {"route":"retained","model_invoked":False,"result":retained}
         if retained["status"]!="abstain":
