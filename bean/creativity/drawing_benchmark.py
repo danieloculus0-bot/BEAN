@@ -94,7 +94,7 @@ def _trials(db):
 
 
 def execute(specification, output, *, baseline_db=None, python=sys.executable,
-            review_dir=None, review_wait=0, runner=subprocess.run):
+            review_dir=None, review_wait=0, vision_model=None, runner=subprocess.run):
     """Run a precommitted protocol; preserve stdout, errors, failed cells.
 
     The configured BEAN provider is inherited by all child processes. No
@@ -128,6 +128,8 @@ def execute(specification, output, *, baseline_db=None, python=sys.executable,
                    "--all-attempts", "--backend", "stdlib", "--require-live"]
         if frozen is not None:
             command += ["--frozen-memory", str(frozen)]
+        if vision_model is not None:
+            command += ["--vision-model", vision_model]
         if review_dir is not None:
             command += ["--review-dir", str(Path(review_dir).resolve()),
                         "--review-wait", str(review_wait)]
@@ -434,12 +436,13 @@ def main():
     parser.add_argument("--baseline-db", type=Path)
     parser.add_argument("--review-dir", type=Path)
     parser.add_argument("--review-wait", type=int, default=0)
+    parser.add_argument("--vision-model")
     parser.add_argument("--summarize-only", action="store_true")
     args = parser.parse_args()
     result = (summarize(args.out) if args.summarize_only else
               execute(json.loads(args.protocol.read_text()), args.out,
                       baseline_db=args.baseline_db, review_dir=args.review_dir,
-                      review_wait=args.review_wait))
+                      review_wait=args.review_wait, vision_model=args.vision_model))
     print(json.dumps(result, indent=2, sort_keys=True))
 
 

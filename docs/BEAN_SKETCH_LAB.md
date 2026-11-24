@@ -288,3 +288,30 @@ Minimum change: retained provenance, previews, pluggable pixel review,
 restart/control measurement and reviewed gallery export in existing Core.
 Runtime/behavior-policy changes: no change to ordinary startup or effectors;
 drawing remains an explicitly invoked experiment.
+
+
+## Automatic local image review
+
+The optional local vision evaluator sends actual rendered PNG bytes through
+BEAN's existing Ollama transport. It is separate from the artist and textual
+self-critique. Install a genuine image-capable model, then use:
+
+```sh
+BEAN_REASONING_PROVIDER=ollama BEAN_OLLAMA_MODEL=qwen2.5:3b \
+  python -m bean.creativity.sketch_lab --require-live --attempts 2 --all-attempts \
+  --db drawing-core.sqlite3 --out new-drawing --vision-model gemma3:4b
+```
+
+Each `.vision.json` retains the image hash, evaluator model/digest, prompt,
+raw report, UTC timestamp and availability state. The image bytes are sent
+as the Ollama message's `images` payload. Text-only or missing models and
+invalid reports remain unavailable; no score is invented. A vision-model
+report is neither human evaluation nor authenticated ground truth. All
+original self-critiques and external observations stay separate in Core.
+Reports may be imprecise and require independent inspection.
+
+The matched benchmark also accepts `--vision-model gemma3:4b`. All arms use
+the same evaluator and budgets. Prompts omit review timestamps and local file
+paths to avoid unnecessary differences between matched conditions; the full
+values remain in immutable receipts. A single held-out challenge is narrow
+evidence, and changed image hashes or saved files never establish learning.

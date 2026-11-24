@@ -314,3 +314,12 @@ finally:
     assert (tmp_path / "first" / "attempt_01.raw.json").is_file()
     assert (tmp_path / "first" / "attempt_02.svg").is_file()
     assert (tmp_path / "second" / "attempt_01.png").is_file()
+
+
+def test_other_injectable_provider_transports_cannot_claim_live_execution():
+    from bean.reasoning.local_llamacpp_provider import LocalLlamaCppProvider
+    from bean.reasoning.openrouter_provider import OpenRouterProvider
+    assert execution_mode(LocalLlamaCppProvider(requester=lambda *a, **k: None)) == "unverified"
+    assert execution_mode(OpenRouterProvider(api_key="synthetic-test-only", requester=lambda *a, **k: None)) == "unverified"
+    assert execution_mode(LocalLlamaCppProvider()) == "live_model"
+    assert execution_mode(OpenRouterProvider(api_key="synthetic-test-only")) == "live_model"
