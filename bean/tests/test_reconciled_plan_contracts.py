@@ -3,7 +3,8 @@ import io
 import json
 import unittest
 
-from bean.runtime.plan_contracts import compile_arguments, preflight, read_path
+from bean.runtime.plan_contracts import (compile_arguments, preflight, read_path,
+                                         preview, validate_skill_selection)
 from bean.learning.reasoning_service import _model_response
 from bean.reasoning.local_llamacpp_provider import LocalLlamaCppProvider
 
@@ -58,6 +59,25 @@ class PlanContractRecoveryTests(unittest.TestCase):
         steps[1]["args"]["history"] = "@0.mean"
         with self.assertRaisesRegex(ValueError, "incompatible output shape"):
             compile_arguments(json.dumps({"steps": steps}), {}, {s["tool"] for s in steps})
+
+    def test_retained_skill_identity_and_deferred_hash(self):
+        skills = {"weighted_mean": {}, "interval_overlap": {}}
+        transfer = {"weighted_mean": object()}
+        with self.assertRaisesRegex(ValueError, "installed catalog"):
+            validate_skill_selection("retained_skill_inventory", {"skill_id": "invented"},
+                                     skills, transfer)
+        with self.assertRaisesRegex(ValueError, "installed catalog"):
+            validate_skill_selection("evaluate_skill", {
+                "skill_id": "interval_overlap", "objective_sha256": "a" * 64}, skills, transfer)
+        with self.assertRaisesRegex(ValueError, "objective_sha256"):
+            validate_skill_selection("evaluate_skill", {
+                "skill_id": "weighted_mean", "objective_sha256": "guess"}, skills, transfer)
+        args = {"skill_id": "weighted_mean",
+                "objective_sha256": {"$step": 0, "path": ["skills", 0, "objective_sha256"]}}
+        validate_skill_selection("evaluate_skill",
+                                 preview(args, {}, ["retained_skill_inventory"]), skills, transfer)
+        validate_skill_selection("evaluate_skill", {
+            "skill_id": "weighted_mean", "objective_sha256": "a" * 64}, skills, transfer)
 
     def test_unknown_extension_shape_is_deferred(self):
         preflight("mean_sign", {"history": {"$step": 0, "path": ["data", "history"]}},
