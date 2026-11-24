@@ -230,6 +230,62 @@ def recover_unfinished_training(core, *, catalog, session_uuid):
     return None
 
 
+def advance_skill_curriculum(core, *, catalog, session_uuid):
+    """Drain the host-approved curriculum on Core ticks, not an external timer.
+
+    At most one acquisition is queued at once. Existing GoalCycle executes it,
+    records the outcome, and the next tick selects recovery or new work.
+    This is an owner-directed curriculum, not evidence of self-chosen goals.
+    """
+    from bean.cognition.goal_state import (
+        GoalStateEngine, GoalProposal, ActionType, ApprovalRequired)
+    from bean.memory.store import get_store
+
+    if not isinstance(catalog, dict) or not isinstance(catalog.get("skills"), dict):
+        raise ValueError("validated skill catalog required")
+    if getattr(core, "model", None) is None:
+        return {"status": "unverified", "reason": "no_live_core_model"}
+    if getattr(core.model, "adapter_name", None) not in ("ollama", "local_llamacpp", "synthetic_fixture"):
+        return {"status": "unverified", "reason": "continuous_curriculum_requires_local_provider"}
+    engine = GoalStateEngine()
+    rows = get_store().fetchall(
+        "SELECT status,action_detail FROM cognition_goal_proposals "
+        "WHERE action_type='run_experiment' AND goal_state='investigate_open_question'")
+    attempted = set()
+    for row in rows:
+        try:
+            detail = json.loads(row["action_detail"] or "null")
+        except (ValueError, TypeError):
+            continue
+        if not isinstance(detail, dict) or detail.get("capability") != "native_skill_incubator":
+            continue
+        skill_id = detail.get("skill_id")
+        if skill_id not in catalog["skills"]:
+            continue
+        if row["status"] in ("pending", "running"):
+            return {"status": "pending", "reason": "acquisition_already_queued"}
+        attempted.add(skill_id)
+    recovered = recover_unfinished_training(core, catalog=catalog, session_uuid=session_uuid)
+    if recovered is not None:
+        return recovered
+    remaining = sorted(set(catalog["skills"]) - attempted)
+    if not remaining:
+        return {"status": "n/a", "reason": "curriculum_attempts_exhausted",
+                "attempted_count": len(attempted), "all_skills_verified": False}
+    skill_id = remaining[0]
+    identity = hashlib.sha256(
+        (catalog["sha256"] + ":" + skill_id).encode()).hexdigest()
+    proposal = GoalProposal(
+        "investigate_open_question", ActionType.RUN_EXPERIMENT,
+        "Execute next owner-approved curriculum skill", 3,
+        ApprovalRequired.NONE,
+        {"capability": "native_skill_incubator", "skill_id": skill_id,
+         "learning_context": "skill:" + skill_id}, "curriculum")
+    persisted = engine.propose_plan(session_uuid, "curriculum:" + identity, [proposal])
+    return {"status": "proposed", "reason": "next_curriculum_skill",
+            "skill_id": skill_id, "proposal_id": persisted[0].proposal_id}
+
+
 def propose_skill_from_curiosity(core, *, catalog, session_uuid):
     """Let BEAN's OWN configured model select a skill worth learning.
 
