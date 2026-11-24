@@ -100,7 +100,7 @@ def make_prompt(question, date, context):
             f"History:\n{context}\n\nCurrent date: {date}\nQuestion: {question}\nAnswer:")
 
 
-def fit(parts, count, limit, recent=False):
+def fit(parts, count, limit, recent=False, clip=None):
     if limit < 0:
         raise ValueError("negative context budget")
     # Keep ranked leading evidence, or chronological latest whole sessions.
@@ -108,13 +108,16 @@ def fit(parts, count, limit, recent=False):
     for part in (reversed(parts) if recent else parts):
         proposed = [part] + out if recent else out + [part]
         if count("\n\n".join(proposed)) > limit:
+            if clip is not None:
+                joined = "\n\n".join(proposed)
+                return clip(joined, limit, recent)
             break
         out = proposed
     return "\n\n".join(out)
 
 
 def run_question(row, arm, answer, judge, count, bean=bean_retrieve,
-                 hindsight=None, shuffled=None):
+                 hindsight=None, shuffled=None, clip=None):
     start = time.monotonic()
     question, date = row["question"], row["question_date"]
     history = sessions(row)
@@ -139,7 +142,9 @@ def run_question(row, arm, answer, judge, count, bean=bean_retrieve,
     limit = WINDOW - ANSWER_TOKENS - overhead - 128
     if arm != "A0":
         limit = min(CAP, limit)
-    context = fit(parts, count, limit, recent=arm == "A0")
+    context = fit(parts, count, limit, recent=arm == "A0", clip=clip)
+    if count(context) > limit:
+        raise ValueError("context cap exceeded")
     prompt = make_prompt(question, date, context)
     result = answer(prompt, ANSWER_TOKENS)
     hypothesis = result["text"]
@@ -216,12 +221,35 @@ def main():
     if not all((args.study,args.arm,args.model_digest,args.judge_model,
                 args.judge_digest,args.tokenizer,args.output)):
         p.error("study, arm, model/judge digests, tokenizer and output required")
-    if args.arm == "A2":
-        raise SystemExit("BLOCKED: pin official Hindsight SDK and self-hosted instance in S5")
     from transformers import AutoTokenizer
     tokenizer = AutoTokenizer.from_pretrained(args.tokenizer, local_files_only=True, trust_remote_code=False)
     def count(text):
         return len(tokenizer.encode(text, add_special_tokens=False))
+    def clip(text, limit, recent):
+        ids = tokenizer.encode(text, add_special_tokens=False)
+        ids = (ids[-limit:] if recent else ids[:limit]) if limit else []
+        while ids:
+            clipped = tokenizer.decode(ids, skip_special_tokens=False)
+            if count(clipped) <= limit:
+                return clipped
+            ids = ids[1:] if recent else ids[:-1]
+        return ""
+    hindsight = None
+    if args.arm == "A2":
+        from hindsight_client import Hindsight
+        endpoint = os.environ["LME_HINDSIGHT_URL"]
+        if not endpoint.startswith(("https://", "http://127.0.0.1:", "http://localhost:")):
+            raise ValueError("Hindsight endpoint must be protected")
+        token = os.environ.get("LME_HINDSIGHT_TOKEN")
+        if endpoint.startswith("https://") and not token:
+            raise ValueError("Hindsight requires bearer token")
+        client = Hindsight(base_url=endpoint, api_key=token)
+        def hindsight(history, question):
+            bank_id = "lme-" + uuid.uuid4().hex
+            for session in history:
+                client.retain(bank_id=bank_id, content=session)
+            results = client.recall(bank_id=bank_id, query=question, max_tokens=CAP)
+            return [item.text for item in results.results]
     answer = Ollama(args.model, args.model_digest, os.environ["LME_MODEL_URL"], os.environ.get("LME_MODEL_TOKEN"))
     judge = Ollama(args.judge_model, args.judge_digest, os.environ["LME_JUDGE_URL"], os.environ.get("LME_JUDGE_TOKEN"))
     ids = manifest[args.subset+"_ids"]
@@ -231,7 +259,7 @@ def main():
     with open(args.output, "x", encoding="utf-8") as out:
         for i, qid in enumerate(ids):
             result = run_question(rows[qid], args.arm, answer, judge, count,
-                                  shuffled=rows[ids[(i+1)%len(ids)]])
+                                  shuffled=rows[ids[(i+1)%len(ids)]], hindsight=hindsight, clip=clip)
             result.update({"study_id":args.study,"model":args.model,"model_digest":args.model_digest,
                            "judge_model":args.judge_model,"judge_digest":args.judge_digest,
                            "dataset_sha256":manifest["dataset_sha256"],"subset":args.subset,
