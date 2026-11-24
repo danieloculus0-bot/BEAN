@@ -8,6 +8,7 @@ from urllib.parse import urlsplit
 
 from .runner import CAP, ANSWER_TOKENS, WINDOW, UPSTREAM, Ollama
 from .freeze_dataset import DATASET_REV, freeze_verified
+from .accounting import verify_answer_accounting
 
 TOKENIZER_REPO = "Qwen/Qwen2.5-3B-Instruct"
 TOKENIZER_REV = "aa8e72537993ba99e69dfaafa59ed015b17504d1"
@@ -59,6 +60,11 @@ def main():
     model = "qwen2.5:3b"
     model_digest = endpoint_identity(os.environ["LME_MODEL_URL"], os.environ["LME_MODEL_TOKEN"], model)
     judge_digest = endpoint_identity(os.environ["LME_JUDGE_URL"], os.environ["LME_JUDGE_TOKEN"], args.judge_model)
+    from transformers import AutoTokenizer
+    local_tokenizer = AutoTokenizer.from_pretrained(tokenizer, local_files_only=True, trust_remote_code=False)
+    answer_client = Ollama(model, model_digest, os.environ["LME_MODEL_URL"], os.environ["LME_MODEL_TOKEN"])
+    accounting = verify_answer_accounting(local_tokenizer, answer_client, WINDOW, ANSWER_TOKENS)
+    answer_client.verify()
     config = {"study_id": args.study, "dataset_repo": DATASET_REPO, "dataset_revision": args.dataset_revision,
               "dataset_file": DATASET_FILE, "dataset_sha256": manifest["dataset_sha256"],
               "model": model, "model_digest": model_digest, "judge_model": args.judge_model,
@@ -74,6 +80,7 @@ def main():
         with (folder/name).open("x", encoding="utf-8") as out:
             json.dump(obj, out, indent=2, sort_keys=True)
             out.write("\n")
+    (folder/"accounting.json").write_text(json.dumps(accounting, indent=2) + "\n")
     # Local paths only; not an artifact.
     (folder/"paths.json").write_text(json.dumps({"dataset":dataset,"tokenizer":tokenizer}))
     print("Study preparation complete; no scoring performed.")
