@@ -171,6 +171,19 @@ class NativeOrchestrator:
                     detail.get("objective") != objective or detail.get("inputs") != inputs):
                 raise ValueError("plan ID already belongs to a different task")
             return self.status(plan_id)
+        # Retrieve actual prior execution outcomes, not model self-ratings.
+        history = self.store._conn().execute(
+            "SELECT tool,output_json FROM bean_orchestration_outputs "
+            "ORDER BY rowid DESC LIMIT 24").fetchall()
+        feedback = []
+        for row in history:
+            output = json.loads(row[1])
+            if isinstance(output, dict):
+                feedback.append({"tool": row[0], "status": output.get("status"),
+                                 "passed": output.get("passed"),
+                                 "retained_skill": bool(output.get("retained_skill")),
+                                 "violations": output.get("violations"),
+                                 "error": output.get("error")})
         prompt = (
             "You are BEAN's task planner. Select a sequence of one to eight tools "
             "to accomplish the objective. Reply ONLY with a JSON object containing "
@@ -183,6 +196,7 @@ class NativeOrchestrator:
             "Tools: " + _json({k: v[0] for k, v in self.tools.items()}) +
             "\nObjective: " + objective + "\nInputs: " + _json(inputs)
         )
+        prompt += "\\nRecent execution feedback (not independent correctness evidence): " + _json(feedback)[:6000]
         if recovery_context is not None:
             prompt += "\nPrior execution evidence (reuse completed outputs via $input; correct the failure): " + _json(recovery_context)
         raw, model, provider, _ = _model_response(
@@ -244,13 +258,17 @@ class NativeOrchestrator:
         name = detail["tool"]
         self._validate_refs(detail["args"], plan["step"])
         args = self._resolve(detail["args"], plan, detail["inputs"])
-        output = self.tools[name][1](args, pid)
+        try:
+            output = self._read_output(pid)
+        except LookupError:
+            output = self.tools[name][1](args, pid)
+            raw = _json(output)
+            self.store.execute(
+                "INSERT INTO bean_orchestration_outputs VALUES (?,?,?,?)",
+                (pid, name, raw, _digest(raw)))
+            self.store.commit()
         raw = _json(output)
         digest = _digest(raw)
-        self.store.execute(
-            "INSERT INTO bean_orchestration_outputs VALUES (?,?,?,?)",
-            (pid, name, raw, digest))
-        self.store.commit()
         # A completed inference or calculation is an execution outcome, not
         # an independent correctness finding. Failed acquisition/reuse must
         # not release a dependent step as if the requested artifact existed.
