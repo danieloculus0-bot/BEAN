@@ -1,0 +1,37 @@
+{
+  "command": [
+    "/opt/bean/draw-venv/bin/python",
+    "-m",
+    "bean.creativity.sketch_lab",
+    "--db",
+    "/var/lib/bean/drawing/art_history.sqlite3",
+    "--out",
+    "/var/lib/bean/drawing/runs/20261124-vps-pilot",
+    "--task-ref",
+    "contabo-pilot-20261124",
+    "--require-live",
+    "--attempts",
+    "2",
+    "--all-attempts",
+    "--backend",
+    "stdlib",
+    "--seed",
+    "202611241",
+    "--vision-model",
+    "gemma3:4b"
+  ],
+  "entrypoint": "Existing SketchLabCLI; not live execution of new orchestrator adapter patch",
+  "environment": {
+    "BEAN_OLLAMA_MODEL": "qwen2.5:7b",
+    "BEAN_OLLAMA_URL": "http://127.0.0.1:11434",
+    "BEAN_REASONING_PROVIDER": "ollama"
+  },
+  "inference_runtime": "Existing local Ollama service reused; no second model service or primary Core restart by this pilot",
+  "model_and_geometry_supplied_by_host": false,
+  "primary_private_database_used": false,
+  "schema": "bean.draw.vps.launch.v1",
+  "source_git_sha": "54b0a4d2c17face7ffbf3d016ef348c5a055164a",
+  "subject_source": "autonomous",
+  "worker_runtime_limit_seconds": 2700,
+  "working_directory": "/opt/bean/drawing-src"
+}

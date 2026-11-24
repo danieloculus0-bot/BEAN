@@ -1,0 +1,105 @@
+{
+  "observed_at_utc": "2026-11-24T15:05:06.415391+00:00",
+  "provider_version": {
+    "version": "0.40.18"
+  },
+  "cpu_count": 6,
+  "shared_runtime_reused": true,
+  "models": [
+    {
+      "name": "qwen2.5:7b",
+      "digest": "845dbda0ea48ed749caafd9e6037047aa19acfcfd82e704d7ca97d631a0b697e",
+      "size": 4683087332,
+      "details": {
+        "parent_model": "",
+        "format": "gguf",
+        "family": "qwen2",
+        "families": [
+          "qwen2"
+        ],
+        "parameter_size": "7.6B",
+        "quantization_level": "Q4_K_M"
+      },
+      "capabilities": [
+        "completion",
+        "tools"
+      ]
+    },
+    {
+      "name": "gemma3:4b",
+      "digest": "68ceab7e468a31c988b44d5a4984a0e21f58c4f7158c6ce29c1804babac38df7",
+      "size": 3350272403,
+      "details": {
+        "parent_model": "dhiltgen/gemma3:4b-it-q4_K_M-llamacpp",
+        "format": "gguf",
+        "family": "gemma3",
+        "families": [
+          "gemma3",
+          "clip"
+        ],
+        "parameter_size": "3.9B",
+        "quantization_level": "Q4_K_M",
+        "runner": "llamacpp"
+      },
+      "capabilities": [
+        "completion",
+        "vision"
+      ]
+    }
+  ],
+  "blobs": {
+    "sha256:2f15b3218f0552c60647ce60ada83632d2c09755b16259b13e3e4458e9ae419d": {
+      "sha256": "2f15b3218f0552c60647ce60ada83632d2c09755b16259b13e3e4458e9ae419d",
+      "bytes": 487
+    },
+    "sha256:2bada8a7450677000f678be90653b85d364de7db25eb5ea54136ada5f3933730": {
+      "sha256": "2bada8a7450677000f678be90653b85d364de7db25eb5ea54136ada5f3933730",
+      "bytes": 4683073952
+    },
+    "sha256:66b9ea09bd5b7099cbb4fc820f31b575c0366fa439b08245566692c6784e281e": {
+      "sha256": "66b9ea09bd5b7099cbb4fc820f31b575c0366fa439b08245566692c6784e281e",
+      "bytes": 68
+    },
+    "sha256:eb4402837c7829a690fa845de4d7f3fd842c2adee476d5341da8a46ea9255175": {
+      "sha256": "eb4402837c7829a690fa845de4d7f3fd842c2adee476d5341da8a46ea9255175",
+      "bytes": 1482
+    },
+    "sha256:832dd9e00a68dd83b3c3fb9f5588dad7dcf337a0db50f7d9483f310cd292e92e": {
+      "sha256": "832dd9e00a68dd83b3c3fb9f5588dad7dcf337a0db50f7d9483f310cd292e92e",
+      "bytes": 11343
+    },
+    "sha256:845dbda0ea48ed749caafd9e6037047aa19acfcfd82e704d7ca97d631a0b697e": {
+      "sha256": "845dbda0ea48ed749caafd9e6037047aa19acfcfd82e704d7ca97d631a0b697e",
+      "bytes": 858
+    },
+    "sha256:4bf7b0a45f1af5d9f6f8b847044d8379eef6b36f3ca8b4dcc63a8dfed7426e53": {
+      "sha256": "4bf7b0a45f1af5d9f6f8b847044d8379eef6b36f3ca8b4dcc63a8dfed7426e53",
+      "bytes": 144
+    },
+    "sha256:f06e91e18fc74295d0c781bf91622508c75655e2c18ed869d52447ffe1e667e1": {
+      "sha256": "f06e91e18fc74295d0c781bf91622508c75655e2c18ed869d52447ffe1e667e1",
+      "bytes": 2499012288
+    },
+    "sha256:7a50f9607a47389c028f2598c1f2d3e23b61913b4ce3c4a9eaaca62de1b9e098": {
+      "sha256": "7a50f9607a47389c028f2598c1f2d3e23b61913b4ce3c4a9eaaca62de1b9e098",
+      "bytes": 851251104
+    },
+    "sha256:e0a42594d802e5d31cdc786deb4823edb8adff66094d49de8fffe976d753e348": {
+      "sha256": "e0a42594d802e5d31cdc786deb4823edb8adff66094d49de8fffe976d753e348",
+      "bytes": 358
+    },
+    "sha256:dd084c7d92a3c1c14cc09ae77153b903fd2024b64a100a0cc8ec9316063d2dbc": {
+      "sha256": "dd084c7d92a3c1c14cc09ae77153b903fd2024b64a100a0cc8ec9316063d2dbc",
+      "bytes": 8432
+    },
+    "sha256:3116c52250752e00dd06b16382e952bd33c34fd79fc4fe3a5d2c77cf7de1b14b": {
+      "sha256": "3116c52250752e00dd06b16382e952bd33c34fd79fc4fe3a5d2c77cf7de1b14b",
+      "bytes": 77
+    },
+    "sha256:68ceab7e468a31c988b44d5a4984a0e21f58c4f7158c6ce29c1804babac38df7": {
+      "sha256": "68ceab7e468a31c988b44d5a4984a0e21f58c4f7158c6ce29c1804babac38df7",
+      "bytes": 1282
+    }
+  },
+  "scope": "Existing provider and actual model bytes; no artwork quality or learning verified"
+}

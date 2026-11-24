@@ -1,0 +1,31 @@
+{
+  "actual_new_generation_delivery_tested": false,
+  "attempt_payloads": [
+    {
+      "attempt": 1,
+      "exact_payload_match": true,
+      "journal_tip": "e2989d1c2979ec59172e10018830bedf8d5fbaf90847a17300004d67942b8cbc",
+      "metadata_sha256": "b4b100efb02d91bf06e23c2cdab654f1a46e1503672a4077925762234a9b95a8"
+    },
+    {
+      "attempt": 2,
+      "exact_payload_match": true,
+      "journal_tip": "fd60c3c944402a18bbe26375ac39fcbdc4dda7c666dea10a11d9b1b5eb7104f3",
+      "metadata_sha256": "cc33e2848dc7d20c048bdef4c3b0bf2cea6c2223763ac71dcdb5d2144b777e47"
+    }
+  ],
+  "compressed_sha256": "b2f6d78562448aada049d06024c1d5baa90126c570acb792f6ea3597c3512aca",
+  "events": 3,
+  "final_run_payload_matches": true,
+  "independently_authenticated": false,
+  "observed_at_utc": "2026-11-24T16:22:57.719634+00:00",
+  "original_remote_source_unchanged": "Reported by bounded remote verifier; source itself was not downloaded",
+  "private_primary_database_used": false,
+  "retained_context_records": 2,
+  "retained_context_sha256": "ef63621cf8c6380343139d9ac325d018d1fff0c97f7146534b6ac951d46daca6",
+  "run_id": "797a888c-4a33-4384-abcf-02ff43b11e4b",
+  "schema": "bean.draw.vps.journal_local_audit.v1",
+  "sha_chain_verified": true,
+  "source_git_sha": "54b0a4d2c17face7ffbf3d016ef348c5a055164a",
+  "uncompressed_sha256": "6dda6f6225369bacb21777a1a4150f88683b0e75affda386aaea81e012e42b98"
+}

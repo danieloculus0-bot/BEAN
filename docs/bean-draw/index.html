@@ -104,6 +104,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
 </div>
 <aside class="hero-note"><div class="note-icon" aria-hidden="true">✳</div><h2>Original work and test fixtures stay separate.</h2>
 <p>The default view shows live model runs with checked SVG and PNG hashes and reviewed provenance. This verifies artifact bytes, not artistic quality. Gold-labeled <strong>scripted test fixtures</strong> have a separate view. Text self-critique, external image review, and human evaluation remain distinct.</p></aside>
+<p style="max-width:1120px;margin:1rem auto;padding:0 1rem"><strong>Intended subject</strong> tells you what BEAN set out to draw. Each attempt is a separate draft; inspect the picture and visual feedback to assess how clearly it achieved that goal.</p>
 </section>
 <section id="art" class="wrap">
 <div class="toolbar">
@@ -144,8 +145,8 @@ function textEl(tag,cls,content){var el=document.createElement(tag);if(cls)el.cl
 function addDefinition(dl,name,value){dl.appendChild(textEl("dt","",name));dl.appendChild(textEl("dd","",value==null?"Unknown":String(value)));}
 function openDetails(e){
 var svg=asset(e.svg,"svg"),meta=asset(e.metadata,"json");if(!svg||!meta)return;
-document.getElementById("detail-title").textContent=e.title||"Untitled";
-var image=document.getElementById("detail-image");image.src=asset(e.png,"png")||svg;image.alt="Drawing labeled "+(e.title||"untitled");
+document.getElementById("detail-title").textContent=(e.origin==="synthetic_fixture"?"Fixture subject: ":"Intended subject: ")+(e.title||"Untitled");
+var image=document.getElementById("detail-image");image.src=asset(e.png,"png")||svg;image.alt=(e.origin==="synthetic_fixture"?"Scripted fixture for ":"BEAN draft intended to depict ")+(e.title||"untitled")+", attempt "+e.attempt;
 var origin=document.getElementById("detail-origin");origin.textContent=labelFor(e);origin.className="pill"+(e.origin==="synthetic_fixture"?" fixture":"");
 document.getElementById("detail-description").textContent=e.description||"No description recorded.";
 var review=e.self_review||{};
@@ -175,11 +176,11 @@ var term=search.value.trim().toLowerCase(),kind=filter.value;
 var matched=entries.filter(function(e){return(kind==="all"||e.origin===kind)&&((e.title||"")+" "+(e.description||"")).toLowerCase().includes(term)&&asset(e.svg,"svg")&&asset(e.metadata,"json");});
 gallery.replaceChildren();
 matched.forEach(function(e){
-var card=document.createElement("button");card.className="card";card.type="button";card.setAttribute("aria-label","Open drawing: "+(e.title||"Untitled"));
+var card=document.createElement("button");card.className="card";card.type="button";card.setAttribute("aria-label","Open "+labelFor(e)+", attempt "+e.attempt+", "+(e.origin==="synthetic_fixture"?"fixture subject: ":"intended subject: ")+(e.title||"Untitled"));
 var art=textEl("div","art","");var img=document.createElement("img");img.src=asset(e.png,"png")||e.svg;img.alt="";img.loading="lazy";art.appendChild(img);card.appendChild(art);
 var cap=textEl("div","caption","");cap.appendChild(textEl("span","pill"+(e.origin==="synthetic_fixture"?" fixture":""),labelFor(e)));
 if(e.origin!=="synthetic_fixture")cap.appendChild(textEl("span","pill",e.subject_source==="autonomous"?"MODEL-CHOSEN SUBJECT":e.subject_source==="human"?"HUMAN SUBJECT CHALLENGE":"SUBJECT SOURCE UNRECORDED"));
-cap.appendChild(textEl("span","title",e.title||"Untitled"));cap.appendChild(textEl("div","sub","Attempt "+e.attempt+" · "+(e.status||"unverified")));card.appendChild(cap);
+cap.appendChild(textEl("div","sub",e.origin==="synthetic_fixture"?"Fixture subject":"Intended subject"));cap.appendChild(textEl("span","title",e.title||"Untitled"));cap.appendChild(textEl("div","sub","Attempt "+e.attempt+" · "+(e.status||"unverified")));card.appendChild(cap);
 card.addEventListener("click",function(){openDetails(e)});gallery.appendChild(card);
 });
 count.textContent="("+matched.length+")";

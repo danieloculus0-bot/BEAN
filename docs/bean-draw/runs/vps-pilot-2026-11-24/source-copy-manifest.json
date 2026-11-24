@@ -1,0 +1,34 @@
+{
+  "journal_followup_files": {
+    "drawing-journal.sqlite3.gz": "b2f6d78562448aada049d06024c1d5baa90126c570acb792f6ea3597c3512aca",
+    "export-hashes.json": "444ca3638dbdbf4e5d0c18f00d903071859d7509536c6dbd9b0f9fac275f7bee",
+    "verification.json": "5b4b864f14e011723399dc2a2172c39bda7bd8d5e8b9b83ac611f2cd812c7fc8"
+  },
+  "journal_zip_sha256": "302d9e81f69734f0ea450c676d722a361444f85826c51b2a49381f7d091e55e0",
+  "new_artwork_generated_by_archiving": false,
+  "original_bytes_preserved": true,
+  "original_export_files": {
+    "artifacts/attempt_01.json": "b4b100efb02d91bf06e23c2cdab654f1a46e1503672a4077925762234a9b95a8",
+    "artifacts/attempt_01.png": "b38d9cca3e4772f7173d3ee93fedb4e712725b9764192d53a9d12ece637257be",
+    "artifacts/attempt_01.raw.json": "a30250b54ba211e272c97e0b2f9de0dc16b18dc44381e01c962230cc80ce8407",
+    "artifacts/attempt_01.svg": "469f23aefa23a8c78112db4aec865892735fb8f4668399d6f966222909d81be6",
+    "artifacts/attempt_01.vision.json": "8da2f9f76cddd8f6c6be8c638cebc22b8db28f2f678eaeea4c419cf21440c8a1",
+    "artifacts/attempt_02.json": "cc33e2848dc7d20c048bdef4c3b0bf2cea6c2223763ac71dcdb5d2144b777e47",
+    "artifacts/attempt_02.png": "8757534a9daa746fbca40717cbe0d36cfecc3de60fe5e0f3d2108c4ae71eac27",
+    "artifacts/attempt_02.raw.json": "f849160ab619381b81fbf65be87c56c670d4c92d3b158cec64f461ff34b46d5c",
+    "artifacts/attempt_02.svg": "e41d2d599141280dac56484beac426ce2264afee93ba0f07d5776ccdd7cd7134",
+    "artifacts/attempt_02.vision.json": "edd6b170b4aea6da2cc8608dc694bd8944fd7585c2c479a8f089aff5588cf3b9",
+    "artifacts/model_calls.json": "174cd17b2f25d0b724b1a72d02bdea7d9242f8b8a6762e4565c4760a6f796b5d",
+    "artifacts/progress.json": "b065cc905207360605f48de4b3c85d85f5fa4257be85bc68f94870685032e5c0",
+    "artifacts/run.json": "474dffca7552e9921be6bea177852ca908d3118b1d18f6bcbdcc4e5ce01195f0",
+    "export-hashes.json": "8adeb742c74e389fdd02e5093a61ccb6c030774ec115261d2b8c89fed8a62833",
+    "journal-not-exported.json": "736d33615c4b6f1ad12333fd6c612af70ac709c8a31a1e957004a75fb983fe31",
+    "pilot-systemd-status.txt": "d998e9d7f85351163286cb334dd4b8a12363aae1a001e36109e32a09ae16303b",
+    "pilot.stderr.log": "f0814c22197c48dad23357c814b4cabb8dd23ad197bc6fae6c719629e5c4df80",
+    "pilot.stdout.json": "bd1c328c175b1144bd561323c85bcee28468a7dd909ef981d3ff5a3aafb2f99e",
+    "provider-integrity.json": "060c4bbd7d95c162a09413552f029918f3a72f4581b309f3b11b87bc48f9b118",
+    "provider-version.json": "672856105eb7e7811ecbae8fcd189743b8fd44aece7baad3a1a781b5a41c43eb"
+  },
+  "original_zip_sha256": "86ef11c75db5b7b5ead62315a715278827f50dc4bd00c83d937db46e12c2825d",
+  "schema": "bean.draw.vps.archive_copy.v1"
+}

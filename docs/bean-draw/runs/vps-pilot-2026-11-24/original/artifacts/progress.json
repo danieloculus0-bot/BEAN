@@ -1,0 +1,29 @@
+{
+  "history": [
+    {
+      "attempt": 1,
+      "description": "A minimalist line drawing depicting a calm sunset over a quiet beach with gentle waves, sand dunes, and wispy clouds.",
+      "journal_tip": "e2989d1c2979ec59172e10018830bedf8d5fbaf90847a17300004d67942b8cbc",
+      "metadata": "/var/lib/bean/drawing/runs/20261124-vps-pilot/attempt_01.json",
+      "metadata_sha256": "b4b100efb02d91bf06e23c2cdab654f1a46e1503672a4077925762234a9b95a8",
+      "png": "/var/lib/bean/drawing/runs/20261124-vps-pilot/attempt_01.png",
+      "png_sha256": "b38d9cca3e4772f7173d3ee93fedb4e712725b9764192d53a9d12ece637257be",
+      "sha256": "469f23aefa23a8c78112db4aec865892735fb8f4668399d6f966222909d81be6",
+      "status": "host_reported_not_satisfactory",
+      "svg": "/var/lib/bean/drawing/runs/20261124-vps-pilot/attempt_01.svg"
+    },
+    {
+      "attempt": 2,
+      "description": "This line art depicts a sunset over a quiet beach, featuring a curved horizon with wispy clouds and sand dunes creating texture.",
+      "journal_tip": "fd60c3c944402a18bbe26375ac39fcbdc4dda7c666dea10a11d9b1b5eb7104f3",
+      "metadata": "/var/lib/bean/drawing/runs/20261124-vps-pilot/attempt_02.json",
+      "metadata_sha256": "cc33e2848dc7d20c048bdef4c3b0bf2cea6c2223763ac71dcdb5d2144b777e47",
+      "png": "/var/lib/bean/drawing/runs/20261124-vps-pilot/attempt_02.png",
+      "png_sha256": "8757534a9daa746fbca40717cbe0d36cfecc3de60fe5e0f3d2108c4ae71eac27",
+      "sha256": "e41d2d599141280dac56484beac426ce2264afee93ba0f07d5776ccdd7cd7134",
+      "status": "host_reported_not_satisfactory",
+      "svg": "/var/lib/bean/drawing/runs/20261124-vps-pilot/attempt_02.svg"
+    }
+  ],
+  "subject": "A Sunset Over a Quiet Beach"
+}

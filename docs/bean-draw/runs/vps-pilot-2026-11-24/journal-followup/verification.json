@@ -1,0 +1,43 @@
+{
+  "actual_followup_generation_delivery_tested": false,
+  "backup_sha256": "6dda6f6225369bacb21777a1a4150f88683b0e75affda386aaea81e012e42b98",
+  "compressed_sha256": "b2f6d78562448aada049d06024c1d5baa90126c570acb792f6ea3597c3512aca",
+  "correction": "Initial exporter allowed only draft events and withheld this fresh journal because it also contains its legitimate run-completion trial. Original omission receipt is preserved.",
+  "draft_rows": 2,
+  "events": [
+    {
+      "attempt": 1,
+      "experiment": "bean_sketch_v1",
+      "kind": "trial",
+      "run_id": "797a888c-4a33-4384-abcf-02ff43b11e4b",
+      "task_ref": "contabo-pilot-20261124"
+    },
+    {
+      "attempt": 2,
+      "experiment": "bean_sketch_v1",
+      "kind": "trial",
+      "run_id": "797a888c-4a33-4384-abcf-02ff43b11e4b",
+      "task_ref": "contabo-pilot-20261124"
+    },
+    {
+      "attempt": null,
+      "experiment": "bean_sketch_run_v1",
+      "kind": "trial",
+      "run_id": "797a888c-4a33-4384-abcf-02ff43b11e4b",
+      "task_ref": "contabo-pilot-20261124"
+    }
+  ],
+  "journal_sha_chain": "verified",
+  "new_provider_call_made": false,
+  "observed_at_utc": "2026-11-24T15:20:48.565045+00:00",
+  "primary_private_database_used": false,
+  "retained_context_records": 2,
+  "retained_context_sha256": "ef63621cf8c6380343139d9ac325d018d1fff0c97f7146534b6ac951d46daca6",
+  "run_completion_rows": 1,
+  "run_id": "797a888c-4a33-4384-abcf-02ff43b11e4b",
+  "schema": "bean.draw.vps.journal_followup.v1",
+  "source_file_sha256_after": "ce625999330bcd79ba5cc61e194c513894426f6a0896152a781f52a2864bcadd",
+  "source_file_sha256_before": "ce625999330bcd79ba5cc61e194c513894426f6a0896152a781f52a2864bcadd",
+  "source_git_sha": "54b0a4d2c17face7ffbf3d016ef348c5a055164a",
+  "total_rows": 3
+}

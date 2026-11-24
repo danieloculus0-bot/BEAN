@@ -1,0 +1,21 @@
+{
+  "files": {
+    "attempt_01.json": "b4b100efb02d91bf06e23c2cdab654f1a46e1503672a4077925762234a9b95a8",
+    "attempt_01.png": "b38d9cca3e4772f7173d3ee93fedb4e712725b9764192d53a9d12ece637257be",
+    "attempt_01.raw.json": "a30250b54ba211e272c97e0b2f9de0dc16b18dc44381e01c962230cc80ce8407",
+    "attempt_01.svg": "469f23aefa23a8c78112db4aec865892735fb8f4668399d6f966222909d81be6",
+    "attempt_01.vision.json": "8da2f9f76cddd8f6c6be8c638cebc22b8db28f2f678eaeea4c419cf21440c8a1",
+    "attempt_02.json": "cc33e2848dc7d20c048bdef4c3b0bf2cea6c2223763ac71dcdb5d2144b777e47",
+    "attempt_02.png": "8757534a9daa746fbca40717cbe0d36cfecc3de60fe5e0f3d2108c4ae71eac27",
+    "attempt_02.raw.json": "f849160ab619381b81fbf65be87c56c670d4c92d3b158cec64f461ff34b46d5c",
+    "attempt_02.svg": "e41d2d599141280dac56484beac426ce2264afee93ba0f07d5776ccdd7cd7134",
+    "attempt_02.vision.json": "edd6b170b4aea6da2cc8608dc694bd8944fd7585c2c479a8f089aff5588cf3b9",
+    "model_calls.json": "174cd17b2f25d0b724b1a72d02bdea7d9242f8b8a6762e4565c4760a6f796b5d",
+    "progress.json": "b065cc905207360605f48de4b3c85d85f5fa4257be85bc68f94870685032e5c0",
+    "run.json": "474dffca7552e9921be6bea177852ca908d3118b1d18f6bcbdcc4e5ce01195f0"
+  },
+  "public_safe": true,
+  "reviewed_at_utc": "2026-11-24T16:22:57.721355+00:00",
+  "reviewer": "Codex content and actual-image review of this fresh public drawing experiment; not human aesthetic approval",
+  "schema": "bean.draw.public-review.v1"
+}

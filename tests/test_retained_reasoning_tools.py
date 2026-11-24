@@ -1,4 +1,7 @@
-"""Exercise the newly connected tools against the real persistent reasoning service."""
+"""Exercise persistent reasoning tools using synthetic numeric test data.
+
+These fixtures establish no live artwork or general learning claim.
+"""
 import tempfile
 import unittest
 from pathlib import Path
@@ -49,9 +52,11 @@ class RetainedReasoningAssimilationTests(unittest.TestCase):
                     tools["apply_retained_policy"](args, "bad-layout")
                 self.assertEqual(tools["discover_retained_policies"](
                     {"domain": "unrelated"}, "other")["count"], 0)
-                choice = tools["retained_strategy"](
-                    {"domain": "fixture", "query": "choose a policy"}, "strategy")
-                self.assertIn("selected_strategy", choice)
+                # A provisional numeric rule is not a measured lesson-strategy
+                # selection. Preserve that runtime evidence requirement.
+                with self.assertRaisesRegex(ValueError, "No measured strategy selection"):
+                    tools["retained_strategy"](
+                        {"domain": "fixture", "query": "choose a policy"}, "not-selected")
             finally:
                 core.close()
 
