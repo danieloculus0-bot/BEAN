@@ -1,0 +1,46 @@
+name: Republish BEAN static website
+on:
+  pull_request:
+    types: [opened, synchronize]
+    paths: ['.github/workflows/republish-bean-pages.yml']
+permissions:
+  contents: read
+  pages: write
+jobs:
+  publish:
+    if: github.event.pull_request.head.repo.full_name == github.repository && github.event.pull_request.head.ref == 'bean-pages-republish-20261124' && github.event.pull_request.user.login == 'danieloculus0-bot'
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - name: Restore Pages publication from main docs
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          if ! gh api "repos/$GITHUB_REPOSITORY/pages" > /tmp/pages.json; then
+            gh api --method POST "repos/$GITHUB_REPOSITORY/pages" -f 'source[branch]=main' -f 'source[path]=/docs' -f build_type=legacy --jq '{html_url,source,build_type,status}'
+          else
+            jq '{html_url,source,build_type,status}' /tmp/pages.json
+            if ! jq -e '.source.branch=="main" and .source.path=="/docs" and .build_type=="legacy"' /tmp/pages.json; then
+              gh api --method PUT "repos/$GITHUB_REPOSITORY/pages" -f 'source[branch]=main' -f 'source[path]=/docs' -f build_type=legacy
+            fi
+          fi
+          gh api --method POST "repos/$GITHUB_REPOSITORY/pages/builds" --jq '{status,url}' || true
+      - name: Verify replacement and live chat through public endpoints
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          for attempt in $(seq 1 24); do
+            if curl -fsS --max-time 10 "https://danieloculus0-bot.github.io/BEAN/talk.html?verify=$GITHUB_RUN_ID-$attempt" -o /tmp/talk.html &&
+               grep -Fq 'content="conversation-v3"' /tmp/talk.html &&
+               ! grep -Fq 'Server configuration' /tmp/talk.html; then
+              echo 'Replacement conversation-v3 is publicly served.'
+              curl -fsS --max-time 15 -H 'Origin: https://danieloculus0-bot.github.io' https://vmi3782905.contaboserver.net/api/health | jq -e '.model_present and (.service=="BEAN guest Core")'
+              curl -fsS --max-time 180 -H 'Origin: https://danieloculus0-bot.github.io' -H 'Content-Type: application/json' -d '{"message":"Reply with a brief greeting.","context":[]}' https://vmi3782905.contaboserver.net/api/chat | jq -e '(.answer | length > 0) and (.receipt_id | length > 0)'
+              exit 0
+            fi
+            sleep 10
+          done
+          gh api "repos/$GITHUB_REPOSITORY/pages/builds/latest" --jq '{status,error,commit}' || true
+          exit 1
