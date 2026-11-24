@@ -11,6 +11,7 @@ from bean.cognition.goal_state import ActionType, ApprovalRequired, GoalProposal
 from bean.runtime.native_orchestration import CAPABILITY
 from bean.runtime.workflow_discovery import (discover_verified_workflow, transfer_candidates,
                                              select_transfer)
+from bean.runtime.workflow_composition import catalog, propose_composition
 
 SAFE_TOOLS = frozenset(("numeric_context","last_sign","mean_sign","orbit_reference",
     "vis_viva_reference","acceleration_reference","compare_numeric",
@@ -184,6 +185,39 @@ class VerifiedWorkflows:
         return {"status":"submitted","plan_id":plan_id,"graph_sha":row["graph_sha"],"model_invoked":bool(transfer)}
 
 
+    def compose_with_memory(self, *, objective, inputs, plan_id):
+        """Propose a new graph from independently checked components."""
+        model=getattr(getattr(self.owner,"core",None),"model",None)
+        if getattr(model,"adapter_name",None) not in ("ollama","local_llamacpp"):
+            return None
+        from bean.learning.reasoning_service import _model_response
+        options=catalog(self.store._conn(),self.candidates)
+        allowed=SAFE_TOOLS.intersection(self.owner.tools)
+        def ask(prompt):
+            raw,name,provider,_=_model_response(model,prompt,"BEAN procedural composition")
+            return raw,name,provider
+        result=propose_composition(objective,inputs,options,ask,allowed,
+            {k:v[0] for k,v in self.owner.tools.items() if k in allowed})
+        if result is None:
+            return None
+        graph=result["graph"]
+        graph_sha=digest(graph)
+        proposals=[]
+        for i,step in enumerate(graph):
+            self.owner._validate_refs(step["args"],i)
+            proposals.append(GoalProposal("orchestrate_objective",ActionType.RUN_EXPERIMENT,
+                "Execute proposed composition of retained procedures",3,ApprovalRequired.NONE,
+                {"capability":CAPABILITY,"tool":step["tool"],"args":step["args"],
+                 "objective":objective,"inputs":inputs,
+                 "planner_model":result["model"],"planner_provider":"composed_workflow",
+                 "workflow_sha":graph_sha,"composition_lineage":result["lineage"],
+                 "composition_selection_provider":result["provider"],
+                 "learning_context":"workflow_composition:"+graph_sha},"orchestration"))
+        self.owner.engine.propose_plan(self.owner.session_uuid,plan_id,proposals)
+        return {"route":"composed_workflow","model_invoked":True,"result":{
+            "status":"submitted","plan_id":plan_id,"graph_sha":graph_sha,
+            "independently_verified":False,"lineage":result["lineage"]}}
+
     def plan_with_memory(self, *, objective, inputs, plan_id, family=None):
         """Production route: try verified memory, then use the native model.
 
@@ -209,6 +243,7 @@ class VerifiedWorkflows:
             return {"route":"existing","model_invoked":False,
                     "result":self.owner.status(plan_id)}
         transfer=None
+        automatic=family is None
         if family is None:
             discovered=discover_verified_workflow(self.store._conn(),objective,self.candidates)
             if discovered is None:
@@ -239,6 +274,10 @@ class VerifiedWorkflows:
                     "model_invoked":bool(transfer),"result":retained}
         if retained["status"]!="abstain":
             raise RuntimeError("unexpected retained workflow result")
+        if automatic:
+            composed=self.compose_with_memory(objective=objective,inputs=inputs,plan_id=plan_id)
+            if composed is not None:
+                return composed
         result=self.owner.submit(objective,inputs=inputs,plan_id=plan_id,
                     recovery_context={"workflow_family":family,
                                       "retained_abstention":retained["reason"]})
