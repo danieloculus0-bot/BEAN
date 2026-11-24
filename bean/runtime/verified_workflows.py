@@ -161,18 +161,16 @@ class VerifiedWorkflows:
         if len(chosen)!=1:return {"status":"abstain","reason":"no uniquely verified workflow"}
         row=chosen[0];graph=row["graph"];proposals=[]
         referenced_input_digest(graph,inputs)
-        # Validate tool contracts and input paths before queueing immutable goals.
-        def validate(value):
-            if isinstance(value,dict):
-                if "$input" in value:at_path(inputs,value["$input"])
-                elif "$step" not in value:
-                    for x in value.values():validate(x)
-            elif isinstance(value,list):
-                for x in value:validate(x)
+        # Reuse the canonical native preflight for retained graphs too.
+        # Prior PR #564 validated only reference presence, not argument contracts.
+        from bean.runtime.plan_contracts import preflight
+        prior_tools = []
         for i,step in enumerate(graph):
             if step["tool"] not in SAFE_TOOLS or step["tool"] not in self.owner.tools:
                 raise ValueError("tool unavailable")
-            self.owner._validate_refs(step["args"],i);validate(step["args"])
+            self.owner._validate_refs(step["args"],i)
+            preflight(step["tool"], step["args"], inputs, prior_tools)
+            prior_tools.append(step["tool"])
             proposals.append(GoalProposal("orchestrate_objective",ActionType.RUN_EXPERIMENT,
                 "Execute independently checked retained procedure",3,ApprovalRequired.NONE,
                 {"capability":CAPABILITY,"tool":step["tool"],"args":step["args"],
