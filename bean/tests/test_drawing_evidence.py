@@ -323,3 +323,24 @@ def test_other_injectable_provider_transports_cannot_claim_live_execution():
     assert execution_mode(OpenRouterProvider(api_key="synthetic-test-only", requester=lambda *a, **k: None)) == "unverified"
     assert execution_mode(LocalLlamaCppProvider()) == "live_model"
     assert execution_mode(OpenRouterProvider(api_key="synthetic-test-only")) == "live_model"
+
+
+def test_file_pixel_review_is_bound_to_image_and_claimed_subject(tmp_path):
+    """Synthetic file-association contract, not an actual human evaluation."""
+    Image = require_pillow()
+    png = tmp_path / "synthetic-review.png"
+    Image.new("RGB", (16, 16), "white").save(png)
+    digest = file_hash(png)
+    folder = tmp_path / "reviews"
+    reviewer = FileVisionReviewer(folder)
+    response = folder / (digest + ".json")
+    report = {"image_sha256": digest, "kind": "human", "evaluator": "synthetic-review-fixture",
+              "satisfactory": False, "feedback": "Synthetic association contract only", "subject": "old title"}
+    response.write_text(json.dumps(report))
+    assert reviewer(png, "new title")["state"] == "unavailable"
+    report["subject"] = "new title"
+    response.write_text(json.dumps(report))
+    assert reviewer(png, "new title")["reviewed_subject"] == "new title"
+    report.pop("subject")
+    response.write_text(json.dumps(report))
+    assert reviewer(png, "new title")["state"] == "unavailable"

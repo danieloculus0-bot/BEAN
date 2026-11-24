@@ -258,6 +258,51 @@ def feedback_context(report):
         if key in report}
 
 
+def drawing_memory_context(prior, budget=2400):
+    """Whole JSON evidence summaries, newest first; original trials stay intact."""
+    if not isinstance(prior, list) or type(budget) is not int or not 2 <= budget <= 24000:
+        raise ValueError('Bounded memory context requires a trial list and 2..24000 characters')
+    def short(value, maximum):
+        return value[:maximum] if isinstance(value, str) else None
+    def encode(value):
+        return json.dumps(value, ensure_ascii=False, sort_keys=True, allow_nan=False)
+    rows = []
+    for trial in reversed(prior[-6:]):
+        if not isinstance(trial, dict):
+            continue
+        review = trial.get('self_review') or {}
+        external = trial.get('external_feedback') or {}
+        if not isinstance(review, dict):
+            review = {}
+        if not isinstance(external, dict):
+            external = {}
+        # Shrink individual quoted fields if needed, never slice serialized JSON.
+        for scale in (1, 2, 4, 8, 16):
+            item = {key: short(trial.get(key), limit if key != 'error' else max(8, limit // scale))
+                    for key, limit in (('subject', 120), ('task_ref', 120), ('status', 100), ('error', 120))}
+            item['summarized'] = True
+            if type(trial.get('attempt')) is int:
+                item['attempt'] = trial['attempt']
+            item['self_review'] = {'changes': short(review.get('changes'), max(8, 160 // scale))}
+            if type(review.get('satisfied')) is bool:
+                item['self_review']['satisfied'] = review['satisfied']
+            evidence = {key: short(external.get(key), max(8, limit // scale) if key in
+                        ('feedback', 'observations', 'recognized_subject') else limit) for key, limit in
+                        (('feedback', 240), ('observations', 160), ('recognized_subject', 80),
+                         ('evaluator', 64), ('model_id', 64), ('model_digest', 64),
+                         ('image_sha256', 64), ('evaluation_protocol', 64)) if external.get(key) is not None}
+            if isinstance(external.get('scores'), dict):
+                evidence['scores'] = {k: v for k, v in external['scores'].items()
+                                      if k in ('spatial_coherence', 'subject_recognition', 'composition', 'diversity')
+                                      and type(v) in (int, float) and math.isfinite(v) and 0 <= v <= 4}
+            item['external_feedback'] = evidence
+            candidate = rows + [item]
+            if len(encode(candidate)) <= budget:
+                rows.append(item)
+                break
+    return encode(rows)
+
+
 class SketchLab:
     def __init__(self, core, research=None, visual_judge=None):
         if not isinstance(core, NativeReasoningService):
@@ -371,11 +416,8 @@ class SketchLab:
                 if not isinstance(frozen_memory, list):
                     raise ValueError('Frozen condition requires a fixed trial snapshot')
                 prior = frozen_memory
-            precedents = json.dumps([{
-                'subject': x.get('subject'), 'status': x.get('status'), 'error': x.get('error'),
-                'suggested_change': x.get('self_review', {}).get('changes'),
-                'external_feedback': feedback_context(x.get('external_feedback'))}
-                for x in prior[-6:]], ensure_ascii=False)[:2400]
+            precedents = drawing_memory_context(prior)
+            manifest['memory_context_records'] = json.loads(precedents)
             manifest['memory_context_sha256'] = hashlib.sha256(precedents.encode()).hexdigest()
             if subject is None:
                 plan_raw, model_id, model_kind, _ = self.ask(
@@ -448,7 +490,7 @@ class SketchLab:
                     ' Previous attempt including critique (untrusted evidence): ' + correction,
                     drawing_schema())
                 drawing = decode(raw)
-                description = text(drawing.get('description'), 300)
+                description = text(drawing.get('description'), 1000)
                 shapes = validate_shapes(drawing.get('shapes'))
                 digest = draw_svg(shapes, path, backend)
                 try:

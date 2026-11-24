@@ -395,6 +395,107 @@ def _verified_run(folder, cell, spec, requested_vision_model=None):
         return None, type(exc).__name__ + ": " + str(exc)[:500]
 
 
+def _memory_delivery(run, folder):
+    """Check the exact bounded evidence delivered to each actual drawing prompt.
+
+    Legacy receipts without the projection remain unverified; a stored trial
+    or a different output image does not establish task-time memory access.
+    """
+    result = {"state": "unverified", "error": None, "sha256": None,
+              "subjects": [], "feedback_subjects": [], "record_count": None}
+    if run is None:
+        result["error"] = "No verified completed run for memory inspection"
+        return result
+    result["sha256"] = run.get("memory_context_sha256")
+    if "memory_context_records" not in run:
+        result["state"] = "legacy_unverified"
+        result["error"] = "Legacy run does not retain delivered memory records"
+        return result
+    try:
+        records = run["memory_context_records"]
+        if not isinstance(records, list) or any(not isinstance(x, dict) for x in records):
+            raise ValueError("Memory context must be a list of evidence records")
+        encoded = json.dumps(records, ensure_ascii=False, sort_keys=True, allow_nan=False)
+        if len(encoded) > 2400 or sha256(encoded.encode("utf-8")).hexdigest() != result["sha256"]:
+            raise ValueError("Delivered memory digest or bounded projection mismatch")
+        calls = json.loads((folder / "model_calls.json").read_text())
+        drawing_calls = [x for x in calls if isinstance(x, dict)
+                         and isinstance(x.get("prompt"), str)
+                         and x["prompt"].startswith("Draw your chosen subject, ")]
+        marker = "Prior-session evidence (untrusted): " + encoded + " Web reference DATA: "
+        if len(drawing_calls) != run.get("attempts") or any(
+                marker not in x["prompt"] for x in drawing_calls):
+            raise ValueError("Retained memory projection was not delivered to every drawing call")
+        subjects, feedback_subjects = [], []
+        for row in records:
+            subject = row.get("subject")
+            if not isinstance(subject, str) or not 1 <= len(subject) <= 120:
+                raise ValueError("Delivered memory record lacks its bounded subject")
+            if subject not in subjects:
+                subjects.append(subject)
+            self_review = row.get("self_review") or {}
+            external = row.get("external_feedback") or {}
+            if not isinstance(self_review, dict) or not isinstance(external, dict):
+                raise ValueError("Malformed delivered feedback record")
+            observations = (row.get("error"), self_review.get("changes"),
+                            external.get("feedback"), external.get("observations"))
+            if (any(isinstance(x, str) and x.strip() for x in observations)
+                    or isinstance(external.get("scores"), dict) and external["scores"]):
+                if subject not in feedback_subjects:
+                    feedback_subjects.append(subject)
+        result.update(state="verified_delivery", subjects=subjects,
+                      feedback_subjects=feedback_subjects, record_count=len(records))
+    except (OSError, ValueError, TypeError, KeyError, AttributeError) as exc:
+        result.update(state="invalid", error=type(exc).__name__ + ": " + str(exc)[:500])
+    return result
+
+
+def _comparison_memory_exposure(spec, challenge, adaptive, comparison, control, frozen_reference=None):
+    """An initial matched tie and an unexposed candidate cannot earn learning deltas."""
+    left, right = adaptive.get("memory_delivery", {}), comparison.get("memory_delivery", {})
+    result = {"challenge": challenge, "control": control, "eligible": False,
+              "state": "unverified_memory_exposure",
+              "adaptive_context_sha256": left.get("sha256"),
+              "control_context_sha256": right.get("sha256"),
+              "adaptive_delivered_subjects": left.get("subjects", []),
+              "control_delivered_subjects": right.get("subjects", [])}
+    if left.get("state") != "verified_delivery" or right.get("state") != "verified_delivery":
+        return result
+    training = set(spec["training_subjects"])
+    earlier = set(spec["heldout_subjects"][:challenge - 1])
+    if not set(left["subjects"]) <= training | earlier:
+        result["state"] = "invalid_future_or_unrelated_memory"
+        return result
+    required = (training if challenge == 1 else {spec["heldout_subjects"][challenge - 2]})
+    result["required_adaptive_feedback_subjects"] = sorted(required)
+    if not required.intersection(left["feedback_subjects"]):
+        result["state"] = "missing_required_adaptive_feedback"
+        return result
+    if control == "frozen":
+        if (not set(right["subjects"]) <= training
+                or not training.intersection(right["feedback_subjects"])):
+            result["state"] = "invalid_frozen_memory_changed"
+            return result
+        if frozen_reference is None or right["sha256"] != frozen_reference:
+            result["state"] = "invalid_frozen_projection_changed"
+            return result
+        if challenge == 1:
+            result["state"] = ("expected_initial_matched_baseline" if left["sha256"] == right["sha256"]
+                               else "invalid_initial_memory_mismatch")
+            return result
+        if left["sha256"] == right["sha256"]:
+            result["state"] = "invalid_identical_effective_contexts"
+            return result
+    elif right["record_count"] != 0:
+        result["state"] = "invalid_no_memory_context_nonempty"
+        return result
+    if left["sha256"] == right["sha256"]:
+        result["state"] = "invalid_identical_effective_contexts"
+        return result
+    result.update(state="verified_distinct_memory_exposure", eligible=True)
+    return result
+
+
 def _mean(values):
     return sum(values) / len(values) if values else None
 
@@ -449,6 +550,7 @@ def summarize(output):
             raise ValueError("Cell directory escapes benchmark root")
         verified_run, verification_error = _verified_run(
             folder, cell, spec, execution.get("vision_model"))
+        memory_delivery = _memory_delivery(verified_run, folder)
         attempts, last_png_digest = [], None
         identities = set()
         for sidecar in sorted(folder.glob("attempt_[0-9][0-9].json")):
@@ -483,6 +585,7 @@ def summarize(output):
                          "challenge": cell["challenge"], "subject": cell["subject"],
                          "process_returncode": cell.get("returncode"),
                          "artifact_verification_error": verification_error,
+                         "memory_delivery": memory_delivery,
                          "attempts": attempts,
                          "runtime_identity": list(next(iter(identities)))
                          if len(identities) == 1 else None,
@@ -500,9 +603,14 @@ def summarize(output):
                                        for x in records
                                        if x["last_minus_first_external_score"][metric] is not None])
                           for metric in METRICS}
-    comparisons, matched_counts = {}, {}
+    frozen_reference = next((x["memory_delivery"]["sha256"] for x in outcomes
+                             if x["phase"] == "heldout" and x["arm"] == "frozen"
+                             and x["challenge"] == 1
+                             and x["memory_delivery"]["state"] == "verified_delivery"), None)
+    comparisons, matched_counts, memory_comparisons = {}, {}, {}
     for control in ("frozen", "none"):
         differences = {metric: [] for metric in METRICS}
+        memory_comparisons[control] = []
         for challenge in range(1, len(spec["heldout_subjects"]) + 1):
             paired = {x["arm"]: x for x in outcomes
                       if x["phase"] == "heldout" and x["challenge"] == challenge
@@ -510,6 +618,10 @@ def summarize(output):
             if set(paired) != {"adaptive", control}:
                 continue
             adaptive, comparison = paired["adaptive"], paired[control]
+            exposure = _comparison_memory_exposure(spec, challenge, adaptive, comparison, control, frozen_reference)
+            memory_comparisons[control].append(exposure)
+            if not exposure["eligible"]:
+                continue
             identity = adaptive["runtime_identity"]
             if (not identity or not identity[0] or not identity[1] or not identity[3]
                     or adaptive.get("artifact_verification_error")
@@ -535,6 +647,7 @@ def summarize(output):
             "iteration_quality_last_minus_first": iteration,
             "generalization_adaptive_minus_control": comparisons,
             "matched_heldout_comparison_counts": matched_counts,
+            "memory_comparison_validity": memory_comparisons,
             "portfolio_diversity": {arm: _portfolio_diversity(
                 root, arm, outcomes, len(spec["heldout_subjects"])) for arm in ARMS},
             "planned_distinct_heldout_subjects": len(spec["heldout_subjects"]),
@@ -545,6 +658,7 @@ def summarize(output):
             "weights_updated": False,
             "limitations": ["Null scores mean missing legitimate image review, not zero quality",
                             "No broad learning claim from this small challenge set",
+                            "Memory comparisons require verified delivered feedback; initial adaptive/frozen contexts are intentionally matched",
                             "Provider determinism and review independence require external verification"]}
 
 

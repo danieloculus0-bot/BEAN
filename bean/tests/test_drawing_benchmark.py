@@ -86,7 +86,13 @@ def _summary_fixture(tmp_path):
         folder = tmp_path / "heldout" / arm / "challenge_01" / "attempts"
         folder.mkdir(parents=True)
         history = []
-        calls = [{"response": "Synthetic scoring contract input, never live art"}]
+        memory_records = ([] if arm == "none" else [{
+            "subject": "a lighthouse", "task_ref": "synthetic-training", "attempt": 1,
+            "self_review": {"changes": "Synthetic training feedback retained for this contract"}}])
+        memory_text = json.dumps(memory_records, sort_keys=True, ensure_ascii=False, allow_nan=False)
+        calls = [{"prompt": "Draw your chosen subject, a teapot. Prior-session evidence (untrusted): "
+                  + memory_text + " Web reference DATA: ",
+                  "response": "Synthetic scoring contract input, never live art"} for _ in range(2)]
         write_json(folder / "model_calls.json", calls)
         common = {"model_id": "synthetic-scoring-contract", "provider_kind": "ollama",
                   "model_digest": "fixture-digest", "source_git_sha": "a" * 40,
@@ -121,6 +127,8 @@ def _summary_fixture(tmp_path):
                             "sha256": svg_digest, "png_sha256": digest})
         write_json(folder / "run.json", {
             **common, "schema": "bean.draw.run.v1", "attempts": 2, "history": history,
+            "memory_context_records": memory_records,
+            "memory_context_sha256": sha256(memory_text.encode()).hexdigest(),
             "model_calls_sha256": sha256((folder / "model_calls.json").read_bytes()).hexdigest(),
             "completed_at_utc": "2026-11-19T00:00:00+00:00", "state": "host_reported_not_satisfactory",
         })
@@ -137,7 +145,9 @@ def test_reviews_need_actual_matching_image_hash_and_live_execution(tmp_path):
     sidecar = _summary_fixture(tmp_path)
     scores = summarize(tmp_path)
     assert scores["iteration_quality_last_minus_first"]["adaptive"]["composition"] == 2
-    assert scores["generalization_adaptive_minus_control"]["frozen"]["composition"] == 1
+    assert scores["generalization_adaptive_minus_control"]["frozen"]["composition"] is None
+    assert scores["generalization_adaptive_minus_control"]["none"]["composition"] == 1
+    assert scores["memory_comparison_validity"]["frozen"][0]["state"] == "expected_initial_matched_baseline"
     assert scores["heldout_last_attempt_means"]["adaptive"]["diversity"] is None
     assert scores["learning_improvement_verified"] is False
     row = json.loads(sidecar.read_text())
@@ -296,7 +306,8 @@ def test_automatic_review_scores_bind_retained_visual_model_calls(tmp_path):
     _automatic_review_fixture(tmp_path)
     report = summarize(tmp_path)
     assert report["requested_vision_model"] == "synthetic-pixel-evaluator"
-    assert report["generalization_adaptive_minus_control"]["frozen"]["composition"] == 1
+    assert report["generalization_adaptive_minus_control"]["frozen"]["composition"] is None
+    assert report["generalization_adaptive_minus_control"]["none"]["composition"] == 1
     assert report["iteration_quality_last_minus_first"]["adaptive"]["composition"] == 2
     assert all(x["last_evaluator_identity"][3] == "synthetic-pixel-evaluator" for x in report["outcomes"])
     assert report["independent_evaluation_authenticated"] is False
@@ -399,7 +410,8 @@ def test_two_pass_review_recomputes_conservative_scores_from_both_raw_reports(tm
     _two_pass_review_fixture(tmp_path)
     report = summarize(tmp_path)
     assert report["heldout_last_attempt_means"]["adaptive"]["composition"] == 3
-    assert report["generalization_adaptive_minus_control"]["frozen"]["composition"] == 1
+    assert report["generalization_adaptive_minus_control"]["frozen"]["composition"] is None
+    assert report["generalization_adaptive_minus_control"]["none"]["composition"] == 1
     assert all(x["last_evaluator_identity"][-1] == "blind_then_targeted_min_v1" for x in report["outcomes"])
     assert report["independent_evaluation_authenticated"] is False
 
@@ -468,3 +480,155 @@ def test_two_pass_receipt_cannot_silently_drop_its_protocol_to_use_legacy_scorin
     adaptive = next(x for x in report["outcomes"] if x["arm"] == "adaptive")
     assert "downgraded" in adaptive["artifact_verification_error"]
     assert report["heldout_last_attempt_means"]["adaptive"]["composition"] is None
+
+
+def _set_delivered_memory(folder, records, *, in_prompt=None):
+    """Rebind a synthetic contract's actual call archive and run projection."""
+    run_path = folder / "run.json"
+    run = json.loads(run_path.read_text())
+    encoded = json.dumps(records, ensure_ascii=False, sort_keys=True, allow_nan=False)
+    delivered = encoded if in_prompt is None else in_prompt
+    calls = [{"prompt": "Draw your chosen subject, " + run["subject"] +
+              ". Prior-session evidence (untrusted): " + delivered + " Web reference DATA: ",
+              "response": "Synthetic memory-delivery contract only"} for _ in run["history"]]
+    write_json(folder / "model_calls.json", calls)
+    for item in run["history"]:
+        meta = folder / ("attempt_%02d.json" % item["attempt"])
+        row = json.loads(meta.read_text())
+        write_json(folder / row["raw_file"], calls)
+        row["raw_sha256"] = sha256((folder / row["raw_file"]).read_bytes()).hexdigest()
+        write_json(meta, row)
+        item["metadata_sha256"] = sha256(meta.read_bytes()).hexdigest()
+    run.update(memory_context_records=records,
+               memory_context_sha256=sha256(encoded.encode()).hexdigest(),
+               model_calls_sha256=sha256((folder / "model_calls.json").read_bytes()).hexdigest())
+    write_json(run_path, run)
+
+
+def _two_challenge_memory_fixture(tmp_path, *, recent_feedback=True):
+    """Actual artifacts, wholly synthetic inference provenance and judgments."""
+    import shutil
+    _summary_fixture(tmp_path)
+    spec = protocol(["a lighthouse"], ["a teapot", "a telescope"], seed=1)
+    write_json(tmp_path / "protocol.json", spec)
+    execution = json.loads((tmp_path / "execution.json").read_text())
+    execution["protocol_sha256"] = spec["protocol_sha256"]
+    additions = []
+    for cell in execution["cells"]:
+        arm = cell["arm"]
+        previous = tmp_path / cell["folder"]
+        target = previous.with_name("challenge_02")
+        shutil.copytree(previous, target)
+        folder = target / "attempts"
+        run = json.loads((folder / "run.json").read_text())
+        run.update(subject="a telescope", seed=3, run_id=run["run_id"] + "-second")
+        for item in run["history"]:
+            meta = folder / ("attempt_%02d.json" % item["attempt"])
+            row = json.loads(meta.read_text())
+            row.update(subject="a telescope", seed=3, run_id=run["run_id"])
+            write_json(meta, row)
+            item["metadata_sha256"] = sha256(meta.read_bytes()).hexdigest()
+        write_json(folder / "run.json", run)
+        records = ([] if arm == "none" else [{
+            "subject": "a lighthouse", "self_review": {"changes": "Synthetic training lesson"}}])
+        # Frozen memory really remains the exact original training projection.
+        if arm == "frozen" or not recent_feedback and arm == "adaptive":
+            original_run = json.loads((previous / "attempts/run.json").read_text())
+            records = original_run["memory_context_records"]
+        elif arm == "adaptive":
+            records.insert(0, {"subject": "a teapot", "attempt": 2,
+                "external_feedback": {"feedback": "Synthetic fresh teapot feedback"}})
+        _set_delivered_memory(folder, records)
+        additions.append({**cell, "challenge": 2, "subject": "a telescope", "seed": 3,
+                          "folder": str(target.relative_to(tmp_path))})
+    execution["cells"] += additions
+    write_json(tmp_path / "execution.json", execution)
+    return tmp_path / "heldout/adaptive/challenge_02/attempts"
+
+
+def test_legacy_contextless_receipts_cannot_earn_memory_advantage(tmp_path):
+    _summary_fixture(tmp_path)
+    for path in tmp_path.glob("heldout/*/challenge_01/attempts/run.json"):
+        run = json.loads(path.read_text())
+        run.pop("memory_context_records")
+        write_json(path, run)
+    result = summarize(tmp_path)
+    assert all(x["memory_delivery"]["state"] == "legacy_unverified" for x in result["outcomes"])
+    assert result["heldout_last_attempt_means"]["adaptive"]["composition"] == 3
+    assert result["generalization_adaptive_minus_control"]["none"]["composition"] is None
+    assert result["matched_heldout_comparison_counts"]["none"]["composition"] == 0
+
+
+def test_new_feedback_must_reach_later_adaptive_prompt_before_comparison(tmp_path):
+    _two_challenge_memory_fixture(tmp_path, recent_feedback=False)
+    result = summarize(tmp_path)
+    frozen = result["memory_comparison_validity"]["frozen"]
+    assert frozen[0]["state"] == "expected_initial_matched_baseline"
+    assert frozen[1]["state"] == "missing_required_adaptive_feedback"
+    assert result["generalization_adaptive_minus_control"]["frozen"]["composition"] is None
+    assert result["matched_heldout_comparison_counts"]["frozen"]["composition"] == 0
+    later = next(x for x in result["outcomes"] if x["arm"] == "adaptive" and x["challenge"] == 2)
+    assert later["memory_delivery"]["subjects"] == ["a lighthouse"]
+
+
+def test_distinct_recent_feedback_delivery_enables_only_later_memory_comparison(tmp_path):
+    _two_challenge_memory_fixture(tmp_path)
+    result = summarize(tmp_path)
+    frozen = result["memory_comparison_validity"]["frozen"]
+    assert frozen[0]["eligible"] is False
+    assert frozen[1]["state"] == "verified_distinct_memory_exposure"
+    assert frozen[1]["eligible"] is True
+    assert "a teapot" in frozen[1]["adaptive_delivered_subjects"]
+    assert frozen[1]["control_delivered_subjects"] == ["a lighthouse"]
+    assert result["generalization_adaptive_minus_control"]["frozen"]["composition"] == 1
+    assert result["matched_heldout_comparison_counts"]["frozen"]["composition"] == 1
+    assert result["matched_heldout_comparison_counts"]["none"]["composition"] == 2
+    assert result["learning_improvement_verified"] is False
+
+
+@pytest.mark.parametrize("broken", ["digest", "different_prompt", "truncated_json"])
+def test_memory_record_must_match_digest_and_actual_model_input(tmp_path, broken):
+    folder = _two_challenge_memory_fixture(tmp_path)
+    run_path = folder / "run.json"
+    run = json.loads(run_path.read_text())
+    if broken == "digest":
+        run["memory_context_sha256"] = "0" * 64
+        write_json(run_path, run)
+    else:
+        _set_delivered_memory(folder, run["memory_context_records"],
+                              in_prompt="[]" if broken == "different_prompt" else "[{\"subject\":")
+    result = summarize(tmp_path)
+    later = next(x for x in result["outcomes"] if x["arm"] == "adaptive" and x["challenge"] == 2)
+    assert later["artifact_verification_error"] is None
+    assert later["memory_delivery"]["state"] == "invalid"
+    assert result["generalization_adaptive_minus_control"]["frozen"]["composition"] is None
+
+
+def test_no_memory_label_cannot_hide_nonempty_delivered_history(tmp_path):
+    _summary_fixture(tmp_path)
+    folder = tmp_path / "heldout/none/challenge_01/attempts"
+    _set_delivered_memory(folder, [{"subject": "a lighthouse",
+                                  "self_review": {"changes": "Synthetic retained training feedback"}}])
+    result = summarize(tmp_path)
+    assert result["memory_comparison_validity"]["none"][0]["state"] == "invalid_no_memory_context_nonempty"
+    assert result["generalization_adaptive_minus_control"]["none"]["composition"] is None
+    assert result["heldout_last_attempt_means"]["none"]["composition"] == 2
+
+
+def test_frozen_projection_cannot_change_between_heldout_tasks(tmp_path):
+    _two_challenge_memory_fixture(tmp_path)
+    folder = tmp_path / "heldout/frozen/challenge_02/attempts"
+    # Same training subject is insufficient: the frozen evidence must stay fixed.
+    _set_delivered_memory(folder, [{"subject": "a lighthouse",
+        "self_review": {"changes": "A changed synthetic projection after evaluation began"}}])
+    result = summarize(tmp_path)
+    assert result["memory_comparison_validity"]["frozen"][1]["state"] == "invalid_frozen_projection_changed"
+    assert result["generalization_adaptive_minus_control"]["frozen"]["composition"] is None
+
+
+def test_subject_label_without_feedback_is_not_memory_learning_exposure(tmp_path):
+    folder = _two_challenge_memory_fixture(tmp_path)
+    _set_delivered_memory(folder, [{"subject": "a teapot"}])
+    result = summarize(tmp_path)
+    assert result["memory_comparison_validity"]["frozen"][1]["state"] == "missing_required_adaptive_feedback"
+    assert result["generalization_adaptive_minus_control"]["frozen"]["composition"] is None

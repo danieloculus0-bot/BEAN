@@ -128,6 +128,7 @@ not an actual evaluation:
 ```json
 {
   "image_sha256": "EXACT_SHA256_OF_INSPECTED_PNG",
+  "subject": "EXACT_SUBJECT_FROM_REQUEST",
   "kind": "vision_model",
   "evaluator": "ACTUAL_EVALUATOR_IDENTITY",
   "satisfactory": false,
@@ -324,3 +325,26 @@ rule reduces title priming; it is not an independent recognition guarantee.
 A pilot false positive remains in the evidence rather than being overwritten.
 Benchmark comparisons require the same evaluator model, digest and protocol,
 and verify the separate vision receipt and its score derivation.
+
+File-based reviews must also echo the exact requested `subject`; matching
+image hashes alone cannot bind subject-specific feedback when identical
+pixels recur under different titles. A mismatched or missing subject leaves
+the new review unavailable. Historical receipts remain unchanged.
+
+
+## Deliver complete recent evidence to the model
+
+Drawing history is summarized newest first as complete JSON records within a
+2400-character budget. The original Core trials remain unchanged. The run
+receipt stores `memory_context_records` and its SHA-256, so investigators can
+verify the actual input instead of assuming that a saved trial was retrieved.
+An older implementation sliced an oldest-first serialized string; it cut off
+fresh feedback and invalidated the adaptive-versus-frozen exposure test. Those
+original runs and the audit remain retained. Later matched comparisons must
+verify recent evidence delivery and distinct effective memory conditions.
+
+Descriptions up to 1000 characters are retained exactly while the artist is
+still asked for at most 300. This accepts bounded metadata verbosity without
+manually changing geometry. The original 337-character failed response stays
+failed under its historical 300-character rule; no preview is retroactively
+substituted into that control cell.

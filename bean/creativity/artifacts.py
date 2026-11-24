@@ -61,7 +61,7 @@ def validate_feedback(report, png):
     extra = {}
     for key in ("provider_kind", "model_id", "model_digest", "recognized_subject",
                 "observations", "review_file", "review_sha256", "evaluation_protocol",
-                "score_rule", "blind_recognized_subject", "blind_observations"):
+                "score_rule", "blind_recognized_subject", "blind_observations", "reviewed_subject"):
         if key in report:
             if not isinstance(report[key], str) or len(report[key]) > 3000:
                 raise ValueError("Unbounded visual review provenance")
@@ -96,7 +96,11 @@ class FileVisionReviewer:
             return {"state": "unavailable", "reason": "No external pixel evaluator report"}
         if response.stat().st_size > 12000:
             raise ValueError("Oversized visual review")
-        return validate_feedback(json.loads(response.read_text()), png)
+        report = json.loads(response.read_text())
+        normalized = validate_feedback(report, png)
+        if report.get("subject") != subject:
+            return {"state": "unavailable", "reason": "Pixel review is not bound to this claimed subject"}
+        return {**normalized, "reviewed_subject": subject}
 
 
 class OllamaVisionReviewer:
