@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import math
 import uuid
 from pathlib import Path
 
@@ -15,6 +16,7 @@ from bean.cognition.goal_state import (
     ActionType, ApprovalRequired, GoalProposal, GoalStateEngine, goal_plan,
     plan_proposal_id,
 )
+from bean.engineering.spaceflight import orbital_reference, two_body_reference, vis_viva_speed, acceleration_reference
 from bean.memory.store import get_store
 from bean.learning.reasoning_service import _model_response
 from bean.modules import builtin
@@ -77,6 +79,30 @@ class NativeOrchestrator:
                       self._reason)
         self.register("reason_local", "Native symbolic reasoning: {domain:str,query:str}",
                       self._reason_local)
+        # ORCH-20261124: expose existing Core physics through the native planner;
+        # prior registry: 96caf7642590fbed5edac0a9645b67b3df067cb2.
+        self.register("orbit_reference",
+                      "Circular orbit reference: {body:str,altitude_km:number}; "
+                      "returns orbital_radius_km,circular_speed_km_s,circular_period_s",
+                      self._calculation(orbital_reference))
+        self.register("vis_viva_reference",
+                      "Independent analytic speed equation: {mu_km3_s2:number,"
+                      "radius_km:number,semimajor_axis_km:number}; returns speed_km_s",
+                      self._calculation(lambda **args: {"speed_km_s": vis_viva_speed(**args)}))
+        self.register("two_body_reference",
+                      "Ideal numerical orbit propagation: {body:str,position_km:[3 numbers],"
+                      "velocity_km_s:[3 numbers],step_seconds:number,steps:int}; "
+                      "returns final_position_km,final_velocity_km_s,mu_km3_s2 and drift diagnostics",
+                      self._calculation(two_body_reference))
+        self.register("acceleration_reference",
+                      "Constant acceleration reference: {delta_v_km_s:number,"
+                      "acceleration_m_s2:number}; returns ideal_acceleration_time_s and "
+                      "ideal_distance_during_acceleration_km",
+                      self._calculation(acceleration_reference))
+        self.register("compare_numeric",
+                      "Compare two same-unit numeric observations: {left:number,right:number,"
+                      "abs_tol:number,rel_tol:number}; mismatch fails the step",
+                      self._compare_numeric)
         if skill_catalog and skill_action and skill_db:
             skills = skill_catalog["skills"]
             self.skill_action = skill_action
@@ -111,6 +137,28 @@ class NativeOrchestrator:
 
     def _builtin(self, fn):
         return lambda args, task_ref: fn(args, {"session_uuid": self.session_uuid})
+
+    @staticmethod
+    def _calculation(fn):
+        return lambda args, task_ref: fn(**args)
+
+    @staticmethod
+    def _compare_numeric(args, task_ref):
+        if set(args) != {"left", "right", "abs_tol", "rel_tol"}:
+            raise ValueError("comparison requires left, right, abs_tol and rel_tol")
+        if any(type(v) not in (int, float) or not math.isfinite(v)
+               for v in args.values()):
+            raise ValueError("comparison values must be finite real numbers")
+        left, right = args["left"], args["right"]
+        abs_tol, rel_tol = args["abs_tol"], args["rel_tol"]
+        if abs_tol < 0 or not 0 <= rel_tol < 1:
+            raise ValueError("invalid comparison tolerances")
+        matched = math.isclose(left, right, abs_tol=abs_tol, rel_tol=rel_tol)
+        return {"status": "success" if matched else "failed",
+                "matched": matched, "left": left, "right": right,
+                "absolute_difference": abs(left - right),
+                "abs_tol": abs_tol, "rel_tol": rel_tol,
+                "independently_validated": False}
 
     def _reason(self, args, task_ref):
         query = args["query"]
