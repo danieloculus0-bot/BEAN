@@ -383,6 +383,14 @@ def main():
                     artifact_root=os.environ.get(
                         "BEAN_ORCHESTRATION_ARTIFACTS",
                         str(Path(ctx["db_path"]).parent / "bean_artifacts")))
+                # 2026-11-24: historical evidence remains in the original
+                # archive, accessible as source material to native plans.
+                from bean.runtime.research_archive import ResearchArchive, register_archive
+                archive = ResearchArchive(os.environ.get(
+                    "BEAN_RESEARCH_ARCHIVE",
+                    str(Path(ctx["db_path"]).parent / "research-archive")))
+                register_archive(orchestrator, inbox, archive)
+                ctx["research_archive"] = archive
                 register_orchestration_handlers(inbox, orchestrator)
                 ctx["native_orchestrator"] = orchestrator
                 if skill_catalog_path:
