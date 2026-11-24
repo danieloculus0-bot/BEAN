@@ -196,9 +196,36 @@ class NativeOrchestrator:
             "Tools: " + _json({k: v[0] for k, v in self.tools.items()}) +
             "\nObjective: " + objective + "\nInputs: " + _json(inputs)
         )
-        prompt += "\\nRecent execution feedback (not independent correctness evidence): " + _json(feedback)[:6000]
+        prompt += "\nRecent execution feedback (not independent correctness evidence): " + _json(feedback)[:6000]
         if recovery_context is not None:
             prompt += "\nPrior execution evidence (reuse completed outputs via $input; correct the failure): " + _json(recovery_context)
+        # Repair malformed plans before submitting any action. Keep each attempt
+        # in the existing SQLite store so failures survive restart.
+        self.store._conn().execute("""CREATE TABLE IF NOT EXISTS bean_planner_attempts (
+            plan_id TEXT NOT NULL, attempt INTEGER NOT NULL,
+            raw TEXT, error TEXT, PRIMARY KEY(plan_id, attempt))""")
+        self.store.commit()
+        for retry in range(3):
+            raw = None
+            try:
+                proposals, raw = self._compile_plan(prompt, objective, inputs)
+            except (ValueError, KeyError, TypeError, IndexError) as exc:
+                error = type(exc).__name__ + ": " + str(exc)
+                self.store.execute("INSERT OR REPLACE INTO bean_planner_attempts VALUES (?,?,?,?)",
+                                   (plan_id, retry, getattr(exc, "planner_raw", raw), error))
+                self.store.commit()
+                if retry == 2:
+                    raise
+                prompt += "\nYour previous plan was rejected: " + error + ". Return a corrected complete JSON plan."
+            else:
+                self.store.execute("INSERT OR REPLACE INTO bean_planner_attempts VALUES (?,?,?,?)",
+                                   (plan_id, retry, raw, None))
+                self.store.commit()
+                break
+        self.engine.propose_plan(self.session_uuid, plan_id, proposals)
+        return self.status(plan_id)
+
+    def _compile_plan(self, prompt, objective, inputs):
         raw, model, provider, _ = _model_response(
             self.core.model, prompt, "BEAN native capability orchestration")
         if raw.startswith(chr(96) * 3):
@@ -221,8 +248,7 @@ class NativeOrchestrator:
                  "planner_model": model, "planner_provider": provider,
                  "learning_context": "orchestration:" + step["tool"]},
                 "orchestration"))
-        self.engine.propose_plan(self.session_uuid, plan_id, proposals)
-        return self.status(plan_id)
+        return proposals, raw
 
     def _read_output(self, proposal_id):
         row = self.store.fetchone(
