@@ -40,10 +40,6 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 360
     env:
-      LME_MODEL_URL: ${{ secrets[inputs.model_endpoint_secret] }}
-      LME_MODEL_TOKEN: ${{ secrets.LME_MODEL_TOKEN }}
-      LME_JUDGE_URL: ${{ secrets.LME_JUDGE_URL }}
-      LME_JUDGE_TOKEN: ${{ secrets.LME_JUDGE_TOKEN }}
       LME_ARM: ${{ inputs.arm }}
       LME_SUBSET: ${{ inputs.subset }}
       LME_DATASET_REVISION: ${{ inputs.dataset_revision }}
@@ -65,6 +61,11 @@ jobs:
         run: python -m unittest bench.longmemeval.test_runner -v
       - name: Verify and freeze benchmark inputs
         shell: bash
+        env:
+          LME_MODEL_URL: ${{ secrets[inputs.model_endpoint_secret] }}
+          LME_MODEL_TOKEN: ${{ secrets.LME_MODEL_TOKEN }}
+          LME_JUDGE_URL: ${{ secrets.LME_JUDGE_URL }}
+          LME_JUDGE_TOKEN: ${{ secrets.LME_JUDGE_TOKEN }}
         run: |
           set -euo pipefail
           # Values supplied via environment, never interpolated into shell source.
@@ -78,6 +79,11 @@ jobs:
       - name: Run selected arm
         if: inputs.arm != 'prepare'
         shell: bash
+        env:
+          LME_MODEL_URL: ${{ secrets[inputs.model_endpoint_secret] }}
+          LME_MODEL_TOKEN: ${{ secrets.LME_MODEL_TOKEN }}
+          LME_JUDGE_URL: ${{ secrets.LME_JUDGE_URL }}
+          LME_JUDGE_TOKEN: ${{ secrets.LME_JUDGE_TOKEN }}
         run: |
           set -euo pipefail
           if [[ "$LME_ARM" == A2 ]]; then
