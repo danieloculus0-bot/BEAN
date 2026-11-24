@@ -80,7 +80,7 @@ The archived [execution receipt](runs/recent-memory-benchmark-2026-11-24/origina
 - One posthoc host note was written prematurely, invalidated and corrected after actual image inspection. Original/correction hashes are retained in the audit archive. It was never used as BEAN's feedback.
 - Historical live-Qwen runs [43387654264](https://github.com/danieloculus0-bot/BEAN/actions/runs/43387654264) and [43391019294](https://github.com/danieloculus0-bot/BEAN/actions/runs/43391019294) failed and produced no successful original art.
 
-Relevant drawing regressions, real provider runs, artifact rerenders and Core journal checks are executed separately. The local browser check verified eight live-model cards, two separately filtered fixtures, working receipt links, no JavaScript errors and a layout that fits a 390-pixel viewport. A separate HTTP check matched 75 gallery, image and receipt files against their reviewed repository bytes. These checks establish display and artifact integrity, not artistic quality.
+Relevant drawing regressions, real provider runs, artifact rerenders and Core journal checks are executed separately. The current index separates ten live-model drafts from two fixtures. The earlier PR #510 browser check verified its eight live-model cards and two fixtures; its HTTP check matched 75 served files. PR #513 records validation of the expanded gallery and intended-subject labels. Display and artifact-integrity checks do not establish artistic quality.
 
 [PR #510](https://github.com/danieloculus0-bot/BEAN/pull/510) records exact-head CI and integration status. Reproduce the drawing regression checks with:
 
