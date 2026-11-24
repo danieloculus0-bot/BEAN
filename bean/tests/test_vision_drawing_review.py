@@ -38,7 +38,7 @@ def pixel_preview(tmp_path):
 
 
 def install_synthetic_vision_transport(monkeypatch, *, reply=None,
-                                       available=True, vision=True):
+                                       available=True, vision=True, blind_reply=None):
     """Explicit synthetic transport that records the image-bearing request."""
     calls = []
     outcome = reply if reply is not None else {
@@ -59,9 +59,11 @@ def install_synthetic_vision_transport(monkeypatch, *, reply=None,
 
     def fake_chat(self, model, messages, **kwargs):
         calls.append(("chat_json", {"model": model, "messages": messages, **kwargs}))
-        if isinstance(outcome, Exception):
-            raise outcome
-        return outcome if isinstance(outcome, str) else json.dumps(outcome)
+        active = blind_reply if blind_reply is not None and sum(
+            route == "chat_json" for route, _ in calls) == 1 else outcome
+        if isinstance(active, Exception):
+            raise active
+        return active if isinstance(active, str) else json.dumps(active)
 
     monkeypatch.setattr(OllamaClient, "_json", fake_json)
     monkeypatch.setattr(OllamaClient, "chat_json", fake_chat)
@@ -72,11 +74,19 @@ def test_actual_png_bytes_sent_and_review_identity_retained(pixel_preview, monke
     calls = install_synthetic_vision_transport(monkeypatch)
     evaluator = OllamaVisionReviewer("synthetic-vision-fixture")
     result = evaluator(pixel_preview, "a synthetic test object")
-    sent = next(body for route, body in calls if route == "chat_json")
-    assert sent["model"] == "synthetic-vision-fixture"
-    assert b64decode(sent["messages"][0]["images"][0]) == pixel_preview.read_bytes()
-    assert "ATTACHED IMAGE" in sent["messages"][0]["content"]
-    assert sent["schema"]["properties"]["scores"]["required"]
+    sent = [body for route, body in calls if route == "chat_json"]
+    assert len(sent) == 2
+    for request in sent:
+        assert request["model"] == "synthetic-vision-fixture"
+        assert b64decode(request["messages"][0]["images"][0]) == pixel_preview.read_bytes()
+        assert "ATTACHED IMAGE" in request["messages"][0]["content"]
+        assert request["schema"]["properties"]["scores"]["required"]
+    first_prompt = sent[0]["messages"][0]["content"]
+    second_prompt = sent[1]["messages"][0]["content"]
+    assert "a synthetic test object" not in first_prompt
+    assert "without a title or claimed subject" in first_prompt
+    assert "a synthetic test object" in second_prompt
+    assert "A black diagonal mark on a white canvas" in second_prompt
     assert result["kind"] == "vision_model"
     assert result["satisfactory"] is False
     assert result["independently_authenticated"] is False
@@ -93,7 +103,17 @@ def test_actual_png_bytes_sent_and_review_identity_retained(pixel_preview, monke
     assert retained["state"] == "model_reported_pixel_review"
     assert retained["image_sha256"] == result["image_sha256"]
     assert json.loads(retained["raw_response"])["scores"] == result["scores"]
-    assert validate_feedback(result, pixel_preview)["model_digest"] == "b" * 64
+    assert json.loads(retained["raw_blind_response"])["scores"] == result["scores"]
+    assert retained["blind_report"]["observations"] == result["observations"]
+    assert retained["targeted_report"]["scores"] == result["scores"]
+    assert result["evaluation_protocol"] == "blind_then_targeted_min_v1"
+    assert result["score_rule"] == "minimum_of_blind_object_clarity_and_targeted_scores_not_authenticated_truth"
+    normalized = validate_feedback(result, pixel_preview)
+    assert normalized["model_digest"] == "b" * 64
+    assert normalized["evaluation_protocol"] == result["evaluation_protocol"]
+    assert normalized["score_rule"] == result["score_rule"]
+    assert normalized["blind_recognized_subject"] == result["recognized_subject"]
+    assert normalized["blind_observations"] == result["observations"]
 
 
 @pytest.mark.parametrize("available,vision,reason", [
@@ -122,6 +142,10 @@ def test_unavailable_or_text_only_provider_cannot_claim_vision(
      "scores": {"spatial_coherence": 1, "subject_recognition": 5, "composition": 1}},
     {"recognized_subject": "unclear", "observations": "lines", "feedback": "Unclear shape.",
      "scores": {"spatial_coherence": True, "subject_recognition": 0, "composition": 1}},
+    {"feedback": "Missing required observations and recognized subject.",
+     "scores": {"spatial_coherence": 1, "subject_recognition": 0, "composition": 1}},
+    {"recognized_subject": "unclear", "observations": "", "feedback": "Empty observation.",
+     "scores": {"spatial_coherence": 1, "subject_recognition": 0, "composition": 1}},
     RuntimeError("synthetic provider unreachable"),
 ])
 def test_bad_or_failed_provider_report_is_preserved_as_unavailable(
@@ -134,7 +158,7 @@ def test_bad_or_failed_provider_report_is_preserved_as_unavailable(
     assert receipt["state"] == "unavailable" and receipt["error"]
     assert "report" not in receipt
     if not isinstance(response, Exception):
-        assert "raw_response" in receipt
+        assert "raw_blind_response" in receipt
 
 
 def test_injected_transport_cannot_be_counted_as_live_review(pixel_preview):
@@ -199,3 +223,52 @@ def test_automatic_vision_model_forwarded_to_every_matched_process(tmp_path):
     assert all("--require-live" in command for command in commands)
     assert result["learning_improvement_verified"] is False
     assert all(row["process_returncode"] == 2 for row in result["outcomes"])
+
+
+def test_title_bias_cannot_raise_score_above_blind_object_clarity(pixel_preview, monkeypatch):
+    blind = {
+        "recognized_subject": "unclear", "observations": "Disconnected abstract marks.",
+        "feedback": "No coherent object is recognizable without a title.",
+        "scores": {"spatial_coherence": 1, "subject_recognition": 0, "composition": 2},
+    }
+    biased_target = {
+        "recognized_subject": "a synthetic test dragon", "observations": "Biased fixture only.",
+        "feedback": "The supplied title seems to fit; this is a synthetic bias test.",
+        "scores": {"spatial_coherence": 4, "subject_recognition": 4, "composition": 1},
+    }
+    calls = install_synthetic_vision_transport(monkeypatch, reply=biased_target, blind_reply=blind)
+    result = OllamaVisionReviewer("synthetic-vision-fixture")(pixel_preview, "a synthetic test dragon")
+    assert result["scores"] == {"spatial_coherence": 1, "subject_recognition": 0, "composition": 1}
+    assert result["recognized_subject"] == "unclear"
+    assert result["observations"] == "Disconnected abstract marks."
+    assert result["satisfactory"] is False
+    assert "Title-blind review: " + blind["feedback"] in result["feedback"]
+    assert "Target-aware review: " + biased_target["feedback"] in result["feedback"]
+    sent = [body for route, body in calls if route == "chat_json"]
+    assert len(sent) == 2
+    assert "a synthetic test dragon" not in sent[0]["messages"][0]["content"]
+    assert "a synthetic test dragon" in sent[1]["messages"][0]["content"]
+    assert "Disconnected abstract marks." in sent[1]["messages"][0]["content"]
+    assert sent[0]["messages"][0]["images"] == sent[1]["messages"][0]["images"]
+    evidence = json.loads(pixel_preview.with_suffix(".vision.json").read_text())
+    assert json.loads(evidence["raw_blind_response"]) == blind
+    assert json.loads(evidence["raw_response"]) == biased_target
+    assert evidence["blind_report"] == blind
+    assert evidence["targeted_report"] == biased_target
+    assert evidence["report"]["scores"] == result["scores"]
+    assert evidence["report"]["evaluation_protocol"] == "blind_then_targeted_min_v1"
+
+
+def test_failed_second_pass_retains_first_pass_without_claiming_final_review(pixel_preview, monkeypatch):
+    blind = {"recognized_subject": "unclear", "observations": "Only a line is visible.",
+             "feedback": "Object unclear.",
+             "scores": {"spatial_coherence": 1, "subject_recognition": 0, "composition": 1}}
+    install_synthetic_vision_transport(monkeypatch, reply="malformed second pass", blind_reply=blind)
+    result = OllamaVisionReviewer("synthetic-vision-fixture")(pixel_preview, "test object")
+    assert result["state"] == "unavailable"
+    evidence = json.loads(pixel_preview.with_suffix(".vision.json").read_text())
+    assert evidence["state"] == "unavailable"
+    assert evidence["blind_report"] == blind
+    assert json.loads(evidence["raw_blind_response"]) == blind
+    assert evidence["raw_response"] == "malformed second pass"
+    assert "report" not in evidence

@@ -253,7 +253,8 @@ def feedback_context(report):
         return None
     return {key: report[key] for key in (
         'state', 'satisfactory', 'feedback', 'scores', 'recognized_subject',
-        'observations', 'evaluator', 'model_id', 'model_digest', 'image_sha256')
+        'observations', 'evaluator', 'model_id', 'model_digest', 'image_sha256',
+        'evaluation_protocol', 'score_rule', 'blind_recognized_subject', 'blind_observations')
         if key in report}
 
 

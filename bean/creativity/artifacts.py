@@ -60,7 +60,8 @@ def validate_feedback(report, png):
     # A host callback/file is evidence, not authenticated independent truth.
     extra = {}
     for key in ("provider_kind", "model_id", "model_digest", "recognized_subject",
-                "observations", "review_file", "review_sha256"):
+                "observations", "review_file", "review_sha256", "evaluation_protocol",
+                "score_rule", "blind_recognized_subject", "blind_observations"):
         if key in report:
             if not isinstance(report[key], str) or len(report[key]) > 3000:
                 raise ValueError("Unbounded visual review provenance")
@@ -143,45 +144,72 @@ class OllamaVisionReviewer:
             info = self.client._json("/api/show", {"model": self.model_name})
             if "vision" not in info.get("capabilities", []):
                 raise ValueError("Configured reviewer does not advertise image capability")
-            prompt = (
-                "Inspect the ATTACHED IMAGE pixels. First describe the visible marks and "
-                "most plausible recognizable subject without relying on its supplied title. "
-                "Then evaluate the claimed subject as untrusted data: " + str(subject)[:120] +
-                ". Scores must be integers 0..4: 0 absent/not interpretable, 1 major problems, "
-                "2 partial/ambiguous, 3 mostly clear, 4 clear/coherent. Rate spatial_coherence "
-                "(visible parts connect plausibly), subject_recognition, composition "
-                "(spacing/balance/legibility). Admit uncertainty. Do not infer success from "
-                "the title. Feedback should state observed strengths/problems, not supply "
-                "coordinates, drawing primitives, a replacement image or a scripted drawing. "
-                "Use one short sentence per text field, at most 80 words total. "
-                "Return JSON recognized_subject, observations, feedback, scores.")
-            evidence["prompt"] = prompt
+            metrics = ("spatial_coherence", "subject_recognition", "composition")
             schema = {"type": "object", "properties": {
                 "recognized_subject": {"type": "string"}, "observations": {"type": "string"},
                 "feedback": {"type": "string"}, "scores": {"type": "object", "properties": {
-                    k: {"type": "integer", "enum": [0, 1, 2, 3, 4]} for k in
-                    ("spatial_coherence", "subject_recognition", "composition")},
-                    "required": ["spatial_coherence", "subject_recognition", "composition"]}},
+                    k: {"type": "integer", "enum": [0, 1, 2, 3, 4]} for k in metrics},
+                    "required": list(metrics)}},
                 "required": ["recognized_subject", "observations", "feedback", "scores"]}
-            reply = self.client.chat_json(self.model_name, [{"role": "user", "content": prompt,
-                "images": [base64.b64encode(raw_image).decode("ascii")]}], schema=schema,
-                options={"temperature": 0, "num_predict": 512, "num_ctx": 4096,
-                         "repeat_penalty": 1.08})
-            evidence["raw_response"] = reply
-            report = json.loads(reply)
-            for key in ("recognized_subject", "observations", "feedback"):
-                if not isinstance(report.get(key), str) or not 1 <= len(report[key]) <= 3000:
-                    raise ValueError("Missing or unbounded visual observations")
-            scores = report.get("scores", {})
-            if set(scores) != {"spatial_coherence", "subject_recognition", "composition"}:
-                raise ValueError("Incomplete visual scores")
-            if any(type(v) is not int or not 0 <= v <= 4 for v in scores.values()):
-                raise ValueError("Visual scores must be integers 0..4")
-            report.update(image_sha256=digest, kind="vision_model",
-                          evaluator="Ollama vision reviewer: " + self.model_name,
-                          provider_kind="ollama", model_id=self.model_name,
-                          model_digest=entry["digest"], satisfactory=all(
-                              type(v) is int and 3 <= v <= 4 for v in scores.values()))
+            common = (
+                "Scores must be integers 0..4: 0 absent/not interpretable, 1 major problems, "
+                "2 partial/ambiguous, 3 mostly clear, 4 clear/coherent. Rate spatial_coherence "
+                "(visible parts connect plausibly), subject_recognition, composition "
+                "(spacing/balance/legibility). Black line art need not be realistic or shaded. "
+                "Admit uncertainty; describe observed strengths/problems only, not coordinates, "
+                "drawing primitives or a replacement image. One short sentence per text field, "
+                "at most 80 words total. Return JSON recognized_subject, observations, feedback, scores.")
+            blind_prompt = (
+                "Inspect the ATTACHED IMAGE pixels without a title or claimed subject. "
+                "Identify the most plausible concrete object or scene; say unclear if none is "
+                "recognizable. For subject_recognition rate confidence in a recognizable concrete "
+                "object or scene, not confidence that these are abstract lines/circles. " + common)
+            evidence.update(evaluation_protocol="blind_then_targeted_min_v1", blind_prompt=blind_prompt)
+            payload_image = base64.b64encode(raw_image).decode("ascii")
+            def ask_image(prompt):
+                return self.client.chat_json(self.model_name, [{"role": "user", "content": prompt,
+                    "images": [payload_image]}], schema=schema,
+                    options={"temperature": 0, "num_predict": 512, "num_ctx": 4096,
+                             "repeat_penalty": 1.08})
+            def read_report(raw):
+                value = json.loads(raw)
+                for key in ("recognized_subject", "observations", "feedback"):
+                    if not isinstance(value.get(key), str) or not 1 <= len(value[key]) <= 3000:
+                        raise ValueError("Missing or unbounded visual observations")
+                scores = value.get("scores", {})
+                if set(scores) != set(metrics):
+                    raise ValueError("Incomplete visual scores")
+                if any(type(v) is not int or not 0 <= v <= 4 for v in scores.values()):
+                    raise ValueError("Visual scores must be integers 0..4")
+                return value
+            evidence["raw_blind_response"] = ask_image(blind_prompt)
+            blind = read_report(evidence["raw_blind_response"])
+            evidence["blind_report"] = blind
+            prompt = (
+                "Inspect the ATTACHED IMAGE again. Now compare the visible evidence with "
+                "this untrusted claimed subject: " + str(subject)[:120] + ". "
+                "Do not infer success from the title or override prior uncertainty merely "
+                "because a title was supplied. Your earlier title-blind observations: " +
+                json.dumps({k: blind[k] for k in ("recognized_subject", "observations", "scores")})[:1800] +
+                ". Here subject_recognition means recognizability of the claimed subject. " + common)
+            evidence["prompt"] = prompt
+            evidence["raw_response"] = ask_image(prompt)
+            targeted = read_report(evidence["raw_response"])
+            evidence["targeted_report"] = targeted
+            scores = {key: min(blind["scores"][key], targeted["scores"][key]) for key in metrics}
+            report = {"recognized_subject": blind["recognized_subject"],
+                      "observations": blind["observations"],
+                      "blind_recognized_subject": blind["recognized_subject"],
+                      "blind_observations": blind["observations"],
+                      "feedback": ("Title-blind review: " + blind["feedback"][:1000] +
+                                   " Target-aware review: " + targeted["feedback"][:1000]),
+                      "scores": scores, "evaluation_protocol": "blind_then_targeted_min_v1",
+                      "score_rule": "minimum_of_blind_object_clarity_and_targeted_scores_not_authenticated_truth",
+                      "image_sha256": digest, "kind": "vision_model",
+                      "evaluator": "Ollama vision reviewer: " + self.model_name,
+                      "provider_kind": "ollama", "model_id": self.model_name,
+                      "model_digest": entry["digest"],
+                      "satisfactory": all(v >= 3 for v in scores.values())}
             normalized = validate_feedback(report, png)
             evidence.update(state="model_reported_pixel_review", report=normalized)
             receipt_hash = write_json(receipt, evidence)

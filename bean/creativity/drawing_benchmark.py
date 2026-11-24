@@ -103,6 +103,8 @@ def execute(specification, output, *, baseline_db=None, python=sys.executable,
     spec = validate_protocol(specification)
     if type(review_wait) is not int or not 0 <= review_wait <= 600:
         raise ValueError("Review wait must be 0..600 seconds")
+    if vision_model is not None and (not isinstance(vision_model, str) or not 1 <= len(vision_model) <= 120):
+        raise ValueError("Bounded requested vision model required")
     root = Path(output).resolve()
     root.mkdir(parents=True, exist_ok=True)
     if any(root.iterdir()):
@@ -170,6 +172,7 @@ def execute(specification, output, *, baseline_db=None, python=sys.executable,
                  frozen_path if arm == "frozen" else None)
     report = {"schema": SCHEMA, "protocol_sha256": spec["protocol_sha256"],
               "created_at_utc": datetime.now(timezone.utc).isoformat(),
+              "vision_model": vision_model,
               "frozen_memory_sha256": sha256(frozen_path.read_bytes()).hexdigest(),
               "cells": cells, "separate_process_per_cell": True,
               "learning_improvement_verified": False,
@@ -178,6 +181,112 @@ def execute(specification, output, *, baseline_db=None, python=sys.executable,
     result = summarize(root)
     write_json(root / "summary.json", result)
     return result
+
+
+def _review_identity(feedback):
+    if not isinstance(feedback, dict):
+        return None
+    if (feedback.get("kind") not in ("vision_model", "human")
+            or not isinstance(feedback.get("evaluator"), str)
+            or not feedback["evaluator"]):
+        return None
+    return tuple(feedback.get(key) for key in
+                 ("kind", "evaluator", "provider_kind", "model_id", "model_digest", "evaluation_protocol"))
+
+
+def _validate_vision_receipt(row, folder, requested_vision_model=None):
+    """Bind automatic review observations to their retained model-call record.
+
+    Caller-supplied legacy/human reports remain explicitly host reported.
+    When automatic vision was requested, a label-only report cannot earn scores.
+    """
+    from scripts.build_bean_draw_gallery import _file
+    feedback = row.get("external_feedback")
+    if not isinstance(feedback, dict):
+        return
+    successful = feedback.get("kind") in ("vision_model", "human")
+    if requested_vision_model is not None and successful:
+        if (feedback.get("kind") != "vision_model"
+                or feedback.get("model_id") != requested_vision_model
+                or feedback.get("provider_kind") != "ollama"
+                or not re.fullmatch(r"[a-f0-9]{64}", feedback.get("model_digest", ""))):
+            raise ValueError("Visual evaluator does not match requested model")
+        if not feedback.get("review_file") or not feedback.get("review_sha256"):
+            raise ValueError("Requested automatic vision review is missing its model receipt")
+    if not feedback.get("review_file") and not feedback.get("review_sha256"):
+        return
+    if (feedback.get("kind") != "vision_model"
+            or feedback.get("provider_kind") != "ollama"
+            or not isinstance(feedback.get("model_id"), str) or not feedback["model_id"]
+            or not re.fullmatch(r"[a-f0-9]{64}", feedback.get("model_digest", ""))):
+        raise ValueError("Automatic visual model identity is incomplete")
+    name = "attempt_%02d.vision.json" % row["attempt"]
+    if feedback.get("review_file") != name:
+        raise ValueError("Unexpected visual model receipt filename")
+    raw = _file(folder, name).read_bytes()
+    if len(raw) > 128000 or sha256(raw).hexdigest() != feedback.get("review_sha256"):
+        raise ValueError("Visual model receipt hash mismatch")
+    record = json.loads(raw)
+    report = record.get("report")
+    if (record.get("schema") != "bean.draw.vision_call.v1"
+            or record.get("state") != "model_reported_pixel_review"
+            or record.get("used_for_generation") is not True
+            or record.get("image_sha256") != row.get("png_sha256")
+            or record.get("subject") != row.get("subject")
+            or not isinstance(report, dict)
+            or any(record.get(key) != feedback.get(key) for key in
+                   ("provider_kind", "model_id", "model_digest"))):
+        raise ValueError("Visual model receipt does not bind this evaluator and PNG")
+    for key in ("image_sha256", "kind", "evaluator", "provider_kind", "model_id",
+                "model_digest", "recognized_subject", "observations", "feedback", "scores", "satisfactory",
+                "evaluation_protocol", "score_rule", "blind_recognized_subject", "blind_observations"):
+        if report.get(key) != feedback.get(key):
+            raise ValueError("Retained visual model report and attempt feedback disagree")
+    def read_response(key):
+        response = record.get(key)
+        if not isinstance(response, str) or not 1 <= len(response) <= 20000:
+            raise ValueError("Missing bounded raw visual model response")
+        decoded = json.loads(response)
+        if not isinstance(decoded, dict):
+            raise ValueError("Raw visual model response must be an object")
+        for field in ("recognized_subject", "observations", "feedback"):
+            if not isinstance(decoded.get(field), str) or not 1 <= len(decoded[field]) <= 3000:
+                raise ValueError("Missing bounded raw visual observations")
+        scores = decoded.get("scores")
+        if (not isinstance(scores, dict) or set(scores) != set(METRICS)
+                or any(type(v) is not int or not 0 <= v <= 4 for v in scores.values())):
+            raise ValueError("Invalid raw visual scores")
+        return decoded
+
+    protocol_name = record.get("evaluation_protocol")
+    if protocol_name != report.get("evaluation_protocol"):
+        raise ValueError("Visual evaluation protocol bindings disagree")
+    if protocol_name is None:
+        if any(key in record for key in ("raw_blind_response", "blind_report", "targeted_report")):
+            raise ValueError("Two-pass evidence cannot be silently downgraded to a legacy review")
+        decoded = read_response("raw_response")
+        if any(decoded.get(key) != report.get(key) for key in
+                ("recognized_subject", "observations", "feedback", "scores")):
+            raise ValueError("Raw visual model response does not match retained review")
+    elif protocol_name == "blind_then_targeted_min_v1":
+        blind = read_response("raw_blind_response")
+        targeted = read_response("raw_response")
+        if blind != record.get("blind_report") or targeted != record.get("targeted_report"):
+            raise ValueError("Raw and retained blind/targeted model reports disagree")
+        final_scores = {key: min(blind["scores"][key], targeted["scores"][key]) for key in METRICS}
+        final_feedback = ("Title-blind review: " + blind["feedback"][:1000]
+                          + " Target-aware review: " + targeted["feedback"][:1000])
+        if (report.get("scores") != final_scores
+                or report.get("score_rule") != "minimum_of_blind_object_clarity_and_targeted_scores_not_authenticated_truth"
+                or report.get("recognized_subject") != blind["recognized_subject"]
+                or report.get("observations") != blind["observations"]
+                or report.get("blind_recognized_subject") != blind["recognized_subject"]
+                or report.get("blind_observations") != blind["observations"]
+                or report.get("feedback") != final_feedback
+                or report.get("satisfactory") is not all(v >= 3 for v in final_scores.values())):
+            raise ValueError("Final visual review does not implement its blind/targeted minimum rule")
+    else:
+        raise ValueError("Unsupported automatic visual evaluation protocol")
 
 
 def _review_scores(row, folder):
@@ -217,7 +326,7 @@ def _review_scores(row, folder):
     return selected or None
 
 
-def _verified_run(folder, cell, spec):
+def _verified_run(folder, cell, spec, requested_vision_model=None):
     """Verify completed run/sidecar/raw/artifact links before scoring a cell.
 
     This authenticates matching bytes, not ownership of a provider account or
@@ -280,6 +389,7 @@ def _verified_run(folder, cell, spec):
                     _validate_png(data)
                     if digest != entry.get("png_sha256"):
                         raise ValueError("Run PNG hash mismatch")
+            _validate_vision_receipt(row, folder, requested_vision_model)
         return run, None
     except (ValueError, TypeError, KeyError, OSError, AttributeError) as exc:
         return None, type(exc).__name__ + ": " + str(exc)[:500]
@@ -337,7 +447,8 @@ def summarize(output):
         folder = root / cell["folder"] / "attempts"
         if not folder.resolve().is_relative_to(root.resolve()):
             raise ValueError("Cell directory escapes benchmark root")
-        verified_run, verification_error = _verified_run(folder, cell, spec)
+        verified_run, verification_error = _verified_run(
+            folder, cell, spec, execution.get("vision_model"))
         attempts, last_png_digest = [], None
         identities = set()
         for sidecar in sorted(folder.glob("attempt_[0-9][0-9].json")):
@@ -358,11 +469,15 @@ def summarize(output):
                     and sha256((folder / png_name).read_bytes()).hexdigest() == row.get("png_sha256")):
                 last_png_digest = row["png_sha256"]
             attempts.append({"attempt": row.get("attempt"),
-                             "status": row.get("status"), "scores": scores})
+                             "status": row.get("status"), "scores": scores,
+                             "evaluator_identity": _review_identity(row.get("external_feedback"))
+                             if scores is not None else None})
         first = attempts[0].get("scores") if attempts else None
         last = attempts[-1].get("scores") if attempts else None
+        same_evaluator = (attempts and attempts[0]["evaluator_identity"] is not None
+                          and attempts[0]["evaluator_identity"] == attempts[-1]["evaluator_identity"])
         delta = {metric: (last[metric] - first[metric]
-                         if first and last and metric in first and metric in last
+                         if same_evaluator and first and last and metric in first and metric in last
                          else None) for metric in METRICS}
         outcomes.append({"phase": cell["phase"], "arm": cell["arm"],
                          "challenge": cell["challenge"], "subject": cell["subject"],
@@ -373,7 +488,8 @@ def summarize(output):
                          if len(identities) == 1 else None,
                          "last_minus_first_external_score": delta,
                          "last_png_sha256": last_png_digest,
-                         "last_scores": last})
+                         "last_scores": last,
+                         "last_evaluator_identity": attempts[-1]["evaluator_identity"] if attempts else None})
     means, iteration = {}, {}
     for arm in ARMS:
         records = [x for x in outcomes if x["phase"] == "heldout" and x["arm"] == arm]
@@ -399,6 +515,8 @@ def summarize(output):
                     or adaptive.get("artifact_verification_error")
                     or comparison.get("artifact_verification_error")
                     or identity != comparison["runtime_identity"]
+                    or adaptive.get("last_evaluator_identity") is None
+                    or adaptive["last_evaluator_identity"] != comparison.get("last_evaluator_identity")
                     or len(adaptive["attempts"]) != spec["attempts"]
                     or len(comparison["attempts"]) != spec["attempts"]):
                 continue
@@ -412,6 +530,7 @@ def summarize(output):
                                   for metric, values in differences.items()}
     return {"schema": SCHEMA, "protocol_sha256": spec["protocol_sha256"],
             "subject_source": spec["subject_source"], "outcomes": outcomes,
+            "requested_vision_model": execution.get("vision_model"),
             "heldout_last_attempt_means": means,
             "iteration_quality_last_minus_first": iteration,
             "generalization_adaptive_minus_control": comparisons,

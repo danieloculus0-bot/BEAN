@@ -315,3 +315,12 @@ the same evaluator and budgets. Prompts omit review timestamps and local file
 paths to avoid unnecessary differences between matched conditions; the full
 values remain in immutable receipts. A single held-out challenge is narrow
 evidence, and changed image hashes or saved files never establish learning.
+
+Automatic review uses two actual-image requests: first without the claimed
+subject, then with it. Each final metric is the minimum of that dimension's
+blind and target-aware ratings. Both raw reports, parsed reports and the
+explicit `blind_then_targeted_min_v1` protocol are retained. This conservative
+rule reduces title priming; it is not an independent recognition guarantee.
+A pilot false positive remains in the evidence rather than being overwritten.
+Benchmark comparisons require the same evaluator model, digest and protocol,
+and verify the separate vision receipt and its score derivation.
