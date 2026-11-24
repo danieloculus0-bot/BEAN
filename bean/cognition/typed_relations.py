@@ -184,7 +184,16 @@ class TypedRelations:
                 if nxt in visited:
                     continue
                 new_proof = (*proof, edge)
+                # A refutation of any proper subpath invalidates this proof.
+                # A contested conclusion remains observable but cannot become
+                # a premise for a longer chain.
+                intermediates = [part["target"] for part in proof]
+                if any("refute" in pairs.get((prior, nxt), {})
+                       for prior in intermediates):
+                    continue
                 paths.setdefault(nxt, new_proof)
+                if "refute" in pairs.get((subject, nxt), {}):
+                    continue
                 if len(new_proof) < effective_hops:
                     queue.append((nxt, new_proof, visited | {nxt}))
 

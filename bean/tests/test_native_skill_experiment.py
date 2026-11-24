@@ -434,3 +434,72 @@ def test_continuous_curriculum_does_not_trigger_external_paid_model(world):
     assert result["reason"] == "continuous_curriculum_requires_local_provider"
     assert model.calls == []
     assert get_store().fetchall("SELECT * FROM cognition_goal_proposals WHERE action_type='run_experiment'") == []
+
+
+def test_recovered_symbolic_tools_execute_and_resume_native_plan(world):
+    from bean.cognition.typed_relations import TypedRelations
+    from bean.runtime.native_orchestration import NativeOrchestrator
+    root, session, _ = world
+    relations = TypedRelations()
+    first = relations.observe(subject="sample", predicate="part_of", target="fixture",
+                              source_ref="synthetic:first", evidence_refs=["test:first"])
+    second = relations.observe(subject="fixture", predicate="part_of", target="assembly",
+                               source_ref="synthetic:second", evidence_refs=["test:second"])
+    model = Model(json.dumps({"steps": [
+        {"tool": "query_world_relations", "args": {"subject": "sample", "predicate": "part_of", "target": "assembly"}},
+        {"tool": "infer_relations", "args": {
+            "facts": [
+                ["sample", "part_of", "fixture", {"$step": 0, "path": ["results", 0, "evidence_claim_ids", 0]}],
+                ["fixture", "part_of", "assembly", {"$step": 0, "path": ["results", 0, "evidence_claim_ids", 1]}]],
+            "patterns": [["?a", "part_of", "?b"], ["?b", "part_of", "?c"]],
+            "conclusion": ["?a", "within", "?c"]}},
+        {"tool": "focused_world_memory", "args": {"query": "sample fixture", "limit": 3}}
+    ]}))
+    cycle = GoalCycle({"run_experiment": lambda goal: {"status": "unknown"}})
+    runner = NativeOrchestrator(Core(model), cycle, session_uuid=session)
+    plan_id = runner.submit("Compose a synthetic world proof and recover related observations")["plan_id"]
+    assert cycle.poll_due()[0]["status"] == "success"
+    # Reopen the canonical database and rebuild the real runtime registry.
+    get_store().close()
+    _local.conn = None
+    init_store(str(root / "bean_core.sqlite"))
+    resumed_cycle = GoalCycle({"run_experiment": lambda goal: {"status": "unknown"}})
+    resumed = NativeOrchestrator(Core(model), resumed_cycle, session_uuid=begin_session())
+    assert resumed_cycle.poll_due()[0]["status"] == "success"
+    assert resumed_cycle.poll_due()[0]["status"] == "success"
+    result = resumed.status(plan_id)
+    assert result["status"] == "completed"
+    proof = result["steps"][1]["output"]["inferences"][0]
+    assert proof["relation"] == ["sample", "within", "assembly"]
+    assert proof["evidence_sets"] == [sorted([first["claim_id"], second["claim_id"]])]
+    assert first["claim_id"] in {x["claim_id"] for x in result["steps"][2]["output"]["claims"]}
+    assert resumed_cycle.poll_due() == []
+    assert len(model.calls) == 1
+
+
+def test_contested_prefix_does_not_propagate_and_unknown_read_can_finish(world):
+    from bean.cognition.typed_relations import TypedRelations
+    from bean.runtime.native_orchestration import NativeOrchestrator
+    _, session, _ = world
+    relations = TypedRelations()
+    for a, b in (("a", "b"), ("b", "c"), ("c", "d")):
+        relations.observe(subject=a, predicate="part_of", target=b,
+                          source_ref="synthetic:edge", evidence_refs=["test:edge"])
+    relations.observe(subject="a", predicate="part_of", target="c", polarity="refute",
+                      source_ref="synthetic:refutation", evidence_refs=["test:refutation"])
+    assert relations.query(subject="a", predicate="part_of", target="c")["status"] == "contested"
+    assert relations.query(subject="a", predicate="part_of", target="d")["status"] == "unknown"
+    model = Model(json.dumps({"steps": [
+        {"tool": "query_world_relations", "args": {"subject": "a", "predicate": "part_of", "target": "d"}},
+        {"tool": "focused_world_memory", "args": {"query": "nonexistent observation"}}
+    ]}))
+    cycle = GoalCycle({"run_experiment": lambda goal: {"status": "unknown"}})
+    runner = NativeOrchestrator(Core(model), cycle, session_uuid=session)
+    plan_id = runner.submit("Check absence of a clean world proof")["plan_id"]
+    assert cycle.poll_due()[0]["status"] == "success"
+    assert cycle.poll_due()[0]["status"] == "success"
+    result = runner.status(plan_id)
+    assert result["status"] == "completed"
+    assert result["steps"][0]["output"]["status"] == "unknown"
+    assert result["steps"][0]["output"]["results"] == []
+    assert len(model.calls) == 1
