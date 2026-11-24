@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#050607">
+<meta name="bean-talk-build" content="conversation-v3">
+<title>Use BEAN</title>
+<meta name="bean-task-build" content="native-goalcycle-v1">
+<link rel="icon" href="./bean-official.webp" type="image/webp">
+<style>
+:root{color-scheme:dark;--bg:#050607;--panel:#111417;--soft:#181b1e;--line:#343a3d;--text:#f4fbf3;--muted:#a8b1b6;--accent:#a6ed75}
+*{box-sizing:border-box}body{margin:0;min-height:100dvh;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,"Segoe UI",sans-serif;display:flex;flex-direction:column}
+header{border-bottom:1px solid var(--line)}nav{width:min(1110px,calc(100% - 40px));margin:auto;display:flex;align-items:center;gap:24px;min-height:75px}nav a{color:var(--muted);text-decoration:none;font-size:.9rem;font-weight:650}nav a:hover{color:var(--text)}.brand{display:flex;align-items:center;gap:10px;color:var(--text);font-weight:900;font-size:1.15rem;letter-spacing:.08em;margin-right:auto}.brand img{width:44px;height:49px;object-fit:contain}
+main{width:min(820px,calc(100% - 40px));margin:auto;flex:1;display:flex;flex-direction:column;min-height:0;padding-top:32px}.welcome{margin:auto 0;text-align:center;padding:38px 8px}.welcome h1{font-size:clamp(2.6rem,6vw,4.2rem);letter-spacing:-.065em;line-height:1.1;margin:0 0 12px}.welcome p{color:var(--muted);margin:0;font-size:1.06rem}.welcome[hidden]{display:none}
+#messages{display:flex;flex-direction:column;gap:24px;padding:16px 0 36px}.message{max-width:100%;min-width:0;white-space:pre-wrap;overflow-wrap:anywhere}.message.user{align-self:flex-end;max-width:88%;background:var(--soft);border:1px solid var(--line);border-radius:20px 20px 5px 20px;padding:12px 18px}.message.assistant{align-self:stretch;padding:0 8px}.message.assistant .speaker{display:block;font-weight:800;font-size:.78rem;color:var(--accent);letter-spacing:.05em;margin-bottom:6px}.message.user .speaker{display:none}
+.composer{position:sticky;bottom:0;background:var(--bg);padding:10px 0 max(14px,env(safe-area-inset-bottom));margin-top:auto}.inputbox{background:var(--panel);border:1px solid var(--line);border-radius:22px;display:flex;align-items:flex-end;gap:12px;padding:12px;box-shadow:0 8px 28px #0006}.inputbox:focus-within{border-color:#697278}textarea{background:transparent;color:var(--text);border:0;outline:0;font:inherit;line-height:1.5;resize:none;min-height:48px;max-height:180px;width:100%;padding:11px 8px 5px}textarea::placeholder{color:#9aa2a7}button{font:inherit;font-weight:800;cursor:pointer;background:var(--accent);color:#152611;border:none;border-radius:14px;padding:10px 20px;min-height:44px}button:disabled{opacity:.45;cursor:default}button:focus-visible,a:focus-visible{outline:2px solid var(--accent);outline-offset:4px}#status{color:var(--muted);font-size:.83rem;min-height:1.3em;margin:9px 6px 0}footer{color:var(--muted);font-size:.75rem;text-align:center;margin:8px 0 0}footer a{color:inherit}
+@media(max-width:600px){nav{width:calc(100% - 28px);gap:14px;min-height:60px}nav a{font-size:.8rem}main{width:calc(100% - 24px);padding-top:14px}.inputbox{border-radius:17px;padding:8px}.message.user{max-width:94%}button{padding:10px 14px}.welcome{padding:25px 0}}
+.taskbar{display:flex;align-items:center;gap:12px;padding:0 6px 10px;font-size:.83rem;color:var(--muted)}.taskbar select{font:inherit;color:var(--text);background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:7px 10px}.taskbar #connection{margin-left:auto;text-align:right}.receipt{display:block;font-size:.72rem;color:var(--muted);margin-top:8px;overflow-wrap:anywhere}
+</style>
+</head>
+<body>
+<header><nav aria-label="Main navigation"><a class="brand" href="./"><img src="./bean-official.webp" alt="">BEAN</a><a href="./">Home</a><a href="./research-lab.html">Research</a><a href="./portfolio/">Projects</a></nav></header>
+<main>
+<div class="welcome" id="welcome"><h1>Use BEAN.</h1><p>Ask a question or run a task using BEAN’s native tools.</p></div>
+<div id="messages" role="log" aria-live="polite" aria-label="Conversation"></div>
+<div class="composer"><div class="taskbar"><label for="mode">Mode</label><select id="mode"><option value="chat">Conversation</option><option value="task">Execute task</option></select><span id="connection" role="status">Checking Core…</span></div><form id="chat" class="inputbox"><textarea id="message" aria-label="Message BEAN" placeholder="Message BEAN…" maxlength="1200" rows="1" required></textarea><button id="send" type="submit">Send</button></form><div id="status" role="status"></div><footer>Conversation history is saved on this device when storage is available. Recent messages are sent to BEAN to answer you.</footer></div>
+</main>
+<script>
+'use strict';
+const base='https://vmi3782905.contaboserver.net';
+const $=id=>document.getElementById(id);
+let history=[],db=null,busy=false;
+function openDB(){return new Promise((resolve,reject)=>{const r=indexedDB.open('bean-personal-memory',1);r.onupgradeneeded=()=>{if(!r.result.objectStoreNames.contains('memory'))r.result.createObjectStore('memory')};r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error)})}
+function readHistory(){return new Promise((resolve,reject)=>{const r=db.transaction('memory').objectStore('memory').get('conversation');r.onsuccess=()=>resolve(r.result||[]);r.onerror=()=>reject(r.error)})}
+async function saveHistory(){if(!db)return;try{await new Promise((resolve,reject)=>{const t=db.transaction('memory','readwrite');t.objectStore('memory').put(history,'conversation');t.oncomplete=resolve;t.onerror=()=>reject(t.error);t.onabort=()=>reject(t.error)})}catch(e){db=null;$('status').textContent='Device storage is unavailable. You can continue chatting.'}}
+function render(){const box=$('messages');box.replaceChildren();$('welcome').hidden=history.length>0;for(const item of history.slice(-100)){const d=document.createElement('div');d.className='message '+item.role;const label=document.createElement('span');label.className='speaker';label.textContent=item.role==='user'?'You':'BEAN';d.append(label,document.createTextNode(item.text));if(item.receipt){const receipt=document.createElement("small");receipt.className="receipt";receipt.textContent="Core receipt: "+item.receipt;d.append(receipt)}box.append(d)}window.scrollTo(0,document.body.scrollHeight)}
+async function append(role,text,receipt=''){history.push({role,text,source:role==='user'?'You':'BEAN',receipt,time:new Date().toISOString()});render();await saveHistory()}
+async function api(message,context,mode){const res=await fetch(base+'/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message,context,...(mode==="task"?{mode}:{})}),credentials:'omit',cache:'no-store',signal:AbortSignal.timeout(200000)});const data=await res.json();if(!res.ok||typeof data.answer!=='string'||!data.answer.trim())throw Error(data.error||'BEAN could not answer');return data}
+async function init(){try{db=await openDB();const stored=await readHistory();if(Array.isArray(stored))history=stored.filter(x=>x&&['user','assistant'].includes(x.role)&&typeof x.text==='string')}catch(e){db=null}render()}
+const initialized=init();
+let taskAvailable=false;
+async function checkCore(){try{const res=await fetch(base+'/api/health',{cache:'no-store',signal:AbortSignal.timeout(10000)});const data=await res.json();if(!res.ok||data.service!=='BEAN guest Core')throw Error('Core unavailable');taskAvailable=data.native_task_execution===true;$('connection').textContent=data.model_present?(taskAvailable?'Core connected · task execution available':'Core connected · conversation only'):'Core connected · model unavailable'}catch(err){taskAvailable=false;$('connection').textContent='Core connection unavailable'}}
+checkCore();
+$('mode').addEventListener('change',()=>{$('message').placeholder=$('mode').value==='task'?'Describe a calculation or analysis task…':'Message BEAN…';$('send').textContent=$('mode').value==='task'?'Run':'Send';if($('mode').value==='task')checkCore()});
+$('chat').addEventListener('submit',async e=>{e.preventDefault();if(busy)return;const input=$('message'),message=input.value.trim();if(!message)return;const mode=$('mode').value;if(mode==='task'&&!taskAvailable){await checkCore();if(!taskAvailable){$('status').textContent='Native task execution is not available on the deployed Core.';return}}busy=true;$('send').disabled=true;$('status').textContent='BEAN is thinking…';await initialized;const context=history.slice(-4).map(r=>({role:r.role,text:r.text.slice(0,450)}));await append('user',message);input.value='';input.style.height='';try{const result=await api(message,context,mode);await append('assistant',result.answer,result.receipt_id||'');$('status').textContent=''}catch(err){$('status').textContent='BEAN could not respond. Please try again.';input.value=message;history.pop();render();await saveHistory()}finally{busy=false;$('send').disabled=false;input.focus()}});
+$('message').addEventListener('input',e=>{e.target.style.height='auto';e.target.style.height=Math.min(e.target.scrollHeight,180)+'px'});
+$('message').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey&&!e.isComposing){e.preventDefault();$('chat').requestSubmit()}});
+</script>
+</body>
+</html>
