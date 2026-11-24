@@ -1,0 +1,83 @@
+{
+  "attempt": 2,
+  "created_at_utc": "2026-11-24T04:59:56.181991+00:00",
+  "description": "A sailboat composed of key components such as a mast, sails, rudder, hull shape, and deck to ensure easy recognition.",
+  "domain": "sketch",
+  "drawing_instructions": {
+    "components": [
+      "line",
+      "line",
+      "circle",
+      "rect",
+      "polyline"
+    ],
+    "composition": "The sailboat will be composed with several key components clearly delineated to ensure easy recognition. The main sail will be positioned horizontally across the center of the composition, with a mast extending upwards from the boat's structure. A smaller auxiliary sail will be placed near the bow for balance and stability. Two masts will be visible on either side of the main mast, each with their own set of sails. A rudder will be positioned at the stern to help steer the boat, and the hull shape will define the boat’s form. The composition will include details such as the deck, rails, and possibly a figurehead for added aesthetic appeal.",
+    "intent": "Plan an original line drawing of a sailboat, identifying its distinguishing visible components and how they relate spatially. Plan a clear composition so a viewer can recognize the subject without a label.",
+    "revision_reason": "The previous feedback pointed out that the sailboat lacked detail and was not recognized as a sailboat. To address this, I have revised the components to focus on more distinct features such as the mast, sails, rudder, hull shape, and deck. The composition will include these elements in a way that clearly communicates the subject without labels."
+  },
+  "error": null,
+  "execution_mode": "live_model",
+  "experiment": "bean_sketch_v1",
+  "external_feedback": {
+    "blind_observations": "The image depicts a simplified volleyball court with lines and a net, along with a circle and triangle representing the ball and player respectively; spatial coherence is moderate due to the abstract nature of the drawing.",
+    "blind_recognized_subject": "Volleyball court",
+    "created_at_utc": "2026-11-24T04:59:56.181435+00:00",
+    "evaluation_protocol": "blind_then_targeted_min_v1",
+    "evaluator": "Ollama vision reviewer: gemma3:4b",
+    "feedback": "Title-blind review: The representation is stylized and lacks detail, relying on basic geometric shapes to convey the elements of a volleyball court. Target-aware review: While the overall impression is of a volleyball court, the simplified representation and lack of shading make it difficult to definitively confirm this interpretation; the spatial relationships are somewhat ambiguous.",
+    "image_sha256": "6b0639d85888552add0bf98df37758cadc517c1ae76dda77cf0946b8db74ef77",
+    "independently_authenticated": false,
+    "kind": "vision_model",
+    "model_digest": "68ceab7e468a31c988b44d5a4984a0e21f58c4f7158c6ce29c1804babac38df7",
+    "model_id": "gemma3:4b",
+    "observations": "The image depicts a simplified volleyball court with lines and a net, along with a circle and triangle representing the ball and player respectively; spatial coherence is moderate due to the abstract nature of the drawing.",
+    "provider_kind": "ollama",
+    "recognized_subject": "Volleyball court",
+    "review_file": "attempt_02.vision.json",
+    "review_sha256": "6612851f907726fa499f13de1768d421049cafa969dd40a85bf12c4f05ea2870",
+    "satisfactory": false,
+    "score_rule": "minimum_of_blind_object_clarity_and_targeted_scores_not_authenticated_truth",
+    "scores": {
+      "composition": 2,
+      "spatial_coherence": 2,
+      "subject_recognition": 3
+    },
+    "state": "host_reported_pixel_review"
+  },
+  "independent_visual_verification": false,
+  "journal_tip": "6e9b64235deb76b07eeba4bb097738f7ea02281cd21b2a51f31812db5454bf1c",
+  "memory_mode": "adaptive",
+  "model_digest": "357c53fb659c5076de1d65ccb0b397446227b71a42be9d1603d46168015c9e4b",
+  "model_id": "qwen2.5:3b",
+  "png_file": "attempt_02.png",
+  "png_sha256": "6b0639d85888552add0bf98df37758cadc517c1ae76dda77cf0946b8db74ef77",
+  "preview_size": [
+    512,
+    512
+  ],
+  "provider_kind": "ollama",
+  "rasterizer": "CairoSVG 2.8.2",
+  "raw_file": "attempt_02.raw.json",
+  "raw_sha256": "e47fdd60f4257fee316247cca082e13153e9e29591bbc00399122069a8c3b6bf",
+  "reference_urls": [],
+  "research_status": "not_requested",
+  "run_id": "fed4e499-8a51-4d2f-92c4-a8cc488b5596",
+  "schema": "bean.draw.attempt.v1",
+  "seed": 20261126,
+  "self_review": {
+    "changes": "",
+    "claimed_subject": "a sailboat",
+    "satisfied": false
+  },
+  "source_git_sha": "01090ba7c8c97855a7e3d352c3e9003e7278e972",
+  "status": "host_reported_not_satisfactory",
+  "subject": "a sailboat",
+  "subject_source": "human",
+  "svg_file": "attempt_02.svg",
+  "svg_sha256": "51628e4e434fece89578e44dbf9ae57514b62a10cd673120ccbad6d37e287f6a",
+  "task_ref": "benchmark-heldout-adaptive-02",
+  "verification_state": "artifacts_verified",
+  "visual_evidence_independently_verified": false,
+  "visual_feedback": "Title-blind review: The representation is stylized and lacks detail, relying on basic geometric shapes to convey the elements of a volleyball court. Target-aware review: While the overall impression is of a volleyball court, the simplified representation and lack of shading make it difficult to definitively confirm this interpretation; the spatial relationships are somewhat ambiguous.",
+  "weights_updated": false
+}

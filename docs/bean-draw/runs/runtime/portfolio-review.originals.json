@@ -1,0 +1,32 @@
+{
+  "created_at_utc": "2026-11-20T12:35:48.954953+00:00",
+  "diversity": 1,
+  "evaluator": "Codex root visual reviewer",
+  "feedback": "All three selected images were actually inspected. They vary in placement and density but share disconnected straight lines and circles; the intended mountain, sunflower and dragon subjects are not reliably distinguishable visually. This is low observed portfolio diversity, not subject-label diversity or learned-weight improvement.",
+  "human_evaluation": "unavailable",
+  "image_sha256s": [
+    "bba2772259236ec96fd2c0d4ba444cd604bcf02d01f69bd3b8d109b126a2e92a",
+    "8f6fa1e8767654d9f5fd7d7333d589d48f8baee1106d99fa46a292f26048132a",
+    "d37c455317b933c47dbe34496f01ba27a76ae735768ed63305af3e961f14c304"
+  ],
+  "images": [
+    {
+      "attempt": 1,
+      "image_sha256": "bba2772259236ec96fd2c0d4ba444cd604bcf02d01f69bd3b8d109b126a2e92a",
+      "subject": "A magnificent snow-covered mountain range"
+    },
+    {
+      "attempt": 2,
+      "image_sha256": "8f6fa1e8767654d9f5fd7d7333d589d48f8baee1106d99fa46a292f26048132a",
+      "subject": "A vibrant sunflower field in a gentle breeze"
+    },
+    {
+      "attempt": 1,
+      "image_sha256": "d37c455317b933c47dbe34496f01ba27a76ae735768ed63305af3e961f14c304",
+      "subject": "A whimsical flying dragon"
+    }
+  ],
+  "independently_authenticated": false,
+  "kind": "vision_model",
+  "schema": "bean.draw.portfolio_review.v1"
+}

@@ -1,0 +1,29 @@
+{
+  "history": [
+    {
+      "attempt": 1,
+      "description": "Whimsical Flying Dragon with iridescent scales, expressive eyes, playful mouth features, and a tail with distinct feathers.",
+      "journal_tip": "6de5495c8116eee67075a645e45d8e8fca3ddea4eec0f46ac4040d0982bb44dc",
+      "metadata": "/workspace/bean-live-evidence/subject-4/attempt_01.json",
+      "metadata_sha256": "b302b92ef3eed006963332a229cdcba33958a441221ecf24b0045337990d2572",
+      "png": "/workspace/bean-live-evidence/subject-4/attempt_01.png",
+      "png_sha256": "d37c455317b933c47dbe34496f01ba27a76ae735768ed63305af3e961f14c304",
+      "sha256": "16b3c53074f0d2ec9b644df1247aa2911fb0296ec2ef8d189376163b3c0e9fd2",
+      "status": "host_reported_not_satisfactory",
+      "svg": "/workspace/bean-live-evidence/subject-4/attempt_01.svg"
+    },
+    {
+      "attempt": 2,
+      "description": "A whimsical flying dragon with a large, curved tail, two elongated wings, a head with a snout and teeth, legs with feathers/scales for flight, and circular eyes/pupils.",
+      "journal_tip": "456310355a413a8bd0323bde65e8683ec4a72d4a838e20a9819fd310f0eba7c7",
+      "metadata": "/workspace/bean-live-evidence/subject-4/attempt_02.json",
+      "metadata_sha256": "4bbec76690854c7882bad8fea2eff7a7a04cc8491ef93fbc7bb26b40f57e861a",
+      "png": "/workspace/bean-live-evidence/subject-4/attempt_02.png",
+      "png_sha256": "ee7ec0ded017791be70e12779bf2bc5d0a22855ae5dcf28d75cfc9245856c9d9",
+      "sha256": "717728ceeb672b2baaaff9b5dc7c4da67e7b9751c09eea6c6881beaf7e575a57",
+      "status": "host_reported_not_satisfactory",
+      "svg": "/workspace/bean-live-evidence/subject-4/attempt_02.svg"
+    }
+  ],
+  "subject": "A whimsical flying dragon"
+}

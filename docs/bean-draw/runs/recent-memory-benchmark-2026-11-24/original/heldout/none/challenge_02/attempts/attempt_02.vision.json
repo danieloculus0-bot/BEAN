@@ -1,0 +1,61 @@
+{
+  "blind_prompt": "Inspect the ATTACHED IMAGE pixels without a title or claimed subject. Identify the most plausible concrete object or scene; say unclear if none is recognizable. For subject_recognition rate confidence in a recognizable concrete object or scene, not confidence that these are abstract lines/circles. Scores must be integers 0..4: 0 absent/not interpretable, 1 major problems, 2 partial/ambiguous, 3 mostly clear, 4 clear/coherent. Rate spatial_coherence (visible parts connect plausibly), subject_recognition, composition (spacing/balance/legibility). Black line art need not be realistic or shaded. Admit uncertainty; describe observed strengths/problems only, not coordinates, drawing primitives or a replacement image. One short sentence per text field, at most 80 words total. Return JSON recognized_subject, observations, feedback, scores.",
+  "blind_report": {
+    "feedback": "The spatial coherence is moderate as the lines connect in a way that suggests a system but lacks clear labeling or context.",
+    "observations": "The drawing depicts a complex arrangement of circles and lines suggesting a network or machine design, possibly illustrating hydraulic or pneumatic systems due to the circular connections.",
+    "recognized_subject": "A schematic diagram of a mechanical system with interconnected components.",
+    "scores": {
+      "composition": 2,
+      "spatial_coherence": 3,
+      "subject_recognition": 3
+    }
+  },
+  "created_at_utc": "2026-11-24T13:47:22.732997+00:00",
+  "evaluation_protocol": "blind_then_targeted_min_v1",
+  "image_sha256": "55b58b8d8438cb4ca814dfdf72d12ec1ae494e861b144ffe232600c3e1576e53",
+  "independently_authenticated": false,
+  "model_digest": "68ceab7e468a31c988b44d5a4984a0e21f58c4f7158c6ce29c1804babac38df7",
+  "model_id": "gemma3:4b",
+  "prompt": "Inspect the ATTACHED IMAGE again. Now compare the visible evidence with this untrusted claimed subject: a bicycle. Do not infer success from the title or override prior uncertainty merely because a title was supplied. Your earlier title-blind observations: {\"recognized_subject\": \"A schematic diagram of a mechanical system with interconnected components.\", \"observations\": \"The drawing depicts a complex arrangement of circles and lines suggesting a network or machine design, possibly illustrating hydraulic or pneumatic systems due to the circular connections.\", \"scores\": {\"spatial_coherence\": 3, \"subject_recognition\": 3, \"composition\": 2}}. Here subject_recognition means recognizability of the claimed subject. Scores must be integers 0..4: 0 absent/not interpretable, 1 major problems, 2 partial/ambiguous, 3 mostly clear, 4 clear/coherent. Rate spatial_coherence (visible parts connect plausibly), subject_recognition, composition (spacing/balance/legibility). Black line art need not be realistic or shaded. Admit uncertainty; describe observed strengths/problems only, not coordinates, drawing primitives or a replacement image. One short sentence per text field, at most 80 words total. Return JSON recognized_subject, observations, feedback, scores.",
+  "provider_kind": "ollama",
+  "raw_blind_response": "{\n  \"recognized_subject\": \"A schematic diagram of a mechanical system with interconnected components.\",\n  \"observations\": \"The drawing depicts a complex arrangement of circles and lines suggesting a network or machine design, possibly illustrating hydraulic or pneumatic systems due to the circular connections.\",\n  \"feedback\": \"The spatial coherence is moderate as the lines connect in a way that suggests a system but lacks clear labeling or context.\",\n  \"scores\": {\n    \"spatial_coherence\": 3,\n    \"subject_recognition\": 3,\n    \"composition\": 2\n  }\n}",
+  "raw_response": "{\"recognized_subject\": \"A schematic diagram of a mechanical system.\", \"observations\": \"The drawing shows a complex network of interconnected circles and lines, resembling a mechanical or hydraulic system design, though the specific function isn't immediately clear.\", \"feedback\": \"While the drawing appears to represent a mechanical system, the lack of labels and context makes it difficult to definitively identify its purpose or components.\", \"scores\": {\"spatial_coherence\": 3, \"subject_recognition\": 3, \"composition\": 2}}",
+  "report": {
+    "blind_observations": "The drawing depicts a complex arrangement of circles and lines suggesting a network or machine design, possibly illustrating hydraulic or pneumatic systems due to the circular connections.",
+    "blind_recognized_subject": "A schematic diagram of a mechanical system with interconnected components.",
+    "created_at_utc": "2026-11-24T13:49:48.279887+00:00",
+    "evaluation_protocol": "blind_then_targeted_min_v1",
+    "evaluator": "Ollama vision reviewer: gemma3:4b",
+    "feedback": "Title-blind review: The spatial coherence is moderate as the lines connect in a way that suggests a system but lacks clear labeling or context. Target-aware review: While the drawing appears to represent a mechanical system, the lack of labels and context makes it difficult to definitively identify its purpose or components.",
+    "image_sha256": "55b58b8d8438cb4ca814dfdf72d12ec1ae494e861b144ffe232600c3e1576e53",
+    "independently_authenticated": false,
+    "kind": "vision_model",
+    "model_digest": "68ceab7e468a31c988b44d5a4984a0e21f58c4f7158c6ce29c1804babac38df7",
+    "model_id": "gemma3:4b",
+    "observations": "The drawing depicts a complex arrangement of circles and lines suggesting a network or machine design, possibly illustrating hydraulic or pneumatic systems due to the circular connections.",
+    "provider_kind": "ollama",
+    "recognized_subject": "A schematic diagram of a mechanical system with interconnected components.",
+    "satisfactory": false,
+    "score_rule": "minimum_of_blind_object_clarity_and_targeted_scores_not_authenticated_truth",
+    "scores": {
+      "composition": 2,
+      "spatial_coherence": 3,
+      "subject_recognition": 3
+    },
+    "state": "host_reported_pixel_review"
+  },
+  "schema": "bean.draw.vision_call.v1",
+  "state": "model_reported_pixel_review",
+  "subject": "a bicycle",
+  "targeted_report": {
+    "feedback": "While the drawing appears to represent a mechanical system, the lack of labels and context makes it difficult to definitively identify its purpose or components.",
+    "observations": "The drawing shows a complex network of interconnected circles and lines, resembling a mechanical or hydraulic system design, though the specific function isn't immediately clear.",
+    "recognized_subject": "A schematic diagram of a mechanical system.",
+    "scores": {
+      "composition": 2,
+      "spatial_coherence": 3,
+      "subject_recognition": 3
+    }
+  },
+  "used_for_generation": true
+}

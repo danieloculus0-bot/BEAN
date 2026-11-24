@@ -1,0 +1,56 @@
+{
+  "blobs": [
+    {
+      "bytes": 144,
+      "hash_matches": true,
+      "media_type": "application/vnd.docker.container.image.v1+json",
+      "sha256": "4bf7b0a45f1af5d9f6f8b847044d8379eef6b36f3ca8b4dcc63a8dfed7426e53"
+    },
+    {
+      "bytes": 2499012288,
+      "hash_matches": true,
+      "media_type": "application/vnd.ollama.image.model",
+      "sha256": "f06e91e18fc74295d0c781bf91622508c75655e2c18ed869d52447ffe1e667e1"
+    },
+    {
+      "bytes": 851251104,
+      "hash_matches": true,
+      "media_type": "application/vnd.ollama.image.projector",
+      "sha256": "7a50f9607a47389c028f2598c1f2d3e23b61913b4ce3c4a9eaaca62de1b9e098"
+    },
+    {
+      "bytes": 358,
+      "hash_matches": true,
+      "media_type": "application/vnd.ollama.image.template",
+      "sha256": "e0a42594d802e5d31cdc786deb4823edb8adff66094d49de8fffe976d753e348"
+    },
+    {
+      "bytes": 8432,
+      "hash_matches": true,
+      "media_type": "application/vnd.ollama.image.license",
+      "sha256": "dd084c7d92a3c1c14cc09ae77153b903fd2024b64a100a0cc8ec9316063d2dbc"
+    },
+    {
+      "bytes": 77,
+      "hash_matches": true,
+      "media_type": "application/vnd.ollama.image.params",
+      "sha256": "3116c52250752e00dd06b16382e952bd33c34fd79fc4fe3a5d2c77cf7de1b14b"
+    },
+    {
+      "bytes": 1282,
+      "hash_matches": true,
+      "media_type": "application/vnd.docker.distribution.manifest.v2+json",
+      "sha256": "68ceab7e468a31c988b44d5a4984a0e21f58c4f7158c6ce29c1804babac38df7"
+    }
+  ],
+  "capabilities": [
+    "completion",
+    "vision"
+  ],
+  "manifest_sha256": "01e634c54b8d2dbc02b3804fa6165aa4952e19a4b9558fd51a2a496e51a252c1",
+  "model": "gemma3:4b",
+  "model_digest": "68ceab7e468a31c988b44d5a4984a0e21f58c4f7158c6ce29c1804babac38df7",
+  "provider": "ollama",
+  "schema": "bean.vision.model.integrity.v1",
+  "utc": "2026-11-24T03:31:32.734893+00:00"
+}

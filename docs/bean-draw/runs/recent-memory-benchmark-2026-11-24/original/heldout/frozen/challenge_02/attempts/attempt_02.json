@@ -1,0 +1,83 @@
+{
+  "attempt": 2,
+  "created_at_utc": "2026-11-24T14:14:58.269662+00:00",
+  "description": "A clear and recognizable bicycle composed of several key components: front wheel, rear wheel, frame, handlebars, seat, pedals, and chain.",
+  "domain": "sketch",
+  "drawing_instructions": {
+    "components": [
+      "line",
+      "circle",
+      "line",
+      "rect",
+      "circle"
+    ],
+    "composition": "A clear and recognizable bicycle composed of several key lines, circles, and rectangles. The bike's front wheel is represented by two small circles (one for the rim, one for the tire), a line representing the spokes, and a line for the handlebars. The rear wheel uses similar elements, with additional lines to represent the seat tube. The rectangle represents the frame of the bicycle, with additional lines indicating the pedals and chain.",
+    "intent": "Plan a line drawing of a bicycle. Identify its distinguishing visible components and how they relate spatially to create a clear composition for a viewer to recognize the subject without a label.",
+    "revision_reason": "The previous feedback indicated that the subject was recognized as a musical staff instead of a bicycle. To address this, I have revised the composition to clearly depict the visible components of a bicycle: front wheel, rear wheel, frame, handlebars, seat, and pedals. The lines for spokes, chains, and seat tube are included for additional detail. This should help in making it clear that the drawing is of a bicycle."
+  },
+  "error": null,
+  "execution_mode": "live_model",
+  "experiment": "bean_sketch_v1",
+  "external_feedback": {
+    "blind_observations": "The image depicts a schematic representation of an electrical circuit with various components like resistors and capacitors shown as lines and symbols.",
+    "blind_recognized_subject": "Electrical circuit diagram",
+    "created_at_utc": "2026-11-24T14:14:58.268978+00:00",
+    "evaluation_protocol": "blind_then_targeted_min_v1",
+    "evaluator": "Ollama vision reviewer: gemma3:4b",
+    "feedback": "Title-blind review: The diagram is relatively clear in its depiction of basic circuit elements, although the specific values or connections are not detailed. Target-aware review: While the image resembles a circuit diagram, it doesn't clearly depict a bicycle; the elements are abstract and don’t align with bicycle components.",
+    "image_sha256": "fa17cefcf4ff6629792515360c5c7d2123633d36f32569f053533614d71ef787",
+    "independently_authenticated": false,
+    "kind": "vision_model",
+    "model_digest": "68ceab7e468a31c988b44d5a4984a0e21f58c4f7158c6ce29c1804babac38df7",
+    "model_id": "gemma3:4b",
+    "observations": "The image depicts a schematic representation of an electrical circuit with various components like resistors and capacitors shown as lines and symbols.",
+    "provider_kind": "ollama",
+    "recognized_subject": "Electrical circuit diagram",
+    "review_file": "attempt_02.vision.json",
+    "review_sha256": "0470f07cf632503ca026bfec933ecdb97ec7ecd727ca18df24201228de05cdc9",
+    "satisfactory": false,
+    "score_rule": "minimum_of_blind_object_clarity_and_targeted_scores_not_authenticated_truth",
+    "scores": {
+      "composition": 3,
+      "spatial_coherence": 3,
+      "subject_recognition": 2
+    },
+    "state": "host_reported_pixel_review"
+  },
+  "independent_visual_verification": false,
+  "journal_tip": "0a8b73126e0e1a8fa68f4642fccc5f8664269b6a53ad07e41de4de73f723c311",
+  "memory_mode": "frozen",
+  "model_digest": "357c53fb659c5076de1d65ccb0b397446227b71a42be9d1603d46168015c9e4b",
+  "model_id": "qwen2.5:3b",
+  "png_file": "attempt_02.png",
+  "png_sha256": "fa17cefcf4ff6629792515360c5c7d2123633d36f32569f053533614d71ef787",
+  "preview_size": [
+    512,
+    512
+  ],
+  "provider_kind": "ollama",
+  "rasterizer": "CairoSVG 2.8.2",
+  "raw_file": "attempt_02.raw.json",
+  "raw_sha256": "3456742974024b9c2bdce1b0589203b52074c4a54e23079cc691fb98691aeb24",
+  "reference_urls": [],
+  "research_status": "not_requested",
+  "run_id": "ab135f29-cbdf-4480-81c3-1863d667b7db",
+  "schema": "bean.draw.attempt.v1",
+  "seed": 202611242,
+  "self_review": {
+    "changes": "",
+    "claimed_subject": "a bicycle",
+    "satisfied": true
+  },
+  "source_git_sha": "bb7128d76a6c210d84234326576ef6bc7f1e2509",
+  "status": "host_reported_not_satisfactory",
+  "subject": "a bicycle",
+  "subject_source": "human",
+  "svg_file": "attempt_02.svg",
+  "svg_sha256": "2bc2fc4b572a18e4680ee9bf6ba92ee0323591ba3835635478625f189f41584b",
+  "task_ref": "benchmark-heldout-frozen-02",
+  "verification_state": "artifacts_verified",
+  "visual_evidence_independently_verified": false,
+  "visual_feedback": "Title-blind review: The diagram is relatively clear in its depiction of basic circuit elements, although the specific values or connections are not detailed. Target-aware review: While the image resembles a circuit diagram, it doesn't clearly depict a bicycle; the elements are abstract and don’t align with bicycle components.",
+  "weights_updated": false
+}

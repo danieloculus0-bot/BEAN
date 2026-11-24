@@ -1,0 +1,16 @@
+{
+  "adaptive_sailboat_prior_trial_subjects": [
+    "a teapot",
+    "a teapot",
+    "a cat",
+    "a cat"
+  ],
+  "adaptive_full_context_characters": 6197,
+  "frozen_full_context_characters": 3215,
+  "first_trial_projected_json_characters": 1566,
+  "first_cat_text_offset": 3229,
+  "budget_characters": 2400,
+  "effective_prefix_equal": true,
+  "effective_prefix_is_complete_json": false,
+  "new_cat_feedback_stored_but_not_in_prompt": true
+}

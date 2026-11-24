@@ -1,0 +1,60 @@
+{
+  "attempts": 2,
+  "completed_at_utc": "2026-11-20T12:34:05.523516+00:00",
+  "created_at_utc": "2026-11-20T12:22:40.972844+00:00",
+  "error": null,
+  "execution_mode": "live_model",
+  "history": [
+    {
+      "attempt": 1,
+      "description": "Whimsical Flying Dragon with iridescent scales, expressive eyes, playful mouth features, and a tail with distinct feathers.",
+      "journal_tip": "6de5495c8116eee67075a645e45d8e8fca3ddea4eec0f46ac4040d0982bb44dc",
+      "metadata": "/workspace/bean-live-evidence/subject-4/attempt_01.json",
+      "metadata_sha256": "b302b92ef3eed006963332a229cdcba33958a441221ecf24b0045337990d2572",
+      "png": "/workspace/bean-live-evidence/subject-4/attempt_01.png",
+      "png_sha256": "d37c455317b933c47dbe34496f01ba27a76ae735768ed63305af3e961f14c304",
+      "sha256": "16b3c53074f0d2ec9b644df1247aa2911fb0296ec2ef8d189376163b3c0e9fd2",
+      "status": "host_reported_not_satisfactory",
+      "svg": "/workspace/bean-live-evidence/subject-4/attempt_01.svg"
+    },
+    {
+      "attempt": 2,
+      "description": "A whimsical flying dragon with a large, curved tail, two elongated wings, a head with a snout and teeth, legs with feathers/scales for flight, and circular eyes/pupils.",
+      "journal_tip": "456310355a413a8bd0323bde65e8683ec4a72d4a838e20a9819fd310f0eba7c7",
+      "metadata": "/workspace/bean-live-evidence/subject-4/attempt_02.json",
+      "metadata_sha256": "4bbec76690854c7882bad8fea2eff7a7a04cc8491ef93fbc7bb26b40f57e861a",
+      "png": "/workspace/bean-live-evidence/subject-4/attempt_02.png",
+      "png_sha256": "ee7ec0ded017791be70e12779bf2bc5d0a22855ae5dcf28d75cfc9245856c9d9",
+      "sha256": "717728ceeb672b2baaaff9b5dc7c4da67e7b9751c09eea6c6881beaf7e575a57",
+      "status": "host_reported_not_satisfactory",
+      "svg": "/workspace/bean-live-evidence/subject-4/attempt_02.svg"
+    }
+  ],
+  "independent_visual_verification": false,
+  "journal_tip": "9b2bd6173545d5a7419c7041226f98288cbb40c6fb8c7e07db588163dcb23915",
+  "learning_improvement_verified": false,
+  "memory_context_sha256": "e2ac781d9c5a9a3797f32b90d68ff5b654fe00f0a63b79e36ca4175dc42693ad",
+  "memory_mode": "adaptive",
+  "model_calls_sha256": "6ecaa1fc11c6cc29881501a0fd25ba90a7d47bd4ec0927167f12a94a43e009eb",
+  "model_digest": "357c53fb659c5076de1d65ccb0b397446227b71a42be9d1603d46168015c9e4b",
+  "model_id": "qwen2.5:3b",
+  "provider_kind": "ollama",
+  "run_id": "9df57048-59c5-4219-91f3-4818e2d818b3",
+  "runtime_source_sha256": {
+    "bean/creativity/artifacts.py": "129106aefab02ea7d299e44ed74da0ab617d4cbec091f7e2acf3ad53c518bb41",
+    "bean/creativity/sketch_lab.py": "7d69b3fbe4fa3824132b150f1d6d5606d59385fdf58cc0aca57ece1045ab43f4",
+    "bean/voice/ollama.py": "3f852e850e998767f43bd1c0842852c3562aecfce5152d8b8081e8a6ac8d19ee",
+    "scripts/build_bean_draw_gallery.py": "42d7b37089775b56acf7512d2e6ce6c6be098813e709d2c9644def51c58e18a1"
+  },
+  "schema": "bean.draw.run.v1",
+  "seed": 20261122,
+  "selected_attempt": 1,
+  "selection_reason": "The first attempt (attempt_01) shows significant progress in creating a whimsical flying dragon with detailed elements such as iridescent scales, distinct feathers at the tail end, and playful mouth features like the toothy fang. The second attempt (attempt_02), while reducing clutter, did not show improvements in recognizing the subject (whimsical flying dragon) compared to the first attempt.",
+  "selection_state": "model_selected_from_recorded_evidence",
+  "source_git_sha": "3fc06f4777a68b492928d6a08a0dd251977af895",
+  "state": "host_reported_not_satisfactory",
+  "subject": "A whimsical flying dragon",
+  "subject_source": "autonomous",
+  "task_ref": "original-subject-4",
+  "weights_updated": false
+}

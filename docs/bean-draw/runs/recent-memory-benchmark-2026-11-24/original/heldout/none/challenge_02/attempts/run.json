@@ -1,0 +1,61 @@
+{
+  "attempts": 2,
+  "completed_at_utc": "2026-11-24T13:51:25.473958+00:00",
+  "created_at_utc": "2026-11-24T13:40:51.947888+00:00",
+  "error": null,
+  "execution_mode": "live_model",
+  "history": [
+    {
+      "attempt": 1,
+      "description": "A unique black line art of a bicycle with new composition, no repetition.",
+      "journal_tip": "88d7bddd10803cb7b881cb6183440bacdb3c586767efc95e27cb819bdf11fc05",
+      "metadata": "/workspace/bean-live-evidence/recent-memory-benchmark/heldout/none/challenge_02/attempts/attempt_01.json",
+      "metadata_sha256": "4bc28e1b8ec7830b04bdf906ad4fd16195968ad202381370263cfd8932a18703",
+      "png": "/workspace/bean-live-evidence/recent-memory-benchmark/heldout/none/challenge_02/attempts/attempt_01.png",
+      "png_sha256": "5eb6f22c760212515bbc1ded7c6289d9a445d4d58f0d0710a4a701487e28a4df",
+      "sha256": "a369c35072e7c9c8c2559a5bf19ae052e685d2e0a5425fd98ed355b06b5e489d",
+      "status": "host_reported_satisfactory",
+      "svg": "/workspace/bean-live-evidence/recent-memory-benchmark/heldout/none/challenge_02/attempts/attempt_01.svg"
+    },
+    {
+      "attempt": 2,
+      "description": "Recognizable bicycle components in black line art: wheels (circular), frame (rectangles), handlebars (lines), seat (ellipse), pedals (lines), and chain (line between two points).",
+      "journal_tip": "aac4e03f6f7db6d207790f20f856985fb2ca32d18c43bc1a63bd30c0f0435b1b",
+      "metadata": "/workspace/bean-live-evidence/recent-memory-benchmark/heldout/none/challenge_02/attempts/attempt_02.json",
+      "metadata_sha256": "9cd0755e641f2f6d5c507da0c4773896ba82b91d2cb87b503d2e61ff572d99f7",
+      "png": "/workspace/bean-live-evidence/recent-memory-benchmark/heldout/none/challenge_02/attempts/attempt_02.png",
+      "png_sha256": "55b58b8d8438cb4ca814dfdf72d12ec1ae494e861b144ffe232600c3e1576e53",
+      "sha256": "673db0dabde998670f3b312e7fdbf0a2512e157e31bfc7de995a8b8de8e0ce45",
+      "status": "host_reported_not_satisfactory",
+      "svg": "/workspace/bean-live-evidence/recent-memory-benchmark/heldout/none/challenge_02/attempts/attempt_02.svg"
+    }
+  ],
+  "independent_visual_verification": false,
+  "journal_tip": "22a8d1f0a00de6cde501b0f50dff6d131c9c3786c72b46bd16cddae981b15df6",
+  "learning_improvement_verified": false,
+  "memory_context_records": [],
+  "memory_context_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+  "memory_mode": "none",
+  "model_calls_sha256": "112eadfaf443b7e05fc1b0f6a8d5f0934c3ad9adad5195dbf7f0ae0329af476f",
+  "model_digest": "357c53fb659c5076de1d65ccb0b397446227b71a42be9d1603d46168015c9e4b",
+  "model_id": "qwen2.5:3b",
+  "provider_kind": "ollama",
+  "run_id": "ba87aa81-9c9b-401d-aa6e-9300d33924fc",
+  "runtime_source_sha256": {
+    "bean/creativity/artifacts.py": "c72923730d7048fe4a502cb1d2c9ecec993f22e1ec64319d5cb1a9109ccec938",
+    "bean/creativity/sketch_lab.py": "4ed12705d94669c005ee6279d30619e502a15a2e4e7ad39e99a2f922ef53d7b3",
+    "bean/voice/ollama.py": "3f852e850e998767f43bd1c0842852c3562aecfce5152d8b8081e8a6ac8d19ee",
+    "scripts/build_bean_draw_gallery.py": "f306b06c9db0c2d095895c01fc927f646c311a41b6be6fe88ca5ed7a1a888915"
+  },
+  "schema": "bean.draw.run.v1",
+  "seed": 202611242,
+  "selected_attempt": 1,
+  "selection_reason": "The retained attempt depicts a unique black line art of a bicycle with a new composition, no repetition. The drawing instructions detail the placement and connection of various parts like wheels, frame, handlebars, seat, pedals, and chain in a visually coherent manner without relying on previously made elements. This makes it a strong candidate for maintaining as the selected attempt.",
+  "selection_state": "model_selected_from_recorded_evidence",
+  "source_git_sha": "bb7128d76a6c210d84234326576ef6bc7f1e2509",
+  "state": "host_reported_not_satisfactory",
+  "subject": "a bicycle",
+  "subject_source": "human",
+  "task_ref": "benchmark-heldout-none-02",
+  "weights_updated": false
+}

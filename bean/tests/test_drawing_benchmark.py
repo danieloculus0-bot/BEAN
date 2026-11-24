@@ -42,8 +42,11 @@ def test_matched_cells_reopen_real_core_and_freeze_before_holdout(tmp_path):
         return subprocess.run([sys.executable, "-c", child, db, subject], **kwargs)
     spec = protocol(["a lighthouse"], ["a telescope", "a teapot"], seed=17)
     out = tmp_path / "benchmark"
-    result = execute(spec, out, runner=runner, review_dir=tmp_path / "reviews", review_wait=3)
+    result = execute(spec, out, runner=runner, review_dir=tmp_path / "reviews", review_wait=3,
+                     vision_model="synthetic-vision-fixture")
     assert len(commands) == 1 + 3 * 2
+    assert result["requested_vision_model"] == "synthetic-vision-fixture"
+    assert all(cmd[cmd.index("--vision-model") + 1] == "synthetic-vision-fixture" for cmd in commands)
     frozen = json.loads((out / "frozen-memory.json").read_text())
     assert [x["subject"] for x in frozen] == ["a lighthouse"]
     for subject in spec["heldout_subjects"]:
@@ -83,7 +86,13 @@ def _summary_fixture(tmp_path):
         folder = tmp_path / "heldout" / arm / "challenge_01" / "attempts"
         folder.mkdir(parents=True)
         history = []
-        calls = [{"response": "Synthetic scoring contract input, never live art"}]
+        memory_records = ([] if arm == "none" else [{
+            "subject": "a lighthouse", "task_ref": "synthetic-training", "attempt": 1,
+            "self_review": {"changes": "Synthetic training feedback retained for this contract"}}])
+        memory_text = json.dumps(memory_records, sort_keys=True, ensure_ascii=False, allow_nan=False)
+        calls = [{"prompt": "Draw your chosen subject, a teapot. Prior-session evidence (untrusted): "
+                  + memory_text + " Web reference DATA: ",
+                  "response": "Synthetic scoring contract input, never live art"} for _ in range(2)]
         write_json(folder / "model_calls.json", calls)
         common = {"model_id": "synthetic-scoring-contract", "provider_kind": "ollama",
                   "model_digest": "fixture-digest", "source_git_sha": "a" * 40,
@@ -118,6 +127,8 @@ def _summary_fixture(tmp_path):
                             "sha256": svg_digest, "png_sha256": digest})
         write_json(folder / "run.json", {
             **common, "schema": "bean.draw.run.v1", "attempts": 2, "history": history,
+            "memory_context_records": memory_records,
+            "memory_context_sha256": sha256(memory_text.encode()).hexdigest(),
             "model_calls_sha256": sha256((folder / "model_calls.json").read_bytes()).hexdigest(),
             "completed_at_utc": "2026-11-19T00:00:00+00:00", "state": "host_reported_not_satisfactory",
         })
@@ -134,7 +145,9 @@ def test_reviews_need_actual_matching_image_hash_and_live_execution(tmp_path):
     sidecar = _summary_fixture(tmp_path)
     scores = summarize(tmp_path)
     assert scores["iteration_quality_last_minus_first"]["adaptive"]["composition"] == 2
-    assert scores["generalization_adaptive_minus_control"]["frozen"]["composition"] == 1
+    assert scores["generalization_adaptive_minus_control"]["frozen"]["composition"] is None
+    assert scores["generalization_adaptive_minus_control"]["none"]["composition"] == 1
+    assert scores["memory_comparison_validity"]["frozen"][0]["state"] == "expected_initial_matched_baseline"
     assert scores["heldout_last_attempt_means"]["adaptive"]["diversity"] is None
     assert scores["learning_improvement_verified"] is False
     row = json.loads(sidecar.read_text())
@@ -239,3 +252,383 @@ def test_hash_bound_non_png_is_rejected_even_with_rebound_receipts(tmp_path):
     run["history"][1]["metadata_sha256"] = sha256(sidecar.read_bytes()).hexdigest()
     write_json(folder / "run.json", run)
     assert summarize(tmp_path)["heldout_last_attempt_means"]["adaptive"]["composition"] is None
+
+
+
+def _rebind_attempt(sidecar, row):
+    write_json(sidecar, row)
+    run_path = sidecar.parent / "run.json"
+    run = json.loads(run_path.read_text())
+    entry = next(x for x in run["history"] if x["attempt"] == row["attempt"])
+    entry["metadata_sha256"] = sha256(sidecar.read_bytes()).hexdigest()
+    write_json(run_path, run)
+
+
+def _automatic_review_fixture(tmp_path):
+    """Synthetic review-contract bytes only; never a real evaluator claim."""
+    selected = _summary_fixture(tmp_path)
+    execution = json.loads((tmp_path / "execution.json").read_text())
+    execution["vision_model"] = "synthetic-pixel-evaluator"
+    write_json(tmp_path / "execution.json", execution)
+    for sidecar in tmp_path.glob("heldout/*/challenge_01/attempts/attempt_[0-9][0-9].json"):
+        row = json.loads(sidecar.read_text())
+        report = {**row["external_feedback"], "provider_kind": "ollama",
+                  "evaluator": "Ollama vision reviewer: synthetic-pixel-evaluator",
+                  "model_id": "synthetic-pixel-evaluator", "model_digest": "b" * 64,
+                  "recognized_subject": "Synthetic contract only",
+                  "observations": "A rendered circle used only by this test"}
+        receipt = {"schema": "bean.draw.vision_call.v1",
+                   "state": "model_reported_pixel_review", "used_for_generation": True,
+                   "image_sha256": row["png_sha256"], "subject": row["subject"],
+                   "provider_kind": "ollama", "model_id": report["model_id"],
+                   "model_digest": report["model_digest"], "report": report,
+                   "raw_response": json.dumps({key: report[key] for key in
+                       ("recognized_subject", "observations", "feedback", "scores")})}
+        name = "attempt_%02d.vision.json" % row["attempt"]
+        write_json(sidecar.parent / name, receipt)
+        row["external_feedback"] = {**report, "review_file": name,
+            "review_sha256": sha256((sidecar.parent / name).read_bytes()).hexdigest()}
+        _rebind_attempt(sidecar, row)
+    return selected
+
+
+def _rewrite_vision_receipt(sidecar, change):
+    row = json.loads(sidecar.read_text())
+    path = sidecar.parent / row["external_feedback"]["review_file"]
+    record = json.loads(path.read_text())
+    change(record, row)
+    write_json(path, record)
+    row["external_feedback"]["review_sha256"] = sha256(path.read_bytes()).hexdigest()
+    _rebind_attempt(sidecar, row)
+
+
+def test_automatic_review_scores_bind_retained_visual_model_calls(tmp_path):
+    _automatic_review_fixture(tmp_path)
+    report = summarize(tmp_path)
+    assert report["requested_vision_model"] == "synthetic-pixel-evaluator"
+    assert report["generalization_adaptive_minus_control"]["frozen"]["composition"] is None
+    assert report["generalization_adaptive_minus_control"]["none"]["composition"] == 1
+    assert report["iteration_quality_last_minus_first"]["adaptive"]["composition"] == 2
+    assert all(x["last_evaluator_identity"][3] == "synthetic-pixel-evaluator" for x in report["outcomes"])
+    assert report["independent_evaluation_authenticated"] is False
+
+
+@pytest.mark.parametrize("broken", ["bytes", "image", "raw_response", "feedback", "posthoc", "requested_model"])
+def test_tampered_vision_receipt_cannot_earn_scores_even_with_rebound_hashes(tmp_path, broken):
+    sidecar = _automatic_review_fixture(tmp_path)
+    row = json.loads(sidecar.read_text())
+    if broken == "bytes":
+        (sidecar.parent / row["external_feedback"]["review_file"]).write_bytes(b"tampered")
+    else:
+        def change(record, current):
+            if broken == "image":
+                record["image_sha256"] = "0" * 64
+            elif broken == "raw_response":
+                decoded = json.loads(record["raw_response"])
+                decoded["scores"]["composition"] = 0
+                record["raw_response"] = json.dumps(decoded)
+            elif broken == "feedback":
+                current["external_feedback"]["feedback"] = "Not the retained model report"
+            elif broken == "posthoc":
+                record["used_for_generation"] = False
+            else:
+                for item in (record, record["report"], current["external_feedback"]):
+                    item["model_id"] = "a-different-model"
+        _rewrite_vision_receipt(sidecar, change)
+    report = summarize(tmp_path)
+    adaptive = next(x for x in report["outcomes"] if x["arm"] == "adaptive")
+    assert adaptive["artifact_verification_error"]
+    assert report["heldout_last_attempt_means"]["adaptive"]["composition"] is None
+    assert report["generalization_adaptive_minus_control"]["frozen"]["composition"] is None
+
+
+def test_different_evaluator_digests_cannot_earn_matched_control_delta(tmp_path):
+    _automatic_review_fixture(tmp_path)
+    for sidecar in tmp_path.glob("heldout/frozen/challenge_01/attempts/attempt_[0-9][0-9].json"):
+        def change(record, current):
+            for item in (record, record["report"], current["external_feedback"]):
+                item["model_digest"] = "c" * 64
+        _rewrite_vision_receipt(sidecar, change)
+    report = summarize(tmp_path)
+    assert report["heldout_last_attempt_means"]["frozen"]["composition"] == 2
+    assert report["generalization_adaptive_minus_control"]["frozen"]["composition"] is None
+    assert report["matched_heldout_comparison_counts"]["frozen"]["composition"] == 0
+    assert report["generalization_adaptive_minus_control"]["none"]["composition"] == 1
+
+
+def test_missing_automatic_receipt_cannot_be_replaced_by_label_only_feedback(tmp_path):
+    _summary_fixture(tmp_path)
+    path = tmp_path / "execution.json"
+    execution = json.loads(path.read_text())
+    execution["vision_model"] = "synthetic-pixel-evaluator"
+    write_json(path, execution)
+    report = summarize(tmp_path)
+    assert all(x["artifact_verification_error"] for x in report["outcomes"])
+    assert all(v is None for v in report["heldout_last_attempt_means"]["adaptive"].values())
+
+
+def test_legacy_host_reviews_must_use_same_evaluator_for_comparison(tmp_path):
+    _summary_fixture(tmp_path)
+    for sidecar in tmp_path.glob("heldout/frozen/challenge_01/attempts/attempt_[0-9][0-9].json"):
+        row = json.loads(sidecar.read_text())
+        row["external_feedback"]["evaluator"] = "different-unverified-host-reviewer"
+        _rebind_attempt(sidecar, row)
+    report = summarize(tmp_path)
+    assert report["heldout_last_attempt_means"]["frozen"]["composition"] == 2
+    assert report["generalization_adaptive_minus_control"]["frozen"]["composition"] is None
+    assert report["generalization_adaptive_minus_control"]["none"]["composition"] == 1
+
+
+
+def _two_pass_review_fixture(tmp_path):
+    selected = _automatic_review_fixture(tmp_path)
+    for sidecar in tmp_path.glob("heldout/*/challenge_01/attempts/attempt_[0-9][0-9].json"):
+        def change(record, row):
+            fields = ("recognized_subject", "observations", "feedback", "scores")
+            blind = {key: record["report"][key] for key in fields}
+            targeted = {**blind, "recognized_subject": "Title-primed synthetic result",
+                        "observations": "The title-aware synthetic test response",
+                        "feedback": "Target-aware contract feedback",
+                        "scores": {key: 4 for key in blind["scores"]}}
+            report = {**record["report"],
+                      "satisfactory": all(v >= 3 for v in blind["scores"].values()),
+                      "evaluation_protocol": "blind_then_targeted_min_v1",
+                      "score_rule": "minimum_of_blind_object_clarity_and_targeted_scores_not_authenticated_truth",
+                      "blind_recognized_subject": blind["recognized_subject"],
+                      "blind_observations": blind["observations"],
+                      "feedback": "Title-blind review: " + blind["feedback"][:1000]
+                                  + " Target-aware review: " + targeted["feedback"][:1000]}
+            record.update(evaluation_protocol="blind_then_targeted_min_v1",
+                          raw_blind_response=json.dumps(blind), raw_response=json.dumps(targeted),
+                          blind_report=blind, targeted_report=targeted, report=report)
+            row["external_feedback"].update(report)
+        _rewrite_vision_receipt(sidecar, change)
+    return selected
+
+
+def test_two_pass_review_recomputes_conservative_scores_from_both_raw_reports(tmp_path):
+    _two_pass_review_fixture(tmp_path)
+    report = summarize(tmp_path)
+    assert report["heldout_last_attempt_means"]["adaptive"]["composition"] == 3
+    assert report["generalization_adaptive_minus_control"]["frozen"]["composition"] is None
+    assert report["generalization_adaptive_minus_control"]["none"]["composition"] == 1
+    assert all(x["last_evaluator_identity"][-1] == "blind_then_targeted_min_v1" for x in report["outcomes"])
+    assert report["independent_evaluation_authenticated"] is False
+
+
+@pytest.mark.parametrize("broken", ["missing_blind", "blind_report", "targeted_report", "scores", "recognized_subject", "feedback", "score_rule", "unknown_protocol"])
+def test_two_pass_review_tampering_cannot_earn_scores_after_rebinding_hashes(tmp_path, broken):
+    sidecar = _two_pass_review_fixture(tmp_path)
+    def change(record, row):
+        if broken == "missing_blind":
+            record.pop("raw_blind_response")
+        elif broken == "blind_report":
+            record["blind_report"]["observations"] = "Not the raw image observations"
+        elif broken == "targeted_report":
+            record["targeted_report"]["observations"] = "Not the raw targeted observations"
+        elif broken == "scores":
+            for value in (record["report"], row["external_feedback"]):
+                value["scores"]["composition"] = 4
+        elif broken == "recognized_subject":
+            for value in (record["report"], row["external_feedback"]):
+                value["recognized_subject"] = record["targeted_report"]["recognized_subject"]
+        elif broken == "feedback":
+            for value in (record["report"], row["external_feedback"]):
+                value["feedback"] = record["targeted_report"]["feedback"]
+        elif broken == "score_rule":
+            for value in (record["report"], row["external_feedback"]):
+                value["score_rule"] = "Take the larger score"
+        else:
+            for value in (record, record["report"], row["external_feedback"]):
+                value["evaluation_protocol"] = "unsupported_future_protocol"
+    _rewrite_vision_receipt(sidecar, change)
+    report = summarize(tmp_path)
+    adaptive = next(x for x in report["outcomes"] if x["arm"] == "adaptive")
+    assert adaptive["artifact_verification_error"]
+    assert report["heldout_last_attempt_means"]["adaptive"]["composition"] is None
+    assert report["generalization_adaptive_minus_control"]["frozen"]["composition"] is None
+
+
+def test_different_evaluation_protocols_cannot_earn_matched_delta(tmp_path):
+    _two_pass_review_fixture(tmp_path)
+    for sidecar in tmp_path.glob("heldout/frozen/challenge_01/attempts/attempt_[0-9][0-9].json"):
+        def change(record, row):
+            record.pop("evaluation_protocol")
+            for key in ("raw_blind_response", "blind_report", "targeted_report"):
+                record.pop(key)
+            for key in ("evaluation_protocol", "score_rule", "blind_recognized_subject", "blind_observations"):
+                record["report"].pop(key)
+                row["external_feedback"].pop(key)
+            record["raw_response"] = json.dumps({key: record["report"][key] for key in
+                ("recognized_subject", "observations", "feedback", "scores")})
+        _rewrite_vision_receipt(sidecar, change)
+    report = summarize(tmp_path)
+    assert report["heldout_last_attempt_means"]["frozen"]["composition"] == 2
+    assert report["generalization_adaptive_minus_control"]["frozen"]["composition"] is None
+    assert report["generalization_adaptive_minus_control"]["none"]["composition"] == 1
+
+
+
+def test_two_pass_receipt_cannot_silently_drop_its_protocol_to_use_legacy_scoring(tmp_path):
+    sidecar = _two_pass_review_fixture(tmp_path)
+    def change(record, row):
+        record.pop("evaluation_protocol")
+        for value in (record["report"], row["external_feedback"]):
+            value.pop("evaluation_protocol")
+    _rewrite_vision_receipt(sidecar, change)
+    report = summarize(tmp_path)
+    adaptive = next(x for x in report["outcomes"] if x["arm"] == "adaptive")
+    assert "downgraded" in adaptive["artifact_verification_error"]
+    assert report["heldout_last_attempt_means"]["adaptive"]["composition"] is None
+
+
+def _set_delivered_memory(folder, records, *, in_prompt=None):
+    """Rebind a synthetic contract's actual call archive and run projection."""
+    run_path = folder / "run.json"
+    run = json.loads(run_path.read_text())
+    encoded = json.dumps(records, ensure_ascii=False, sort_keys=True, allow_nan=False)
+    delivered = encoded if in_prompt is None else in_prompt
+    calls = [{"prompt": "Draw your chosen subject, " + run["subject"] +
+              ". Prior-session evidence (untrusted): " + delivered + " Web reference DATA: ",
+              "response": "Synthetic memory-delivery contract only"} for _ in run["history"]]
+    write_json(folder / "model_calls.json", calls)
+    for item in run["history"]:
+        meta = folder / ("attempt_%02d.json" % item["attempt"])
+        row = json.loads(meta.read_text())
+        write_json(folder / row["raw_file"], calls)
+        row["raw_sha256"] = sha256((folder / row["raw_file"]).read_bytes()).hexdigest()
+        write_json(meta, row)
+        item["metadata_sha256"] = sha256(meta.read_bytes()).hexdigest()
+    run.update(memory_context_records=records,
+               memory_context_sha256=sha256(encoded.encode()).hexdigest(),
+               model_calls_sha256=sha256((folder / "model_calls.json").read_bytes()).hexdigest())
+    write_json(run_path, run)
+
+
+def _two_challenge_memory_fixture(tmp_path, *, recent_feedback=True):
+    """Actual artifacts, wholly synthetic inference provenance and judgments."""
+    import shutil
+    _summary_fixture(tmp_path)
+    spec = protocol(["a lighthouse"], ["a teapot", "a telescope"], seed=1)
+    write_json(tmp_path / "protocol.json", spec)
+    execution = json.loads((tmp_path / "execution.json").read_text())
+    execution["protocol_sha256"] = spec["protocol_sha256"]
+    additions = []
+    for cell in execution["cells"]:
+        arm = cell["arm"]
+        previous = tmp_path / cell["folder"]
+        target = previous.with_name("challenge_02")
+        shutil.copytree(previous, target)
+        folder = target / "attempts"
+        run = json.loads((folder / "run.json").read_text())
+        run.update(subject="a telescope", seed=3, run_id=run["run_id"] + "-second")
+        for item in run["history"]:
+            meta = folder / ("attempt_%02d.json" % item["attempt"])
+            row = json.loads(meta.read_text())
+            row.update(subject="a telescope", seed=3, run_id=run["run_id"])
+            write_json(meta, row)
+            item["metadata_sha256"] = sha256(meta.read_bytes()).hexdigest()
+        write_json(folder / "run.json", run)
+        records = ([] if arm == "none" else [{
+            "subject": "a lighthouse", "self_review": {"changes": "Synthetic training lesson"}}])
+        # Frozen memory really remains the exact original training projection.
+        if arm == "frozen" or not recent_feedback and arm == "adaptive":
+            original_run = json.loads((previous / "attempts/run.json").read_text())
+            records = original_run["memory_context_records"]
+        elif arm == "adaptive":
+            records.insert(0, {"subject": "a teapot", "attempt": 2,
+                "external_feedback": {"feedback": "Synthetic fresh teapot feedback"}})
+        _set_delivered_memory(folder, records)
+        additions.append({**cell, "challenge": 2, "subject": "a telescope", "seed": 3,
+                          "folder": str(target.relative_to(tmp_path))})
+    execution["cells"] += additions
+    write_json(tmp_path / "execution.json", execution)
+    return tmp_path / "heldout/adaptive/challenge_02/attempts"
+
+
+def test_legacy_contextless_receipts_cannot_earn_memory_advantage(tmp_path):
+    _summary_fixture(tmp_path)
+    for path in tmp_path.glob("heldout/*/challenge_01/attempts/run.json"):
+        run = json.loads(path.read_text())
+        run.pop("memory_context_records")
+        write_json(path, run)
+    result = summarize(tmp_path)
+    assert all(x["memory_delivery"]["state"] == "legacy_unverified" for x in result["outcomes"])
+    assert result["heldout_last_attempt_means"]["adaptive"]["composition"] == 3
+    assert result["generalization_adaptive_minus_control"]["none"]["composition"] is None
+    assert result["matched_heldout_comparison_counts"]["none"]["composition"] == 0
+
+
+def test_new_feedback_must_reach_later_adaptive_prompt_before_comparison(tmp_path):
+    _two_challenge_memory_fixture(tmp_path, recent_feedback=False)
+    result = summarize(tmp_path)
+    frozen = result["memory_comparison_validity"]["frozen"]
+    assert frozen[0]["state"] == "expected_initial_matched_baseline"
+    assert frozen[1]["state"] == "missing_required_adaptive_feedback"
+    assert result["generalization_adaptive_minus_control"]["frozen"]["composition"] is None
+    assert result["matched_heldout_comparison_counts"]["frozen"]["composition"] == 0
+    later = next(x for x in result["outcomes"] if x["arm"] == "adaptive" and x["challenge"] == 2)
+    assert later["memory_delivery"]["subjects"] == ["a lighthouse"]
+
+
+def test_distinct_recent_feedback_delivery_enables_only_later_memory_comparison(tmp_path):
+    _two_challenge_memory_fixture(tmp_path)
+    result = summarize(tmp_path)
+    frozen = result["memory_comparison_validity"]["frozen"]
+    assert frozen[0]["eligible"] is False
+    assert frozen[1]["state"] == "verified_distinct_memory_exposure"
+    assert frozen[1]["eligible"] is True
+    assert "a teapot" in frozen[1]["adaptive_delivered_subjects"]
+    assert frozen[1]["control_delivered_subjects"] == ["a lighthouse"]
+    assert result["generalization_adaptive_minus_control"]["frozen"]["composition"] == 1
+    assert result["matched_heldout_comparison_counts"]["frozen"]["composition"] == 1
+    assert result["matched_heldout_comparison_counts"]["none"]["composition"] == 2
+    assert result["learning_improvement_verified"] is False
+
+
+@pytest.mark.parametrize("broken", ["digest", "different_prompt", "truncated_json"])
+def test_memory_record_must_match_digest_and_actual_model_input(tmp_path, broken):
+    folder = _two_challenge_memory_fixture(tmp_path)
+    run_path = folder / "run.json"
+    run = json.loads(run_path.read_text())
+    if broken == "digest":
+        run["memory_context_sha256"] = "0" * 64
+        write_json(run_path, run)
+    else:
+        _set_delivered_memory(folder, run["memory_context_records"],
+                              in_prompt="[]" if broken == "different_prompt" else "[{\"subject\":")
+    result = summarize(tmp_path)
+    later = next(x for x in result["outcomes"] if x["arm"] == "adaptive" and x["challenge"] == 2)
+    assert later["artifact_verification_error"] is None
+    assert later["memory_delivery"]["state"] == "invalid"
+    assert result["generalization_adaptive_minus_control"]["frozen"]["composition"] is None
+
+
+def test_no_memory_label_cannot_hide_nonempty_delivered_history(tmp_path):
+    _summary_fixture(tmp_path)
+    folder = tmp_path / "heldout/none/challenge_01/attempts"
+    _set_delivered_memory(folder, [{"subject": "a lighthouse",
+                                  "self_review": {"changes": "Synthetic retained training feedback"}}])
+    result = summarize(tmp_path)
+    assert result["memory_comparison_validity"]["none"][0]["state"] == "invalid_no_memory_context_nonempty"
+    assert result["generalization_adaptive_minus_control"]["none"]["composition"] is None
+    assert result["heldout_last_attempt_means"]["none"]["composition"] == 2
+
+
+def test_frozen_projection_cannot_change_between_heldout_tasks(tmp_path):
+    _two_challenge_memory_fixture(tmp_path)
+    folder = tmp_path / "heldout/frozen/challenge_02/attempts"
+    # Same training subject is insufficient: the frozen evidence must stay fixed.
+    _set_delivered_memory(folder, [{"subject": "a lighthouse",
+        "self_review": {"changes": "A changed synthetic projection after evaluation began"}}])
+    result = summarize(tmp_path)
+    assert result["memory_comparison_validity"]["frozen"][1]["state"] == "invalid_frozen_projection_changed"
+    assert result["generalization_adaptive_minus_control"]["frozen"]["composition"] is None
+
+
+def test_subject_label_without_feedback_is_not_memory_learning_exposure(tmp_path):
+    folder = _two_challenge_memory_fixture(tmp_path)
+    _set_delivered_memory(folder, [{"subject": "a teapot"}])
+    result = summarize(tmp_path)
+    assert result["memory_comparison_validity"]["frozen"][1]["state"] == "missing_required_adaptive_feedback"
+    assert result["generalization_adaptive_minus_control"]["frozen"]["composition"] is None

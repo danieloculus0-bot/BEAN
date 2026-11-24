@@ -1,0 +1,27 @@
+{
+  "attempt_receipts": [
+    "heldout/adaptive/challenge_01/attempts/attempt_01.json",
+    "heldout/frozen/challenge_01/attempts/attempt_01.json"
+  ],
+  "blinded": false,
+  "created_at_utc": "2026-11-24T12:41:46.399177+00:00",
+  "evaluator": "Codex final-experiment visual audit agent",
+  "feedback": "A thin band of angular outlines, two circles and short strokes occupies the top edge; most of the canvas is blank. I cannot identify a coherent cat.",
+  "human_evaluation": null,
+  "image_file": "heldout/adaptive/challenge_01/attempts/attempt_01.png",
+  "image_sha256": "29ff58275ec51c5f9c2ea6c5cd00b4eee1516ec35ab89bc38c3eebd3d6128d54",
+  "independently_authenticated": false,
+  "inspection_method": "Actual PNG opened with view_image; report written in a separate later tool call after displayed pixels were inspected",
+  "kind": "vision_model",
+  "model_identity_limit": "Exact host assistant model digest is not exposed by the image inspection tool",
+  "posthoc": true,
+  "satisfactory": false,
+  "schema": "bean.draw.final_host_visual_audit.v1",
+  "scores": {
+    "composition": 1,
+    "spatial_coherence": 1,
+    "subject_recognition": 0
+  },
+  "subject": "a cat",
+  "used_for_generation": false
+}

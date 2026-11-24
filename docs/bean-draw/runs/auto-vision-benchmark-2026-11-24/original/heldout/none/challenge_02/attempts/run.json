@@ -1,0 +1,60 @@
+{
+  "attempts": 2,
+  "completed_at_utc": "2026-11-24T04:50:44.207858+00:00",
+  "created_at_utc": "2026-11-24T04:41:56.292514+00:00",
+  "error": null,
+  "execution_mode": "live_model",
+  "history": [
+    {
+      "attempt": 1,
+      "description": "A clear, simplified line drawing of a sailboat with a prominent sail at the top right, a vertical mast, a centered bow below the sail and mast, a keel extending downward beneath the bow, and a simple pattern of rigging around the main components.",
+      "journal_tip": "25a40728ec58131035d02139f862ad68d05bbc8c2a66a0ca4e7ab455355f07b5",
+      "metadata": "/workspace/bean-live-evidence/auto-vision-benchmark/heldout/none/challenge_02/attempts/attempt_01.json",
+      "metadata_sha256": "eda1f141c6dc2cad7577bb3c727b80969e2339225220e13c29abd0d2cdd87eb3",
+      "png": "/workspace/bean-live-evidence/auto-vision-benchmark/heldout/none/challenge_02/attempts/attempt_01.png",
+      "png_sha256": "b37201dd986de1abf0fd207656c516c1eb5264adf5dd4aaabbe1891e7d3511ae",
+      "sha256": "c5ef631139ceada88fc6a21fc8601a3104eacdf79988cd950f5f8152caaf963c",
+      "status": "host_reported_not_satisfactory",
+      "svg": "/workspace/bean-live-evidence/auto-vision-benchmark/heldout/none/challenge_02/attempts/attempt_01.svg"
+    },
+    {
+      "attempt": 2,
+      "description": null,
+      "journal_tip": "443005bdd3678bc9af437627cb0298875ce658b37cbb7b4f9d6815b06da74f05",
+      "metadata": "/workspace/bean-live-evidence/auto-vision-benchmark/heldout/none/challenge_02/attempts/attempt_02.json",
+      "metadata_sha256": "faae6a62848b03d447ff79c7faffca45035fc19c85a2fb9bfae6561f6e7d3804",
+      "png": null,
+      "png_sha256": null,
+      "sha256": null,
+      "status": "attempt_failed_ValueError",
+      "svg": null
+    }
+  ],
+  "independent_visual_verification": false,
+  "journal_tip": "296b2dc8d0294a94da2ec0b99cec35504a52d2103b541ac54ef1fdbecc0f975a",
+  "learning_improvement_verified": false,
+  "memory_context_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+  "memory_mode": "none",
+  "model_calls_sha256": "58486c5acb61cffce1adbe0c33510e34dede500aeb2bab82a78aa6e2c166cedb",
+  "model_digest": "357c53fb659c5076de1d65ccb0b397446227b71a42be9d1603d46168015c9e4b",
+  "model_id": "qwen2.5:3b",
+  "provider_kind": "ollama",
+  "run_id": "c2f50160-ee17-452c-a604-032e5ba7ca66",
+  "runtime_source_sha256": {
+    "bean/creativity/artifacts.py": "19154ead40bd59df1205278820cc4e99316ce4295acfcaa017541b5daf0893fa",
+    "bean/creativity/sketch_lab.py": "945268eaed3329716e8a62e036a579109089a5c9a83a3f8b852c666fb83d20fd",
+    "bean/voice/ollama.py": "3f852e850e998767f43bd1c0842852c3562aecfce5152d8b8081e8a6ac8d19ee",
+    "scripts/build_bean_draw_gallery.py": "f306b06c9db0c2d095895c01fc927f646c311a41b6be6fe88ca5ed7a1a888915"
+  },
+  "schema": "bean.draw.run.v1",
+  "seed": 20261126,
+  "selected_attempt": 1,
+  "selection_reason": "The retained drawing attempt (attempt 1) is a clear, simplified line drawing of a sailboat with a prominent sail at the top right, a vertical mast, a centered bow below the sail and mast, a keel extending downward beneath the bow, and a simple pattern of rigging around the main components. This description aligns better with an original line drawing of a sailboat without repeating previous lines, focusing on clarity and recognition. The external feedback does not support this attempt as it suggests the image is more focused on geometric shapes rather than a sailboat.",
+  "selection_state": "model_selected_from_recorded_evidence",
+  "source_git_sha": "01090ba7c8c97855a7e3d352c3e9003e7278e972",
+  "state": "attempt_failed_ValueError",
+  "subject": "a sailboat",
+  "subject_source": "human",
+  "task_ref": "benchmark-heldout-none-02",
+  "weights_updated": false
+}

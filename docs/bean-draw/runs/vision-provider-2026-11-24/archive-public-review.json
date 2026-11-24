@@ -1,0 +1,15 @@
+{
+  "files": {
+    "api-version.json": "08ffc5526032c62e4bda58db8ce3faf55fd3fb0fbe6168d074ebc127c74ad87f",
+    "disk-preparation.json": "18b1c2bf2d2bc00372e0b78c64653f26b3cc6d10d207058997a0cc5647f8fc61",
+    "model-integrity.json": "1ca277415c17f51944737940b0f88aba278ba82c98b5f1ba7ff694ec7048980e",
+    "model-tags.json": "ab0b43b37124de518586e58e7de91c21ba263259b35e40fe597af3403f88ec98",
+    "sanity-request.json": "fa9aff82457378e9f43118888a5f3d14e5508d0baa72b1499d2ad394846f2db9",
+    "sanity-response.raw.json": "2b5b9c5c0de9df3e13c0f70413fa73acc35b66816e7c56b937cafc948a8650aa",
+    "sanity-review.json": "131fa195ab08aad421b72f6079817b20430145d70781abfe376ea2d7c28eeb17"
+  },
+  "public_safe": true,
+  "reviewed_at_utc": "2026-11-24T12:57:42.761602+00:00",
+  "reviewer": "Codex public-safe content/artifact review; not human aesthetic evaluation",
+  "schema": "bean.draw.public-review.v1"
+}

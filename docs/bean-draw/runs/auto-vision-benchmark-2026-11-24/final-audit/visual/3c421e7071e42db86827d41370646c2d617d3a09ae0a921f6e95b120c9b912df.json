@@ -1,0 +1,26 @@
+{
+  "attempt_receipts": [
+    "training/adaptive/challenge_01/attempts/attempt_01.json"
+  ],
+  "blinded": false,
+  "created_at_utc": "2026-11-24T12:41:46.400725+00:00",
+  "evaluator": "Codex final-experiment visual audit agent",
+  "feedback": "Two long vertical lines, circles at their upper ends, a low horizontal baseline, several lower circle clusters and an isolated left circle are visible. I cannot recognize a connected teapot vessel, handle and spout.",
+  "human_evaluation": null,
+  "image_file": "training/adaptive/challenge_01/attempts/attempt_01.png",
+  "image_sha256": "3c421e7071e42db86827d41370646c2d617d3a09ae0a921f6e95b120c9b912df",
+  "independently_authenticated": false,
+  "inspection_method": "Actual PNG opened with view_image; report written in a separate later tool call after displayed pixels were inspected",
+  "kind": "vision_model",
+  "model_identity_limit": "Exact host assistant model digest is not exposed by the image inspection tool",
+  "posthoc": true,
+  "satisfactory": false,
+  "schema": "bean.draw.final_host_visual_audit.v1",
+  "scores": {
+    "composition": 1,
+    "spatial_coherence": 1,
+    "subject_recognition": 0
+  },
+  "subject": "a teapot",
+  "used_for_generation": false
+}

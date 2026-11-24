@@ -1,0 +1,535 @@
+{
+  "distinct_recorded_png_hashes": 9,
+  "diversity_interpretation": "Per-image diversity ratings are descriptive; portfolio diversity requires a joint review bound to every final PNG; subject/hash counts are mechanics",
+  "generalization_adaptive_minus_control": {
+    "frozen": {
+      "composition": 0.0,
+      "spatial_coherence": 0.0,
+      "subject_recognition": 0.0
+    },
+    "none": {
+      "composition": 0.0,
+      "spatial_coherence": 0.0,
+      "subject_recognition": 0.0
+    }
+  },
+  "heldout_last_attempt_means": {
+    "adaptive": {
+      "composition": 2.5,
+      "diversity": null,
+      "spatial_coherence": 2.5,
+      "subject_recognition": 2.5
+    },
+    "frozen": {
+      "composition": 2.5,
+      "diversity": null,
+      "spatial_coherence": 2.5,
+      "subject_recognition": 2.5
+    },
+    "none": {
+      "composition": 3.0,
+      "diversity": null,
+      "spatial_coherence": 3.0,
+      "subject_recognition": 2.0
+    }
+  },
+  "independent_evaluation_authenticated": false,
+  "iteration_quality_last_minus_first": {
+    "adaptive": {
+      "composition": -1.0,
+      "spatial_coherence": 0.0,
+      "subject_recognition": 0.0
+    },
+    "frozen": {
+      "composition": -1.0,
+      "spatial_coherence": 0.0,
+      "subject_recognition": 0.0
+    },
+    "none": {
+      "composition": 0.0,
+      "spatial_coherence": 0.0,
+      "subject_recognition": -1.0
+    }
+  },
+  "learning_improvement_verified": false,
+  "limitations": [
+    "Null scores mean missing legitimate image review, not zero quality",
+    "No broad learning claim from this small challenge set",
+    "Provider determinism and review independence require external verification"
+  ],
+  "matched_heldout_comparison_counts": {
+    "frozen": {
+      "composition": 2,
+      "spatial_coherence": 2,
+      "subject_recognition": 2
+    },
+    "none": {
+      "composition": 1,
+      "spatial_coherence": 1,
+      "subject_recognition": 1
+    }
+  },
+  "outcomes": [
+    {
+      "arm": "adaptive",
+      "artifact_verification_error": null,
+      "attempts": [
+        {
+          "attempt": 1,
+          "evaluator_identity": [
+            "vision_model",
+            "Ollama vision reviewer: gemma3:4b",
+            "ollama",
+            "gemma3:4b",
+            "68ceab7e468a31c988b44d5a4984a0e21f58c4f7158c6ce29c1804babac38df7",
+            "blind_then_targeted_min_v1"
+          ],
+          "scores": {
+            "composition": 3,
+            "spatial_coherence": 2,
+            "subject_recognition": 1
+          },
+          "status": "host_reported_not_satisfactory"
+        },
+        {
+          "attempt": 2,
+          "evaluator_identity": [
+            "vision_model",
+            "Ollama vision reviewer: gemma3:4b",
+            "ollama",
+            "gemma3:4b",
+            "68ceab7e468a31c988b44d5a4984a0e21f58c4f7158c6ce29c1804babac38df7",
+            "blind_then_targeted_min_v1"
+          ],
+          "scores": {
+            "composition": 4,
+            "spatial_coherence": 4,
+            "subject_recognition": 3
+          },
+          "status": "host_reported_satisfactory"
+        }
+      ],
+      "challenge": 1,
+      "last_evaluator_identity": [
+        "vision_model",
+        "Ollama vision reviewer: gemma3:4b",
+        "ollama",
+        "gemma3:4b",
+        "68ceab7e468a31c988b44d5a4984a0e21f58c4f7158c6ce29c1804babac38df7",
+        "blind_then_targeted_min_v1"
+      ],
+      "last_minus_first_external_score": {
+        "composition": 1,
+        "spatial_coherence": 2,
+        "subject_recognition": 2
+      },
+      "last_png_sha256": "6e4235ea96ab45e6b7d2aaf7e709340c2e4e788fabdc3b4cabecb8ce4a5e7a1b",
+      "last_scores": {
+        "composition": 4,
+        "spatial_coherence": 4,
+        "subject_recognition": 3
+      },
+      "phase": "training",
+      "process_returncode": 0,
+      "runtime_identity": [
+        "ollama",
+        "qwen2.5:3b",
+        "357c53fb659c5076de1d65ccb0b397446227b71a42be9d1603d46168015c9e4b",
+        "01090ba7c8c97855a7e3d352c3e9003e7278e972"
+      ],
+      "subject": "a teapot"
+    },
+    {
+      "arm": "frozen",
+      "artifact_verification_error": null,
+      "attempts": [
+        {
+          "attempt": 1,
+          "evaluator_identity": [
+            "vision_model",
+            "Ollama vision reviewer: gemma3:4b",
+            "ollama",
+            "gemma3:4b",
+            "68ceab7e468a31c988b44d5a4984a0e21f58c4f7158c6ce29c1804babac38df7",
+            "blind_then_targeted_min_v1"
+          ],
+          "scores": {
+            "composition": 3,
+            "spatial_coherence": 2,
+            "subject_recognition": 4
+          },
+          "status": "host_reported_not_satisfactory"
+        },
+        {
+          "attempt": 2,
+          "evaluator_identity": [
+            "vision_model",
+            "Ollama vision reviewer: gemma3:4b",
+            "ollama",
+            "gemma3:4b",
+            "68ceab7e468a31c988b44d5a4984a0e21f58c4f7158c6ce29c1804babac38df7",
+            "blind_then_targeted_min_v1"
+          ],
+          "scores": {
+            "composition": 3,
+            "spatial_coherence": 3,
+            "subject_recognition": 2
+          },
+          "status": "host_reported_not_satisfactory"
+        }
+      ],
+      "challenge": 1,
+      "last_evaluator_identity": [
+        "vision_model",
+        "Ollama vision reviewer: gemma3:4b",
+        "ollama",
+        "gemma3:4b",
+        "68ceab7e468a31c988b44d5a4984a0e21f58c4f7158c6ce29c1804babac38df7",
+        "blind_then_targeted_min_v1"
+      ],
+      "last_minus_first_external_score": {
+        "composition": 0,
+        "spatial_coherence": 1,
+        "subject_recognition": -2
+      },
+      "last_png_sha256": "00a049c302c8bc4a2d4f8c08c86113812306b13199aff98bf66871eafe83a0a9",
+      "last_scores": {
+        "composition": 3,
+        "spatial_coherence": 3,
+        "subject_recognition": 2
+      },
+      "phase": "heldout",
+      "process_returncode": 0,
+      "runtime_identity": [
+        "ollama",
+        "qwen2.5:3b",
+        "357c53fb659c5076de1d65ccb0b397446227b71a42be9d1603d46168015c9e4b",
+        "01090ba7c8c97855a7e3d352c3e9003e7278e972"
+      ],
+      "subject": "a cat"
+    },
+    {
+      "arm": "none",
+      "artifact_verification_error": null,
+      "attempts": [
+        {
+          "attempt": 1,
+          "evaluator_identity": [
+            "vision_model",
+            "Ollama vision reviewer: gemma3:4b",
+            "ollama",
+            "gemma3:4b",
+            "68ceab7e468a31c988b44d5a4984a0e21f58c4f7158c6ce29c1804babac38df7",
+            "blind_then_targeted_min_v1"
+          ],
+          "scores": {
+            "composition": 3,
+            "spatial_coherence": 3,
+            "subject_recognition": 3
+          },
+          "status": "host_reported_satisfactory"
+        },
+        {
+          "attempt": 2,
+          "evaluator_identity": [
+            "vision_model",
+            "Ollama vision reviewer: gemma3:4b",
+            "ollama",
+            "gemma3:4b",
+            "68ceab7e468a31c988b44d5a4984a0e21f58c4f7158c6ce29c1804babac38df7",
+            "blind_then_targeted_min_v1"
+          ],
+          "scores": {
+            "composition": 3,
+            "spatial_coherence": 3,
+            "subject_recognition": 2
+          },
+          "status": "host_reported_not_satisfactory"
+        }
+      ],
+      "challenge": 1,
+      "last_evaluator_identity": [
+        "vision_model",
+        "Ollama vision reviewer: gemma3:4b",
+        "ollama",
+        "gemma3:4b",
+        "68ceab7e468a31c988b44d5a4984a0e21f58c4f7158c6ce29c1804babac38df7",
+        "blind_then_targeted_min_v1"
+      ],
+      "last_minus_first_external_score": {
+        "composition": 0,
+        "spatial_coherence": 0,
+        "subject_recognition": -1
+      },
+      "last_png_sha256": "8d9ad786996d0403eb7c806229d49ca7c0916f454a8751f6e277ba75517a1ba8",
+      "last_scores": {
+        "composition": 3,
+        "spatial_coherence": 3,
+        "subject_recognition": 2
+      },
+      "phase": "heldout",
+      "process_returncode": 0,
+      "runtime_identity": [
+        "ollama",
+        "qwen2.5:3b",
+        "357c53fb659c5076de1d65ccb0b397446227b71a42be9d1603d46168015c9e4b",
+        "01090ba7c8c97855a7e3d352c3e9003e7278e972"
+      ],
+      "subject": "a cat"
+    },
+    {
+      "arm": "adaptive",
+      "artifact_verification_error": null,
+      "attempts": [
+        {
+          "attempt": 1,
+          "evaluator_identity": [
+            "vision_model",
+            "Ollama vision reviewer: gemma3:4b",
+            "ollama",
+            "gemma3:4b",
+            "68ceab7e468a31c988b44d5a4984a0e21f58c4f7158c6ce29c1804babac38df7",
+            "blind_then_targeted_min_v1"
+          ],
+          "scores": {
+            "composition": 3,
+            "spatial_coherence": 2,
+            "subject_recognition": 4
+          },
+          "status": "host_reported_not_satisfactory"
+        },
+        {
+          "attempt": 2,
+          "evaluator_identity": [
+            "vision_model",
+            "Ollama vision reviewer: gemma3:4b",
+            "ollama",
+            "gemma3:4b",
+            "68ceab7e468a31c988b44d5a4984a0e21f58c4f7158c6ce29c1804babac38df7",
+            "blind_then_targeted_min_v1"
+          ],
+          "scores": {
+            "composition": 3,
+            "spatial_coherence": 3,
+            "subject_recognition": 2
+          },
+          "status": "host_reported_not_satisfactory"
+        }
+      ],
+      "challenge": 1,
+      "last_evaluator_identity": [
+        "vision_model",
+        "Ollama vision reviewer: gemma3:4b",
+        "ollama",
+        "gemma3:4b",
+        "68ceab7e468a31c988b44d5a4984a0e21f58c4f7158c6ce29c1804babac38df7",
+        "blind_then_targeted_min_v1"
+      ],
+      "last_minus_first_external_score": {
+        "composition": 0,
+        "spatial_coherence": 1,
+        "subject_recognition": -2
+      },
+      "last_png_sha256": "00a049c302c8bc4a2d4f8c08c86113812306b13199aff98bf66871eafe83a0a9",
+      "last_scores": {
+        "composition": 3,
+        "spatial_coherence": 3,
+        "subject_recognition": 2
+      },
+      "phase": "heldout",
+      "process_returncode": 0,
+      "runtime_identity": [
+        "ollama",
+        "qwen2.5:3b",
+        "357c53fb659c5076de1d65ccb0b397446227b71a42be9d1603d46168015c9e4b",
+        "01090ba7c8c97855a7e3d352c3e9003e7278e972"
+      ],
+      "subject": "a cat"
+    },
+    {
+      "arm": "none",
+      "artifact_verification_error": "ValueError: Incomplete or inconsistent live run provenance",
+      "attempts": [
+        {
+          "attempt": 1,
+          "evaluator_identity": null,
+          "scores": null,
+          "status": "host_reported_not_satisfactory"
+        },
+        {
+          "attempt": 2,
+          "evaluator_identity": null,
+          "scores": null,
+          "status": "attempt_failed_ValueError"
+        }
+      ],
+      "challenge": 2,
+      "last_evaluator_identity": null,
+      "last_minus_first_external_score": {
+        "composition": null,
+        "spatial_coherence": null,
+        "subject_recognition": null
+      },
+      "last_png_sha256": null,
+      "last_scores": null,
+      "phase": "heldout",
+      "process_returncode": 0,
+      "runtime_identity": [
+        "ollama",
+        "qwen2.5:3b",
+        "357c53fb659c5076de1d65ccb0b397446227b71a42be9d1603d46168015c9e4b",
+        "01090ba7c8c97855a7e3d352c3e9003e7278e972"
+      ],
+      "subject": "a sailboat"
+    },
+    {
+      "arm": "adaptive",
+      "artifact_verification_error": null,
+      "attempts": [
+        {
+          "attempt": 1,
+          "evaluator_identity": [
+            "vision_model",
+            "Ollama vision reviewer: gemma3:4b",
+            "ollama",
+            "gemma3:4b",
+            "68ceab7e468a31c988b44d5a4984a0e21f58c4f7158c6ce29c1804babac38df7",
+            "blind_then_targeted_min_v1"
+          ],
+          "scores": {
+            "composition": 4,
+            "spatial_coherence": 3,
+            "subject_recognition": 1
+          },
+          "status": "host_reported_not_satisfactory"
+        },
+        {
+          "attempt": 2,
+          "evaluator_identity": [
+            "vision_model",
+            "Ollama vision reviewer: gemma3:4b",
+            "ollama",
+            "gemma3:4b",
+            "68ceab7e468a31c988b44d5a4984a0e21f58c4f7158c6ce29c1804babac38df7",
+            "blind_then_targeted_min_v1"
+          ],
+          "scores": {
+            "composition": 2,
+            "spatial_coherence": 2,
+            "subject_recognition": 3
+          },
+          "status": "host_reported_not_satisfactory"
+        }
+      ],
+      "challenge": 2,
+      "last_evaluator_identity": [
+        "vision_model",
+        "Ollama vision reviewer: gemma3:4b",
+        "ollama",
+        "gemma3:4b",
+        "68ceab7e468a31c988b44d5a4984a0e21f58c4f7158c6ce29c1804babac38df7",
+        "blind_then_targeted_min_v1"
+      ],
+      "last_minus_first_external_score": {
+        "composition": -2,
+        "spatial_coherence": -1,
+        "subject_recognition": 2
+      },
+      "last_png_sha256": "6b0639d85888552add0bf98df37758cadc517c1ae76dda77cf0946b8db74ef77",
+      "last_scores": {
+        "composition": 2,
+        "spatial_coherence": 2,
+        "subject_recognition": 3
+      },
+      "phase": "heldout",
+      "process_returncode": 0,
+      "runtime_identity": [
+        "ollama",
+        "qwen2.5:3b",
+        "357c53fb659c5076de1d65ccb0b397446227b71a42be9d1603d46168015c9e4b",
+        "01090ba7c8c97855a7e3d352c3e9003e7278e972"
+      ],
+      "subject": "a sailboat"
+    },
+    {
+      "arm": "frozen",
+      "artifact_verification_error": null,
+      "attempts": [
+        {
+          "attempt": 1,
+          "evaluator_identity": [
+            "vision_model",
+            "Ollama vision reviewer: gemma3:4b",
+            "ollama",
+            "gemma3:4b",
+            "68ceab7e468a31c988b44d5a4984a0e21f58c4f7158c6ce29c1804babac38df7",
+            "blind_then_targeted_min_v1"
+          ],
+          "scores": {
+            "composition": 4,
+            "spatial_coherence": 3,
+            "subject_recognition": 1
+          },
+          "status": "host_reported_not_satisfactory"
+        },
+        {
+          "attempt": 2,
+          "evaluator_identity": [
+            "vision_model",
+            "Ollama vision reviewer: gemma3:4b",
+            "ollama",
+            "gemma3:4b",
+            "68ceab7e468a31c988b44d5a4984a0e21f58c4f7158c6ce29c1804babac38df7",
+            "blind_then_targeted_min_v1"
+          ],
+          "scores": {
+            "composition": 2,
+            "spatial_coherence": 2,
+            "subject_recognition": 3
+          },
+          "status": "host_reported_not_satisfactory"
+        }
+      ],
+      "challenge": 2,
+      "last_evaluator_identity": [
+        "vision_model",
+        "Ollama vision reviewer: gemma3:4b",
+        "ollama",
+        "gemma3:4b",
+        "68ceab7e468a31c988b44d5a4984a0e21f58c4f7158c6ce29c1804babac38df7",
+        "blind_then_targeted_min_v1"
+      ],
+      "last_minus_first_external_score": {
+        "composition": -2,
+        "spatial_coherence": -1,
+        "subject_recognition": 2
+      },
+      "last_png_sha256": "6b0639d85888552add0bf98df37758cadc517c1ae76dda77cf0946b8db74ef77",
+      "last_scores": {
+        "composition": 2,
+        "spatial_coherence": 2,
+        "subject_recognition": 3
+      },
+      "phase": "heldout",
+      "process_returncode": 0,
+      "runtime_identity": [
+        "ollama",
+        "qwen2.5:3b",
+        "357c53fb659c5076de1d65ccb0b397446227b71a42be9d1603d46168015c9e4b",
+        "01090ba7c8c97855a7e3d352c3e9003e7278e972"
+      ],
+      "subject": "a sailboat"
+    }
+  ],
+  "planned_distinct_heldout_subjects": 2,
+  "portfolio_diversity": {
+    "adaptive": null,
+    "frozen": null,
+    "none": null
+  },
+  "protocol_sha256": "d8a7c99d4be1fe8813b1ab8d309c930cb5170ffa6a8787dfe3a35915e2d87e7e",
+  "requested_vision_model": "gemma3:4b",
+  "schema": "bean.draw.benchmark.v1",
+  "subject_source": "human_protocol",
+  "weights_updated": false
+}

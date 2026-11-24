@@ -1,0 +1,82 @@
+{
+  "attempt": 1,
+  "created_at_utc": "2026-11-24T12:56:36.434700+00:00",
+  "description": "A simplified teapot with a round body, a slender spout, and a curved handle centered below the spout, all enclosed in a black outline.",
+  "domain": "sketch",
+  "drawing_instructions": {
+    "components": [
+      "TeapotBody",
+      "Spout",
+      "Handle",
+      "Rim"
+    ],
+    "composition": "A teapot centered in the composition, with the spout and handle positioned at the appropriate angles to suggest functionality. The rim is placed around the top edge of the body.",
+    "intent": "Plan a line drawing of a teapot with new elements based on previous feedback.",
+    "revision_reason": "Previous feedback recommended simplifying the design by removing some minor details that were hard to distinguish and improving the overall clarity of the structure."
+  },
+  "error": null,
+  "execution_mode": "live_model",
+  "experiment": "bean_sketch_v1",
+  "external_feedback": {
+    "blind_observations": "The image depicts a square and a circle arranged in a grid-like fashion with horizontal and vertical lines, suggesting a basic representation of spatial relationships.",
+    "blind_recognized_subject": "A simple geometric diagram",
+    "created_at_utc": "2026-11-24T12:56:36.397601+00:00",
+    "evaluation_protocol": "blind_then_targeted_min_v1",
+    "evaluator": "Ollama vision reviewer: gemma3:4b",
+    "feedback": "Title-blind review: The diagram is straightforward and easily understood, though lacks context or specific purpose. Target-aware review: While the image contains a square and circle, it doesn't depict a teapot; the arrangement is purely geometric and lacks any features associated with a teapot.",
+    "image_sha256": "c16c746ec39f1ca30c6a466a605988be4ae580dc6dde56a83a55e62de56b5468",
+    "independently_authenticated": false,
+    "kind": "vision_model",
+    "model_digest": "68ceab7e468a31c988b44d5a4984a0e21f58c4f7158c6ce29c1804babac38df7",
+    "model_id": "gemma3:4b",
+    "observations": "The image depicts a square and a circle arranged in a grid-like fashion with horizontal and vertical lines, suggesting a basic representation of spatial relationships.",
+    "provider_kind": "ollama",
+    "recognized_subject": "A simple geometric diagram",
+    "review_file": "attempt_01.vision.json",
+    "review_sha256": "0c281e54d9fc4ba5f16804c549413bdbfa6ceb00c07360570a61ea1932823f89",
+    "satisfactory": false,
+    "score_rule": "minimum_of_blind_object_clarity_and_targeted_scores_not_authenticated_truth",
+    "scores": {
+      "composition": 3,
+      "spatial_coherence": 3,
+      "subject_recognition": 2
+    },
+    "state": "host_reported_pixel_review"
+  },
+  "independent_visual_verification": false,
+  "journal_tip": "084cea684e7cae83931fbc2ee55d9bb89f399d6f2ae2a1cfcfebf56e4360adb4",
+  "memory_mode": "adaptive",
+  "model_digest": "357c53fb659c5076de1d65ccb0b397446227b71a42be9d1603d46168015c9e4b",
+  "model_id": "qwen2.5:3b",
+  "png_file": "attempt_01.png",
+  "png_sha256": "c16c746ec39f1ca30c6a466a605988be4ae580dc6dde56a83a55e62de56b5468",
+  "preview_size": [
+    512,
+    512
+  ],
+  "provider_kind": "ollama",
+  "rasterizer": "CairoSVG 2.8.2",
+  "raw_file": "attempt_01.raw.json",
+  "raw_sha256": "21dd0455522e09a43636f973ef44f0d47ab13b3b47eca55ba1866dae3ab98a73",
+  "reference_urls": [],
+  "research_status": "not_requested",
+  "run_id": "f2ecced7-fa79-4c53-9b4b-e99b09324a94",
+  "schema": "bean.draw.attempt.v1",
+  "seed": 202611241,
+  "self_review": {
+    "changes": "",
+    "claimed_subject": "a teapot",
+    "satisfied": false
+  },
+  "source_git_sha": "bb7128d76a6c210d84234326576ef6bc7f1e2509",
+  "status": "host_reported_not_satisfactory",
+  "subject": "a teapot",
+  "subject_source": "human",
+  "svg_file": "attempt_01.svg",
+  "svg_sha256": "c60adf5d67e295c8cbf19193d5e62b92e98ba08a50ad42ea64044244fc8c5ca4",
+  "task_ref": "benchmark-training-adaptive-01",
+  "verification_state": "artifacts_verified",
+  "visual_evidence_independently_verified": false,
+  "visual_feedback": "Title-blind review: The diagram is straightforward and easily understood, though lacks context or specific purpose. Target-aware review: While the image contains a square and circle, it doesn't depict a teapot; the arrangement is purely geometric and lacks any features associated with a teapot.",
+  "weights_updated": false
+}

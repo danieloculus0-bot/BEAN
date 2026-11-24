@@ -128,6 +128,7 @@ not an actual evaluation:
 ```json
 {
   "image_sha256": "EXACT_SHA256_OF_INSPECTED_PNG",
+  "subject": "EXACT_SUBJECT_FROM_REQUEST",
   "kind": "vision_model",
   "evaluator": "ACTUAL_EVALUATOR_IDENTITY",
   "satisfactory": false,
@@ -288,3 +289,62 @@ Minimum change: retained provenance, previews, pluggable pixel review,
 restart/control measurement and reviewed gallery export in existing Core.
 Runtime/behavior-policy changes: no change to ordinary startup or effectors;
 drawing remains an explicitly invoked experiment.
+
+
+## Automatic local image review
+
+The optional local vision evaluator sends actual rendered PNG bytes through
+BEAN's existing Ollama transport. It is separate from the artist and textual
+self-critique. Install a genuine image-capable model, then use:
+
+```sh
+BEAN_REASONING_PROVIDER=ollama BEAN_OLLAMA_MODEL=qwen2.5:3b \
+  python -m bean.creativity.sketch_lab --require-live --attempts 2 --all-attempts \
+  --db drawing-core.sqlite3 --out new-drawing --vision-model gemma3:4b
+```
+
+Each `.vision.json` retains the image hash, evaluator model/digest, prompt,
+raw report, UTC timestamp and availability state. The image bytes are sent
+as the Ollama message's `images` payload. Text-only or missing models and
+invalid reports remain unavailable; no score is invented. A vision-model
+report is neither human evaluation nor authenticated ground truth. All
+original self-critiques and external observations stay separate in Core.
+Reports may be imprecise and require independent inspection.
+
+The matched benchmark also accepts `--vision-model gemma3:4b`. All arms use
+the same evaluator and budgets. Prompts omit review timestamps and local file
+paths to avoid unnecessary differences between matched conditions; the full
+values remain in immutable receipts. A single held-out challenge is narrow
+evidence, and changed image hashes or saved files never establish learning.
+
+Automatic review uses two actual-image requests: first without the claimed
+subject, then with it. Each final metric is the minimum of that dimension's
+blind and target-aware ratings. Both raw reports, parsed reports and the
+explicit `blind_then_targeted_min_v1` protocol are retained. This conservative
+rule reduces title priming; it is not an independent recognition guarantee.
+A pilot false positive remains in the evidence rather than being overwritten.
+Benchmark comparisons require the same evaluator model, digest and protocol,
+and verify the separate vision receipt and its score derivation.
+
+File-based reviews must also echo the exact requested `subject`; matching
+image hashes alone cannot bind subject-specific feedback when identical
+pixels recur under different titles. A mismatched or missing subject leaves
+the new review unavailable. Historical receipts remain unchanged.
+
+
+## Deliver complete recent evidence to the model
+
+Drawing history is summarized newest first as complete JSON records within a
+2400-character budget. The original Core trials remain unchanged. The run
+receipt stores `memory_context_records` and its SHA-256, so investigators can
+verify the actual input instead of assuming that a saved trial was retrieved.
+An older implementation sliced an oldest-first serialized string; it cut off
+fresh feedback and invalidated the adaptive-versus-frozen exposure test. Those
+original runs and the audit remain retained. Later matched comparisons must
+verify recent evidence delivery and distinct effective memory conditions.
+
+Descriptions up to 1000 characters are retained exactly while the artist is
+still asked for at most 300. This accepts bounded metadata verbosity without
+manually changing geometry. The original 337-character failed response stays
+failed under its historical 300-character rule; no preview is retroactively
+substituted into that control cell.

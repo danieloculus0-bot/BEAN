@@ -1,0 +1,29 @@
+{
+  "history": [
+    {
+      "attempt": 1,
+      "description": "A simplified, enhanced line drawing of a cat with clear ears, prominent eyes, sharp nose, expressive mouth, and detailed body outline.",
+      "journal_tip": "5fc8d0c93ad2f2486e8f215c521ef1580f5b30c6cfc5d7d2bad66fc837c7b2aa",
+      "metadata": "/workspace/bean-live-evidence/auto-vision-benchmark/heldout/none/challenge_01/attempts/attempt_01.json",
+      "metadata_sha256": "bf32728f6170816c003c0de2cbde47c851138214711a37ddd8c2fb713dac0caa",
+      "png": "/workspace/bean-live-evidence/auto-vision-benchmark/heldout/none/challenge_01/attempts/attempt_01.png",
+      "png_sha256": "2dc974433a505c7c293d72d7beacf6a55364541b6251cebafffec0158cceef69",
+      "sha256": "5dcd71bf09522376c925e266637ebccccfb2e962a182faecb04fdee2f94214af",
+      "status": "host_reported_satisfactory",
+      "svg": "/workspace/bean-live-evidence/auto-vision-benchmark/heldout/none/challenge_01/attempts/attempt_01.svg"
+    },
+    {
+      "attempt": 2,
+      "description": "A simplified line drawing of a cat in black line art, recognizable yet abstract. The cat's head is depicted as a small circle at the upper left corner, its body as a series of connected curved lines forming a basic silhouette, and its tail as a thin, elongated line extending to the lower right.",
+      "journal_tip": "32d41b4c2b2226dc129ef75b00de885a62a0a0ea4b5d94a4842f8ea1548ef110",
+      "metadata": "/workspace/bean-live-evidence/auto-vision-benchmark/heldout/none/challenge_01/attempts/attempt_02.json",
+      "metadata_sha256": "320662cc07d8664e0e968e72ed7c50494a0125c2031400c4eaf2c562cfab0245",
+      "png": "/workspace/bean-live-evidence/auto-vision-benchmark/heldout/none/challenge_01/attempts/attempt_02.png",
+      "png_sha256": "8d9ad786996d0403eb7c806229d49ca7c0916f454a8751f6e277ba75517a1ba8",
+      "sha256": "fa34c68144e97a7fea1c24ebe39b7635c3995d564cf2102ca67932ce0bdd2b29",
+      "status": "host_reported_not_satisfactory",
+      "svg": "/workspace/bean-live-evidence/auto-vision-benchmark/heldout/none/challenge_01/attempts/attempt_02.svg"
+    }
+  ],
+  "subject": "a cat"
+}

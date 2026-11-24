@@ -1,0 +1,37 @@
+{
+  "subject_chosen_by_BEAN_model": null,
+  "subject": "a teapot",
+  "subject_source": "human",
+  "history": [
+    {
+      "attempt": 1,
+      "status": "unverified",
+      "svg": "/workspace/bean-live-evidence/benchmark/training/adaptive/challenge_01/attempts/attempt_01.svg",
+      "sha256": "1bbfa8bdcb8cde9acd0218286120a440d2a1f173dc799061280ef289c39cf714",
+      "png": "/workspace/bean-live-evidence/benchmark/training/adaptive/challenge_01/attempts/attempt_01.png",
+      "png_sha256": "a1e252c2525072dd78cd49e2599a7831c9d9ccc88289819fb81ce7f672a6b599",
+      "journal_tip": "5fd3b6d365e60b01a8f2d96e23ae6371c18ce48163eb51e49ac8ed60b35b3a99",
+      "metadata": "/workspace/bean-live-evidence/benchmark/training/adaptive/challenge_01/attempts/attempt_01.json",
+      "metadata_sha256": "e86846a03c7af1f9b5c65291a9cb6f59ac814b8116c11a0216481e9e3cfe8033",
+      "description": "A teapot with a lid, body, spout, and handle centered in the canvas. The lid is a smaller circle at the top. The body widens from the center, forming height. The spout extends downward from one side of the body, connecting to the handle on the other side."
+    },
+    {
+      "attempt": 2,
+      "status": "unverified",
+      "svg": "/workspace/bean-live-evidence/benchmark/training/adaptive/challenge_01/attempts/attempt_02.svg",
+      "sha256": "4abed9e774604e1c5042c88b313287f647cce99472e8f4a4f20c190387d56ca0",
+      "png": "/workspace/bean-live-evidence/benchmark/training/adaptive/challenge_01/attempts/attempt_02.png",
+      "png_sha256": "e83f54fbdb967b4f738f8c0b75e5c37bd0d5ce6178005236776c3662f677111b",
+      "journal_tip": "67d89ba03c53e16d4007affa11ec40f22ad161b9578b0fd71fdd1c7c949c6254",
+      "metadata": "/workspace/bean-live-evidence/benchmark/training/adaptive/challenge_01/attempts/attempt_02.json",
+      "metadata_sha256": "4f216701530fbfe47964af9c4b0a8c199d90d5ee785128a2a17e338320ab3529",
+      "description": "A clear composition of a recognizable teapot, with improved visibility and spatial arrangement of key elements."
+    }
+  ],
+  "research_status": "not_requested",
+  "references": [],
+  "final_status": "unverified",
+  "attempts": 2,
+  "run_receipt": "/workspace/bean-live-evidence/benchmark/training/adaptive/challenge_01/attempts/run.json",
+  "visual_success_independently_verified": false
+}

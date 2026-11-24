@@ -1,0 +1,61 @@
+{
+  "attempts": 2,
+  "completed_at_utc": "2026-11-24T13:02:59.945907+00:00",
+  "created_at_utc": "2026-11-24T12:53:10.794262+00:00",
+  "error": null,
+  "execution_mode": "live_model",
+  "history": [
+    {
+      "attempt": 1,
+      "description": "A simplified teapot with a round body, a slender spout, and a curved handle centered below the spout, all enclosed in a black outline.",
+      "journal_tip": "084cea684e7cae83931fbc2ee55d9bb89f399d6f2ae2a1cfcfebf56e4360adb4",
+      "metadata": "/workspace/bean-live-evidence/recent-memory-benchmark/training/adaptive/challenge_01/attempts/attempt_01.json",
+      "metadata_sha256": "a81a1baaf22893582ce1d6285abc4df0820c101c47570e1648da813a6bb76ae8",
+      "png": "/workspace/bean-live-evidence/recent-memory-benchmark/training/adaptive/challenge_01/attempts/attempt_01.png",
+      "png_sha256": "c16c746ec39f1ca30c6a466a605988be4ae580dc6dde56a83a55e62de56b5468",
+      "sha256": "c60adf5d67e295c8cbf19193d5e62b92e98ba08a50ad42ea64044244fc8c5ca4",
+      "status": "host_reported_not_satisfactory",
+      "svg": "/workspace/bean-live-evidence/recent-memory-benchmark/training/adaptive/challenge_01/attempts/attempt_01.svg"
+    },
+    {
+      "attempt": 2,
+      "description": "A simplified teapot drawing focusing on key components like the body, lid, handle, and spout. The body is represented by a rectangle, the lid as a circle sitting on top, the handle as a vertical line extending from the side, and the spout also depicted as a vertical line.",
+      "journal_tip": "d8838a211b1c9c75be0bd0c3c0bfb990fc392b69840f9e6d651c89e82402fa60",
+      "metadata": "/workspace/bean-live-evidence/recent-memory-benchmark/training/adaptive/challenge_01/attempts/attempt_02.json",
+      "metadata_sha256": "aa2abb313dc4c5ead3cf97b40590a1e2b497b20ef514703ced114d4888dcfb21",
+      "png": "/workspace/bean-live-evidence/recent-memory-benchmark/training/adaptive/challenge_01/attempts/attempt_02.png",
+      "png_sha256": "21ccb5abbddd4c37413aca9a3f1c3d0adcd97242bb3fcb44bd82a430c429e2c9",
+      "sha256": "710565ef6ef36136a7636945fd699299daa62d81f955a7c03b7ff271dcac4abc",
+      "status": "host_reported_not_satisfactory",
+      "svg": "/workspace/bean-live-evidence/recent-memory-benchmark/training/adaptive/challenge_01/attempts/attempt_02.svg"
+    }
+  ],
+  "independent_visual_verification": false,
+  "journal_tip": "2b829fe9336c151714f248b289331432adb45dab13d1aa7f5d5ea2828fde8a11",
+  "learning_improvement_verified": false,
+  "memory_context_records": [],
+  "memory_context_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+  "memory_mode": "adaptive",
+  "model_calls_sha256": "a602c84beacd27f33ccae1f9c635acb707f60a22c25d26a01c6b044c1f9d79fc",
+  "model_digest": "357c53fb659c5076de1d65ccb0b397446227b71a42be9d1603d46168015c9e4b",
+  "model_id": "qwen2.5:3b",
+  "provider_kind": "ollama",
+  "run_id": "f2ecced7-fa79-4c53-9b4b-e99b09324a94",
+  "runtime_source_sha256": {
+    "bean/creativity/artifacts.py": "c72923730d7048fe4a502cb1d2c9ecec993f22e1ec64319d5cb1a9109ccec938",
+    "bean/creativity/sketch_lab.py": "4ed12705d94669c005ee6279d30619e502a15a2e4e7ad39e99a2f922ef53d7b3",
+    "bean/voice/ollama.py": "3f852e850e998767f43bd1c0842852c3562aecfce5152d8b8081e8a6ac8d19ee",
+    "scripts/build_bean_draw_gallery.py": "f306b06c9db0c2d095895c01fc927f646c311a41b6be6fe88ca5ed7a1a888915"
+  },
+  "schema": "bean.draw.run.v1",
+  "seed": 202611241,
+  "selected_attempt": 2,
+  "selection_reason": "The second attempt focuses on accurately representing the key components of a teapot (body, lid, handle, and spout) with distinct lines for clarity. This revision addresses the previous feedback by removing geometric elements and emphasizes the specific features of a teapot, which is more aligned with the intent to create an original line drawing that clearly depicts these components without confusion.",
+  "selection_state": "model_selected_from_recorded_evidence",
+  "source_git_sha": "bb7128d76a6c210d84234326576ef6bc7f1e2509",
+  "state": "host_reported_not_satisfactory",
+  "subject": "a teapot",
+  "subject_source": "human",
+  "task_ref": "benchmark-training-adaptive-01",
+  "weights_updated": false
+}

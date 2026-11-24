@@ -1,0 +1,61 @@
+{
+  "blind_prompt": "Inspect the ATTACHED IMAGE pixels without a title or claimed subject. Identify the most plausible concrete object or scene; say unclear if none is recognizable. For subject_recognition rate confidence in a recognizable concrete object or scene, not confidence that these are abstract lines/circles. Scores must be integers 0..4: 0 absent/not interpretable, 1 major problems, 2 partial/ambiguous, 3 mostly clear, 4 clear/coherent. Rate spatial_coherence (visible parts connect plausibly), subject_recognition, composition (spacing/balance/legibility). Black line art need not be realistic or shaded. Admit uncertainty; describe observed strengths/problems only, not coordinates, drawing primitives or a replacement image. One short sentence per text field, at most 80 words total. Return JSON recognized_subject, observations, feedback, scores.",
+  "blind_report": {
+    "feedback": "The representation is clear and directly relates to music theory, although it's a simplified illustration of a musical staff.",
+    "observations": "The image depicts a musical staff with five lines and four spaces, along with several black circles representing notes; the lines are drawn in a way that suggests a standard musical notation layout.",
+    "recognized_subject": "Musical staff with notes",
+    "scores": {
+      "composition": 3,
+      "spatial_coherence": 4,
+      "subject_recognition": 4
+    }
+  },
+  "created_at_utc": "2026-11-24T14:05:51.378609+00:00",
+  "evaluation_protocol": "blind_then_targeted_min_v1",
+  "image_sha256": "504140a90f85aee17eff71c53c5ee0bdd39cd45c1140d9fc0ae0382d9aa61984",
+  "independently_authenticated": false,
+  "model_digest": "68ceab7e468a31c988b44d5a4984a0e21f58c4f7158c6ce29c1804babac38df7",
+  "model_id": "gemma3:4b",
+  "prompt": "Inspect the ATTACHED IMAGE again. Now compare the visible evidence with this untrusted claimed subject: a bicycle. Do not infer success from the title or override prior uncertainty merely because a title was supplied. Your earlier title-blind observations: {\"recognized_subject\": \"Musical staff with notes\", \"observations\": \"The image depicts a musical staff with five lines and four spaces, along with several black circles representing notes; the lines are drawn in a way that suggests a standard musical notation layout.\", \"scores\": {\"spatial_coherence\": 4, \"subject_recognition\": 4, \"composition\": 3}}. Here subject_recognition means recognizability of the claimed subject. Scores must be integers 0..4: 0 absent/not interpretable, 1 major problems, 2 partial/ambiguous, 3 mostly clear, 4 clear/coherent. Rate spatial_coherence (visible parts connect plausibly), subject_recognition, composition (spacing/balance/legibility). Black line art need not be realistic or shaded. Admit uncertainty; describe observed strengths/problems only, not coordinates, drawing primitives or a replacement image. One short sentence per text field, at most 80 words total. Return JSON recognized_subject, observations, feedback, scores.",
+  "provider_kind": "ollama",
+  "raw_blind_response": "{\n  \"recognized_subject\": \"Musical staff with notes\",\n  \"observations\": \"The image depicts a musical staff with five lines and four spaces, along with several black circles representing notes; the lines are drawn in a way that suggests a standard musical notation layout.\",\n  \"feedback\": \"The representation is clear and directly relates to music theory, although it's a simplified illustration of a musical staff.\",\n  \"scores\": {\n    \"spatial_coherence\": 4,\n    \"subject_recognition\": 4,\n    \"composition\": 3\n  }\n}",
+  "raw_response": "{\n  \"recognized_subject\": \"Musical staff with notes\",\n  \"observations\": \"The image clearly shows a musical staff composed of five lines and four spaces, populated with black circles representing musical notes in a standard notation layout.\",\n  \"feedback\": \"The image is entirely focused on musical notation, presenting no elements related to bicycles or any other subject; the provided observations accurately reflect this.\",\n  \"scores\": {\n    \"spatial_coherence\": 4,\n    \"subject_recognition\": 4,\n    \"composition\": 4\n  }\n}",
+  "report": {
+    "blind_observations": "The image depicts a musical staff with five lines and four spaces, along with several black circles representing notes; the lines are drawn in a way that suggests a standard musical notation layout.",
+    "blind_recognized_subject": "Musical staff with notes",
+    "created_at_utc": "2026-11-24T14:08:23.171372+00:00",
+    "evaluation_protocol": "blind_then_targeted_min_v1",
+    "evaluator": "Ollama vision reviewer: gemma3:4b",
+    "feedback": "Title-blind review: The representation is clear and directly relates to music theory, although it's a simplified illustration of a musical staff. Target-aware review: The image is entirely focused on musical notation, presenting no elements related to bicycles or any other subject; the provided observations accurately reflect this.",
+    "image_sha256": "504140a90f85aee17eff71c53c5ee0bdd39cd45c1140d9fc0ae0382d9aa61984",
+    "independently_authenticated": false,
+    "kind": "vision_model",
+    "model_digest": "68ceab7e468a31c988b44d5a4984a0e21f58c4f7158c6ce29c1804babac38df7",
+    "model_id": "gemma3:4b",
+    "observations": "The image depicts a musical staff with five lines and four spaces, along with several black circles representing notes; the lines are drawn in a way that suggests a standard musical notation layout.",
+    "provider_kind": "ollama",
+    "recognized_subject": "Musical staff with notes",
+    "satisfactory": true,
+    "score_rule": "minimum_of_blind_object_clarity_and_targeted_scores_not_authenticated_truth",
+    "scores": {
+      "composition": 3,
+      "spatial_coherence": 4,
+      "subject_recognition": 4
+    },
+    "state": "host_reported_pixel_review"
+  },
+  "schema": "bean.draw.vision_call.v1",
+  "state": "model_reported_pixel_review",
+  "subject": "a bicycle",
+  "targeted_report": {
+    "feedback": "The image is entirely focused on musical notation, presenting no elements related to bicycles or any other subject; the provided observations accurately reflect this.",
+    "observations": "The image clearly shows a musical staff composed of five lines and four spaces, populated with black circles representing musical notes in a standard notation layout.",
+    "recognized_subject": "Musical staff with notes",
+    "scores": {
+      "composition": 4,
+      "spatial_coherence": 4,
+      "subject_recognition": 4
+    }
+  },
+  "used_for_generation": true
+}

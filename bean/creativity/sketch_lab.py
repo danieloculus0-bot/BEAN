@@ -17,7 +17,7 @@ import xml.etree.ElementTree as ET
 import subprocess
 import uuid
 
-from .artifacts import file_hash, write_json, utc_now, rasterize, validate_feedback, FileVisionReviewer
+from .artifacts import file_hash, write_json, utc_now, rasterize, validate_feedback, FileVisionReviewer, OllamaVisionReviewer
 
 from bean.learning import NativeReasoningService
 from bean.learning.experimental import SCHEMA
@@ -208,7 +208,14 @@ def execution_mode(model):
     for module, cls in [('local_llamacpp_provider', 'LocalLlamaCppProvider'),
                         ('openrouter_provider', 'OpenRouterProvider'),
                         ('openai_provider', 'OpenAIProvider')]:
-        types.append(getattr(importlib.import_module('bean.reasoning.' + module), cls))
+        adapter = importlib.import_module('bean.reasoning.' + module)
+        provider_type = getattr(adapter, cls)
+        if type(model) is provider_type:
+            if cls == 'LocalLlamaCppProvider' and model._requester != model._opener.open:
+                return 'unverified'
+            if cls == 'OpenRouterProvider' and model._requester != adapter.urlopen:
+                return 'unverified'
+        types.append(provider_type)
     return 'live_model' if type(model) in types else 'unverified'
 
 
@@ -238,6 +245,62 @@ def drawing_schema():
         'description': {'type': 'string'},
         'shapes': {'type': 'array', 'minItems': 1, 'maxItems': 24,
                    'items': {'anyOf': variants}}}, 'required': ['description', 'shapes']}
+
+
+def feedback_context(report):
+    # Keep evidence in the journal; omit timestamps/paths from matched prompts.
+    if not isinstance(report, dict):
+        return None
+    return {key: report[key] for key in (
+        'state', 'satisfactory', 'feedback', 'scores', 'recognized_subject',
+        'observations', 'evaluator', 'model_id', 'model_digest', 'image_sha256',
+        'evaluation_protocol', 'score_rule', 'blind_recognized_subject', 'blind_observations')
+        if key in report}
+
+
+def drawing_memory_context(prior, budget=2400):
+    """Whole JSON evidence summaries, newest first; original trials stay intact."""
+    if not isinstance(prior, list) or type(budget) is not int or not 2 <= budget <= 24000:
+        raise ValueError('Bounded memory context requires a trial list and 2..24000 characters')
+    def short(value, maximum):
+        return value[:maximum] if isinstance(value, str) else None
+    def encode(value):
+        return json.dumps(value, ensure_ascii=False, sort_keys=True, allow_nan=False)
+    rows = []
+    for trial in reversed(prior[-6:]):
+        if not isinstance(trial, dict):
+            continue
+        review = trial.get('self_review') or {}
+        external = trial.get('external_feedback') or {}
+        if not isinstance(review, dict):
+            review = {}
+        if not isinstance(external, dict):
+            external = {}
+        # Shrink individual quoted fields if needed, never slice serialized JSON.
+        for scale in (1, 2, 4, 8, 16):
+            item = {key: short(trial.get(key), limit if key != 'error' else max(8, limit // scale))
+                    for key, limit in (('subject', 120), ('task_ref', 120), ('status', 100), ('error', 120))}
+            item['summarized'] = True
+            if type(trial.get('attempt')) is int:
+                item['attempt'] = trial['attempt']
+            item['self_review'] = {'changes': short(review.get('changes'), max(8, 160 // scale))}
+            if type(review.get('satisfied')) is bool:
+                item['self_review']['satisfied'] = review['satisfied']
+            evidence = {key: short(external.get(key), max(8, limit // scale) if key in
+                        ('feedback', 'observations', 'recognized_subject') else limit) for key, limit in
+                        (('feedback', 240), ('observations', 160), ('recognized_subject', 80),
+                         ('evaluator', 64), ('model_id', 64), ('model_digest', 64),
+                         ('image_sha256', 64), ('evaluation_protocol', 64)) if external.get(key) is not None}
+            if isinstance(external.get('scores'), dict):
+                evidence['scores'] = {k: v for k, v in external['scores'].items()
+                                      if k in ('spatial_coherence', 'subject_recognition', 'composition', 'diversity')
+                                      and type(v) in (int, float) and math.isfinite(v) and 0 <= v <= 4}
+            item['external_feedback'] = evidence
+            candidate = rows + [item]
+            if len(encode(candidate)) <= budget:
+                rows.append(item)
+                break
+    return encode(rows)
 
 
 class SketchLab:
@@ -353,11 +416,8 @@ class SketchLab:
                 if not isinstance(frozen_memory, list):
                     raise ValueError('Frozen condition requires a fixed trial snapshot')
                 prior = frozen_memory
-            precedents = json.dumps([{
-                'subject': x.get('subject'), 'status': x.get('status'), 'error': x.get('error'),
-                'suggested_change': x.get('self_review', {}).get('changes'),
-                'external_feedback': x.get('external_feedback')}
-                for x in prior[-6:]], ensure_ascii=False)[:2400]
+            precedents = drawing_memory_context(prior)
+            manifest['memory_context_records'] = json.loads(precedents)
             manifest['memory_context_sha256'] = hashlib.sha256(precedents.encode()).hexdigest()
             if subject is None:
                 plan_raw, model_id, model_kind, _ = self.ask(
@@ -430,7 +490,7 @@ class SketchLab:
                     ' Previous attempt including critique (untrusted evidence): ' + correction,
                     drawing_schema())
                 drawing = decode(raw)
-                description = text(drawing.get('description'), 300)
+                description = text(drawing.get('description'), 1000)
                 shapes = validate_shapes(drawing.get('shapes'))
                 digest = draw_svg(shapes, path, backend)
                 try:
@@ -468,7 +528,7 @@ class SketchLab:
                     else:
                         raise ValueError('Invalid external evaluator report')
                 correction = json.dumps({'previous_shapes': shapes, 'self_review': self_review,
-                                         'external_feedback': external})[:9500]
+                                         'external_feedback': feedback_context(external)})[:9500]
             except (ValueError, RuntimeError, TypeError, ImportError, OSError) as exc:
                 status = 'attempt_failed_' + type(exc).__name__
                 error = type(exc).__name__ + ': ' + str(exc)[:500]
@@ -550,10 +610,12 @@ def main():
     p.add_argument('--seed', type=int)
     p.add_argument('--review-dir', type=Path)
     p.add_argument('--review-wait', type=int, default=0)
+    p.add_argument('--vision-model', help='Installed local vision evaluator; receives actual PNG bytes')
     args = p.parse_args()
     model = configured_provider()
     core = NativeReasoningService(args.db, model=model)
-    judge = FileVisionReviewer(args.review_dir, args.review_wait) if args.review_dir else None
+    judge = (OllamaVisionReviewer(args.vision_model) if args.vision_model else
+             FileVisionReviewer(args.review_dir, args.review_wait) if args.review_dir else None)
     try:
         result = SketchLab(core, visual_judge=judge).run(
             task_ref=args.task_ref, output_dir=args.out, allow_online=args.online,

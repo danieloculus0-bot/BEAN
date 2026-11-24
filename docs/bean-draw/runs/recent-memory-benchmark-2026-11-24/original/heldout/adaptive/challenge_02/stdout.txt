@@ -1,0 +1,37 @@
+{
+  "subject_chosen_by_BEAN_model": null,
+  "subject": "a bicycle",
+  "subject_source": "human",
+  "history": [
+    {
+      "attempt": 1,
+      "status": "host_reported_satisfactory",
+      "svg": "/workspace/bean-live-evidence/recent-memory-benchmark/heldout/adaptive/challenge_02/attempts/attempt_01.svg",
+      "sha256": "aaa5ac6557a607249746720d3d05b362a5df6128f48834a669e7130c2f4b45fc",
+      "png": "/workspace/bean-live-evidence/recent-memory-benchmark/heldout/adaptive/challenge_02/attempts/attempt_01.png",
+      "png_sha256": "f2109c7e7603b797e4674c59dadf9f6ddf8489a121dbbc7e1cef42a3c347c6dc",
+      "journal_tip": "beabf8bc5336ad938a1d2fecccdfc644748d2d5f35c0c93e8715b859b5ec30c4",
+      "metadata": "/workspace/bean-live-evidence/recent-memory-benchmark/heldout/adaptive/challenge_02/attempts/attempt_01.json",
+      "metadata_sha256": "9a42e3c5629a24cf1e4a023a1305a8849f6170182dfe4fea60b81643cda84d69",
+      "description": "A minimalistic black line art of a bicycle with front and back wheels, frame, handlebars, and seat. The composition is centered around the wheels and frame, with handlebars extending from the top of the vertical frame and pedals positioned on either side."
+    },
+    {
+      "attempt": 2,
+      "status": "host_reported_satisfactory",
+      "svg": "/workspace/bean-live-evidence/recent-memory-benchmark/heldout/adaptive/challenge_02/attempts/attempt_02.svg",
+      "sha256": "99d672cb9b8f6899a8593af90f56ae9d39416d7b0ce15a4bf782b6d164535826",
+      "png": "/workspace/bean-live-evidence/recent-memory-benchmark/heldout/adaptive/challenge_02/attempts/attempt_02.png",
+      "png_sha256": "89ee337ebc7127d0449b72bb9b25e4523ffee75de906a0de01aa96d27249d437",
+      "journal_tip": "820651d7a6db8b7f0659de7e1b90d5dfb067b895bc3cab3deeb87abc23a0991a",
+      "metadata": "/workspace/bean-live-evidence/recent-memory-benchmark/heldout/adaptive/challenge_02/attempts/attempt_02.json",
+      "metadata_sha256": "ed57dd83c65be607cd2e6545c78045d8791583e21ea157fc5b37236a7bb725de",
+      "description": "A simple black line art drawing of a bicycle composed within a rectangle, focusing on recognizable components."
+    }
+  ],
+  "research_status": "not_requested",
+  "references": [],
+  "final_status": "host_reported_satisfactory",
+  "attempts": 2,
+  "run_receipt": "/workspace/bean-live-evidence/recent-memory-benchmark/heldout/adaptive/challenge_02/attempts/run.json",
+  "visual_success_independently_verified": false
+}

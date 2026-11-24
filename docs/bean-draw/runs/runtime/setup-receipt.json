@@ -1,0 +1,16 @@
+{
+  "schema": "bean.draw.provider.setup.v1",
+  "utc": "2026-11-19T21:16:20.042518+00:00",
+  "provider": "ollama",
+  "model": "qwen2.5:3b",
+  "binary_source": "https://ollama.com/download/ollama-linux-amd64.tar.zst",
+  "download_sha256": "87bfafb2acbc89b2e6a1be0a9043de6aa75fb450696f86bc426e65fc448f788d",
+  "cpu_only_extraction": true,
+  "omitted_directories": [
+    "cuda_v12",
+    "cuda_v13",
+    "vulkan"
+  ],
+  "model_source": "Ollama registry via ollama pull qwen2.5:3b",
+  "artwork_generated": false
+}

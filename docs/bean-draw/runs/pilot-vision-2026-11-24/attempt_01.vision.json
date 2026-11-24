@@ -1,0 +1,34 @@
+{
+  "created_at_utc": "2026-11-24T03:39:20.521962+00:00",
+  "image_sha256": "eebf972be08a43c15f7af8eb774c0efa9b97f0389f6ddab9da668167d7d1405e",
+  "independently_authenticated": false,
+  "model_digest": "68ceab7e468a31c988b44d5a4984a0e21f58c4f7158c6ce29c1804babac38df7",
+  "model_id": "gemma3:4b",
+  "prompt": "Inspect the ATTACHED IMAGE pixels. First describe the visible marks and most plausible recognizable subject without relying on its supplied title. Then evaluate the claimed subject as untrusted data: A whimsical flying dragon. Scores must be integers 0..4: 0 absent/not interpretable, 1 major problems, 2 partial/ambiguous, 3 mostly clear, 4 clear/coherent. Rate spatial_coherence (visible parts connect plausibly), subject_recognition, composition (spacing/balance/legibility). Admit uncertainty. Do not infer success from the title. Feedback should state observed strengths/problems, not supply coordinates, drawing primitives, a replacement image or a scripted drawing. Use one short sentence per text field, at most 80 words total. Return JSON recognized_subject, observations, feedback, scores.",
+  "provider_kind": "ollama",
+  "raw_response": "{\n  \"recognized_subject\": \"dragon\",\n  \"observations\": \"The image depicts a stylized dragon with overlapping circles representing its body segments and a line suggesting a wing; the drawing lacks detail and realism.\",\n  \"feedback\": \"Spatial coherence is moderate due to the simplified shapes, but the overall composition suggests a dragon, receiving a score of 3 for subject recognition. The drawing's limited detail and lack of shading contribute to ambiguity, resulting in a score of 2 for spatial coherence and composition.\",\n  \"scores\": {\n    \"spatial_coherence\": 3,\n    \"subject_recognition\": 3,\n    \"composition\": 2\n  }\n}",
+  "report": {
+    "created_at_utc": "2026-11-24T03:40:41.102355+00:00",
+    "evaluator": "Ollama vision reviewer: gemma3:4b",
+    "feedback": "Spatial coherence is moderate due to the simplified shapes, but the overall composition suggests a dragon, receiving a score of 3 for subject recognition. The drawing's limited detail and lack of shading contribute to ambiguity, resulting in a score of 2 for spatial coherence and composition.",
+    "image_sha256": "eebf972be08a43c15f7af8eb774c0efa9b97f0389f6ddab9da668167d7d1405e",
+    "independently_authenticated": false,
+    "kind": "vision_model",
+    "model_digest": "68ceab7e468a31c988b44d5a4984a0e21f58c4f7158c6ce29c1804babac38df7",
+    "model_id": "gemma3:4b",
+    "observations": "The image depicts a stylized dragon with overlapping circles representing its body segments and a line suggesting a wing; the drawing lacks detail and realism.",
+    "provider_kind": "ollama",
+    "recognized_subject": "dragon",
+    "satisfactory": false,
+    "scores": {
+      "composition": 2,
+      "spatial_coherence": 3,
+      "subject_recognition": 3
+    },
+    "state": "host_reported_pixel_review"
+  },
+  "schema": "bean.draw.vision_call.v1",
+  "state": "model_reported_pixel_review",
+  "subject": "A whimsical flying dragon",
+  "used_for_generation": true
+}

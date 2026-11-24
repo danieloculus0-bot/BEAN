@@ -1,0 +1,60 @@
+{
+  "attempts": 2,
+  "completed_at_utc": "2026-11-24T04:16:30.037801+00:00",
+  "created_at_utc": "2026-11-24T04:03:05.978919+00:00",
+  "error": null,
+  "execution_mode": "live_model",
+  "history": [
+    {
+      "attempt": 1,
+      "description": "A distinctive black line art of a cat with clear ears, eyes, nose, mouth, and body outline. The tail is long and the paws are distinct.",
+      "journal_tip": "3574653df1ab72a237d7bb1b7b36a703f73228313c9c8235ea0de8f30e68b939",
+      "metadata": "/workspace/bean-live-evidence/auto-vision-benchmark/heldout/frozen/challenge_01/attempts/attempt_01.json",
+      "metadata_sha256": "1e48c288532a8d010e5b1ea9c3ac32ce2c6c26a5a41efa82ee39e676dda55abb",
+      "png": "/workspace/bean-live-evidence/auto-vision-benchmark/heldout/frozen/challenge_01/attempts/attempt_01.png",
+      "png_sha256": "29ff58275ec51c5f9c2ea6c5cd00b4eee1516ec35ab89bc38c3eebd3d6128d54",
+      "sha256": "2d03bd2133d43f010e4a757b6c8365c473de41eed6534df7fc6a527efd6f3ad4",
+      "status": "host_reported_not_satisfactory",
+      "svg": "/workspace/bean-live-evidence/auto-vision-benchmark/heldout/frozen/challenge_01/attempts/attempt_01.svg"
+    },
+    {
+      "attempt": 2,
+      "description": "A recognizable black and white line art of a cat, with distinct features like ears, eyes, whiskers, and a tail.",
+      "journal_tip": "b2e0b8314cfff1039d8665bcf6f955e3a87036dd736a1ba52ada745e2ed29a1b",
+      "metadata": "/workspace/bean-live-evidence/auto-vision-benchmark/heldout/frozen/challenge_01/attempts/attempt_02.json",
+      "metadata_sha256": "7aa0f86c47d69d6db097548de618601469b84fedc57b795e523ca3ab2fca6181",
+      "png": "/workspace/bean-live-evidence/auto-vision-benchmark/heldout/frozen/challenge_01/attempts/attempt_02.png",
+      "png_sha256": "00a049c302c8bc4a2d4f8c08c86113812306b13199aff98bf66871eafe83a0a9",
+      "sha256": "b42b125d3ba09a3561f89944c1ee25588c53eee116d5ae9637c4ccd3f0077ebc",
+      "status": "host_reported_not_satisfactory",
+      "svg": "/workspace/bean-live-evidence/auto-vision-benchmark/heldout/frozen/challenge_01/attempts/attempt_02.svg"
+    }
+  ],
+  "independent_visual_verification": false,
+  "journal_tip": "94fce21f35f21db931c3347efb8e728efc96bc31798608879266b6a3ce5763e9",
+  "learning_improvement_verified": false,
+  "memory_context_sha256": "23d530b18043e2f16f7131e923437c4dc201abf2710c615db5e1b8c46d102931",
+  "memory_mode": "frozen",
+  "model_calls_sha256": "770ec8c45a0179bc5863a499229e5a71ebb08a9a8a1581464989b3a309e7bd28",
+  "model_digest": "357c53fb659c5076de1d65ccb0b397446227b71a42be9d1603d46168015c9e4b",
+  "model_id": "qwen2.5:3b",
+  "provider_kind": "ollama",
+  "run_id": "779ac48f-3502-4da6-b732-6d15c210d18a",
+  "runtime_source_sha256": {
+    "bean/creativity/artifacts.py": "19154ead40bd59df1205278820cc4e99316ce4295acfcaa017541b5daf0893fa",
+    "bean/creativity/sketch_lab.py": "945268eaed3329716e8a62e036a579109089a5c9a83a3f8b852c666fb83d20fd",
+    "bean/voice/ollama.py": "3f852e850e998767f43bd1c0842852c3562aecfce5152d8b8081e8a6ac8d19ee",
+    "scripts/build_bean_draw_gallery.py": "f306b06c9db0c2d095895c01fc927f646c311a41b6be6fe88ca5ed7a1a888915"
+  },
+  "schema": "bean.draw.run.v1",
+  "seed": 20261125,
+  "selected_attempt": 2,
+  "selection_reason": "The second attempt provides a clearer and more detailed representation of a recognizable black and white line art of a cat. It includes distinct features such as ears, eyes, whiskers, and a tail, making it stand out from the first attempt which depicted a valve schematic. The composition also aligns better with typical representations of cats, improving spatial coherence and subject recognition.",
+  "selection_state": "model_selected_from_recorded_evidence",
+  "source_git_sha": "01090ba7c8c97855a7e3d352c3e9003e7278e972",
+  "state": "host_reported_not_satisfactory",
+  "subject": "a cat",
+  "subject_source": "human",
+  "task_ref": "benchmark-heldout-frozen-01",
+  "weights_updated": false
+}

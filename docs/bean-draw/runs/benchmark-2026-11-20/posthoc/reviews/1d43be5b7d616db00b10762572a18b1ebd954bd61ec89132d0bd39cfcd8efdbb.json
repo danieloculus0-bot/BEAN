@@ -1,0 +1,43 @@
+{
+  "blinded": false,
+  "created_at_utc": "2026-11-24T03:31:05.626236+00:00",
+  "evaluator": "Codex posthoc visual reviewer",
+  "feedback": "The image contains long diagonal strokes, a large upper-left circle and clustered overlapping circles near the center-right. The upper rectangle is gone, but I still cannot reliably recognize a sailboat. The subject is not made clearer by the changed marks.",
+  "human_evaluation": "unavailable",
+  "image_sha256": "1d43be5b7d616db00b10762572a18b1ebd954bd61ec89132d0bd39cfcd8efdbb",
+  "independently_authenticated": false,
+  "inspection_method": "Actual PNG opened with view_image before rating; no subject-label/string comparison used as a substitute for pixels",
+  "kind": "vision_model",
+  "model_identity": "Unavailable for the host reviewer; do not infer an evaluator model digest",
+  "original_runs": [
+    {
+      "arm": "frozen",
+      "attempt": 2,
+      "phase": "heldout",
+      "run_id": "1f69b84d-d74b-46c8-acaf-02160af88dd0",
+      "run_path": "heldout/frozen/challenge_01/attempts/run.json",
+      "run_sha256": "71bd8b7c7ffe1fca6864928aab6d0b005493c9a768333d8be94f5e54d305afe8",
+      "sidecar_sha256": "0930faec9ed07c59faea0830fe4b3af5c37b7602732952570adf059ef3638ba8"
+    },
+    {
+      "arm": "adaptive",
+      "attempt": 2,
+      "phase": "heldout",
+      "run_id": "411202ab-bd3e-4eb8-8d7b-5ee73af2a27a",
+      "run_path": "heldout/adaptive/challenge_01/attempts/run.json",
+      "run_sha256": "85c128895472fbed6716b6b405db8831237728c61297328b12c11b0f6cd9c380",
+      "sidecar_sha256": "a292804345bc1015c06fc215e59c317075dc1a613aa84f8a187c185cb83d916b"
+    }
+  ],
+  "posthoc": true,
+  "rubric_sha256": "aa5f8360b6314c4c9942a1371918bc8eb1f0e966c18b9310910cdae6a5a90e8e",
+  "satisfactory": false,
+  "schema": "bean.draw.posthoc.visual_review.v1",
+  "scores": {
+    "composition": 1,
+    "spatial_coherence": 1,
+    "subject_recognition": 0
+  },
+  "subject": "a sailboat",
+  "used_for_generation": false
+}

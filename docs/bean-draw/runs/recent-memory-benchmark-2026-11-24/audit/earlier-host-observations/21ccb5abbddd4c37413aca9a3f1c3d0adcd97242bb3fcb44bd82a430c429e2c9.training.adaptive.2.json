@@ -1,0 +1,31 @@
+{
+  "arm": "adaptive",
+  "attempt": 2,
+  "blinded": false,
+  "challenge": 1,
+  "created_at_utc": "2026-11-24T13:00:07.991415+00:00",
+  "difference_bbox_from_attempt1": [
+    62,
+    384,
+    512,
+    480
+  ],
+  "evaluator": "Codex recent-memory visual observer",
+  "image_file": "/workspace/bean-live-evidence/recent-memory-benchmark/training/adaptive/challenge_01/attempts/attempt_02.png",
+  "image_sha256": "21ccb5abbddd4c37413aca9a3f1c3d0adcd97242bb3fcb44bd82a430c429e2c9",
+  "independently_authenticated": false,
+  "inspection_method": "view_image result returned before this report was written",
+  "kind": "vision_model",
+  "observations": "The same large rectangle/circle/longline assembly remains. The visible layout still does not reliably depict a teapot to this observer; no recognition improvement is apparent.",
+  "phase": "training",
+  "posthoc": true,
+  "same_png_bytes_as_attempt1": false,
+  "schema": "bean.draw.host_image_audit.v1",
+  "scores": {
+    "composition": 2,
+    "spatial_coherence": 1,
+    "subject_recognition": 0
+  },
+  "subject": "a teapot",
+  "used_for_generation": false
+}

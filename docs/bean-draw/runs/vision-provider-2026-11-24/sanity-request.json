@@ -1,0 +1,16 @@
+{
+  "image_bytes": 22125,
+  "image_file": "/workspace/bean-live-evidence/subject-4/attempt_01.png",
+  "image_payload_included": true,
+  "image_sha256": "d37c455317b933c47dbe34496f01ba27a76ae735768ed63305af3e961f14c304",
+  "model": "gemma3:4b",
+  "model_digest": "68ceab7e468a31c988b44d5a4984a0e21f58c4f7158c6ce29c1804babac38df7",
+  "options": {
+    "num_ctx": 4096,
+    "num_predict": 768,
+    "temperature": 0.0
+  },
+  "prompt": "Inspect the actual supplied image pixels. Describe only visible shapes and their connections. Say whether they form a recognizable object; if the subject is unclear, explicitly say unclear. Do not infer an expected subject or invent details. Return JSON with observations (list of strings), recognized_subject (string), and uncertainty (string).",
+  "schema": "bean.vision.sanity.request.v1",
+  "utc": "2026-11-24T03:31:32.735315+00:00"
+}

@@ -1,0 +1,29 @@
+{
+  "history": [
+    {
+      "attempt": 1,
+      "description": "Bicycle frame with front and back wheels, handlebars extending upwards, seat positioned above the back wheel.",
+      "journal_tip": "31be1516e1ceefc06f69d01ab3d4f498d2cae413fd4ced50d2e2c5b13a7f0d1b",
+      "metadata": "/workspace/bean-live-evidence/recent-memory-benchmark/heldout/frozen/challenge_02/attempts/attempt_01.json",
+      "metadata_sha256": "8bd74bcb13e02daea204a35f3f80641c821d8e6741c4b9ec3ea46faa80814d9c",
+      "png": "/workspace/bean-live-evidence/recent-memory-benchmark/heldout/frozen/challenge_02/attempts/attempt_01.png",
+      "png_sha256": "504140a90f85aee17eff71c53c5ee0bdd39cd45c1140d9fc0ae0382d9aa61984",
+      "sha256": "5826f665382a903aee28508a8d102589e0e3bae93058a3e3ebccd285f3f3f660",
+      "status": "host_reported_satisfactory",
+      "svg": "/workspace/bean-live-evidence/recent-memory-benchmark/heldout/frozen/challenge_02/attempts/attempt_01.svg"
+    },
+    {
+      "attempt": 2,
+      "description": "A clear and recognizable bicycle composed of several key components: front wheel, rear wheel, frame, handlebars, seat, pedals, and chain.",
+      "journal_tip": "0a8b73126e0e1a8fa68f4642fccc5f8664269b6a53ad07e41de4de73f723c311",
+      "metadata": "/workspace/bean-live-evidence/recent-memory-benchmark/heldout/frozen/challenge_02/attempts/attempt_02.json",
+      "metadata_sha256": "cd644040e141d15fcc96da8b5cf4b385b7be2f6a2c17f2016d2fae480a4ccf0c",
+      "png": "/workspace/bean-live-evidence/recent-memory-benchmark/heldout/frozen/challenge_02/attempts/attempt_02.png",
+      "png_sha256": "fa17cefcf4ff6629792515360c5c7d2123633d36f32569f053533614d71ef787",
+      "sha256": "2bc2fc4b572a18e4680ee9bf6ba92ee0323591ba3835635478625f189f41584b",
+      "status": "host_reported_not_satisfactory",
+      "svg": "/workspace/bean-live-evidence/recent-memory-benchmark/heldout/frozen/challenge_02/attempts/attempt_02.svg"
+    }
+  ],
+  "subject": "a bicycle"
+}

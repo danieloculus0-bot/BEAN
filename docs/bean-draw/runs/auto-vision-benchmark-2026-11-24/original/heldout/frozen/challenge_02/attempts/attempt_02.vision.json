@@ -1,0 +1,61 @@
+{
+  "blind_prompt": "Inspect the ATTACHED IMAGE pixels without a title or claimed subject. Identify the most plausible concrete object or scene; say unclear if none is recognizable. For subject_recognition rate confidence in a recognizable concrete object or scene, not confidence that these are abstract lines/circles. Scores must be integers 0..4: 0 absent/not interpretable, 1 major problems, 2 partial/ambiguous, 3 mostly clear, 4 clear/coherent. Rate spatial_coherence (visible parts connect plausibly), subject_recognition, composition (spacing/balance/legibility). Black line art need not be realistic or shaded. Admit uncertainty; describe observed strengths/problems only, not coordinates, drawing primitives or a replacement image. One short sentence per text field, at most 80 words total. Return JSON recognized_subject, observations, feedback, scores.",
+  "blind_report": {
+    "feedback": "The representation is stylized and lacks detail, relying on basic geometric shapes to convey the elements of a volleyball court.",
+    "observations": "The image depicts a simplified volleyball court with lines and a net, along with a circle and triangle representing the ball and player respectively; spatial coherence is moderate due to the abstract nature of the drawing.",
+    "recognized_subject": "Volleyball court",
+    "scores": {
+      "composition": 3,
+      "spatial_coherence": 3,
+      "subject_recognition": 3
+    }
+  },
+  "created_at_utc": "2026-11-24T05:08:32.826288+00:00",
+  "evaluation_protocol": "blind_then_targeted_min_v1",
+  "image_sha256": "6b0639d85888552add0bf98df37758cadc517c1ae76dda77cf0946b8db74ef77",
+  "independently_authenticated": false,
+  "model_digest": "68ceab7e468a31c988b44d5a4984a0e21f58c4f7158c6ce29c1804babac38df7",
+  "model_id": "gemma3:4b",
+  "prompt": "Inspect the ATTACHED IMAGE again. Now compare the visible evidence with this untrusted claimed subject: a sailboat. Do not infer success from the title or override prior uncertainty merely because a title was supplied. Your earlier title-blind observations: {\"recognized_subject\": \"Volleyball court\", \"observations\": \"The image depicts a simplified volleyball court with lines and a net, along with a circle and triangle representing the ball and player respectively; spatial coherence is moderate due to the abstract nature of the drawing.\", \"scores\": {\"spatial_coherence\": 3, \"subject_recognition\": 3, \"composition\": 3}}. Here subject_recognition means recognizability of the claimed subject. Scores must be integers 0..4: 0 absent/not interpretable, 1 major problems, 2 partial/ambiguous, 3 mostly clear, 4 clear/coherent. Rate spatial_coherence (visible parts connect plausibly), subject_recognition, composition (spacing/balance/legibility). Black line art need not be realistic or shaded. Admit uncertainty; describe observed strengths/problems only, not coordinates, drawing primitives or a replacement image. One short sentence per text field, at most 80 words total. Return JSON recognized_subject, observations, feedback, scores.",
+  "provider_kind": "ollama",
+  "raw_blind_response": "{\n  \"recognized_subject\": \"Volleyball court\",\n  \"observations\": \"The image depicts a simplified volleyball court with lines and a net, along with a circle and triangle representing the ball and player respectively; spatial coherence is moderate due to the abstract nature of the drawing.\",\n  \"feedback\": \"The representation is stylized and lacks detail, relying on basic geometric shapes to convey the elements of a volleyball court.\",\n  \"scores\": {\n    \"spatial_coherence\": 3,\n    \"subject_recognition\": 3,\n    \"composition\": 3\n  }\n}",
+  "raw_response": "{\"recognized_subject\": \"Volleyball court\", \"observations\": \"The image shows a volleyball court with lines and a net, featuring a circle and triangle likely representing the ball and player, though the drawing is abstract and lacks detail.\", \"feedback\": \"While the overall impression is of a volleyball court, the simplified representation and lack of shading make it difficult to definitively confirm this interpretation; the spatial relationships are somewhat ambiguous.\", \"scores\": {\"spatial_coherence\": 2, \"subject_recognition\": 3, \"composition\": 2}}",
+  "report": {
+    "blind_observations": "The image depicts a simplified volleyball court with lines and a net, along with a circle and triangle representing the ball and player respectively; spatial coherence is moderate due to the abstract nature of the drawing.",
+    "blind_recognized_subject": "Volleyball court",
+    "created_at_utc": "2026-11-24T05:10:55.914475+00:00",
+    "evaluation_protocol": "blind_then_targeted_min_v1",
+    "evaluator": "Ollama vision reviewer: gemma3:4b",
+    "feedback": "Title-blind review: The representation is stylized and lacks detail, relying on basic geometric shapes to convey the elements of a volleyball court. Target-aware review: While the overall impression is of a volleyball court, the simplified representation and lack of shading make it difficult to definitively confirm this interpretation; the spatial relationships are somewhat ambiguous.",
+    "image_sha256": "6b0639d85888552add0bf98df37758cadc517c1ae76dda77cf0946b8db74ef77",
+    "independently_authenticated": false,
+    "kind": "vision_model",
+    "model_digest": "68ceab7e468a31c988b44d5a4984a0e21f58c4f7158c6ce29c1804babac38df7",
+    "model_id": "gemma3:4b",
+    "observations": "The image depicts a simplified volleyball court with lines and a net, along with a circle and triangle representing the ball and player respectively; spatial coherence is moderate due to the abstract nature of the drawing.",
+    "provider_kind": "ollama",
+    "recognized_subject": "Volleyball court",
+    "satisfactory": false,
+    "score_rule": "minimum_of_blind_object_clarity_and_targeted_scores_not_authenticated_truth",
+    "scores": {
+      "composition": 2,
+      "spatial_coherence": 2,
+      "subject_recognition": 3
+    },
+    "state": "host_reported_pixel_review"
+  },
+  "schema": "bean.draw.vision_call.v1",
+  "state": "model_reported_pixel_review",
+  "subject": "a sailboat",
+  "targeted_report": {
+    "feedback": "While the overall impression is of a volleyball court, the simplified representation and lack of shading make it difficult to definitively confirm this interpretation; the spatial relationships are somewhat ambiguous.",
+    "observations": "The image shows a volleyball court with lines and a net, featuring a circle and triangle likely representing the ball and player, though the drawing is abstract and lacks detail.",
+    "recognized_subject": "Volleyball court",
+    "scores": {
+      "composition": 2,
+      "spatial_coherence": 2,
+      "subject_recognition": 3
+    }
+  },
+  "used_for_generation": true
+}

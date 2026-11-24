@@ -1,0 +1,64 @@
+{
+  "attempt": 1,
+  "created_at_utc": "2026-11-20T14:07:00.293551+00:00",
+  "description": "A recognizable sailboat with key features like a mast, sail, hull, bow, and stern depicted in black line art. The composition is horizontal with the bow at the top and the stern at the bottom.",
+  "domain": "sketch",
+  "drawing_instructions": {
+    "components": [
+      "sail",
+      "rigging",
+      "hull",
+      "bow",
+      "stern",
+      "mast",
+      "canvas",
+      "deck"
+    ],
+    "composition": "The sailboat will be placed in a horizontal composition, with the bow at the top and the stern at the bottom. The mast will be positioned vertically along the center of the ship, supported by the rigging. The sail will span from the mast to the hull on either side, covering part of the deck. The canvas will extend over the sides of the boat for added stability and visibility. The hull, which forms the body of the boat, will occupy most of the composition. The bow and stern will be defined by distinct shapes or shading to differentiate them visually.",
+    "intent": "Create an original line drawing of a sailboat without repeating previous elements, ensuring the viewer can recognize it based on its key features.",
+    "revision_reason": "To avoid repetition, I will introduce variations in line thickness, direction, and placement, as well as adding additional details like waves for a more dynamic and recognizable depiction."
+  },
+  "error": null,
+  "execution_mode": "live_model",
+  "experiment": "bean_sketch_v1",
+  "external_feedback": {
+    "reason": "No external pixel evaluator report",
+    "state": "unavailable"
+  },
+  "independent_visual_verification": false,
+  "journal_tip": "6b1921adacafee47e6af245e29ba55e982bb61c1b246323ebf3ff9d9942bcd8a",
+  "memory_mode": "adaptive",
+  "model_digest": "357c53fb659c5076de1d65ccb0b397446227b71a42be9d1603d46168015c9e4b",
+  "model_id": "qwen2.5:3b",
+  "png_file": "attempt_01.png",
+  "png_sha256": "91f450301555bf58dba86509b33fc6139f8b2c67ab7793e353dc46cef7e05c25",
+  "preview_size": [
+    512,
+    512
+  ],
+  "provider_kind": "ollama",
+  "rasterizer": "CairoSVG 2.8.2",
+  "raw_file": "attempt_01.raw.json",
+  "raw_sha256": "9f05b48ee3b31f2e03ccf7358a468e798ffe432ad61526da4df9a0146565f3e5",
+  "reference_urls": [],
+  "research_status": "not_requested",
+  "run_id": "411202ab-bd3e-4eb8-8d7b-5ee73af2a27a",
+  "schema": "bean.draw.attempt.v1",
+  "seed": 20261131,
+  "self_review": {
+    "changes": "",
+    "claimed_subject": "a sailboat",
+    "satisfied": false
+  },
+  "source_git_sha": "3fc06f4777a68b492928d6a08a0dd251977af895",
+  "status": "unverified",
+  "subject": "a sailboat",
+  "subject_source": "human",
+  "svg_file": "attempt_01.svg",
+  "svg_sha256": "02c26823afaf1c6644165ab4449f0adb94b43bbbcbb8202590a138a03a6d65db",
+  "task_ref": "benchmark-heldout-adaptive-01",
+  "verification_state": "artifacts_verified",
+  "visual_evidence_independently_verified": false,
+  "visual_feedback": null,
+  "weights_updated": false
+}

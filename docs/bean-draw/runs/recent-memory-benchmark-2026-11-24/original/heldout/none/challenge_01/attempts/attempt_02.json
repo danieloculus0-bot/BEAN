@@ -1,0 +1,82 @@
+{
+  "attempt": 2,
+  "created_at_utc": "2026-11-24T13:25:29.386884+00:00",
+  "description": "An umbrella with a rounded top section, cylindrical body, curved handle at the bottom, and two vertical ribs extending from the top to the bottom.",
+  "domain": "sketch",
+  "drawing_instructions": {
+    "components": [
+      "A rounded top section",
+      "An open cylindrical body with tapered ends",
+      "A curved downward arc at the bottom to form a handle",
+      "Two vertical lines intersecting near the bottom to represent ribs or struts"
+    ],
+    "composition": "The drawing is composed of five main elements: a rounded upper part, a central cylindrical body, a curved handle at the bottom, two vertical ribs extending from the top to the bottom, and the overall composition is centered with these components arranged in a balanced manner.",
+    "intent": "Create an original line drawing of an umbrella based on the feedback provided and previous attempts.",
+    "revision_reason": "Based on previous feedback, the current line drawing appears to be more focused on depicting a triangle rather than an umbrella. To better align with the original intent of creating a line drawing of an umbrella, the revised plan includes additional elements such as a rounded top section, cylindrical body, handle, and ribs to accurately represent the subject."
+  },
+  "error": null,
+  "execution_mode": "live_model",
+  "experiment": "bean_sketch_v1",
+  "external_feedback": {
+    "blind_observations": "The image depicts a musical staff with five lines and four spaces, featuring a central circle representing a treble clef and smaller circles indicating other instruments like a flute, clarinet, and possibly a violin. The spatial coherence is reasonable given the simplified representation of musical notation.",
+    "blind_recognized_subject": "Musical staff with instruments",
+    "created_at_utc": "2026-11-24T13:25:29.386356+00:00",
+    "evaluation_protocol": "blind_then_targeted_min_v1",
+    "evaluator": "Ollama vision reviewer: gemma3:4b",
+    "feedback": "Title-blind review: The drawing effectively conveys the basic elements of a musical score with associated instruments, although it's a stylized and somewhat abstract depiction. Target-aware review: The representation is simplified but clearly depicts musical elements, aligning with the initial observation of a musical staff with instruments.",
+    "image_sha256": "64cc780d22e7e01cb2fdcfa1d845982af919d97f0b56ff67283c0efa3d1b7b73",
+    "independently_authenticated": false,
+    "kind": "vision_model",
+    "model_digest": "68ceab7e468a31c988b44d5a4984a0e21f58c4f7158c6ce29c1804babac38df7",
+    "model_id": "gemma3:4b",
+    "observations": "The image depicts a musical staff with five lines and four spaces, featuring a central circle representing a treble clef and smaller circles indicating other instruments like a flute, clarinet, and possibly a violin. The spatial coherence is reasonable given the simplified representation of musical notation.",
+    "provider_kind": "ollama",
+    "recognized_subject": "Musical staff with instruments",
+    "review_file": "attempt_02.vision.json",
+    "review_sha256": "b8fed56c56a71690c101064224266bb4fee7baa63ae661f4d9e4fd0d009b0968",
+    "satisfactory": true,
+    "score_rule": "minimum_of_blind_object_clarity_and_targeted_scores_not_authenticated_truth",
+    "scores": {
+      "composition": 3,
+      "spatial_coherence": 3,
+      "subject_recognition": 4
+    },
+    "state": "host_reported_pixel_review"
+  },
+  "independent_visual_verification": false,
+  "journal_tip": "42658954415ee2e561ec0bdead27de1c3677060cc4276ed88e16bd120434e6fb",
+  "memory_mode": "none",
+  "model_digest": "357c53fb659c5076de1d65ccb0b397446227b71a42be9d1603d46168015c9e4b",
+  "model_id": "qwen2.5:3b",
+  "png_file": "attempt_02.png",
+  "png_sha256": "64cc780d22e7e01cb2fdcfa1d845982af919d97f0b56ff67283c0efa3d1b7b73",
+  "preview_size": [
+    512,
+    512
+  ],
+  "provider_kind": "ollama",
+  "rasterizer": "CairoSVG 2.8.2",
+  "raw_file": "attempt_02.raw.json",
+  "raw_sha256": "58a20767ea1f66f9c47e549b4c40792d0f4a107272620ff0aa72799843b5b5ae",
+  "reference_urls": [],
+  "research_status": "not_requested",
+  "run_id": "86cc0e82-339b-4054-bc34-818e4e193ac6",
+  "schema": "bean.draw.attempt.v1",
+  "seed": 202611241,
+  "self_review": {
+    "changes": "",
+    "claimed_subject": "an umbrella",
+    "satisfied": false
+  },
+  "source_git_sha": "bb7128d76a6c210d84234326576ef6bc7f1e2509",
+  "status": "host_reported_satisfactory",
+  "subject": "an umbrella",
+  "subject_source": "human",
+  "svg_file": "attempt_02.svg",
+  "svg_sha256": "b303d19de0c8a5ddaf357ff29e0690316d1859c80e46c5b901f465c9bbaf4170",
+  "task_ref": "benchmark-heldout-none-01",
+  "verification_state": "artifacts_verified",
+  "visual_evidence_independently_verified": false,
+  "visual_feedback": "Title-blind review: The drawing effectively conveys the basic elements of a musical score with associated instruments, although it's a stylized and somewhat abstract depiction. Target-aware review: The representation is simplified but clearly depicts musical elements, aligning with the initial observation of a musical staff with instruments.",
+  "weights_updated": false
+}

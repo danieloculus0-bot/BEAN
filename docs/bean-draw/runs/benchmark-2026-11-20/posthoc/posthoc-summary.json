@@ -1,0 +1,255 @@
+{
+  "adaptive_minus_control_posthoc_scores": {
+    "frozen": {
+      "composition": 0,
+      "spatial_coherence": 0,
+      "subject_recognition": 0
+    },
+    "none": {
+      "composition": 0,
+      "spatial_coherence": 0,
+      "subject_recognition": 0
+    }
+  },
+  "artifact_verification_file": "artifact-verification.json",
+  "artifact_verification_sha256": "b0da7941e11c8983654dca37c16288dfb52b15a8f194d1bba46e0b1a231e39b5",
+  "created_at_utc": "2026-11-24T03:31:05.626236+00:00",
+  "heldout_cases": 1,
+  "heldout_last_attempt_scores": {
+    "adaptive": {
+      "composition": 1,
+      "spatial_coherence": 1,
+      "subject_recognition": 0
+    },
+    "frozen": {
+      "composition": 1,
+      "spatial_coherence": 1,
+      "subject_recognition": 0
+    },
+    "none": {
+      "composition": 1,
+      "spatial_coherence": 1,
+      "subject_recognition": 0
+    }
+  },
+  "human_evaluation": "unavailable",
+  "independent_evaluation_authenticated": false,
+  "iteration_quality_last_minus_first": {
+    "adaptive": {
+      "composition": 0,
+      "spatial_coherence": 0,
+      "subject_recognition": 0
+    },
+    "frozen": {
+      "composition": 0,
+      "spatial_coherence": 0,
+      "subject_recognition": 0
+    },
+    "none": {
+      "composition": 0,
+      "spatial_coherence": 0,
+      "subject_recognition": 0
+    }
+  },
+  "learning_improvement_verified": false,
+  "limitations": [
+    "All review requests timed out during the original run, so these posthoc reviews did not affect generation, revision or frozen memory.",
+    "The evaluator knew the requested subject and arm paths; scores are subjective and unblinded, with no human evaluation or authenticated independent oracle.",
+    "Only one held-out subject was tested; adaptive and frozen start with the same training evidence on this first challenge, so a deterministic tie cannot establish adaptation across held-out tasks.",
+    "Different file hashes or subject labels are not evidence of learning or diversity.",
+    "Within-run model textual self-critique remained available; this posthoc comparison is not a test of feedback-driven visual revision."
+  ],
+  "metric_scale": {
+    "maximum": 4,
+    "minimum": 0
+  },
+  "observations": [
+    "All eight actual attempts passed run/sidecar/raw/SVG/PNG hash verification.",
+    "Every SVG reproduced byte-for-byte from geometric primitives in its archived actual model response.",
+    "Every PNG matched safe local rerasterization of its SVG.",
+    "Adaptive and frozen-memory PNGs were byte-identical in both held-out attempts.",
+    "No-memory PNGs differed, but their posthoc recognition/coherence/composition scores tied the other arms.",
+    "No attempt reliably depicted the requested teapot or sailboat in this review."
+  ],
+  "original_execution_sha256": "f0e58d34feb4e6308b157a4cc9a021ebc8bd93acc2791a1541aa0eaf73f1230c",
+  "original_summary_sha256": "15c0c267d085e16f8bb8c53109fe7dd0ad55277a1155360f9fb95858a5d1763a",
+  "outcomes": [
+    {
+      "arm": "adaptive",
+      "attempts": [
+        {
+          "attempt": 1,
+          "png_sha256": "a1e252c2525072dd78cd49e2599a7831c9d9ccc88289819fb81ce7f672a6b599",
+          "review": "reviews/a1e252c2525072dd78cd49e2599a7831c9d9ccc88289819fb81ce7f672a6b599.json",
+          "review_sha256": "e151648a62dc1a899900bb0f022f9af4144981e0a84d57ee45e216bebedba82a",
+          "scores": {
+            "composition": 1,
+            "spatial_coherence": 1,
+            "subject_recognition": 0
+          }
+        },
+        {
+          "attempt": 2,
+          "png_sha256": "e83f54fbdb967b4f738f8c0b75e5c37bd0d5ce6178005236776c3662f677111b",
+          "review": "reviews/e83f54fbdb967b4f738f8c0b75e5c37bd0d5ce6178005236776c3662f677111b.json",
+          "review_sha256": "0936fda5a4b4355d12d9529a5ba19ca916a8a7c106fe776a42799beac977d24f",
+          "scores": {
+            "composition": 1,
+            "spatial_coherence": 1,
+            "subject_recognition": 0
+          }
+        }
+      ],
+      "external_feedback_available_during_generation": false,
+      "last_minus_first_external_score": {
+        "composition": 0,
+        "spatial_coherence": 0,
+        "subject_recognition": 0
+      },
+      "last_scores": {
+        "composition": 1,
+        "spatial_coherence": 1,
+        "subject_recognition": 0
+      },
+      "phase": "training",
+      "run_id": "02238a50-6e5a-4179-960c-a2e5b7d6da99",
+      "run_sha256": "8da9292da6a259aa029245ba6d0476b91c477f9c2325657e4751bd0413193136",
+      "subject": "a teapot"
+    },
+    {
+      "arm": "frozen",
+      "attempts": [
+        {
+          "attempt": 1,
+          "png_sha256": "91f450301555bf58dba86509b33fc6139f8b2c67ab7793e353dc46cef7e05c25",
+          "review": "reviews/91f450301555bf58dba86509b33fc6139f8b2c67ab7793e353dc46cef7e05c25.json",
+          "review_sha256": "0814efac2b422bab55b0baadcaeb0b540c6b5e9e504b8cb995c60676cc7b4b3a",
+          "scores": {
+            "composition": 1,
+            "spatial_coherence": 1,
+            "subject_recognition": 0
+          }
+        },
+        {
+          "attempt": 2,
+          "png_sha256": "1d43be5b7d616db00b10762572a18b1ebd954bd61ec89132d0bd39cfcd8efdbb",
+          "review": "reviews/1d43be5b7d616db00b10762572a18b1ebd954bd61ec89132d0bd39cfcd8efdbb.json",
+          "review_sha256": "0c9aa63bfe2fe92bc4f2f5aa01b80872b5ad1ec4d6db12479b57763269982d15",
+          "scores": {
+            "composition": 1,
+            "spatial_coherence": 1,
+            "subject_recognition": 0
+          }
+        }
+      ],
+      "external_feedback_available_during_generation": false,
+      "last_minus_first_external_score": {
+        "composition": 0,
+        "spatial_coherence": 0,
+        "subject_recognition": 0
+      },
+      "last_scores": {
+        "composition": 1,
+        "spatial_coherence": 1,
+        "subject_recognition": 0
+      },
+      "phase": "heldout",
+      "run_id": "1f69b84d-d74b-46c8-acaf-02160af88dd0",
+      "run_sha256": "71bd8b7c7ffe1fca6864928aab6d0b005493c9a768333d8be94f5e54d305afe8",
+      "subject": "a sailboat"
+    },
+    {
+      "arm": "none",
+      "attempts": [
+        {
+          "attempt": 1,
+          "png_sha256": "9470ed3ee2b3360b577c5fc66c5db4b37ed6d3c0f91a8c5a80339a11d3f16011",
+          "review": "reviews/9470ed3ee2b3360b577c5fc66c5db4b37ed6d3c0f91a8c5a80339a11d3f16011.json",
+          "review_sha256": "7960877b78c55d4c237253ccd8064a75ea751efd1e052d6eec094998ad1798da",
+          "scores": {
+            "composition": 1,
+            "spatial_coherence": 1,
+            "subject_recognition": 0
+          }
+        },
+        {
+          "attempt": 2,
+          "png_sha256": "08b1577217a49d1d3a8974f038481b0066a039aa27ee3f175eb9e763c08b861c",
+          "review": "reviews/08b1577217a49d1d3a8974f038481b0066a039aa27ee3f175eb9e763c08b861c.json",
+          "review_sha256": "07554daf1dd2f1582feeb3968c388311d1aeb3c49a7c7e55e326150f23dc5a7b",
+          "scores": {
+            "composition": 1,
+            "spatial_coherence": 1,
+            "subject_recognition": 0
+          }
+        }
+      ],
+      "external_feedback_available_during_generation": false,
+      "last_minus_first_external_score": {
+        "composition": 0,
+        "spatial_coherence": 0,
+        "subject_recognition": 0
+      },
+      "last_scores": {
+        "composition": 1,
+        "spatial_coherence": 1,
+        "subject_recognition": 0
+      },
+      "phase": "heldout",
+      "run_id": "c1fa3416-1647-4134-8b1e-7ebfbb4fbff6",
+      "run_sha256": "5d688d505067f60a2d2afceef87af96b2caf40850ceff5ad524b129e2b1ef7f7",
+      "subject": "a sailboat"
+    },
+    {
+      "arm": "adaptive",
+      "attempts": [
+        {
+          "attempt": 1,
+          "png_sha256": "91f450301555bf58dba86509b33fc6139f8b2c67ab7793e353dc46cef7e05c25",
+          "review": "reviews/91f450301555bf58dba86509b33fc6139f8b2c67ab7793e353dc46cef7e05c25.json",
+          "review_sha256": "0814efac2b422bab55b0baadcaeb0b540c6b5e9e504b8cb995c60676cc7b4b3a",
+          "scores": {
+            "composition": 1,
+            "spatial_coherence": 1,
+            "subject_recognition": 0
+          }
+        },
+        {
+          "attempt": 2,
+          "png_sha256": "1d43be5b7d616db00b10762572a18b1ebd954bd61ec89132d0bd39cfcd8efdbb",
+          "review": "reviews/1d43be5b7d616db00b10762572a18b1ebd954bd61ec89132d0bd39cfcd8efdbb.json",
+          "review_sha256": "0c9aa63bfe2fe92bc4f2f5aa01b80872b5ad1ec4d6db12479b57763269982d15",
+          "scores": {
+            "composition": 1,
+            "spatial_coherence": 1,
+            "subject_recognition": 0
+          }
+        }
+      ],
+      "external_feedback_available_during_generation": false,
+      "last_minus_first_external_score": {
+        "composition": 0,
+        "spatial_coherence": 0,
+        "subject_recognition": 0
+      },
+      "last_scores": {
+        "composition": 1,
+        "spatial_coherence": 1,
+        "subject_recognition": 0
+      },
+      "phase": "heldout",
+      "run_id": "411202ab-bd3e-4eb8-8d7b-5ee73af2a27a",
+      "run_sha256": "85c128895472fbed6716b6b405db8831237728c61297328b12c11b0f6cd9c380",
+      "subject": "a sailboat"
+    }
+  ],
+  "portfolio_diversity": null,
+  "posthoc": true,
+  "protocol_file_sha256": "4dc4b31cb3165966a9d554d14221bb831bc3aafc1afba538669be0e5b035b268",
+  "protocol_sha256": "fa0041e153552d9c9a709ab3ece1af8c48491c8c95a99f395280205331b42c78",
+  "retained_memory_advantage_observed_in_posthoc_scores": false,
+  "schema": "bean.draw.posthoc.benchmark_summary.v1",
+  "scores_source": "Separate unblinded Codex posthoc inspections of actual PNGs; original run receipts and null-score summary remain unchanged",
+  "used_for_generation": false,
+  "weights_updated": false
+}

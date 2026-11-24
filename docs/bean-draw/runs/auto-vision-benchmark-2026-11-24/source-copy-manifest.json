@@ -1,0 +1,1309 @@
+{
+  "archive_summary_reproduced_from_historical_source_after_json_normalization": true,
+  "archived_at_utc": "2026-11-24T12:44:34.830673+00:00",
+  "attempts": [
+    {
+      "arm": "adaptive",
+      "attempt": 1,
+      "error": null,
+      "phase": "training",
+      "png_file": "attempt_01.png",
+      "source_git_sha": "01090ba7c8c97855a7e3d352c3e9003e7278e972",
+      "status": "host_reported_not_satisfactory",
+      "subject": "a teapot",
+      "svg_file": "attempt_01.svg"
+    },
+    {
+      "arm": "adaptive",
+      "attempt": 2,
+      "error": null,
+      "phase": "training",
+      "png_file": "attempt_02.png",
+      "source_git_sha": "01090ba7c8c97855a7e3d352c3e9003e7278e972",
+      "status": "host_reported_satisfactory",
+      "subject": "a teapot",
+      "svg_file": "attempt_02.svg"
+    },
+    {
+      "arm": "frozen",
+      "attempt": 1,
+      "error": null,
+      "phase": "heldout",
+      "png_file": "attempt_01.png",
+      "source_git_sha": "01090ba7c8c97855a7e3d352c3e9003e7278e972",
+      "status": "host_reported_not_satisfactory",
+      "subject": "a cat",
+      "svg_file": "attempt_01.svg"
+    },
+    {
+      "arm": "frozen",
+      "attempt": 2,
+      "error": null,
+      "phase": "heldout",
+      "png_file": "attempt_02.png",
+      "source_git_sha": "01090ba7c8c97855a7e3d352c3e9003e7278e972",
+      "status": "host_reported_not_satisfactory",
+      "subject": "a cat",
+      "svg_file": "attempt_02.svg"
+    },
+    {
+      "arm": "none",
+      "attempt": 1,
+      "error": null,
+      "phase": "heldout",
+      "png_file": "attempt_01.png",
+      "source_git_sha": "01090ba7c8c97855a7e3d352c3e9003e7278e972",
+      "status": "host_reported_satisfactory",
+      "subject": "a cat",
+      "svg_file": "attempt_01.svg"
+    },
+    {
+      "arm": "none",
+      "attempt": 2,
+      "error": null,
+      "phase": "heldout",
+      "png_file": "attempt_02.png",
+      "source_git_sha": "01090ba7c8c97855a7e3d352c3e9003e7278e972",
+      "status": "host_reported_not_satisfactory",
+      "subject": "a cat",
+      "svg_file": "attempt_02.svg"
+    },
+    {
+      "arm": "adaptive",
+      "attempt": 1,
+      "error": null,
+      "phase": "heldout",
+      "png_file": "attempt_01.png",
+      "source_git_sha": "01090ba7c8c97855a7e3d352c3e9003e7278e972",
+      "status": "host_reported_not_satisfactory",
+      "subject": "a cat",
+      "svg_file": "attempt_01.svg"
+    },
+    {
+      "arm": "adaptive",
+      "attempt": 2,
+      "error": null,
+      "phase": "heldout",
+      "png_file": "attempt_02.png",
+      "source_git_sha": "01090ba7c8c97855a7e3d352c3e9003e7278e972",
+      "status": "host_reported_not_satisfactory",
+      "subject": "a cat",
+      "svg_file": "attempt_02.svg"
+    },
+    {
+      "arm": "none",
+      "attempt": 1,
+      "error": null,
+      "phase": "heldout",
+      "png_file": "attempt_01.png",
+      "source_git_sha": "01090ba7c8c97855a7e3d352c3e9003e7278e972",
+      "status": "host_reported_not_satisfactory",
+      "subject": "a sailboat",
+      "svg_file": "attempt_01.svg"
+    },
+    {
+      "arm": "none",
+      "attempt": 2,
+      "error": "ValueError: Required bounded text",
+      "phase": "heldout",
+      "png_file": null,
+      "source_git_sha": "01090ba7c8c97855a7e3d352c3e9003e7278e972",
+      "status": "attempt_failed_ValueError",
+      "subject": "a sailboat",
+      "svg_file": null
+    },
+    {
+      "arm": "adaptive",
+      "attempt": 1,
+      "error": null,
+      "phase": "heldout",
+      "png_file": "attempt_01.png",
+      "source_git_sha": "01090ba7c8c97855a7e3d352c3e9003e7278e972",
+      "status": "host_reported_not_satisfactory",
+      "subject": "a sailboat",
+      "svg_file": "attempt_01.svg"
+    },
+    {
+      "arm": "adaptive",
+      "attempt": 2,
+      "error": null,
+      "phase": "heldout",
+      "png_file": "attempt_02.png",
+      "source_git_sha": "01090ba7c8c97855a7e3d352c3e9003e7278e972",
+      "status": "host_reported_not_satisfactory",
+      "subject": "a sailboat",
+      "svg_file": "attempt_02.svg"
+    },
+    {
+      "arm": "frozen",
+      "attempt": 1,
+      "error": null,
+      "phase": "heldout",
+      "png_file": "attempt_01.png",
+      "source_git_sha": "01090ba7c8c97855a7e3d352c3e9003e7278e972",
+      "status": "host_reported_not_satisfactory",
+      "subject": "a sailboat",
+      "svg_file": "attempt_01.svg"
+    },
+    {
+      "arm": "frozen",
+      "attempt": 2,
+      "error": null,
+      "phase": "heldout",
+      "png_file": "attempt_02.png",
+      "source_git_sha": "01090ba7c8c97855a7e3d352c3e9003e7278e972",
+      "status": "host_reported_not_satisfactory",
+      "subject": "a sailboat",
+      "svg_file": "attempt_02.svg"
+    }
+  ],
+  "classification": "retained failed measurement/wiring experiment; not proof of no memory benefit",
+  "journals": [
+    {
+      "archive_file": "journals/adaptive.sqlite3.gz",
+      "chain_verified": true,
+      "compressed_bytes": 9631,
+      "compressed_sha256": "b8bfe94c6d22b7c70311af30fd7c9c493c3ca21f12ad5d3f28554fa02a5a3302",
+      "gzip_mtime": 0,
+      "online_backup_created": true,
+      "raw_backup_bytes": 65536,
+      "raw_backup_sha256": "38f57d8da1412f53ff3ab662fb6a03e9cb47bebee860e496754d5675416fbdfc",
+      "rows": 9,
+      "source_and_backup_rows_identical": true,
+      "source_bytes": 65536,
+      "source_file": "adaptive.sqlite3",
+      "source_sha256_after_reverification": "b91981cd4fef48d8c124a7a180b80be94b29cf93d7b61ebd39d5f89083607703",
+      "source_sha256_before_reverification": "b91981cd4fef48d8c124a7a180b80be94b29cf93d7b61ebd39d5f89083607703",
+      "tip": "7bd2d40805a4f163e4604657673402525c1feaef01607d91aa59a2be9fa7cfba"
+    },
+    {
+      "archive_file": "journals/frozen.sqlite3.gz",
+      "chain_verified": true,
+      "compressed_bytes": 9452,
+      "compressed_sha256": "468c386d4f0bec20de33ffe052af8d639fe34864d3805a93dffe96fcde75e44e",
+      "gzip_mtime": 0,
+      "online_backup_created": true,
+      "raw_backup_bytes": 65536,
+      "raw_backup_sha256": "66a8a8498fd517e67cbcb4c673f34de9d27f7af1a9c30d80c14e7e4e6e228702",
+      "rows": 9,
+      "source_and_backup_rows_identical": true,
+      "source_bytes": 65536,
+      "source_file": "frozen.sqlite3",
+      "source_sha256_after_reverification": "b3c4f50f66dbb3022b7e175601d6c8bcc4c63e05ebe8f1a9977a93f12e1679a8",
+      "source_sha256_before_reverification": "b3c4f50f66dbb3022b7e175601d6c8bcc4c63e05ebe8f1a9977a93f12e1679a8",
+      "tip": "683c08c14ea1c4fa85de059e25be04d89d119bdf38966d8c736fc991ba0856f5"
+    },
+    {
+      "archive_file": "journals/none.sqlite3.gz",
+      "chain_verified": true,
+      "compressed_bytes": 6501,
+      "compressed_sha256": "c4fea7fbba1b7b3b6f74256f2ada83bb92500b8357032de7c6aa2f047cdaf5a5",
+      "gzip_mtime": 0,
+      "online_backup_created": true,
+      "raw_backup_bytes": 45056,
+      "raw_backup_sha256": "2191163cad82d0afe89eeb0e5f2cedf55bc021e831e954cd985e23a1106eeeae",
+      "rows": 6,
+      "source_and_backup_rows_identical": true,
+      "source_bytes": 45056,
+      "source_file": "none.sqlite3",
+      "source_sha256_after_reverification": "7befc292c94b5ddda403161b1ee5a82be330b4c5869bd4bd51566a044f4522af",
+      "source_sha256_before_reverification": "7befc292c94b5ddda403161b1ee5a82be330b4c5869bd4bd51566a044f4522af",
+      "tip": "296b2dc8d0294a94da2ec0b99cec35504a52d2103b541ac54ef1fdbecc0f975a"
+    },
+    {
+      "archive_file": "journals/training.sqlite3.gz",
+      "chain_verified": true,
+      "compressed_bytes": 4589,
+      "compressed_sha256": "4161d20ad81c3d5207552cd2bd0f29dcbafe9db744abb813c3d447eb2eafb2a6",
+      "gzip_mtime": 0,
+      "online_backup_created": true,
+      "raw_backup_bytes": 32768,
+      "raw_backup_sha256": "bbecdf81b32d5b6aa070f261a94fd65285574f87423665236efb23079a1e23b5",
+      "rows": 3,
+      "source_and_backup_rows_identical": true,
+      "source_bytes": 32768,
+      "source_file": "training.sqlite3",
+      "source_sha256_after_reverification": "fee5a1f832470ec2e3ad4741e1819e8bdedb6b082ef5201345e780b5a68e3820",
+      "source_sha256_before_reverification": "fee5a1f832470ec2e3ad4741e1819e8bdedb6b082ef5201345e780b5a68e3820",
+      "tip": "11ad6d8eac2649da7aecc59cf9310005694a1b251427f809f78a1b6a3785693b"
+    }
+  ],
+  "model_ratings_not_ground_truth": true,
+  "original_and_audit_copies": [
+    {
+      "archive_file": "original/execution.json",
+      "bytes": 6928,
+      "sha256": "9528de3ca945f2e0e4584774ed9b8a70ae1ae8775fb16c63c86e1fc445520101",
+      "source_file": "execution.json"
+    },
+    {
+      "archive_file": "original/frozen-memory.json",
+      "bytes": 10516,
+      "sha256": "c960c82d487249a4ed0c31f3cded0c4c2fd00f440cd7fbcc1005c6c373b2079f",
+      "source_file": "frozen-memory.json"
+    },
+    {
+      "archive_file": "original/heldout/adaptive/challenge_01/attempts/attempt_01.json",
+      "bytes": 4650,
+      "sha256": "71521b0aa47ac416ebbc2198a5bf4a255653c7aa4422a1e2fba90837bd21f02d",
+      "source_file": "heldout/adaptive/challenge_01/attempts/attempt_01.json"
+    },
+    {
+      "archive_file": "original/heldout/adaptive/challenge_01/attempts/attempt_01.png",
+      "bytes": 7723,
+      "sha256": "29ff58275ec51c5f9c2ea6c5cd00b4eee1516ec35ab89bc38c3eebd3d6128d54",
+      "source_file": "heldout/adaptive/challenge_01/attempts/attempt_01.png"
+    },
+    {
+      "archive_file": "original/heldout/adaptive/challenge_01/attempts/attempt_01.raw.json",
+      "bytes": 10341,
+      "sha256": "a9b2e5046797fa5cb03abed973d8449998b4a17a2105d38edc3658f059467e10",
+      "source_file": "heldout/adaptive/challenge_01/attempts/attempt_01.raw.json"
+    },
+    {
+      "archive_file": "original/heldout/adaptive/challenge_01/attempts/attempt_01.svg",
+      "bytes": 2143,
+      "sha256": "2d03bd2133d43f010e4a757b6c8365c473de41eed6534df7fc6a527efd6f3ad4",
+      "source_file": "heldout/adaptive/challenge_01/attempts/attempt_01.svg"
+    },
+    {
+      "archive_file": "original/heldout/adaptive/challenge_01/attempts/attempt_01.vision.json",
+      "bytes": 6339,
+      "sha256": "d12b1ba757769349e67b585345ba95b3a3832718311d2975369868a160099ddb",
+      "source_file": "heldout/adaptive/challenge_01/attempts/attempt_01.vision.json"
+    },
+    {
+      "archive_file": "original/heldout/adaptive/challenge_01/attempts/attempt_02.json",
+      "bytes": 4961,
+      "sha256": "3fb44c881eb5bf42359703fecf1479a6e5fa7c90c27bfcb8271e5ae066e1d11f",
+      "source_file": "heldout/adaptive/challenge_01/attempts/attempt_02.json"
+    },
+    {
+      "archive_file": "original/heldout/adaptive/challenge_01/attempts/attempt_02.png",
+      "bytes": 4901,
+      "sha256": "00a049c302c8bc4a2d4f8c08c86113812306b13199aff98bf66871eafe83a0a9",
+      "source_file": "heldout/adaptive/challenge_01/attempts/attempt_02.png"
+    },
+    {
+      "archive_file": "original/heldout/adaptive/challenge_01/attempts/attempt_02.raw.json",
+      "bytes": 16720,
+      "sha256": "88683d66e060ad7ed749eea7b49b372bbc1d9fda38737599786fd838623387e3",
+      "source_file": "heldout/adaptive/challenge_01/attempts/attempt_02.raw.json"
+    },
+    {
+      "archive_file": "original/heldout/adaptive/challenge_01/attempts/attempt_02.svg",
+      "bytes": 1741,
+      "sha256": "b42b125d3ba09a3561f89944c1ee25588c53eee116d5ae9637c4ccd3f0077ebc",
+      "source_file": "heldout/adaptive/challenge_01/attempts/attempt_02.svg"
+    },
+    {
+      "archive_file": "original/heldout/adaptive/challenge_01/attempts/attempt_02.vision.json",
+      "bytes": 6267,
+      "sha256": "dda46e073abcf55757763b8dc92cc7e39233047b404f1133d6a4abb44380b5de",
+      "source_file": "heldout/adaptive/challenge_01/attempts/attempt_02.vision.json"
+    },
+    {
+      "archive_file": "original/heldout/adaptive/challenge_01/attempts/model_calls.json",
+      "bytes": 37478,
+      "sha256": "e8f0faf59876382624d88139673f553dfc01f7efb23781e36684fa3d401121aa",
+      "source_file": "heldout/adaptive/challenge_01/attempts/model_calls.json"
+    },
+    {
+      "archive_file": "original/heldout/adaptive/challenge_01/attempts/progress.json",
+      "bytes": 1956,
+      "sha256": "13e884388b71f52c8f281eabb8953aa17d8a1b80dc4e2879ffe66a9e84acd882",
+      "source_file": "heldout/adaptive/challenge_01/attempts/progress.json"
+    },
+    {
+      "archive_file": "original/heldout/adaptive/challenge_01/attempts/run.json",
+      "bytes": 3807,
+      "sha256": "4cc37d7f240bbf1f862b1cfcc4264c3baea27454c396d6f1882f7f46294e648a",
+      "source_file": "heldout/adaptive/challenge_01/attempts/run.json"
+    },
+    {
+      "archive_file": "original/heldout/adaptive/challenge_01/cell.json",
+      "bytes": 764,
+      "sha256": "7742ec8ff3ce52e30181b9ef9d1d3a0d52ae6dfaa60ca030fc0ae15d5c2e075f",
+      "source_file": "heldout/adaptive/challenge_01/cell.json"
+    },
+    {
+      "archive_file": "original/heldout/adaptive/challenge_01/stderr.txt",
+      "bytes": 228,
+      "sha256": "f0814c22197c48dad23357c814b4cabb8dd23ad197bc6fae6c719629e5c4df80",
+      "source_file": "heldout/adaptive/challenge_01/stderr.txt"
+    },
+    {
+      "archive_file": "original/heldout/adaptive/challenge_01/stdout.txt",
+      "bytes": 2322,
+      "sha256": "0c5e0f419787e48cb3af1e7c1446fb158609d898e38e66a642678cc9c9dc2876",
+      "source_file": "heldout/adaptive/challenge_01/stdout.txt"
+    },
+    {
+      "archive_file": "original/heldout/adaptive/challenge_02/attempts/attempt_01.json",
+      "bytes": 5331,
+      "sha256": "433efff8d9b06373ab25e0f9c8ddf665ab13f7b65872ba94a985ed1a57393929",
+      "source_file": "heldout/adaptive/challenge_02/attempts/attempt_01.json"
+    },
+    {
+      "archive_file": "original/heldout/adaptive/challenge_02/attempts/attempt_01.png",
+      "bytes": 15190,
+      "sha256": "8dcbf8949e70da5fafe931a3f77571c51a71483af7b8aa6a94211916c3612b58",
+      "source_file": "heldout/adaptive/challenge_02/attempts/attempt_01.png"
+    },
+    {
+      "archive_file": "original/heldout/adaptive/challenge_02/attempts/attempt_01.raw.json",
+      "bytes": 8861,
+      "sha256": "05cc7e1b2e88dae4b9d8f5e15b732c4a2a63c937124f8a96f44f1d29b7cb7055",
+      "source_file": "heldout/adaptive/challenge_02/attempts/attempt_01.raw.json"
+    },
+    {
+      "archive_file": "original/heldout/adaptive/challenge_02/attempts/attempt_01.svg",
+      "bytes": 1011,
+      "sha256": "b675f31dd4ed7bbbfb1372e4da6c73876dc85af46ef1ee222e5608133b36f5d1",
+      "source_file": "heldout/adaptive/challenge_02/attempts/attempt_01.svg"
+    },
+    {
+      "archive_file": "original/heldout/adaptive/challenge_02/attempts/attempt_01.vision.json",
+      "bytes": 7592,
+      "sha256": "9e5c1505603093a9511a7f91395b08828931532380199760785a7235f25e6fe4",
+      "source_file": "heldout/adaptive/challenge_02/attempts/attempt_01.vision.json"
+    },
+    {
+      "archive_file": "original/heldout/adaptive/challenge_02/attempts/attempt_02.json",
+      "bytes": 5392,
+      "sha256": "c7af0ec587972b2a88e37d2db54cf96d7252eba199fc92113bc38263fe1d3e2d",
+      "source_file": "heldout/adaptive/challenge_02/attempts/attempt_02.json"
+    },
+    {
+      "archive_file": "original/heldout/adaptive/challenge_02/attempts/attempt_02.png",
+      "bytes": 12411,
+      "sha256": "6b0639d85888552add0bf98df37758cadc517c1ae76dda77cf0946b8db74ef77",
+      "source_file": "heldout/adaptive/challenge_02/attempts/attempt_02.png"
+    },
+    {
+      "archive_file": "original/heldout/adaptive/challenge_02/attempts/attempt_02.raw.json",
+      "bytes": 14726,
+      "sha256": "e47fdd60f4257fee316247cca082e13153e9e29591bbc00399122069a8c3b6bf",
+      "source_file": "heldout/adaptive/challenge_02/attempts/attempt_02.raw.json"
+    },
+    {
+      "archive_file": "original/heldout/adaptive/challenge_02/attempts/attempt_02.svg",
+      "bytes": 983,
+      "sha256": "51628e4e434fece89578e44dbf9ae57514b62a10cd673120ccbad6d37e287f6a",
+      "source_file": "heldout/adaptive/challenge_02/attempts/attempt_02.svg"
+    },
+    {
+      "archive_file": "original/heldout/adaptive/challenge_02/attempts/attempt_02.vision.json",
+      "bytes": 6807,
+      "sha256": "6612851f907726fa499f13de1768d421049cafa969dd40a85bf12c4f05ea2870",
+      "source_file": "heldout/adaptive/challenge_02/attempts/attempt_02.vision.json"
+    },
+    {
+      "archive_file": "original/heldout/adaptive/challenge_02/attempts/model_calls.json",
+      "bytes": 35208,
+      "sha256": "49601e9d87b9c2eb06560941531fd93cf1567ce3980a96196d01f4bb0d857d03",
+      "source_file": "heldout/adaptive/challenge_02/attempts/model_calls.json"
+    },
+    {
+      "archive_file": "original/heldout/adaptive/challenge_02/attempts/progress.json",
+      "bytes": 2058,
+      "sha256": "c70d35bf838efdf3d3868cde9e9fef69acd184bec96829418b73b29ef869bdcd",
+      "source_file": "heldout/adaptive/challenge_02/attempts/progress.json"
+    },
+    {
+      "archive_file": "original/heldout/adaptive/challenge_02/attempts/run.json",
+      "bytes": 3989,
+      "sha256": "7fe57e4f87f538937e8f8ace92c18cb31d57a5c4143673a6c34efe80c74d6c4e",
+      "source_file": "heldout/adaptive/challenge_02/attempts/run.json"
+    },
+    {
+      "archive_file": "original/heldout/adaptive/challenge_02/cell.json",
+      "bytes": 774,
+      "sha256": "883d3f3f552636db71adc73ba1bfe2ddf5f051bf862e97c9232e0a6e7c45bbcc",
+      "source_file": "heldout/adaptive/challenge_02/cell.json"
+    },
+    {
+      "archive_file": "original/heldout/adaptive/challenge_02/stderr.txt",
+      "bytes": 228,
+      "sha256": "f0814c22197c48dad23357c814b4cabb8dd23ad197bc6fae6c719629e5c4df80",
+      "source_file": "heldout/adaptive/challenge_02/stderr.txt"
+    },
+    {
+      "archive_file": "original/heldout/adaptive/challenge_02/stdout.txt",
+      "bytes": 2424,
+      "sha256": "0854b002973d65e592e2b2660633b1cab31ea082fedf8f3b33f2762763c7b5bb",
+      "source_file": "heldout/adaptive/challenge_02/stdout.txt"
+    },
+    {
+      "archive_file": "original/heldout/frozen/challenge_01/attempts/attempt_01.json",
+      "bytes": 4646,
+      "sha256": "1e48c288532a8d010e5b1ea9c3ac32ce2c6c26a5a41efa82ee39e676dda55abb",
+      "source_file": "heldout/frozen/challenge_01/attempts/attempt_01.json"
+    },
+    {
+      "archive_file": "original/heldout/frozen/challenge_01/attempts/attempt_01.png",
+      "bytes": 7723,
+      "sha256": "29ff58275ec51c5f9c2ea6c5cd00b4eee1516ec35ab89bc38c3eebd3d6128d54",
+      "source_file": "heldout/frozen/challenge_01/attempts/attempt_01.png"
+    },
+    {
+      "archive_file": "original/heldout/frozen/challenge_01/attempts/attempt_01.raw.json",
+      "bytes": 10341,
+      "sha256": "ef5710dddef1bc24d8e380b18e17abe59b459b65fc65dd2827d2c632f3808fbc",
+      "source_file": "heldout/frozen/challenge_01/attempts/attempt_01.raw.json"
+    },
+    {
+      "archive_file": "original/heldout/frozen/challenge_01/attempts/attempt_01.svg",
+      "bytes": 2143,
+      "sha256": "2d03bd2133d43f010e4a757b6c8365c473de41eed6534df7fc6a527efd6f3ad4",
+      "source_file": "heldout/frozen/challenge_01/attempts/attempt_01.svg"
+    },
+    {
+      "archive_file": "original/heldout/frozen/challenge_01/attempts/attempt_01.vision.json",
+      "bytes": 6339,
+      "sha256": "1b6e1c7ad116bb1ccbdc00925f6a396bfe501cf4aa29c3ece204354025090c7f",
+      "source_file": "heldout/frozen/challenge_01/attempts/attempt_01.vision.json"
+    },
+    {
+      "archive_file": "original/heldout/frozen/challenge_01/attempts/attempt_02.json",
+      "bytes": 4957,
+      "sha256": "7aa0f86c47d69d6db097548de618601469b84fedc57b795e523ca3ab2fca6181",
+      "source_file": "heldout/frozen/challenge_01/attempts/attempt_02.json"
+    },
+    {
+      "archive_file": "original/heldout/frozen/challenge_01/attempts/attempt_02.png",
+      "bytes": 4901,
+      "sha256": "00a049c302c8bc4a2d4f8c08c86113812306b13199aff98bf66871eafe83a0a9",
+      "source_file": "heldout/frozen/challenge_01/attempts/attempt_02.png"
+    },
+    {
+      "archive_file": "original/heldout/frozen/challenge_01/attempts/attempt_02.raw.json",
+      "bytes": 16720,
+      "sha256": "118a2cbe9853078b2f319a4e994834c4a647d983e31680133bea6a97b11c65c5",
+      "source_file": "heldout/frozen/challenge_01/attempts/attempt_02.raw.json"
+    },
+    {
+      "archive_file": "original/heldout/frozen/challenge_01/attempts/attempt_02.svg",
+      "bytes": 1741,
+      "sha256": "b42b125d3ba09a3561f89944c1ee25588c53eee116d5ae9637c4ccd3f0077ebc",
+      "source_file": "heldout/frozen/challenge_01/attempts/attempt_02.svg"
+    },
+    {
+      "archive_file": "original/heldout/frozen/challenge_01/attempts/attempt_02.vision.json",
+      "bytes": 6267,
+      "sha256": "b54ef359b4ab169da4aebc00f653334fd5a38eeca23974bcf0fc691bf9315fe1",
+      "source_file": "heldout/frozen/challenge_01/attempts/attempt_02.vision.json"
+    },
+    {
+      "archive_file": "original/heldout/frozen/challenge_01/attempts/model_calls.json",
+      "bytes": 37607,
+      "sha256": "770ec8c45a0179bc5863a499229e5a71ebb08a9a8a1581464989b3a309e7bd28",
+      "source_file": "heldout/frozen/challenge_01/attempts/model_calls.json"
+    },
+    {
+      "archive_file": "original/heldout/frozen/challenge_01/attempts/progress.json",
+      "bytes": 1944,
+      "sha256": "cad27d1b621e4ca625631c46f4d6f2b62072328fcf49ae9275d0dbc5525db37f",
+      "source_file": "heldout/frozen/challenge_01/attempts/progress.json"
+    },
+    {
+      "archive_file": "original/heldout/frozen/challenge_01/attempts/run.json",
+      "bytes": 3928,
+      "sha256": "0cc49422a320dac5d9d5ed813e065763df304ce18d603e42376c010f68648801",
+      "source_file": "heldout/frozen/challenge_01/attempts/run.json"
+    },
+    {
+      "archive_file": "original/heldout/frozen/challenge_01/cell.json",
+      "bytes": 853,
+      "sha256": "a15490e9b0c1aaf1f90179e96e9aeaf3e1394702a01c408d947228fd7a4244b5",
+      "source_file": "heldout/frozen/challenge_01/cell.json"
+    },
+    {
+      "archive_file": "original/heldout/frozen/challenge_01/stderr.txt",
+      "bytes": 228,
+      "sha256": "f0814c22197c48dad23357c814b4cabb8dd23ad197bc6fae6c719629e5c4df80",
+      "source_file": "heldout/frozen/challenge_01/stderr.txt"
+    },
+    {
+      "archive_file": "original/heldout/frozen/challenge_01/stdout.txt",
+      "bytes": 2308,
+      "sha256": "4a8b05e802c8145caeee4c5827179e866e9e5f01917b332f05f324941c9e1cab",
+      "source_file": "heldout/frozen/challenge_01/stdout.txt"
+    },
+    {
+      "archive_file": "original/heldout/frozen/challenge_02/attempts/attempt_01.json",
+      "bytes": 5327,
+      "sha256": "1f0a7de95f14eb21f1d274716b47026c8a1b2ae3ca6d73327b7d5fe42248ee52",
+      "source_file": "heldout/frozen/challenge_02/attempts/attempt_01.json"
+    },
+    {
+      "archive_file": "original/heldout/frozen/challenge_02/attempts/attempt_01.png",
+      "bytes": 15190,
+      "sha256": "8dcbf8949e70da5fafe931a3f77571c51a71483af7b8aa6a94211916c3612b58",
+      "source_file": "heldout/frozen/challenge_02/attempts/attempt_01.png"
+    },
+    {
+      "archive_file": "original/heldout/frozen/challenge_02/attempts/attempt_01.raw.json",
+      "bytes": 8861,
+      "sha256": "168c62de7495765e496a73747a905e413b8902d32a585d94937fa62fbc00e847",
+      "source_file": "heldout/frozen/challenge_02/attempts/attempt_01.raw.json"
+    },
+    {
+      "archive_file": "original/heldout/frozen/challenge_02/attempts/attempt_01.svg",
+      "bytes": 1011,
+      "sha256": "b675f31dd4ed7bbbfb1372e4da6c73876dc85af46ef1ee222e5608133b36f5d1",
+      "source_file": "heldout/frozen/challenge_02/attempts/attempt_01.svg"
+    },
+    {
+      "archive_file": "original/heldout/frozen/challenge_02/attempts/attempt_01.vision.json",
+      "bytes": 7592,
+      "sha256": "cf43e8a2445640de61664ab22c8b24ae8000f261e300765cfb4f638f51b85c0b",
+      "source_file": "heldout/frozen/challenge_02/attempts/attempt_01.vision.json"
+    },
+    {
+      "archive_file": "original/heldout/frozen/challenge_02/attempts/attempt_02.json",
+      "bytes": 5388,
+      "sha256": "508108d47388f28626ab178cd9e7541d136b54d651a16e7569dcce59dd45af16",
+      "source_file": "heldout/frozen/challenge_02/attempts/attempt_02.json"
+    },
+    {
+      "archive_file": "original/heldout/frozen/challenge_02/attempts/attempt_02.png",
+      "bytes": 12411,
+      "sha256": "6b0639d85888552add0bf98df37758cadc517c1ae76dda77cf0946b8db74ef77",
+      "source_file": "heldout/frozen/challenge_02/attempts/attempt_02.png"
+    },
+    {
+      "archive_file": "original/heldout/frozen/challenge_02/attempts/attempt_02.raw.json",
+      "bytes": 14726,
+      "sha256": "7d9a9915e6b3dced12359fb76a526293e187fe530cd9918a258ca3946867172b",
+      "source_file": "heldout/frozen/challenge_02/attempts/attempt_02.raw.json"
+    },
+    {
+      "archive_file": "original/heldout/frozen/challenge_02/attempts/attempt_02.svg",
+      "bytes": 983,
+      "sha256": "51628e4e434fece89578e44dbf9ae57514b62a10cd673120ccbad6d37e287f6a",
+      "source_file": "heldout/frozen/challenge_02/attempts/attempt_02.svg"
+    },
+    {
+      "archive_file": "original/heldout/frozen/challenge_02/attempts/attempt_02.vision.json",
+      "bytes": 6807,
+      "sha256": "ffe72e9dc99512e8f954c8e8b8298d50199e182c783a10195ed29a97e0ef403c",
+      "source_file": "heldout/frozen/challenge_02/attempts/attempt_02.vision.json"
+    },
+    {
+      "archive_file": "original/heldout/frozen/challenge_02/attempts/model_calls.json",
+      "bytes": 35220,
+      "sha256": "f4c016e626da591a7955173a0d769310b31557e08f5b4dd25e9442bfee8b41a4",
+      "source_file": "heldout/frozen/challenge_02/attempts/model_calls.json"
+    },
+    {
+      "archive_file": "original/heldout/frozen/challenge_02/attempts/progress.json",
+      "bytes": 2046,
+      "sha256": "a4550739ad7dccc8afe108d302dfd68cd102ba355042d48ed058a8a4707436c9",
+      "source_file": "heldout/frozen/challenge_02/attempts/progress.json"
+    },
+    {
+      "archive_file": "original/heldout/frozen/challenge_02/attempts/run.json",
+      "bytes": 3993,
+      "sha256": "e25d4e02dee1b9bfa8be427b6a4e334a44aace5e21c7fc1407ce04e80f8bba53",
+      "source_file": "heldout/frozen/challenge_02/attempts/run.json"
+    },
+    {
+      "archive_file": "original/heldout/frozen/challenge_02/cell.json",
+      "bytes": 863,
+      "sha256": "70cb8ad579ea3abb8610930f9de1d6b9adc7ed8f83d39e6e8ae29495f4cf22ce",
+      "source_file": "heldout/frozen/challenge_02/cell.json"
+    },
+    {
+      "archive_file": "original/heldout/frozen/challenge_02/stderr.txt",
+      "bytes": 228,
+      "sha256": "f0814c22197c48dad23357c814b4cabb8dd23ad197bc6fae6c719629e5c4df80",
+      "source_file": "heldout/frozen/challenge_02/stderr.txt"
+    },
+    {
+      "archive_file": "original/heldout/frozen/challenge_02/stdout.txt",
+      "bytes": 2410,
+      "sha256": "8d5b673cd5cd6549b1941c34f80e13cde58c4a89f35b17ca7deb4a136796f602",
+      "source_file": "heldout/frozen/challenge_02/stdout.txt"
+    },
+    {
+      "archive_file": "original/heldout/none/challenge_01/attempts/attempt_01.json",
+      "bytes": 4721,
+      "sha256": "bf32728f6170816c003c0de2cbde47c851138214711a37ddd8c2fb713dac0caa",
+      "source_file": "heldout/none/challenge_01/attempts/attempt_01.json"
+    },
+    {
+      "archive_file": "original/heldout/none/challenge_01/attempts/attempt_01.png",
+      "bytes": 12888,
+      "sha256": "2dc974433a505c7c293d72d7beacf6a55364541b6251cebafffec0158cceef69",
+      "source_file": "heldout/none/challenge_01/attempts/attempt_01.png"
+    },
+    {
+      "archive_file": "original/heldout/none/challenge_01/attempts/attempt_01.raw.json",
+      "bytes": 7653,
+      "sha256": "dc98f531973a94ea514293d70d943ac190464b79456bd7465cdfd0a8e911cebe",
+      "source_file": "heldout/none/challenge_01/attempts/attempt_01.raw.json"
+    },
+    {
+      "archive_file": "original/heldout/none/challenge_01/attempts/attempt_01.svg",
+      "bytes": 2142,
+      "sha256": "5dcd71bf09522376c925e266637ebccccfb2e962a182faecb04fdee2f94214af",
+      "source_file": "heldout/none/challenge_01/attempts/attempt_01.svg"
+    },
+    {
+      "archive_file": "original/heldout/none/challenge_01/attempts/attempt_01.vision.json",
+      "bytes": 6655,
+      "sha256": "911dbe64003dde31f28c7f0b889bc47152c6b046b87f313cd8b932dce9f68a2f",
+      "source_file": "heldout/none/challenge_01/attempts/attempt_01.vision.json"
+    },
+    {
+      "archive_file": "original/heldout/none/challenge_01/attempts/attempt_02.json",
+      "bytes": 4751,
+      "sha256": "320662cc07d8664e0e968e72ed7c50494a0125c2031400c4eaf2c562cfab0245",
+      "source_file": "heldout/none/challenge_01/attempts/attempt_02.json"
+    },
+    {
+      "archive_file": "original/heldout/none/challenge_01/attempts/attempt_02.png",
+      "bytes": 14838,
+      "sha256": "8d9ad786996d0403eb7c806229d49ca7c0916f454a8751f6e277ba75517a1ba8",
+      "source_file": "heldout/none/challenge_01/attempts/attempt_02.png"
+    },
+    {
+      "archive_file": "original/heldout/none/challenge_01/attempts/attempt_02.raw.json",
+      "bytes": 14180,
+      "sha256": "61d9692d6ee627aed4bc08fb2163281ae1b02b82a450169e0b63c090c908ddeb",
+      "source_file": "heldout/none/challenge_01/attempts/attempt_02.raw.json"
+    },
+    {
+      "archive_file": "original/heldout/none/challenge_01/attempts/attempt_02.svg",
+      "bytes": 2113,
+      "sha256": "fa34c68144e97a7fea1c24ebe39b7635c3995d564cf2102ca67932ce0bdd2b29",
+      "source_file": "heldout/none/challenge_01/attempts/attempt_02.svg"
+    },
+    {
+      "archive_file": "original/heldout/none/challenge_01/attempts/attempt_02.vision.json",
+      "bytes": 6483,
+      "sha256": "9ce6d2d2a9578cddac13462b1a2d66de76ce751f44809042d6a9e20a04b286c5",
+      "source_file": "heldout/none/challenge_01/attempts/attempt_02.vision.json"
+    },
+    {
+      "archive_file": "original/heldout/none/challenge_01/attempts/model_calls.json",
+      "bytes": 32279,
+      "sha256": "47b95a04cff8d58968bcbc8ecfddaa82f5046afe37665aaacc6040240e3ff8e7",
+      "source_file": "heldout/none/challenge_01/attempts/model_calls.json"
+    },
+    {
+      "archive_file": "original/heldout/none/challenge_01/attempts/progress.json",
+      "bytes": 2111,
+      "sha256": "4cdf4ff92fe718764dd4444ff8250d1322621ad1a3de9288d747c6520738d5f3",
+      "source_file": "heldout/none/challenge_01/attempts/progress.json"
+    },
+    {
+      "archive_file": "original/heldout/none/challenge_01/attempts/run.json",
+      "bytes": 4122,
+      "sha256": "9163db27a64b41f525ee4b2bc97d34fdc460b2a1a9cf8188bace9c94450e29c3",
+      "source_file": "heldout/none/challenge_01/attempts/run.json"
+    },
+    {
+      "archive_file": "original/heldout/none/challenge_01/cell.json",
+      "bytes": 740,
+      "sha256": "b71f9abb794e59ea3b5c59624f5e1241dfeca7aa74ede659d611175ce3e0f5d5",
+      "source_file": "heldout/none/challenge_01/cell.json"
+    },
+    {
+      "archive_file": "original/heldout/none/challenge_01/stderr.txt",
+      "bytes": 228,
+      "sha256": "f0814c22197c48dad23357c814b4cabb8dd23ad197bc6fae6c719629e5c4df80",
+      "source_file": "heldout/none/challenge_01/stderr.txt"
+    },
+    {
+      "archive_file": "original/heldout/none/challenge_01/stdout.txt",
+      "bytes": 2473,
+      "sha256": "b2985b9b849a2f4c67166bcfc772a14fc67a4cf35580a769bf8855953c64075e",
+      "source_file": "heldout/none/challenge_01/stdout.txt"
+    },
+    {
+      "archive_file": "original/heldout/none/challenge_02/attempts/attempt_01.json",
+      "bytes": 5033,
+      "sha256": "eda1f141c6dc2cad7577bb3c727b80969e2339225220e13c29abd0d2cdd87eb3",
+      "source_file": "heldout/none/challenge_02/attempts/attempt_01.json"
+    },
+    {
+      "archive_file": "original/heldout/none/challenge_02/attempts/attempt_01.png",
+      "bytes": 16594,
+      "sha256": "b37201dd986de1abf0fd207656c516c1eb5264adf5dd4aaabbe1891e7d3511ae",
+      "source_file": "heldout/none/challenge_02/attempts/attempt_01.png"
+    },
+    {
+      "archive_file": "original/heldout/none/challenge_02/attempts/attempt_01.raw.json",
+      "bytes": 7423,
+      "sha256": "4e63d943b3ce2281d9eea2ab0197da0840651011a60fd5b4b1c53b0bf5e08121",
+      "source_file": "heldout/none/challenge_02/attempts/attempt_01.raw.json"
+    },
+    {
+      "archive_file": "original/heldout/none/challenge_02/attempts/attempt_01.svg",
+      "bytes": 1703,
+      "sha256": "c5ef631139ceada88fc6a21fc8601a3104eacdf79988cd950f5f8152caaf963c",
+      "source_file": "heldout/none/challenge_02/attempts/attempt_01.svg"
+    },
+    {
+      "archive_file": "original/heldout/none/challenge_02/attempts/attempt_01.vision.json",
+      "bytes": 6627,
+      "sha256": "cf71f266a605548fa1d0989aac19b04e2bcbfef43663173750da87e32ec998ea",
+      "source_file": "heldout/none/challenge_02/attempts/attempt_01.vision.json"
+    },
+    {
+      "archive_file": "original/heldout/none/challenge_02/attempts/attempt_02.json",
+      "bytes": 2617,
+      "sha256": "faae6a62848b03d447ff79c7faffca45035fc19c85a2fb9bfae6561f6e7d3804",
+      "source_file": "heldout/none/challenge_02/attempts/attempt_02.json"
+    },
+    {
+      "archive_file": "original/heldout/none/challenge_02/attempts/attempt_02.raw.json",
+      "bytes": 11887,
+      "sha256": "21df1af0f01f01714edecc69f9b3bf5cc4f483dae2647fd62b5051e73d35944f",
+      "source_file": "heldout/none/challenge_02/attempts/attempt_02.raw.json"
+    },
+    {
+      "archive_file": "original/heldout/none/challenge_02/attempts/model_calls.json",
+      "bytes": 28116,
+      "sha256": "58486c5acb61cffce1adbe0c33510e34dede500aeb2bab82a78aa6e2c166cedb",
+      "source_file": "heldout/none/challenge_02/attempts/model_calls.json"
+    },
+    {
+      "archive_file": "original/heldout/none/challenge_02/attempts/progress.json",
+      "bytes": 1612,
+      "sha256": "50c772831b72d9cf45ecb3fea938caad528be87f94319619c21fafc8e06321fc",
+      "source_file": "heldout/none/challenge_02/attempts/progress.json"
+    },
+    {
+      "archive_file": "original/heldout/none/challenge_02/attempts/run.json",
+      "bytes": 3762,
+      "sha256": "d8fb912b8200ae181edc2dcc7bdc30927220494afc093946aafbdbbb6c21e441",
+      "source_file": "heldout/none/challenge_02/attempts/run.json"
+    },
+    {
+      "archive_file": "original/heldout/none/challenge_02/cell.json",
+      "bytes": 750,
+      "sha256": "16b497731f1c7225de86c7ebd660f7dec3e40585fae8037102693ecb802fd206",
+      "source_file": "heldout/none/challenge_02/cell.json"
+    },
+    {
+      "archive_file": "original/heldout/none/challenge_02/stderr.txt",
+      "bytes": 228,
+      "sha256": "f0814c22197c48dad23357c814b4cabb8dd23ad197bc6fae6c719629e5c4df80",
+      "source_file": "heldout/none/challenge_02/stderr.txt"
+    },
+    {
+      "archive_file": "original/heldout/none/challenge_02/stdout.txt",
+      "bytes": 1969,
+      "sha256": "9fa971ad594ba750b1c19ac1f9c69908b74d27e5df92a9f97b2d1143c4fa9f60",
+      "source_file": "heldout/none/challenge_02/stdout.txt"
+    },
+    {
+      "archive_file": "original/protocol.json",
+      "bytes": 615,
+      "sha256": "f30565e04b49f00c6831730b4695eedf4020026dec3110219fcd20dc28ea66ef",
+      "source_file": "protocol.json"
+    },
+    {
+      "archive_file": "original/summary.json",
+      "bytes": 15949,
+      "sha256": "11f3c08645e8ab2db127960476c55f2ea90b7b3e5034c0bd49b95c3ebdc081d4",
+      "source_file": "summary.json"
+    },
+    {
+      "archive_file": "original/training/adaptive/challenge_01/attempts/attempt_01.json",
+      "bytes": 4606,
+      "sha256": "33c931acb10ccb40c11a423b19b249f6a9d36a7469dbcb5a70bc9cb96b7c8692",
+      "source_file": "training/adaptive/challenge_01/attempts/attempt_01.json"
+    },
+    {
+      "archive_file": "original/training/adaptive/challenge_01/attempts/attempt_01.png",
+      "bytes": 10391,
+      "sha256": "3c421e7071e42db86827d41370646c2d617d3a09ae0a921f6e95b120c9b912df",
+      "source_file": "training/adaptive/challenge_01/attempts/attempt_01.png"
+    },
+    {
+      "archive_file": "original/training/adaptive/challenge_01/attempts/attempt_01.raw.json",
+      "bytes": 7310,
+      "sha256": "520a386324b43668bdf00b69b873c7d9c0c187594b19dea913e1bee245e02b0c",
+      "source_file": "training/adaptive/challenge_01/attempts/attempt_01.raw.json"
+    },
+    {
+      "archive_file": "original/training/adaptive/challenge_01/attempts/attempt_01.svg",
+      "bytes": 2135,
+      "sha256": "f9c20877b32f46b599c2200f5dfe70746d8cabc26479905e0321a9667c9a4034",
+      "source_file": "training/adaptive/challenge_01/attempts/attempt_01.svg"
+    },
+    {
+      "archive_file": "original/training/adaptive/challenge_01/attempts/attempt_01.vision.json",
+      "bytes": 6649,
+      "sha256": "abd14935c0605a0181b1a80957e42660f12c6ea9324c8bce96b675fd5d9c4c14",
+      "source_file": "training/adaptive/challenge_01/attempts/attempt_01.vision.json"
+    },
+    {
+      "archive_file": "original/training/adaptive/challenge_01/attempts/attempt_02.json",
+      "bytes": 5749,
+      "sha256": "060ed3de61e1449412d3fe14703a51ae413623fa214e4fbc63c4f8e9d033ea78",
+      "source_file": "training/adaptive/challenge_01/attempts/attempt_02.json"
+    },
+    {
+      "archive_file": "original/training/adaptive/challenge_01/attempts/attempt_02.png",
+      "bytes": 12511,
+      "sha256": "6e4235ea96ab45e6b7d2aaf7e709340c2e4e788fabdc3b4cabecb8ce4a5e7a1b",
+      "source_file": "training/adaptive/challenge_01/attempts/attempt_02.png"
+    },
+    {
+      "archive_file": "original/training/adaptive/challenge_01/attempts/attempt_02.raw.json",
+      "bytes": 15739,
+      "sha256": "87fe3b74b5e42e37477e6d93fbc567064b0870ae91c86641fbd025a60a5b3bf1",
+      "source_file": "training/adaptive/challenge_01/attempts/attempt_02.raw.json"
+    },
+    {
+      "archive_file": "original/training/adaptive/challenge_01/attempts/attempt_02.svg",
+      "bytes": 1878,
+      "sha256": "a673bda11757d6fa7ed99266b9d135508b84f767d91b4f3e9b994a032da0163b",
+      "source_file": "training/adaptive/challenge_01/attempts/attempt_02.svg"
+    },
+    {
+      "archive_file": "original/training/adaptive/challenge_01/attempts/attempt_02.vision.json",
+      "bytes": 6942,
+      "sha256": "7018d220a53e7bba34a4842e056b4e81dceca7ed58a43a0c7600219f6bfeab9b",
+      "source_file": "training/adaptive/challenge_01/attempts/attempt_02.vision.json"
+    },
+    {
+      "archive_file": "original/training/adaptive/challenge_01/attempts/model_calls.json",
+      "bytes": 34330,
+      "sha256": "4161c586dbdcd9926f5ba59030d45615aa964815978ce12a1b45c7e33fc7de7a",
+      "source_file": "training/adaptive/challenge_01/attempts/model_calls.json"
+    },
+    {
+      "archive_file": "original/training/adaptive/challenge_01/attempts/progress.json",
+      "bytes": 2078,
+      "sha256": "08d591923d0cd9e41a8e799b49cd99584c3dcd0d4c459415688330bb3140eb55",
+      "source_file": "training/adaptive/challenge_01/attempts/progress.json"
+    },
+    {
+      "archive_file": "original/training/adaptive/challenge_01/attempts/run.json",
+      "bytes": 4018,
+      "sha256": "dd48f7d0300c13fd897c300a515614fd4204b0cccca8b6dc557aa095249aaa4a",
+      "source_file": "training/adaptive/challenge_01/attempts/run.json"
+    },
+    {
+      "archive_file": "original/training/adaptive/challenge_01/cell.json",
+      "bytes": 774,
+      "sha256": "1eb26a380cfd7aa616b68cd7ddb1e53f5ff9f03c5d1ecbab2a8f3416d7782fc1",
+      "source_file": "training/adaptive/challenge_01/cell.json"
+    },
+    {
+      "archive_file": "original/training/adaptive/challenge_01/stderr.txt",
+      "bytes": 228,
+      "sha256": "f0814c22197c48dad23357c814b4cabb8dd23ad197bc6fae6c719629e5c4df80",
+      "source_file": "training/adaptive/challenge_01/stderr.txt"
+    },
+    {
+      "archive_file": "original/training/adaptive/challenge_01/stdout.txt",
+      "bytes": 2441,
+      "sha256": "624c3eb58b0de55a1da37e9f683dc0559103cbd4ccf64ef8711acec0fd43a77a",
+      "source_file": "training/adaptive/challenge_01/stdout.txt"
+    },
+    {
+      "archive_file": "auto-vision-benchmark-protocol.json",
+      "bytes": 615,
+      "sha256": "f30565e04b49f00c6831730b4695eedf4020026dec3110219fcd20dc28ea66ef",
+      "source_file": "auto-vision-benchmark-protocol.json"
+    },
+    {
+      "archive_file": "auto-vision-benchmark-preregistration.json",
+      "bytes": 1113,
+      "sha256": "aa41a823a476921a4d43b12a9e440a3a5e74e99ab27bfe1ba514c9f36abfef73",
+      "source_file": "auto-vision-benchmark-preregistration.json"
+    },
+    {
+      "archive_file": "auto-vision-benchmark-source-amendment.json",
+      "bytes": 1171,
+      "sha256": "de55c5615d413449a84562410db4d12a9d5794db82a08612400a507ce3ea81af",
+      "source_file": "auto-vision-benchmark-source-amendment.json"
+    },
+    {
+      "archive_file": "benchmark-rubric.json",
+      "bytes": 1284,
+      "sha256": "aa5f8360b6314c4c9942a1371918bc8eb1f0e966c18b9310910cdae6a5a90e8e",
+      "source_file": "benchmark-rubric.json"
+    },
+    {
+      "archive_file": "final-audit/audit-manifest.json",
+      "bytes": 7207,
+      "sha256": "0b5b3239fa63812eb433c519c18ade11fa638b35c2b9820fe81edae2193ade3d",
+      "source_file": "auto-vision-benchmark-final-audit/audit-manifest.json"
+    },
+    {
+      "archive_file": "final-audit/final-host-audit-summary.json",
+      "bytes": 17045,
+      "sha256": "00d951dcf8b366c9b7a201d4b4ec79ab116594757e5eb1e069f614d11348b323",
+      "source_file": "auto-vision-benchmark-final-audit/final-host-audit-summary.json"
+    },
+    {
+      "archive_file": "final-audit/integrity/adaptive-sailboat-full-untruncated-context.json.txt",
+      "bytes": 6197,
+      "sha256": "bcd502b7ad167296402be7cb49111d07da514e091a94d657abb61621df1d4d29",
+      "source_file": "auto-vision-benchmark-final-audit/integrity/adaptive-sailboat-full-untruncated-context.json.txt"
+    },
+    {
+      "archive_file": "final-audit/integrity/artifact-integrity.json",
+      "bytes": 14293,
+      "sha256": "9e35cb4d1175f38da3f91f2129c4259d67371334b1aaa39dd19b3d06d8789843",
+      "source_file": "auto-vision-benchmark-final-audit/integrity/artifact-integrity.json"
+    },
+    {
+      "archive_file": "final-audit/integrity/audit.py",
+      "bytes": 7065,
+      "sha256": "bdd1abaf2c8ccc54a7aabe429a8d923a37e56e97fcfaf020fdd8708690b27d84",
+      "source_file": "auto-vision-benchmark-final-audit/integrity/audit.py"
+    },
+    {
+      "archive_file": "final-audit/integrity/context-truncation-detail.json",
+      "bytes": 441,
+      "sha256": "8f7237c49b9e0cac72037c075f904fae58eb987ccbd3ce0eea366aedbe9b1f87",
+      "source_file": "auto-vision-benchmark-final-audit/integrity/context-truncation-detail.json"
+    },
+    {
+      "archive_file": "final-audit/integrity/heldout-adaptive-01-01.memory-context.txt",
+      "bytes": 2400,
+      "sha256": "23d530b18043e2f16f7131e923437c4dc201abf2710c615db5e1b8c46d102931",
+      "source_file": "auto-vision-benchmark-final-audit/integrity/heldout-adaptive-01-01.memory-context.txt"
+    },
+    {
+      "archive_file": "final-audit/integrity/heldout-adaptive-01-02.memory-context.txt",
+      "bytes": 2400,
+      "sha256": "23d530b18043e2f16f7131e923437c4dc201abf2710c615db5e1b8c46d102931",
+      "source_file": "auto-vision-benchmark-final-audit/integrity/heldout-adaptive-01-02.memory-context.txt"
+    },
+    {
+      "archive_file": "final-audit/integrity/heldout-adaptive-02-01.memory-context.txt",
+      "bytes": 2400,
+      "sha256": "23d530b18043e2f16f7131e923437c4dc201abf2710c615db5e1b8c46d102931",
+      "source_file": "auto-vision-benchmark-final-audit/integrity/heldout-adaptive-02-01.memory-context.txt"
+    },
+    {
+      "archive_file": "final-audit/integrity/heldout-adaptive-02-02.memory-context.txt",
+      "bytes": 2400,
+      "sha256": "23d530b18043e2f16f7131e923437c4dc201abf2710c615db5e1b8c46d102931",
+      "source_file": "auto-vision-benchmark-final-audit/integrity/heldout-adaptive-02-02.memory-context.txt"
+    },
+    {
+      "archive_file": "final-audit/integrity/heldout-frozen-01-01.memory-context.txt",
+      "bytes": 2400,
+      "sha256": "23d530b18043e2f16f7131e923437c4dc201abf2710c615db5e1b8c46d102931",
+      "source_file": "auto-vision-benchmark-final-audit/integrity/heldout-frozen-01-01.memory-context.txt"
+    },
+    {
+      "archive_file": "final-audit/integrity/heldout-frozen-01-02.memory-context.txt",
+      "bytes": 2400,
+      "sha256": "23d530b18043e2f16f7131e923437c4dc201abf2710c615db5e1b8c46d102931",
+      "source_file": "auto-vision-benchmark-final-audit/integrity/heldout-frozen-01-02.memory-context.txt"
+    },
+    {
+      "archive_file": "final-audit/integrity/heldout-frozen-02-01.memory-context.txt",
+      "bytes": 2400,
+      "sha256": "23d530b18043e2f16f7131e923437c4dc201abf2710c615db5e1b8c46d102931",
+      "source_file": "auto-vision-benchmark-final-audit/integrity/heldout-frozen-02-01.memory-context.txt"
+    },
+    {
+      "archive_file": "final-audit/integrity/heldout-frozen-02-02.memory-context.txt",
+      "bytes": 2400,
+      "sha256": "23d530b18043e2f16f7131e923437c4dc201abf2710c615db5e1b8c46d102931",
+      "source_file": "auto-vision-benchmark-final-audit/integrity/heldout-frozen-02-02.memory-context.txt"
+    },
+    {
+      "archive_file": "final-audit/integrity/heldout-none-01-01.memory-context.txt",
+      "bytes": 2,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "source_file": "auto-vision-benchmark-final-audit/integrity/heldout-none-01-01.memory-context.txt"
+    },
+    {
+      "archive_file": "final-audit/integrity/heldout-none-01-02.memory-context.txt",
+      "bytes": 2,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "source_file": "auto-vision-benchmark-final-audit/integrity/heldout-none-01-02.memory-context.txt"
+    },
+    {
+      "archive_file": "final-audit/integrity/heldout-none-02-01.memory-context.txt",
+      "bytes": 2,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "source_file": "auto-vision-benchmark-final-audit/integrity/heldout-none-02-01.memory-context.txt"
+    },
+    {
+      "archive_file": "final-audit/integrity/heldout-none-02-02.memory-context.txt",
+      "bytes": 2,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "source_file": "auto-vision-benchmark-final-audit/integrity/heldout-none-02-02.memory-context.txt"
+    },
+    {
+      "archive_file": "final-audit/integrity/memory-context-audit.json",
+      "bytes": 8549,
+      "sha256": "c96dd555a077987b6322b12796c5680b8ca8e097bc6fd7a98929cc78893c5653",
+      "source_file": "auto-vision-benchmark-final-audit/integrity/memory-context-audit.json"
+    },
+    {
+      "archive_file": "final-audit/integrity/rerenders/heldout-adaptive-01-01.png",
+      "bytes": 7723,
+      "sha256": "29ff58275ec51c5f9c2ea6c5cd00b4eee1516ec35ab89bc38c3eebd3d6128d54",
+      "source_file": "auto-vision-benchmark-final-audit/integrity/rerenders/heldout-adaptive-01-01.png"
+    },
+    {
+      "archive_file": "final-audit/integrity/rerenders/heldout-adaptive-01-01.svg",
+      "bytes": 2143,
+      "sha256": "2d03bd2133d43f010e4a757b6c8365c473de41eed6534df7fc6a527efd6f3ad4",
+      "source_file": "auto-vision-benchmark-final-audit/integrity/rerenders/heldout-adaptive-01-01.svg"
+    },
+    {
+      "archive_file": "final-audit/integrity/rerenders/heldout-adaptive-01-02.png",
+      "bytes": 4901,
+      "sha256": "00a049c302c8bc4a2d4f8c08c86113812306b13199aff98bf66871eafe83a0a9",
+      "source_file": "auto-vision-benchmark-final-audit/integrity/rerenders/heldout-adaptive-01-02.png"
+    },
+    {
+      "archive_file": "final-audit/integrity/rerenders/heldout-adaptive-01-02.svg",
+      "bytes": 1741,
+      "sha256": "b42b125d3ba09a3561f89944c1ee25588c53eee116d5ae9637c4ccd3f0077ebc",
+      "source_file": "auto-vision-benchmark-final-audit/integrity/rerenders/heldout-adaptive-01-02.svg"
+    },
+    {
+      "archive_file": "final-audit/integrity/rerenders/heldout-adaptive-02-01.png",
+      "bytes": 15190,
+      "sha256": "8dcbf8949e70da5fafe931a3f77571c51a71483af7b8aa6a94211916c3612b58",
+      "source_file": "auto-vision-benchmark-final-audit/integrity/rerenders/heldout-adaptive-02-01.png"
+    },
+    {
+      "archive_file": "final-audit/integrity/rerenders/heldout-adaptive-02-01.svg",
+      "bytes": 1011,
+      "sha256": "b675f31dd4ed7bbbfb1372e4da6c73876dc85af46ef1ee222e5608133b36f5d1",
+      "source_file": "auto-vision-benchmark-final-audit/integrity/rerenders/heldout-adaptive-02-01.svg"
+    },
+    {
+      "archive_file": "final-audit/integrity/rerenders/heldout-adaptive-02-02.png",
+      "bytes": 12411,
+      "sha256": "6b0639d85888552add0bf98df37758cadc517c1ae76dda77cf0946b8db74ef77",
+      "source_file": "auto-vision-benchmark-final-audit/integrity/rerenders/heldout-adaptive-02-02.png"
+    },
+    {
+      "archive_file": "final-audit/integrity/rerenders/heldout-adaptive-02-02.svg",
+      "bytes": 983,
+      "sha256": "51628e4e434fece89578e44dbf9ae57514b62a10cd673120ccbad6d37e287f6a",
+      "source_file": "auto-vision-benchmark-final-audit/integrity/rerenders/heldout-adaptive-02-02.svg"
+    },
+    {
+      "archive_file": "final-audit/integrity/rerenders/heldout-frozen-01-01.png",
+      "bytes": 7723,
+      "sha256": "29ff58275ec51c5f9c2ea6c5cd00b4eee1516ec35ab89bc38c3eebd3d6128d54",
+      "source_file": "auto-vision-benchmark-final-audit/integrity/rerenders/heldout-frozen-01-01.png"
+    },
+    {
+      "archive_file": "final-audit/integrity/rerenders/heldout-frozen-01-01.svg",
+      "bytes": 2143,
+      "sha256": "2d03bd2133d43f010e4a757b6c8365c473de41eed6534df7fc6a527efd6f3ad4",
+      "source_file": "auto-vision-benchmark-final-audit/integrity/rerenders/heldout-frozen-01-01.svg"
+    },
+    {
+      "archive_file": "final-audit/integrity/rerenders/heldout-frozen-01-02.png",
+      "bytes": 4901,
+      "sha256": "00a049c302c8bc4a2d4f8c08c86113812306b13199aff98bf66871eafe83a0a9",
+      "source_file": "auto-vision-benchmark-final-audit/integrity/rerenders/heldout-frozen-01-02.png"
+    },
+    {
+      "archive_file": "final-audit/integrity/rerenders/heldout-frozen-01-02.svg",
+      "bytes": 1741,
+      "sha256": "b42b125d3ba09a3561f89944c1ee25588c53eee116d5ae9637c4ccd3f0077ebc",
+      "source_file": "auto-vision-benchmark-final-audit/integrity/rerenders/heldout-frozen-01-02.svg"
+    },
+    {
+      "archive_file": "final-audit/integrity/rerenders/heldout-frozen-02-01.png",
+      "bytes": 15190,
+      "sha256": "8dcbf8949e70da5fafe931a3f77571c51a71483af7b8aa6a94211916c3612b58",
+      "source_file": "auto-vision-benchmark-final-audit/integrity/rerenders/heldout-frozen-02-01.png"
+    },
+    {
+      "archive_file": "final-audit/integrity/rerenders/heldout-frozen-02-01.svg",
+      "bytes": 1011,
+      "sha256": "b675f31dd4ed7bbbfb1372e4da6c73876dc85af46ef1ee222e5608133b36f5d1",
+      "source_file": "auto-vision-benchmark-final-audit/integrity/rerenders/heldout-frozen-02-01.svg"
+    },
+    {
+      "archive_file": "final-audit/integrity/rerenders/heldout-frozen-02-02.png",
+      "bytes": 12411,
+      "sha256": "6b0639d85888552add0bf98df37758cadc517c1ae76dda77cf0946b8db74ef77",
+      "source_file": "auto-vision-benchmark-final-audit/integrity/rerenders/heldout-frozen-02-02.png"
+    },
+    {
+      "archive_file": "final-audit/integrity/rerenders/heldout-frozen-02-02.svg",
+      "bytes": 983,
+      "sha256": "51628e4e434fece89578e44dbf9ae57514b62a10cd673120ccbad6d37e287f6a",
+      "source_file": "auto-vision-benchmark-final-audit/integrity/rerenders/heldout-frozen-02-02.svg"
+    },
+    {
+      "archive_file": "final-audit/integrity/rerenders/heldout-none-01-01.png",
+      "bytes": 12888,
+      "sha256": "2dc974433a505c7c293d72d7beacf6a55364541b6251cebafffec0158cceef69",
+      "source_file": "auto-vision-benchmark-final-audit/integrity/rerenders/heldout-none-01-01.png"
+    },
+    {
+      "archive_file": "final-audit/integrity/rerenders/heldout-none-01-01.svg",
+      "bytes": 2142,
+      "sha256": "5dcd71bf09522376c925e266637ebccccfb2e962a182faecb04fdee2f94214af",
+      "source_file": "auto-vision-benchmark-final-audit/integrity/rerenders/heldout-none-01-01.svg"
+    },
+    {
+      "archive_file": "final-audit/integrity/rerenders/heldout-none-01-02.png",
+      "bytes": 14838,
+      "sha256": "8d9ad786996d0403eb7c806229d49ca7c0916f454a8751f6e277ba75517a1ba8",
+      "source_file": "auto-vision-benchmark-final-audit/integrity/rerenders/heldout-none-01-02.png"
+    },
+    {
+      "archive_file": "final-audit/integrity/rerenders/heldout-none-01-02.svg",
+      "bytes": 2113,
+      "sha256": "fa34c68144e97a7fea1c24ebe39b7635c3995d564cf2102ca67932ce0bdd2b29",
+      "source_file": "auto-vision-benchmark-final-audit/integrity/rerenders/heldout-none-01-02.svg"
+    },
+    {
+      "archive_file": "final-audit/integrity/rerenders/heldout-none-02-01.png",
+      "bytes": 16594,
+      "sha256": "b37201dd986de1abf0fd207656c516c1eb5264adf5dd4aaabbe1891e7d3511ae",
+      "source_file": "auto-vision-benchmark-final-audit/integrity/rerenders/heldout-none-02-01.png"
+    },
+    {
+      "archive_file": "final-audit/integrity/rerenders/heldout-none-02-01.svg",
+      "bytes": 1703,
+      "sha256": "c5ef631139ceada88fc6a21fc8601a3104eacdf79988cd950f5f8152caaf963c",
+      "source_file": "auto-vision-benchmark-final-audit/integrity/rerenders/heldout-none-02-01.svg"
+    },
+    {
+      "archive_file": "final-audit/integrity/rerenders/training-adaptive-01-01.png",
+      "bytes": 10391,
+      "sha256": "3c421e7071e42db86827d41370646c2d617d3a09ae0a921f6e95b120c9b912df",
+      "source_file": "auto-vision-benchmark-final-audit/integrity/rerenders/training-adaptive-01-01.png"
+    },
+    {
+      "archive_file": "final-audit/integrity/rerenders/training-adaptive-01-01.svg",
+      "bytes": 2135,
+      "sha256": "f9c20877b32f46b599c2200f5dfe70746d8cabc26479905e0321a9667c9a4034",
+      "source_file": "auto-vision-benchmark-final-audit/integrity/rerenders/training-adaptive-01-01.svg"
+    },
+    {
+      "archive_file": "final-audit/integrity/rerenders/training-adaptive-01-02.png",
+      "bytes": 12511,
+      "sha256": "6e4235ea96ab45e6b7d2aaf7e709340c2e4e788fabdc3b4cabecb8ce4a5e7a1b",
+      "source_file": "auto-vision-benchmark-final-audit/integrity/rerenders/training-adaptive-01-02.png"
+    },
+    {
+      "archive_file": "final-audit/integrity/rerenders/training-adaptive-01-02.svg",
+      "bytes": 1878,
+      "sha256": "a673bda11757d6fa7ed99266b9d135508b84f767d91b4f3e9b994a032da0163b",
+      "source_file": "auto-vision-benchmark-final-audit/integrity/rerenders/training-adaptive-01-02.svg"
+    },
+    {
+      "archive_file": "final-audit/integrity/runtime-source-verification.json",
+      "bytes": 1343,
+      "sha256": "849d2fbf9e159acc8e4150edeaf3eaaaf88ee699c974b88503eacbb4e229f2c0",
+      "source_file": "auto-vision-benchmark-final-audit/integrity/runtime-source-verification.json"
+    },
+    {
+      "archive_file": "final-audit/integrity/training-adaptive-01-01.memory-context.txt",
+      "bytes": 2,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "source_file": "auto-vision-benchmark-final-audit/integrity/training-adaptive-01-01.memory-context.txt"
+    },
+    {
+      "archive_file": "final-audit/integrity/training-adaptive-01-02.memory-context.txt",
+      "bytes": 2,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "source_file": "auto-vision-benchmark-final-audit/integrity/training-adaptive-01-02.memory-context.txt"
+    },
+    {
+      "archive_file": "final-audit/visual/00a049c302c8bc4a2d4f8c08c86113812306b13199aff98bf66871eafe83a0a9.json",
+      "bytes": 1248,
+      "sha256": "35aac567318da12363cedae3e0f4f924564668f7a07032508f64a2e294bca829",
+      "source_file": "auto-vision-benchmark-final-audit/visual/00a049c302c8bc4a2d4f8c08c86113812306b13199aff98bf66871eafe83a0a9.json"
+    },
+    {
+      "archive_file": "final-audit/visual/29ff58275ec51c5f9c2ea6c5cd00b4eee1516ec35ab89bc38c3eebd3d6128d54.json",
+      "bytes": 1207,
+      "sha256": "d96d6de2922ff9035e7bbf42b78d01fbaa0d709469afb42d6e8c9e83729854d6",
+      "source_file": "auto-vision-benchmark-final-audit/visual/29ff58275ec51c5f9c2ea6c5cd00b4eee1516ec35ab89bc38c3eebd3d6128d54.json"
+    },
+    {
+      "archive_file": "final-audit/visual/2dc974433a505c7c293d72d7beacf6a55364541b6251cebafffec0158cceef69.json",
+      "bytes": 1175,
+      "sha256": "342c34ec0f98ce1b77f77bb75289b73ed5e31a220510dbd8010dc274882acd0a",
+      "source_file": "auto-vision-benchmark-final-audit/visual/2dc974433a505c7c293d72d7beacf6a55364541b6251cebafffec0158cceef69.json"
+    },
+    {
+      "archive_file": "final-audit/visual/3c421e7071e42db86827d41370646c2d617d3a09ae0a921f6e95b120c9b912df.json",
+      "bytes": 1219,
+      "sha256": "6fdf8984c4ef54a4b9f4b1d71c1a099386787e01913b817af5800c377a7572cb",
+      "source_file": "auto-vision-benchmark-final-audit/visual/3c421e7071e42db86827d41370646c2d617d3a09ae0a921f6e95b120c9b912df.json"
+    },
+    {
+      "archive_file": "final-audit/visual/6b0639d85888552add0bf98df37758cadc517c1ae76dda77cf0946b8db74ef77.json",
+      "bytes": 1269,
+      "sha256": "bcbac14a0c9391b57d4010a107d18c39ede84bef30edaf4be46bb54f8c1b108c",
+      "source_file": "auto-vision-benchmark-final-audit/visual/6b0639d85888552add0bf98df37758cadc517c1ae76dda77cf0946b8db74ef77.json"
+    },
+    {
+      "archive_file": "final-audit/visual/6e4235ea96ab45e6b7d2aaf7e709340c2e4e788fabdc3b4cabecb8ce4a5e7a1b.json",
+      "bytes": 1223,
+      "sha256": "dc43122298bbe2d9b4be4b41a2920e11a6783a43f18d5108eda41c46da54a500",
+      "source_file": "auto-vision-benchmark-final-audit/visual/6e4235ea96ab45e6b7d2aaf7e709340c2e4e788fabdc3b4cabecb8ce4a5e7a1b.json"
+    },
+    {
+      "archive_file": "final-audit/visual/8d9ad786996d0403eb7c806229d49ca7c0916f454a8751f6e277ba75517a1ba8.json",
+      "bytes": 1223,
+      "sha256": "eecbfa5829af617c663ee04a67ef409f20c6f7a5b3d9ed7e53598fd4bed5dbcf",
+      "source_file": "auto-vision-benchmark-final-audit/visual/8d9ad786996d0403eb7c806229d49ca7c0916f454a8751f6e277ba75517a1ba8.json"
+    },
+    {
+      "archive_file": "final-audit/visual/8dcbf8949e70da5fafe931a3f77571c51a71483af7b8aa6a94211916c3612b58.json",
+      "bytes": 1309,
+      "sha256": "24fddb9a77abd528a4582d18d54ffb034f693ac5047a0425aa417c14950f20ae",
+      "source_file": "auto-vision-benchmark-final-audit/visual/8dcbf8949e70da5fafe931a3f77571c51a71483af7b8aa6a94211916c3612b58.json"
+    },
+    {
+      "archive_file": "final-audit/visual/b37201dd986de1abf0fd207656c516c1eb5264adf5dd4aaabbe1891e7d3511ae.json",
+      "bytes": 1178,
+      "sha256": "a8df930867b9e136523642d5d640b38485cb5cfdabcbec92167d232c6876cb1e",
+      "source_file": "auto-vision-benchmark-final-audit/visual/b37201dd986de1abf0fd207656c516c1eb5264adf5dd4aaabbe1891e7d3511ae.json"
+    },
+    {
+      "archive_file": "final-audit/write_visual_audit.py",
+      "bytes": 8808,
+      "sha256": "c505ab43e2d6924fb7b44147586cb6afa6659da1f7df327e72a690748ccb94fb",
+      "source_file": "auto-vision-benchmark-final-audit/write_visual_audit.py"
+    },
+    {
+      "archive_file": "prior-host-audit/images/3c421e7071e42db86827d41370646c2d617d3a09ae0a921f6e95b120c9b912df.json",
+      "bytes": 1021,
+      "sha256": "7ba29308a38513ecd0b59a72bebd9e7efc6b426e0fcc8b5d5b2156e3c56634bc",
+      "source_file": "auto-vision-benchmark-host-audit/images/3c421e7071e42db86827d41370646c2d617d3a09ae0a921f6e95b120c9b912df.json"
+    },
+    {
+      "archive_file": "prior-host-audit/images/6e4235ea96ab45e6b7d2aaf7e709340c2e4e788fabdc3b4cabecb8ce4a5e7a1b.correction.json",
+      "bytes": 1632,
+      "sha256": "8cc578c31724cbc8da53373299f005bbab23ecf26b996a9937cddf6e82ae5984",
+      "source_file": "auto-vision-benchmark-host-audit/images/6e4235ea96ab45e6b7d2aaf7e709340c2e4e788fabdc3b4cabecb8ce4a5e7a1b.correction.json"
+    },
+    {
+      "archive_file": "prior-host-audit/images/6e4235ea96ab45e6b7d2aaf7e709340c2e4e788fabdc3b4cabecb8ce4a5e7a1b.json",
+      "bytes": 1022,
+      "sha256": "04c6e373feb98e5d4aaf9ef2aacc7062ddd6d7660775b278626b92ddebfb1cfc",
+      "source_file": "auto-vision-benchmark-host-audit/images/6e4235ea96ab45e6b7d2aaf7e709340c2e4e788fabdc3b4cabecb8ce4a5e7a1b.json"
+    }
+  ],
+  "original_summary_reproduced_from_historical_source_after_json_normalization": true,
+  "retained_learning_contrast_valid": false,
+  "schema": "bean.draw.archive.sources.v1",
+  "source_databases_unchanged": true,
+  "source_git_sha": "01090ba7c8c97855a7e3d352c3e9003e7278e972",
+  "source_root": "/workspace/bean-live-evidence/auto-vision-benchmark",
+  "weights_updated": false
+}

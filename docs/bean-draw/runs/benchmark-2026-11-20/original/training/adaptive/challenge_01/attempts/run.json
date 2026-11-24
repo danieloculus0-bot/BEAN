@@ -1,0 +1,60 @@
+{
+  "attempts": 2,
+  "completed_at_utc": "2026-11-20T13:00:28.440273+00:00",
+  "created_at_utc": "2026-11-20T12:34:40.679845+00:00",
+  "error": null,
+  "execution_mode": "live_model",
+  "history": [
+    {
+      "attempt": 1,
+      "description": "A teapot with a lid, body, spout, and handle centered in the canvas. The lid is a smaller circle at the top. The body widens from the center, forming height. The spout extends downward from one side of the body, connecting to the handle on the other side.",
+      "journal_tip": "5fd3b6d365e60b01a8f2d96e23ae6371c18ce48163eb51e49ac8ed60b35b3a99",
+      "metadata": "/workspace/bean-live-evidence/benchmark/training/adaptive/challenge_01/attempts/attempt_01.json",
+      "metadata_sha256": "e86846a03c7af1f9b5c65291a9cb6f59ac814b8116c11a0216481e9e3cfe8033",
+      "png": "/workspace/bean-live-evidence/benchmark/training/adaptive/challenge_01/attempts/attempt_01.png",
+      "png_sha256": "a1e252c2525072dd78cd49e2599a7831c9d9ccc88289819fb81ce7f672a6b599",
+      "sha256": "1bbfa8bdcb8cde9acd0218286120a440d2a1f173dc799061280ef289c39cf714",
+      "status": "unverified",
+      "svg": "/workspace/bean-live-evidence/benchmark/training/adaptive/challenge_01/attempts/attempt_01.svg"
+    },
+    {
+      "attempt": 2,
+      "description": "A clear composition of a recognizable teapot, with improved visibility and spatial arrangement of key elements.",
+      "journal_tip": "67d89ba03c53e16d4007affa11ec40f22ad161b9578b0fd71fdd1c7c949c6254",
+      "metadata": "/workspace/bean-live-evidence/benchmark/training/adaptive/challenge_01/attempts/attempt_02.json",
+      "metadata_sha256": "4f216701530fbfe47964af9c4b0a8c199d90d5ee785128a2a17e338320ab3529",
+      "png": "/workspace/bean-live-evidence/benchmark/training/adaptive/challenge_01/attempts/attempt_02.png",
+      "png_sha256": "e83f54fbdb967b4f738f8c0b75e5c37bd0d5ce6178005236776c3662f677111b",
+      "sha256": "4abed9e774604e1c5042c88b313287f647cce99472e8f4a4f20c190387d56ca0",
+      "status": "unverified",
+      "svg": "/workspace/bean-live-evidence/benchmark/training/adaptive/challenge_01/attempts/attempt_02.svg"
+    }
+  ],
+  "independent_visual_verification": false,
+  "journal_tip": "c2f967ad51804c70315fe546fed0d18bd8a58e6359fb0d06eaf4e934375d352b",
+  "learning_improvement_verified": false,
+  "memory_context_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+  "memory_mode": "adaptive",
+  "model_calls_sha256": "6cbb29eccf16e7dff0f9bbb29eda1697d6ebcc623f9f11c6eecf2b64b1d7702b",
+  "model_digest": "357c53fb659c5076de1d65ccb0b397446227b71a42be9d1603d46168015c9e4b",
+  "model_id": "qwen2.5:3b",
+  "provider_kind": "ollama",
+  "run_id": "02238a50-6e5a-4179-960c-a2e5b7d6da99",
+  "runtime_source_sha256": {
+    "bean/creativity/artifacts.py": "129106aefab02ea7d299e44ed74da0ab617d4cbec091f7e2acf3ad53c518bb41",
+    "bean/creativity/sketch_lab.py": "7d69b3fbe4fa3824132b150f1d6d5606d59385fdf58cc0aca57ece1045ab43f4",
+    "bean/voice/ollama.py": "3f852e850e998767f43bd1c0842852c3562aecfce5152d8b8081e8a6ac8d19ee",
+    "scripts/build_bean_draw_gallery.py": "42d7b37089775b56acf7512d2e6ce6c6be098813e709d2c9644def51c58e18a1"
+  },
+  "schema": "bean.draw.run.v1",
+  "seed": 20261131,
+  "selected_attempt": 2,
+  "selection_reason": "The second attempt provides a clearer composition of the teapot with improved visibility and spatial arrangement of key elements such as the lid, body, handle, and spout. The previous attempts were not clear in representing these elements, leading to better visual clarity and recognition.",
+  "selection_state": "model_selected_from_recorded_evidence",
+  "source_git_sha": "3fc06f4777a68b492928d6a08a0dd251977af895",
+  "state": "unverified",
+  "subject": "a teapot",
+  "subject_source": "human",
+  "task_ref": "benchmark-training-adaptive-01",
+  "weights_updated": false
+}

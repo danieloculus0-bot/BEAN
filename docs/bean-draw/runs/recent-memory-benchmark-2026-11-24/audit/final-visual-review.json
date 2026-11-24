@@ -1,0 +1,251 @@
+{
+  "attempts": [
+    {
+      "arm": "adaptive",
+      "attempt": 1,
+      "challenge": 1,
+      "image_file": "training/adaptive/challenge_01/attempts/attempt_01.png",
+      "image_sha256": "c16c746ec39f1ca30c6a466a605988be4ae580dc6dde56a83a55e62de56b5468",
+      "observations": "An outlined rectangle intersects a large circle and long straight strokes. I cannot recognize a teapot silhouette, spout or handle.",
+      "phase": "training",
+      "scores": {
+        "composition": 2,
+        "spatial_coherence": 1,
+        "subject_recognition": 0
+      },
+      "subject": "a teapot"
+    },
+    {
+      "arm": "adaptive",
+      "attempt": 2,
+      "challenge": 1,
+      "image_file": "training/adaptive/challenge_01/attempts/attempt_02.png",
+      "image_sha256": "21ccb5abbddd4c37413aca9a3f1c3d0adcd97242bb3fcb44bd82a430c429e2c9",
+      "observations": "The rectangle/circle assembly remains, with a changed lower line. No recognizable teapot or recognition improvement is visible.",
+      "phase": "training",
+      "scores": {
+        "composition": 2,
+        "spatial_coherence": 1,
+        "subject_recognition": 0
+      },
+      "subject": "a teapot"
+    },
+    {
+      "arm": "frozen",
+      "attempt": 1,
+      "challenge": 1,
+      "image_file": "heldout/frozen/challenge_01/attempts/attempt_01.png",
+      "image_sha256": "302164c7065d4a0a4b8401e6df5bc2965275cecea1528aae8e57b4e5d39a623d",
+      "observations": "The same circle band and horizontal strokes as adaptive attempt 1 are visible. It is not a recognizable umbrella to this observer.",
+      "phase": "heldout",
+      "scores": {
+        "composition": 2,
+        "spatial_coherence": 1,
+        "subject_recognition": 0
+      },
+      "subject": "an umbrella"
+    },
+    {
+      "arm": "frozen",
+      "attempt": 2,
+      "challenge": 1,
+      "image_file": "heldout/frozen/challenge_01/attempts/attempt_02.png",
+      "image_sha256": "91a58c5fa30b8856b5400e3538de13ac4e62ab7e05824f7e81ef553cf9566d23",
+      "observations": "The same circle on a horizontal line as adaptive attempt 2 is visible. No umbrella recognition improvement is apparent.",
+      "phase": "heldout",
+      "scores": {
+        "composition": 2,
+        "spatial_coherence": 1,
+        "subject_recognition": 0
+      },
+      "subject": "an umbrella"
+    },
+    {
+      "arm": "none",
+      "attempt": 1,
+      "challenge": 1,
+      "image_file": "heldout/none/challenge_01/attempts/attempt_01.png",
+      "image_sha256": "5b6a7483592cb4c1d28a592ce4ff749a81354c31dbaca3c13f7d74a81c311b00",
+      "observations": "Short disconnected diagonal strokes cluster in the upper left beneath a longer slanted line. No coherent umbrella is recognizable.",
+      "phase": "heldout",
+      "scores": {
+        "composition": 1,
+        "spatial_coherence": 1,
+        "subject_recognition": 0
+      },
+      "subject": "an umbrella"
+    },
+    {
+      "arm": "none",
+      "attempt": 2,
+      "challenge": 1,
+      "image_file": "heldout/none/challenge_01/attempts/attempt_02.png",
+      "image_sha256": "64cc780d22e7e01cb2fdcfa1d845982af919d97f0b56ff67283c0efa3d1b7b73",
+      "observations": "Circles of several sizes overlap a rectangle and long horizontal/vertical lines. No coherent canopy/handle silhouette is recognizable.",
+      "phase": "heldout",
+      "scores": {
+        "composition": 2,
+        "spatial_coherence": 1,
+        "subject_recognition": 0
+      },
+      "subject": "an umbrella"
+    },
+    {
+      "arm": "adaptive",
+      "attempt": 1,
+      "challenge": 1,
+      "image_file": "heldout/adaptive/challenge_01/attempts/attempt_01.png",
+      "image_sha256": "302164c7065d4a0a4b8401e6df5bc2965275cecea1528aae8e57b4e5d39a623d",
+      "observations": "A band of outlined circles, including overlapping circles, sits between long horizontal lines. I cannot identify a canopy and handle as an umbrella.",
+      "phase": "heldout",
+      "scores": {
+        "composition": 2,
+        "spatial_coherence": 1,
+        "subject_recognition": 0
+      },
+      "subject": "an umbrella"
+    },
+    {
+      "arm": "adaptive",
+      "attempt": 2,
+      "challenge": 1,
+      "image_file": "heldout/adaptive/challenge_01/attempts/attempt_02.png",
+      "image_sha256": "91a58c5fa30b8856b5400e3538de13ac4e62ab7e05824f7e81ef553cf9566d23",
+      "observations": "A single outlined circle rests on a long horizontal line. Simplification is visible, but I cannot recognize an umbrella.",
+      "phase": "heldout",
+      "scores": {
+        "composition": 2,
+        "spatial_coherence": 1,
+        "subject_recognition": 0
+      },
+      "subject": "an umbrella"
+    },
+    {
+      "arm": "none",
+      "attempt": 1,
+      "challenge": 2,
+      "image_file": "heldout/none/challenge_02/attempts/attempt_01.png",
+      "image_sha256": "5eb6f22c760212515bbc1ded7c6289d9a445d4d58f0d0710a4a701487e28a4df",
+      "observations": "Large diagonals cross an almost full-canvas border, with two small side circles and rectangles. I cannot recognize a bicycle.",
+      "phase": "heldout",
+      "scores": {
+        "composition": 1,
+        "spatial_coherence": 1,
+        "subject_recognition": 0
+      },
+      "subject": "a bicycle"
+    },
+    {
+      "arm": "none",
+      "attempt": 2,
+      "challenge": 2,
+      "image_file": "heldout/none/challenge_02/attempts/attempt_02.png",
+      "image_sha256": "55b58b8d8438cb4ca814dfdf72d12ec1ae494e861b144ffe232600c3e1576e53",
+      "observations": "Tall vertical strokes, a narrow rectangle and circles at several heights are visible. No coherent bicycle frame and wheels are recognizable.",
+      "phase": "heldout",
+      "scores": {
+        "composition": 2,
+        "spatial_coherence": 1,
+        "subject_recognition": 0
+      },
+      "subject": "a bicycle"
+    },
+    {
+      "arm": "adaptive",
+      "attempt": 1,
+      "challenge": 2,
+      "image_file": "heldout/adaptive/challenge_02/attempts/attempt_01.png",
+      "image_sha256": "f2109c7e7603b797e4674c59dadf9f6ddf8489a121dbbc7e1cef42a3c347c6dc",
+      "observations": "Two large overlapping circles clipped at the bottom, long vertical strokes and a narrow rectangle are visible. The two circles weakly suggest wheels with the bicycle title supplied, but a coherent bicycle frame is absent.",
+      "phase": "heldout",
+      "scores": {
+        "composition": 2,
+        "spatial_coherence": 1,
+        "subject_recognition": 1
+      },
+      "subject": "a bicycle"
+    },
+    {
+      "arm": "adaptive",
+      "attempt": 2,
+      "challenge": 2,
+      "image_file": "heldout/adaptive/challenge_02/attempts/attempt_02.png",
+      "image_sha256": "89ee337ebc7127d0449b72bb9b25e4523ffee75de906a0de01aa96d27249d437",
+      "observations": "A large rectangle surrounds a horizontal band of small and large circles. I cannot recognize a bicycle frame or wheel arrangement; recognition did not improve from the weak wheel cue in attempt 1.",
+      "phase": "heldout",
+      "scores": {
+        "composition": 2,
+        "spatial_coherence": 1,
+        "subject_recognition": 0
+      },
+      "subject": "a bicycle"
+    },
+    {
+      "arm": "frozen",
+      "attempt": 1,
+      "challenge": 2,
+      "image_file": "heldout/frozen/challenge_02/attempts/attempt_01.png",
+      "image_sha256": "504140a90f85aee17eff71c53c5ee0bdd39cd45c1140d9fc0ae0382d9aa61984",
+      "observations": "A long diagonal crosses horizontal lines and small circles near the edges; some shapes are clipped. I cannot recognize a bicycle.",
+      "phase": "heldout",
+      "scores": {
+        "composition": 2,
+        "spatial_coherence": 1,
+        "subject_recognition": 0
+      },
+      "subject": "a bicycle"
+    },
+    {
+      "arm": "frozen",
+      "attempt": 2,
+      "challenge": 2,
+      "image_file": "heldout/frozen/challenge_02/attempts/attempt_02.png",
+      "image_sha256": "fa17cefcf4ff6629792515360c5c7d2123633d36f32569f053533614d71ef787",
+      "observations": "Small circles sit at different heights around horizontal strokes and a central rectangle. I cannot recognize a coherent bicycle.",
+      "phase": "heldout",
+      "scores": {
+        "composition": 2,
+        "spatial_coherence": 1,
+        "subject_recognition": 0
+      },
+      "subject": "a bicycle"
+    }
+  ],
+  "blinded": false,
+  "conclusion": "Saved feedback delivery is verified separately. This observer found no final recognizable teapot, umbrella or bicycle, and no recognition advantage for adaptive memory over either control. Gemma ratings overstate recognition on these images. One eligible adaptive/frozen challenge cannot establish a learning effect.",
+  "created_at_utc": "2026-11-24T14:18:11.382656+00:00",
+  "evaluator": "Codex host visual observer",
+  "human_evaluation": "unavailable",
+  "independently_authenticated": false,
+  "inspection_method": "All 14 individual PNGs displayed through view_image before writing this report",
+  "kind": "vision_model",
+  "learning_improvement_verified": false,
+  "portfolio_review": {
+    "bound_png_sha256": [
+      "c16c746ec39f1ca30c6a466a605988be4ae580dc6dde56a83a55e62de56b5468",
+      "21ccb5abbddd4c37413aca9a3f1c3d0adcd97242bb3fcb44bd82a430c429e2c9",
+      "302164c7065d4a0a4b8401e6df5bc2965275cecea1528aae8e57b4e5d39a623d",
+      "91a58c5fa30b8856b5400e3538de13ac4e62ab7e05824f7e81ef553cf9566d23",
+      "5b6a7483592cb4c1d28a592ce4ff749a81354c31dbaca3c13f7d74a81c311b00",
+      "64cc780d22e7e01cb2fdcfa1d845982af919d97f0b56ff67283c0efa3d1b7b73",
+      "302164c7065d4a0a4b8401e6df5bc2965275cecea1528aae8e57b4e5d39a623d",
+      "91a58c5fa30b8856b5400e3538de13ac4e62ab7e05824f7e81ef553cf9566d23",
+      "5eb6f22c760212515bbc1ded7c6289d9a445d4d58f0d0710a4a701487e28a4df",
+      "55b58b8d8438cb4ca814dfdf72d12ec1ae494e861b144ffe232600c3e1576e53",
+      "f2109c7e7603b797e4674c59dadf9f6ddf8489a121dbbc7e1cef42a3c347c6dc",
+      "89ee337ebc7127d0449b72bb9b25e4523ffee75de906a0de01aa96d27249d437",
+      "504140a90f85aee17eff71c53c5ee0bdd39cd45c1140d9fc0ae0382d9aa61984",
+      "fa17cefcf4ff6629792515360c5c7d2123633d36f32569f053533614d71ef787"
+    ],
+    "diversity": 2,
+    "observations": "Several geometric arrangements differ, but all use black outlines and repeated circles/rectangles/long lines. Different files do not establish subject diversity or generalization."
+  },
+  "posthoc": true,
+  "scale": {
+    "maximum": 4,
+    "minimum": 0
+  },
+  "schema": "bean.draw.host_image_audit.v1",
+  "used_for_generation": false,
+  "weights_updated": false
+}

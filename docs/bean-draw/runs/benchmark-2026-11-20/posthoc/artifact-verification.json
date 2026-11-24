@@ -1,0 +1,136 @@
+{
+  "original_summary_sha256": "15c0c267d085e16f8bb8c53109fe7dd0ad55277a1155360f9fb95858a5d1763a",
+  "protocol_sha256": "fa0041e153552d9c9a709ab3ece1af8c48491c8c95a99f395280205331b42c78",
+  "schema": "bean.draw.posthoc.artifact_verification.v1",
+  "scope": "Byte integrity and source response shape reproduction; not authenticated model authorship or aesthetic quality",
+  "verified_cells": [
+    {
+      "arm": "adaptive",
+      "attempts": [
+        {
+          "attempt": 1,
+          "png_matches_rerendered_svg": true,
+          "png_sha256": "a1e252c2525072dd78cd49e2599a7831c9d9ccc88289819fb81ce7f672a6b599",
+          "raw_sha256": "3da8730e8cd3afb54d52413ca248c932eeff777af146ea5b95199823293ea54e",
+          "sidecar_sha256": "e86846a03c7af1f9b5c65291a9cb6f59ac814b8116c11a0216481e9e3cfe8033",
+          "svg_reproduced_from_archived_model_shapes": true,
+          "svg_sha256": "1bbfa8bdcb8cde9acd0218286120a440d2a1f173dc799061280ef289c39cf714"
+        },
+        {
+          "attempt": 2,
+          "png_matches_rerendered_svg": true,
+          "png_sha256": "e83f54fbdb967b4f738f8c0b75e5c37bd0d5ce6178005236776c3662f677111b",
+          "raw_sha256": "abfd759a1926dbc6be103f972ac036dca2889fa74756c352b4db4c21e31dd1ad",
+          "sidecar_sha256": "4f216701530fbfe47964af9c4b0a8c199d90d5ee785128a2a17e338320ab3529",
+          "svg_reproduced_from_archived_model_shapes": true,
+          "svg_sha256": "4abed9e774604e1c5042c88b313287f647cce99472e8f4a4f20c190387d56ca0"
+        }
+      ],
+      "model": "qwen2.5:3b",
+      "model_digest": "357c53fb659c5076de1d65ccb0b397446227b71a42be9d1603d46168015c9e4b",
+      "phase": "training",
+      "provider": "ollama",
+      "run_id": "02238a50-6e5a-4179-960c-a2e5b7d6da99",
+      "run_path": "training/adaptive/challenge_01/attempts/run.json",
+      "run_sha256": "8da9292da6a259aa029245ba6d0476b91c477f9c2325657e4751bd0413193136",
+      "source_git_sha": "3fc06f4777a68b492928d6a08a0dd251977af895",
+      "subject": "a teapot"
+    },
+    {
+      "arm": "frozen",
+      "attempts": [
+        {
+          "attempt": 1,
+          "png_matches_rerendered_svg": true,
+          "png_sha256": "91f450301555bf58dba86509b33fc6139f8b2c67ab7793e353dc46cef7e05c25",
+          "raw_sha256": "b0f9ced3f1cc1cf0706cf232c5620d4934bbc156985020db3c0b2533e8be1f5f",
+          "sidecar_sha256": "647a879c86302c7289c65ee9639ea45361b5400c25d8d1e6b96ddc1eecefa00c",
+          "svg_reproduced_from_archived_model_shapes": true,
+          "svg_sha256": "02c26823afaf1c6644165ab4449f0adb94b43bbbcbb8202590a138a03a6d65db"
+        },
+        {
+          "attempt": 2,
+          "png_matches_rerendered_svg": true,
+          "png_sha256": "1d43be5b7d616db00b10762572a18b1ebd954bd61ec89132d0bd39cfcd8efdbb",
+          "raw_sha256": "500f4215d329532d0dcd4b21fb973e6d6da39b6d2537aedf799c4eedd12aa3b1",
+          "sidecar_sha256": "0930faec9ed07c59faea0830fe4b3af5c37b7602732952570adf059ef3638ba8",
+          "svg_reproduced_from_archived_model_shapes": true,
+          "svg_sha256": "afaa7ed5dffab2c1e39b77b70210e88a7807e5a1d40a1356640aa213402b49a8"
+        }
+      ],
+      "model": "qwen2.5:3b",
+      "model_digest": "357c53fb659c5076de1d65ccb0b397446227b71a42be9d1603d46168015c9e4b",
+      "phase": "heldout",
+      "provider": "ollama",
+      "run_id": "1f69b84d-d74b-46c8-acaf-02160af88dd0",
+      "run_path": "heldout/frozen/challenge_01/attempts/run.json",
+      "run_sha256": "71bd8b7c7ffe1fca6864928aab6d0b005493c9a768333d8be94f5e54d305afe8",
+      "source_git_sha": "3fc06f4777a68b492928d6a08a0dd251977af895",
+      "subject": "a sailboat"
+    },
+    {
+      "arm": "none",
+      "attempts": [
+        {
+          "attempt": 1,
+          "png_matches_rerendered_svg": true,
+          "png_sha256": "9470ed3ee2b3360b577c5fc66c5db4b37ed6d3c0f91a8c5a80339a11d3f16011",
+          "raw_sha256": "ed45951764769215f8cbc23a6acf04166c9c2427331626f4bf1c12a87fdcb241",
+          "sidecar_sha256": "43885f8101fdce7fa5af55f03e6f92856e691055c8edeb6e3798f9d17dfc9363",
+          "svg_reproduced_from_archived_model_shapes": true,
+          "svg_sha256": "42772aa31ec44d9578e657c8bc33d0f939555fce326fc96a8c7c53d51f367f83"
+        },
+        {
+          "attempt": 2,
+          "png_matches_rerendered_svg": true,
+          "png_sha256": "08b1577217a49d1d3a8974f038481b0066a039aa27ee3f175eb9e763c08b861c",
+          "raw_sha256": "876a17543f43bfa0a1dc6a08a4ecbfdbdd5531052d988ec64c8f12a6df02519e",
+          "sidecar_sha256": "c87ab54e147bc06c6b1b258896d453179baaffcba61c8fabb0af167926e5db10",
+          "svg_reproduced_from_archived_model_shapes": true,
+          "svg_sha256": "0204d883106a3cb5c0b78b5a509c1d6ad0a32a38ef0ab88f6b4d3a7a7e30b864"
+        }
+      ],
+      "model": "qwen2.5:3b",
+      "model_digest": "357c53fb659c5076de1d65ccb0b397446227b71a42be9d1603d46168015c9e4b",
+      "phase": "heldout",
+      "provider": "ollama",
+      "run_id": "c1fa3416-1647-4134-8b1e-7ebfbb4fbff6",
+      "run_path": "heldout/none/challenge_01/attempts/run.json",
+      "run_sha256": "5d688d505067f60a2d2afceef87af96b2caf40850ceff5ad524b129e2b1ef7f7",
+      "source_git_sha": "3fc06f4777a68b492928d6a08a0dd251977af895",
+      "subject": "a sailboat"
+    },
+    {
+      "arm": "adaptive",
+      "attempts": [
+        {
+          "attempt": 1,
+          "png_matches_rerendered_svg": true,
+          "png_sha256": "91f450301555bf58dba86509b33fc6139f8b2c67ab7793e353dc46cef7e05c25",
+          "raw_sha256": "9f05b48ee3b31f2e03ccf7358a468e798ffe432ad61526da4df9a0146565f3e5",
+          "sidecar_sha256": "d39e15d2cd47bcf8089ef67073d3d9542a53457b122d1c0ef321f84a70f72ffb",
+          "svg_reproduced_from_archived_model_shapes": true,
+          "svg_sha256": "02c26823afaf1c6644165ab4449f0adb94b43bbbcbb8202590a138a03a6d65db"
+        },
+        {
+          "attempt": 2,
+          "png_matches_rerendered_svg": true,
+          "png_sha256": "1d43be5b7d616db00b10762572a18b1ebd954bd61ec89132d0bd39cfcd8efdbb",
+          "raw_sha256": "9560c202876960c7de56d7fe8915f4aa1fba7b1d730bc3dcfc1e0ee00f971ad3",
+          "sidecar_sha256": "a292804345bc1015c06fc215e59c317075dc1a613aa84f8a187c185cb83d916b",
+          "svg_reproduced_from_archived_model_shapes": true,
+          "svg_sha256": "afaa7ed5dffab2c1e39b77b70210e88a7807e5a1d40a1356640aa213402b49a8"
+        }
+      ],
+      "model": "qwen2.5:3b",
+      "model_digest": "357c53fb659c5076de1d65ccb0b397446227b71a42be9d1603d46168015c9e4b",
+      "phase": "heldout",
+      "provider": "ollama",
+      "run_id": "411202ab-bd3e-4eb8-8d7b-5ee73af2a27a",
+      "run_path": "heldout/adaptive/challenge_01/attempts/run.json",
+      "run_sha256": "85c128895472fbed6716b6b405db8831237728c61297328b12c11b0f6cd9c380",
+      "source_git_sha": "3fc06f4777a68b492928d6a08a0dd251977af895",
+      "subject": "a sailboat"
+    }
+  ]
+}

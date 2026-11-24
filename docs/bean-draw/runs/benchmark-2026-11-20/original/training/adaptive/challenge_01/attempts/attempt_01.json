@@ -1,0 +1,60 @@
+{
+  "attempt": 1,
+  "created_at_utc": "2026-11-20T12:46:46.160473+00:00",
+  "description": "A teapot with a lid, body, spout, and handle centered in the canvas. The lid is a smaller circle at the top. The body widens from the center, forming height. The spout extends downward from one side of the body, connecting to the handle on the other side.",
+  "domain": "sketch",
+  "drawing_instructions": {
+    "components": [
+      "Top",
+      "Body",
+      "Spout",
+      "Handle"
+    ],
+    "composition": "The teapot is centered in the composition. The top is at the very top with a smaller circle representing the lid or opening. Below it, the body of the teapot starts from the center and gradually widens to give an appearance of height. The spout extends downward from one side of the body, connecting smoothly into the handle which connects the other side of the body to form a stable structure.",
+    "intent": "Create an original line drawing of a teapot without repeating previous elements, ensuring clarity and distinctiveness.",
+    "revision_reason": "To avoid repeating previous elements, I have altered the proportions and added more details such as the lid or opening on top, and changed the position of the spout and handle. The overall composition has been adjusted for better clarity and viewer recognition."
+  },
+  "error": null,
+  "execution_mode": "live_model",
+  "experiment": "bean_sketch_v1",
+  "external_feedback": {
+    "reason": "No external pixel evaluator report",
+    "state": "unavailable"
+  },
+  "independent_visual_verification": false,
+  "journal_tip": "5fd3b6d365e60b01a8f2d96e23ae6371c18ce48163eb51e49ac8ed60b35b3a99",
+  "memory_mode": "adaptive",
+  "model_digest": "357c53fb659c5076de1d65ccb0b397446227b71a42be9d1603d46168015c9e4b",
+  "model_id": "qwen2.5:3b",
+  "png_file": "attempt_01.png",
+  "png_sha256": "a1e252c2525072dd78cd49e2599a7831c9d9ccc88289819fb81ce7f672a6b599",
+  "preview_size": [
+    512,
+    512
+  ],
+  "provider_kind": "ollama",
+  "rasterizer": "CairoSVG 2.8.2",
+  "raw_file": "attempt_01.raw.json",
+  "raw_sha256": "3da8730e8cd3afb54d52413ca248c932eeff777af146ea5b95199823293ea54e",
+  "reference_urls": [],
+  "research_status": "not_requested",
+  "run_id": "02238a50-6e5a-4179-960c-a2e5b7d6da99",
+  "schema": "bean.draw.attempt.v1",
+  "seed": 20261131,
+  "self_review": {
+    "changes": "",
+    "claimed_subject": "a teapot",
+    "satisfied": false
+  },
+  "source_git_sha": "3fc06f4777a68b492928d6a08a0dd251977af895",
+  "status": "unverified",
+  "subject": "a teapot",
+  "subject_source": "human",
+  "svg_file": "attempt_01.svg",
+  "svg_sha256": "1bbfa8bdcb8cde9acd0218286120a440d2a1f173dc799061280ef289c39cf714",
+  "task_ref": "benchmark-training-adaptive-01",
+  "verification_state": "artifacts_verified",
+  "visual_evidence_independently_verified": false,
+  "visual_feedback": null,
+  "weights_updated": false
+}

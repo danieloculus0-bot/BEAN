@@ -1,0 +1,34 @@
+{
+  "blinded": false,
+  "created_at_utc": "2026-11-24T03:31:05.626236+00:00",
+  "evaluator": "Codex posthoc visual reviewer",
+  "feedback": "A large rectangular outline, crossing horizontal and vertical strokes, and two circles dominate the image. It is a different arrangement from the first draft, but I cannot reliably recognize a sailboat or a coherent scene.",
+  "human_evaluation": "unavailable",
+  "image_sha256": "08b1577217a49d1d3a8974f038481b0066a039aa27ee3f175eb9e763c08b861c",
+  "independently_authenticated": false,
+  "inspection_method": "Actual PNG opened with view_image before rating; no subject-label/string comparison used as a substitute for pixels",
+  "kind": "vision_model",
+  "model_identity": "Unavailable for the host reviewer; do not infer an evaluator model digest",
+  "original_runs": [
+    {
+      "arm": "none",
+      "attempt": 2,
+      "phase": "heldout",
+      "run_id": "c1fa3416-1647-4134-8b1e-7ebfbb4fbff6",
+      "run_path": "heldout/none/challenge_01/attempts/run.json",
+      "run_sha256": "5d688d505067f60a2d2afceef87af96b2caf40850ceff5ad524b129e2b1ef7f7",
+      "sidecar_sha256": "c87ab54e147bc06c6b1b258896d453179baaffcba61c8fabb0af167926e5db10"
+    }
+  ],
+  "posthoc": true,
+  "rubric_sha256": "aa5f8360b6314c4c9942a1371918bc8eb1f0e966c18b9310910cdae6a5a90e8e",
+  "satisfactory": false,
+  "schema": "bean.draw.posthoc.visual_review.v1",
+  "scores": {
+    "composition": 1,
+    "spatial_coherence": 1,
+    "subject_recognition": 0
+  },
+  "subject": "a sailboat",
+  "used_for_generation": false
+}
