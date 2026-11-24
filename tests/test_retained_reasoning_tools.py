@@ -36,7 +36,14 @@ class RetainedReasoningAssimilationTests(unittest.TestCase):
                     tools.update({name: handler}))
                 register_retained_reasoning(orchestrator)
                 self.assertEqual(set(tools), {"reason_auto", "retained_strategy",
-                    "discover_retained_policies", "apply_retained_policy"})
+                    "discover_retained_policies", "apply_retained_policy",
+                    "infer_relations", "query_world_relations", "focused_world_memory"})
+                joined = tools["infer_relations"]({
+                    "facts": [["pump", "feeds", "pipe", "obs1"], ["pipe", "feeds", "tank", "obs2"]],
+                    "patterns": [["?a", "feeds", "?b"], ["?b", "feeds", "?c"]],
+                    "conclusion": ["?a", "connected", "?c"]}, "join")
+                self.assertEqual(joined["inferences"], [
+                    {"relation": ["pump", "connected", "tank"], "evidence_sets": [["obs1", "obs2"]]}])
                 found = tools["discover_retained_policies"]({"domain": "fixture"}, "find")
                 self.assertEqual(found["count"], 1)
                 item = found["policies"][0]
