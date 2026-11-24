@@ -30,7 +30,14 @@ class RetainedLab:
 
     def weighted_mean(self, args):
         validate_weighted_mean(args)
-        request = json.dumps({"skill":"weighted_mean", **args}, allow_nan=False).encode() + b"\n"
+        result = self._request({"skill":"weighted_mean", **args})
+        value, digest = result.get("value"), result.get("source_sha256")
+        if type(value) not in (int,float) or not math.isfinite(value):
+            raise ValueError("invalid retained result")
+        return {"status":"ok","value":value,"source_sha256":digest,"skill":"weighted_mean","execution":"isolated_retained_source","independent_correctness_verified":False}
+
+    def _request(self, payload):
+        request = json.dumps(payload, allow_nan=False).encode() + b"\n"
         if len(request) > MAX_BYTES:
             raise ValueError("request too large")
         with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as peer:
@@ -44,14 +51,25 @@ class RetainedLab:
         result = json.loads(reply)
         if not isinstance(result, dict) or result.get("status") != "ok":
             raise ValueError("retained skill worker failed")
-        value, digest = result.get("value"), result.get("source_sha256")
-        if type(value) not in (int,float) or not math.isfinite(value):
-            raise ValueError("invalid retained result")
-        if not isinstance(digest,str) or len(digest)!=64 or any(c not in "0123456789abcdef" for c in digest):
+        digest = result.get("source_sha256")
+        if not isinstance(digest,str) or len(digest)!=64 or any(x not in "0123456789abcdef" for x in digest):
             raise ValueError("missing source digest")
-        return {"status":"ok","value":value,"source_sha256":digest,
-                "skill":"weighted_mean","execution":"isolated_retained_source",
-                "independent_correctness_verified":False}
+        return result
+
+    def sequence(self, args):
+        if not isinstance(args,dict) or set(args)!={"values"}:
+            raise ValueError("values required")
+        values=args["values"]
+        if not isinstance(values,list) or len(values)>128 or any(type(x) is not int or abs(x)>10**9 for x in values):
+            raise ValueError("bounded integer sequence required")
+        result=self._request({"skill":"sequence_c793123515bae3ec","values":values})
+        value=result.get("value")
+        if not isinstance(value,list) or len(value)>128 or any(type(x) is not int or abs(x)>10**9 for x in value):
+            raise ValueError("invalid retained sequence result")
+        if result["source_sha256"]!="871ac343cd8183fc49a0ad1afde452eed6332399f4c9c34fe60a1f76521539cd":
+            raise ValueError("unexpected retained sequence source")
+        return {"status":"ok","value":value,"source_sha256":result["source_sha256"],"skill":"sequence_c793123515bae3ec","execution":"isolated_retained_source","independent_correctness_verified":False}
+
 
 
 def register_retained_lab(orchestrator, inbox, socket_path):
@@ -61,3 +79,7 @@ def register_retained_lab(orchestrator, inbox, socket_path):
         "{values:[numbers],weights:[nonnegative numbers]}; returns value and source_sha256",
         lambda args, task_ref: lab.weighted_mean(args))
     inbox.register("retained_weighted_mean", lambda msg, session: lab.weighted_mean(msg.args))
+    orchestrator.register("retained_reverse_even_positions",
+        "Reverse an integer sequence and select its even-indexed positions (zero-based): {values:[integers]}. Uses independently tested acquired code.",
+        lambda args,task_ref: lab.sequence(args))
+    inbox.register("retained_reverse_even_positions",lambda msg,session: lab.sequence(msg.args))
