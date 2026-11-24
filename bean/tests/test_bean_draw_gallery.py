@@ -1,11 +1,14 @@
 """Public-safe reviewable SVG pipeline regression tests."""
+import base64
 from hashlib import sha256
+from html.parser import HTMLParser
 import json
 from pathlib import Path
+import re
 
 import pytest
 
-from scripts.build_bean_draw_gallery import curate, validate_svg
+from scripts.build_bean_draw_gallery import curate, render_static_gallery, validate_svg
 from scripts.run_bean_draw_fixture import make_demo
 
 
@@ -83,6 +86,121 @@ def test_checked_in_showcase_art_matches_committed_receipts():
         assert descriptor["sha256"] == row["sha256"]
         assert descriptor["origin"] == row["origin"]
         assert row["independent_visual_verification"] is False
+
+
+class GalleryDocument(HTMLParser):
+    def __init__(self, markup):
+        super().__init__()
+        self.in_gallery = False
+        self.cards, self.images, self.links = [], [], []
+        self.feed(markup)
+
+    def handle_starttag(self, tag, attrs):
+        attrs = dict(attrs)
+        if attrs.get("id") == "gallery":
+            self.in_gallery = True
+        if attrs.get("id") == "empty":
+            self.in_gallery = False
+        if not self.in_gallery:
+            return
+        if tag == "article" and attrs.get("class") == "card":
+            self.cards.append(attrs)
+        elif tag == "img":
+            self.images.append(attrs)
+        elif tag == "a":
+            self.links.append(attrs)
+
+
+def test_gallery_has_visible_originals_before_javascript_or_index_fetch():
+    site = Path(__file__).resolve().parents[2] / "docs" / "bean-draw"
+    listing = json.loads((site / "index.json").read_text())
+    markup = (site / "index.html").read_text()
+    document = GalleryDocument(markup)
+    live = [row for row in listing["entries"] if row["origin"] == "live_model_artifact_verified"]
+    assert live and len(document.cards) == len(document.images) == len(live)
+    assert [card["data-entry-id"] for card in document.cards] == [row["id"] for row in live]
+    for image, row in zip(document.images, live):
+        # Exact original PNG bytes survive an offline HTML-only preview.
+        assert image["src"].startswith("data:image/png;base64,")
+        assert base64.b64decode(image["src"].split(",", 1)[1]) == (site / row["png"]).read_bytes()
+        assert row["title"] in image["alt"] and "attempt " + str(row["attempt"]) in image["alt"]
+        assert any(link["href"].endswith("/docs/bean-draw/" + row["metadata"])
+                   for link in document.links)
+    styles = " ".join(re.findall(r"<style>(.*?)</style>", markup, flags=re.S))
+    # Every six-digit UI color is neutral. Artifact images are unchanged.
+    for color in re.findall(r"#[a-fA-F0-9]{6}(?![a-fA-F0-9])", styles):
+        assert color[1:3] == color[3:5] == color[5:7]
+    assert "--bg:#000000" in styles and ".card .art{height:274px;background:#ffffff" in styles
+
+
+def test_static_gallery_escapes_model_text_and_is_repeatable(tmp_path):
+    """Synthetic transport text tests HTML safety, never artistic capability."""
+    source, site = tmp_path / "source", tmp_path / "site"
+    report = reviewed_transport_case(source)
+    curate(source, site, review=report)
+    template = Path(__file__).resolve().parents[2] / "docs" / "bean-draw" / "index.html"
+    (site / "index.html").write_text(template.read_text())
+    listing = json.loads((site / "index.json").read_text())
+    hostile_text = '</script><img src=x onerror="alert(1)">'
+    listing["entries"][0]["title"] = hostile_text
+    descriptor = site / listing["entries"][0]["metadata"]
+    descriptor.write_text(json.dumps(listing["entries"][0]))
+    (site / "index.json").write_text(json.dumps(listing))
+    original_index = (site / "index.json").read_bytes()
+    assert render_static_gallery(site) == 2
+    first = (site / "index.html").read_bytes()
+    assert render_static_gallery(site) == 2 and (site / "index.html").read_bytes() == first
+    assert (site / "index.json").read_bytes() == original_index
+    markup = first.decode()
+    assert hostile_text not in markup
+    assert len(GalleryDocument(markup).images) == 2
+    bundled = re.search(r'<script id="gallery-data" type="application/json">(.*?)</script>', markup, re.S)[1]
+    assert json.loads(bundled) == listing
+
+
+@pytest.mark.parametrize("javascript_enabled", [False, True])
+def test_single_html_gallery_keeps_drawings_when_index_is_unavailable(tmp_path, javascript_enabled):
+    """Browser regression with actual preserved image bytes and a failed index.
+
+    All external images and index requests fail: this tests page behavior,
+    not external deployment or model execution.
+    """
+    playwright = pytest.importorskip("playwright.sync_api")
+    site = Path(__file__).resolve().parents[2] / "docs" / "bean-draw"
+    markup = (site / "index.html").read_text()
+    standalone = tmp_path / "single.html"
+    standalone.write_text(markup)
+    listing = json.loads((site / "index.json").read_text())
+    live_count = sum(row["origin"] == "live_model_artifact_verified" for row in listing["entries"])
+    with playwright.sync_playwright() as manager:
+        try:
+            browser = manager.chromium.launch(headless=True, args=["--no-sandbox"])
+        except playwright.Error as exc:
+            if "Executable doesn't exist" in str(exc):
+                pytest.skip("Optional Playwright Chromium binary is not installed")
+            raise
+        context = browser.new_context(java_script_enabled=javascript_enabled, offline=True)
+        page = context.new_page()
+        errors = []
+        page.on("pageerror", lambda error: errors.append(str(error)))
+        page.goto(standalone.as_uri())
+        assert page.locator("#gallery .card").count() == live_count
+        assert page.locator("#gallery img").evaluate_all(
+            "images => images.every(image => image.complete && image.naturalWidth > 0)")
+        assert page.locator("body").evaluate("el => getComputedStyle(el).backgroundColor") == "rgb(0, 0, 0)"
+        if javascript_enabled:
+            assert "bundled published drawings" in page.locator("#load-status").inner_text()
+            page.locator("#gallery .card").first.click()
+            assert page.locator("#detail").get_attribute("open") is not None
+            assert page.locator("#detail-image").evaluate("image => image.complete && image.naturalWidth > 0")
+            page.locator("#close").click()
+            page.select_option("#filter", "synthetic_fixture")
+            assert page.locator("#gallery .card").count() == 2
+            assert "SYNTHETIC TEST FIXTURE" in page.locator("#gallery").inner_text()
+        else:
+            assert page.locator("#filter").is_disabled()
+        assert not errors
+        browser.close()
 
 
 @pytest.mark.parametrize("svg", [
