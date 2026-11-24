@@ -137,6 +137,12 @@ class NativeOrchestrator:
         # Assimilation 2026-11-24: existing adaptive policy APIs now participate in GoalCycle.
         from bean.runtime.retained_reasoning_tools import register_retained_reasoning
         register_retained_reasoning(self)
+        # Reconcile PRs #539/#562 (2026-11-24), retaining the existing canonical compiler.
+        from bean.runtime.collaborative_reasoning import deliberate
+        self.register("collaborative_reason",
+                      "Critique and revise a solution using proposer, critic and reviser roles: "
+                      "{objective:str,observations?:object}; use actual tool outputs as observations",
+                      lambda args, ref: deliberate(self.core.model, **args))
         # Recover the existing Letta/Mem0-inspired working-memory implementation.
         from bean.runtime.working_memory import WorkingMemory
         self.working_memory = WorkingMemory(self.store, self.session_uuid)
