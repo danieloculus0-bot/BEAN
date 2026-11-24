@@ -434,6 +434,16 @@ class NativeOrchestrator:
             completed = bool(output.get("retained_skill"))
         elif name == "evaluate_skill":
             completed = output.get("passed") is True
+        elif name == "query_world_relations":
+            # A completed read can yield uncertainty or contested evidence.
+            # Preserve that observation for the next reasoning step; an
+            # incomplete graph/search is a distinct execution failure.
+            completed = output.get("status") in (
+                "direct_unverified", "inferred_unverified", "hypotheses_only",
+                "contested", "refuted_unverified", "unknown")
+        elif name == "infer_relations":
+            # No matching proof is a valid outcome, not a tool malfunction.
+            completed = output.get("status") in ("success", "unknown")
         elif isinstance(output, dict):
             completed = str(output.get("status", "")).lower() not in (
                 "failed", "failure", "error", "invalid", "unknown",
