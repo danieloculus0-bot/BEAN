@@ -144,14 +144,14 @@ class VerifiedWorkflows:
         self.store.commit()
         return {"passed":passed,"graph_sha":row[2],"input_sha":row[4],"checks":outcomes}
 
-    def candidates(self,family):
+    def candidates(self,family,*,minimum=2):
         rows=self.store._conn().execute(
             "SELECT graph_sha,graph_json,COUNT(DISTINCT CASE WHEN passed=1 THEN input_sha END),SUM(CASE WHEN passed=0 THEN 1 ELSE 0 END) FROM bean_verified_workflow_trials WHERE family=? GROUP BY graph_sha,graph_json ORDER BY 3 DESC,graph_sha",(family,)).fetchall()
-        return [{"graph_sha":r[0],"graph":json.loads(r[1]),"distinct_verified_inputs":r[2],"failures":r[3]} for r in rows if r[2]>=2 and r[3]==0 and digest(json.loads(r[1]))==r[0]]
+        return [{"graph_sha":r[0],"graph":json.loads(r[1]),"distinct_verified_inputs":r[2],"failures":r[3]} for r in rows if r[2]>=minimum and r[3]==0 and digest(json.loads(r[1]))==r[0]]
 
-    def reuse(self,*,family,inputs,plan_id,graph_sha=None):
+    def reuse(self,*,family,inputs,plan_id,graph_sha=None,validation=False):
         if not isinstance(inputs,dict):raise ValueError("inputs object required")
-        chosen=[r for r in self.candidates(family) if graph_sha is None or r["graph_sha"]==graph_sha]
+        chosen=[r for r in self.candidates(family,minimum=1 if validation else 2) if graph_sha is None or r["graph_sha"]==graph_sha]
         if len(chosen)!=1:return {"status":"abstain","reason":"no uniquely verified workflow"}
         row=chosen[0];graph=row["graph"];proposals=[]
         # Validate tool contracts and input paths before queueing immutable goals.
@@ -170,7 +170,7 @@ class VerifiedWorkflows:
                 "Execute independently checked retained procedure",3,ApprovalRequired.NONE,
                 {"capability":CAPABILITY,"tool":step["tool"],"args":step["args"],
                  "objective":"Verified workflow reuse: "+family,"inputs":inputs,
-                 "planner_model":None,"planner_provider":"verified_workflow",
+                 "planner_model":None,"planner_provider":"candidate_validation" if validation else "verified_workflow",
                  "workflow_sha":row["graph_sha"],"learning_context":"workflow:"+family},
                 "orchestration"))
         self.owner.engine.propose_plan(self.owner.session_uuid,plan_id,proposals)
@@ -180,6 +180,7 @@ class VerifiedWorkflows:
 def register_verified_workflows(inbox,owner):
     memory=VerifiedWorkflows(owner)
     inbox.register("cognition_workflow_feedback",lambda msg,session:memory.feedback(**msg.args))
-    inbox.register("cognition_workflow_reuse",lambda msg,session:memory.reuse(**msg.args))
+    inbox.register("cognition_workflow_reuse",lambda msg,session:memory.reuse(**{k:v for k,v in msg.args.items() if k!="validation"}))
+    inbox.register("cognition_workflow_validate",lambda msg,session:memory.reuse(**{k:v for k,v in msg.args.items() if k!="validation"},validation=True))
     inbox.register("cognition_workflow_inventory",lambda msg,session:{"candidates":memory.candidates(msg.args["family"])})
     owner.verified_workflows=memory
