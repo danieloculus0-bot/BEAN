@@ -499,53 +499,124 @@ def register_orchestration_handlers(inbox, orchestrator):
                    orchestrator.recovery.status(msg.args["plan_id"]))
 
 
-def main():
-    """Local operator entry point: queue objectives or inspect durable output."""
-    import argparse
+def read_plan_result(database, plan_id):
+    """Read a consistent, hash-checked snapshot without executing any action."""
     import sqlite3
-    from bean.runtime.inbox import CommandInbox
-
-    parser = argparse.ArgumentParser(description="BEAN native orchestration")
-    sub = parser.add_subparsers(dest="command", required=True)
-    submit = sub.add_parser("submit")
-    submit.add_argument("objective")
-    submit.add_argument("--inputs", default="{}")
-    submit.add_argument("--inbox", default="bean/runtime/inbox_drop")
-    submit.add_argument("--plan-id")
-    status = sub.add_parser("status")
-    status.add_argument("plan_id")
-    status.add_argument("--db", type=Path, required=True)
-    args = parser.parse_args()
-    if args.command == "submit":
-        plan_id = args.plan_id or "workflow:" + uuid.uuid4().hex
-        path = CommandInbox(args.inbox).drop("cognition_plan", {
-            "objective": args.objective, "inputs": json.loads(args.inputs),
-            "plan_id": plan_id})
-        print(json.dumps({"plan_id": plan_id, "queued": str(path)}))
-        return
-    rows = []
-    conn = sqlite3.connect(args.db.resolve().as_uri() + "?mode=ro", uri=True)
+    database = Path(database)
+    first_id = plan_proposal_id(plan_id, 0)
+    conn = sqlite3.connect(database.resolve().as_uri() + "?mode=ro", uri=True,
+                           timeout=2)
     conn.row_factory = sqlite3.Row
     try:
-        for index in range(8):
-            pid = plan_proposal_id(args.plan_id, index)
+        conn.execute("BEGIN")
+        first = conn.execute(
+            "SELECT action_detail FROM cognition_goal_proposals WHERE proposal_id=?",
+            (first_id,)).fetchone()
+        if first is None:
+            return {"plan_id": plan_id, "status": "pending", "steps": []}
+        detail = json.loads(first["action_detail"])
+        meta = goal_plan(detail, first_id)
+        if (meta is None or detail.get("capability") != CAPABILITY
+                or meta["steps"] > 8):
+            raise ValueError("not a native orchestration plan")
+        rows = []
+        for index in range(meta["steps"]):
+            pid = plan_proposal_id(plan_id, index)
             row = conn.execute(
-                "SELECT p.status,p.action_detail,r.error,o.output_json,o.output_sha256 "
+                "SELECT p.status,p.action_detail,o.output_json,o.output_sha256,"
+                "(SELECT r.error FROM bean_goal_runs r WHERE r.proposal_id=p.proposal_id "
+                "ORDER BY r.rowid DESC LIMIT 1) AS error "
                 "FROM cognition_goal_proposals p "
-                "LEFT JOIN bean_goal_runs r ON r.proposal_id=p.proposal_id "
                 "LEFT JOIN bean_orchestration_outputs o ON o.proposal_id=p.proposal_id "
                 "WHERE p.proposal_id=?", (pid,)).fetchone()
             if row is None:
-                break
+                raise ValueError("missing persisted plan step")
             detail = json.loads(row["action_detail"])
+            step_meta = goal_plan(detail, pid)
+            if (step_meta is None or step_meta["steps"] != meta["steps"]
+                    or detail.get("capability") != CAPABILITY):
+                raise ValueError("inconsistent persisted plan step")
             raw = row["output_json"]
+            if raw is not None and _digest(raw) != row["output_sha256"]:
+                raise ValueError("stored output digest mismatch")
+            if row["status"] == "completed" and raw is None:
+                raise ValueError("completed step lacks output")
             rows.append({"step": index, "status": row["status"],
                          "tool": detail.get("tool"), "error": row["error"],
                          "output": json.loads(raw) if raw is not None else None,
                          "output_sha256": row["output_sha256"]})
+        states = {row["status"] for row in rows}
+        status = next((state for state in ("failed", "needs_review", "needs_evidence",
+                                         "running") if state in states),
+                      "completed" if states == {"completed"} else "pending")
+        return {"plan_id": plan_id, "status": status, "steps": rows}
     finally:
         conn.close()
-    print(json.dumps({"plan_id": args.plan_id, "steps": rows}, indent=2))
+
+
+def wait_for_plan(database, plan_id, *, timeout=120, interval=0.5):
+    """Wait for real durable execution; a timeout never implies cancellation."""
+    import time
+    if (not math.isfinite(timeout) or not math.isfinite(interval)
+            or timeout <= 0 or interval <= 0):
+        raise ValueError("timeout and interval must be finite positive values")
+    deadline = time.monotonic() + timeout
+    while True:
+        result = read_plan_result(database, plan_id)
+        if result["status"] in {"completed", "failed", "needs_review", "needs_evidence"}:
+            return result
+        remaining = deadline - time.monotonic()
+        if remaining <= 0:
+            return {**result, "wait_timed_out": True, "cancelled": False}
+        time.sleep(min(interval, remaining))
+
+
+def main():
+    """Queue objectives, inspect durable output, or wait for real Core results."""
+    import argparse
+    from bean.runtime.inbox import CommandInbox
+
+    parser = argparse.ArgumentParser(description="BEAN native orchestration")
+    sub = parser.add_subparsers(dest="command", required=True)
+    # Revision 2026-11-24: retain asynchronous submit, add one-command
+    # execution against the same running Core and canonical database.
+    # Previous CLI: fc4faa28208096a501a1acc89f6277eff183a50d.
+    for name in ("submit", "run"):
+        command = sub.add_parser(name)
+        command.add_argument("objective")
+        command.add_argument("--inputs", default="{}")
+        command.add_argument("--inbox", default="bean/runtime/inbox_drop")
+        command.add_argument("--plan-id")
+        if name == "run":
+            command.add_argument("--db", type=Path, required=True)
+            command.add_argument("--timeout", type=float, default=120)
+    status = sub.add_parser("status")
+    status.add_argument("plan_id")
+    status.add_argument("--db", type=Path, required=True)
+    args = parser.parse_args()
+    if args.command in ("submit", "run"):
+        plan_id = args.plan_id or "workflow:" + uuid.uuid4().hex
+        plan_proposal_id(plan_id, 0)
+        inputs = json.loads(args.inputs)
+        if not isinstance(inputs, dict) or not args.objective.strip():
+            parser.error("inputs must be an object and objective must not be blank")
+        if args.command == "run":
+            if not math.isfinite(args.timeout) or args.timeout <= 0:
+                parser.error("timeout must be finite and positive")
+            # Preflight the actual running Core's database before queueing.
+            existing = read_plan_result(args.db, plan_id)
+            if existing["steps"]:
+                parser.error("plan ID already exists; use status or a fresh ID")
+        path = CommandInbox(args.inbox).drop("cognition_plan", {
+            "objective": args.objective, "inputs": inputs, "plan_id": plan_id})
+        if args.command == "submit":
+            print(json.dumps({"plan_id": plan_id, "queued": str(path)}))
+            return
+        result = wait_for_plan(args.db, plan_id, timeout=args.timeout)
+        print(json.dumps(result, indent=2))
+        raise SystemExit(2 if result.get("wait_timed_out") else
+                         0 if result["status"] == "completed" else 1)
+    print(json.dumps(read_plan_result(args.db, args.plan_id), indent=2))
 
 
 if __name__ == "__main__":
