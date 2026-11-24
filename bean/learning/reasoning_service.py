@@ -29,12 +29,16 @@ def _required(value, name, maximum=3000):
     return value.strip()
 
 
-def _model_response(model, query, context, *, json_object=False):
+def _model_response(model, query, context, *, json_object=False, schema=None):
     """Adapt real generic model text or existing BEAN provider response."""
     if model is None or not callable(getattr(model, "complete", None)):
         raise ValueError("Actual configured reasoning model required; no fake fallback")
     structured = getattr(model, "complete_json", None)
-    reply = structured(query, context) if json_object and callable(structured) else model.complete(query, context)
+    typed = getattr(model, "complete_schema", None)
+    if schema is not None and callable(typed):
+        reply = typed(query, context, schema=schema)
+    else:
+        reply = structured(query, context) if json_object and callable(structured) else model.complete(query, context)
     if isinstance(reply, dict):
         if reply.get("ok") is not True or not isinstance(reply.get("raw_text"), str):
             raise RuntimeError("Reasoning provider unavailable or produced invalid output")
