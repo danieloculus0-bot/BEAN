@@ -138,6 +138,14 @@ class NativeOrchestrator:
         # Assimilation 2026-11-24: existing adaptive policy APIs now participate in GoalCycle.
         from bean.runtime.retained_reasoning_tools import register_retained_reasoning
         register_retained_reasoning(self)
+        # Standard CSP search, independently implemented after AIMA and OR-Tools.
+        from bean.learning.constraint_reasoner import solve_constraints
+        self.register("solve_constraints",
+                      "Finite-domain logical assignment and ordering: "
+                      "{domains:{variable:[integer or string values]},constraints:["
+                      "{left:variable,op:eq|ne|lt|le|gt|ge,right:variable}],node_limit?:int}; "
+                      "returns verdict unique|ambiguous|unsatisfiable|unknown and up to two solutions",
+                      self._calculation(solve_constraints))
         if skill_catalog and skill_action and skill_db:
             skills = skill_catalog["skills"]
             self.skill_action = skill_action
