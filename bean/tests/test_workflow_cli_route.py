@@ -23,3 +23,7 @@ class WorkflowCLIRouteTests(unittest.TestCase):
         self.assertEqual(self.submit(["--family", "weighted"]), ("cognition_plan_with_memory", {
             "objective": "Estimate", "inputs": {"values": [2, 7]}, "plan_id": "fixed",
             "family": "weighted"}))
+
+    def test_memory_selects_automatic_lookup_without_family(self):
+        self.assertEqual(self.submit(["--memory"]), ("cognition_plan_with_memory", {
+            "objective": "Estimate", "inputs": {"values": [2, 7]}, "plan_id": "fixed"}))
