@@ -698,21 +698,21 @@ class NativeReasoningService:
         return self.local.learn(domain=domain, task_ref=task_ref,
                                 examples=examples, evidence_refs=evidence_refs)
 
-    def compare_compositions(self, *, domain, task_ref, examples, evidence_refs):
+    def compare_compositions(self, *, domain, task_ref, examples, evidence_refs, parent_domains=None):
         """Evaluate matched alternatives and retain reason-coded outcomes."""
         return self.compositions.compare(
             domain=domain, task_ref=task_ref,
-            examples=examples, evidence_refs=evidence_refs)
+            examples=examples, evidence_refs=evidence_refs, parent_domains=parent_domains)
 
-    def propose_compositions(self, *, domain, task_ref, query):
+    def propose_compositions(self, *, domain, task_ref, query, parent_domains=None):
         """Discover candidate combinations without assuming or retaining an answer."""
         return self.compositions.propose(
-            domain=domain, task_ref=task_ref, query=query)
+            domain=domain, task_ref=task_ref, query=query, parent_domains=parent_domains)
 
-    def learn_composition(self, *, domain, task_ref, examples, evidence_refs):
+    def learn_composition(self, *, domain, task_ref, examples, evidence_refs, parent_domains=None):
         """Search combinations of retained rules and prove a unique development fit."""
         return self.compositions.learn(domain=domain, task_ref=task_ref,
-                                       examples=examples, evidence_refs=evidence_refs)
+                                       examples=examples, evidence_refs=evidence_refs, parent_domains=parent_domains)
 
     def reason_composed(self, *, domain, task_ref, query):
         """Apply a source-linked multi-rule program with bounded abstention."""
