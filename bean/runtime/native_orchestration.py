@@ -135,7 +135,10 @@ class NativeOrchestrator:
                       "Ideal circular coplanar orbital transfer: "
                       "{mu_km3_s2:number,start_radius_km:number,end_radius_km:number}",
                       self._calculation(hohmann_reference))
-        # Assimilation 2026-11-24: existing adaptive policy APIs now participate in GoalCycle.\n        from bean.runtime.retained_reasoning_tools import register_retained_reasoning\n        register_retained_reasoning(self)\n        if skill_catalog and skill_action and skill_db:
+        # Assimilation 2026-11-24: existing adaptive policy APIs now participate in GoalCycle.
+        from bean.runtime.retained_reasoning_tools import register_retained_reasoning
+        register_retained_reasoning(self)
+        if skill_catalog and skill_action and skill_db:
             skills = skill_catalog["skills"]
             self.skill_action = skill_action
             self.skill_db = Path(skill_db)
