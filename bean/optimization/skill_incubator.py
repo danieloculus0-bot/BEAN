@@ -77,6 +77,38 @@ def retrieve_verified_skill(database, *, name, objective):
 
 
 
+def list_retained_skills(database, *, name, limit=16):
+    """Read SHA-valid retained skill metadata without executing candidate source.
+
+    Missing stores or an empty initialized store have no retained skills.
+    Database errors and integrity failures remain explicit.
+    """
+    if not isinstance(name, str) or not NAME.fullmatch(name):
+        raise ValueError("invalid retained skill name")
+    if type(limit) is not int or not 1 <= limit <= 64:
+        raise ValueError("retained skill limit must be 1..64")
+    database = Path(database)
+    if database.is_symlink():
+        raise ValueError("skill database symlink rejected")
+    if not database.exists():
+        return []
+    with closing(sqlite3.connect(database.resolve().as_uri() + "?mode=ro", uri=True)) as db:
+        if db.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='verified_skills'").fetchone() is None:
+            return []
+        rows = db.execute(
+            "SELECT objective, source, sha256 FROM verified_skills "
+            "WHERE name=? ORDER BY rowid DESC LIMIT ?", (name, limit)).fetchall()
+    result = []
+    for objective, source, expected in rows:
+        if (not isinstance(objective, str) or not re.fullmatch(r"[0-9a-f]{64}", objective)
+                or hashlib.sha256(source.encode("utf-8")).hexdigest() != expected):
+            raise ValueError("retained skill metadata or source SHA mismatch")
+        ast.parse(source)
+        result.append({"name": name, "objective_sha256": objective,
+                       "source_sha256": expected})
+    return result
+
+
 def evaluate_retained_skill(database, *, name, objective, evaluation_project,
                             timeout=30):
     """Run SHA-verified retained source against host-owned tests in a fresh interpreter.
@@ -119,10 +151,15 @@ def evaluate_retained_skill(database, *, name, objective, evaluation_project,
         except subprocess.TimeoutExpired:
             return {"status": "timeout", "source_sha256": digest,
                     "passed": False, "fresh_process": True}
-    return {"status": "passed" if completed.returncode == 0 else "failed",
-            "source_sha256": digest, "passed": completed.returncode == 0,
+    output = completed.stdout + completed.stderr
+    match = re.search(r"Ran (\d+) tests?", output)
+    test_count = int(match.group(1)) if match else 0
+    passed = completed.returncode == 0 and test_count > 0
+    return {"status": "passed" if passed else "failed",
+            "source_sha256": digest, "passed": passed,
+            "test_count": test_count,
             "fresh_process": True, "exit_code": completed.returncode,
-            "output_tail": (completed.stdout + completed.stderr)[-3000:]}
+            "output_tail": output[-3000:]}
 
 
 def incubate_skill(*, project, name, task, journal_path, output, provider,
