@@ -387,7 +387,7 @@ class NativeOrchestrator:
 
     def _compile_plan(self, prompt, objective, inputs):
         raw, model, provider, _ = _model_response(
-            self.core.model, prompt, "BEAN native capability orchestration")
+            self.core.model, prompt, "BEAN native capability orchestration", json_object=True)
         from bean.runtime.plan_contracts import compile_arguments
         try:
             steps = compile_arguments(raw, inputs, self.tools)
