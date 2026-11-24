@@ -375,7 +375,8 @@ class NativeOrchestrator:
                 self.store.commit()
                 if retry == 2:
                     raise
-                prompt += "\nYour previous plan was rejected: " + error + ". Return a corrected complete JSON plan."
+                from bean.runtime.plan_contracts import revision_feedback
+                prompt += revision_feedback(getattr(exc, "planner_raw", None), error, inputs)
             else:
                 self.store.execute("INSERT OR REPLACE INTO bean_planner_attempts VALUES (?,?,?,?)",
                                    (plan_id, retry, raw, None))
@@ -387,35 +388,22 @@ class NativeOrchestrator:
     def _compile_plan(self, prompt, objective, inputs):
         raw, model, provider, _ = _model_response(
             self.core.model, prompt, "BEAN native capability orchestration")
-        if raw.startswith(chr(96) * 3):
-            raw = "\n".join(raw.splitlines()[1:-1]).strip()
-        plan = json.loads(raw)
-        steps = plan["steps"]
-        if not isinstance(steps, list) or not 1 <= len(steps) <= 8:
-            raise ValueError("model must return one to eight steps")
-        from bean.runtime.plan_contracts import preflight, repair_unambiguous_refs
-        proposals = []
-        prior_tools = []
-        for index, step in enumerate(steps):
-            if (not isinstance(step, dict) or set(step) != {"tool", "args"} or
-                    step["tool"] not in self.tools or not isinstance(step["args"], dict)):
-                raise ValueError("invalid model-selected tool step")
-            args = repair_unambiguous_refs(step["tool"], step["args"], inputs, prior_tools)
-            self._validate_refs(args, index)
-            try:
-                preflight(step["tool"], args, inputs, prior_tools)
-            except (ValueError, TypeError, KeyError, IndexError) as exc:
-                exc.planner_raw = raw
-                raise
-            prior_tools.append(step["tool"])
-            proposals.append(GoalProposal(
-                "orchestrate_objective", ActionType.RUN_EXPERIMENT,
-                "Execute model-selected capability", 3, ApprovalRequired.NONE,
-                {"capability": CAPABILITY, "tool": step["tool"], "args": args,
-                 "objective": objective, "inputs": inputs,
-                 "planner_model": model, "planner_provider": provider,
-                 "learning_context": "orchestration:" + step["tool"]},
-                "orchestration"))
+        from bean.runtime.plan_contracts import compile_arguments
+        try:
+            steps = compile_arguments(raw, inputs, self.tools)
+            proposals = []
+            for step in steps:
+                proposals.append(GoalProposal(
+                    "orchestrate_objective", ActionType.RUN_EXPERIMENT,
+                    "Execute model-selected capability", 3, ApprovalRequired.NONE,
+                    {"capability": CAPABILITY, "tool": step["tool"], "args": step["args"],
+                     "objective": objective, "inputs": inputs,
+                     "planner_model": model, "planner_provider": provider,
+                     "learning_context": "orchestration:" + step["tool"]},
+                    "orchestration"))
+        except (ValueError, TypeError, KeyError, IndexError) as exc:
+            exc.planner_raw = raw
+            raise
         return proposals, raw
 
     def _read_output(self, proposal_id):
