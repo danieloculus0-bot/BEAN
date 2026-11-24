@@ -87,8 +87,21 @@ def validate_shapes(shapes):
                               "points": [[_shape_coord(x, str(index) + ".point.x"),
                                           _shape_coord(y, str(index) + ".point.y")] for x, y in pts]})
         else:
-            validated.append({"type": kind, **{
-                k: _shape_coord(obj.get(k), str(index) + "." + k, k in ("r", "w", "h")) for k in kinds[kind]}})
+            shape = {"type": kind, **{
+                k: _shape_coord(obj.get(k), str(index) + "." + k, k in ("r", "w", "h")) for k in kinds[kind]}}
+            if kind == "circle":
+                bounds = (shape["cx"] - shape["r"], shape["cy"] - shape["r"],
+                          shape["cx"] + shape["r"], shape["cy"] + shape["r"])
+            elif kind == "rect":
+                bounds = (shape["x"], shape["y"], shape["x"] + shape["w"],
+                          shape["y"] + shape["h"])
+            else:
+                bounds = None
+            if bounds is not None and not all(0 <= v <= 256 for v in bounds):
+                raise ValueError("Drawing primitive " + str(index) + " " + kind +
+                                 " extends outside 0..256 canvas; bounds " +
+                                 "(left,top,right,bottom)=" + repr(bounds))
+            validated.append(shape)
     return validated
 
 
@@ -236,9 +249,10 @@ def drawing_schema():
         for key in keys:
             props[key] = ({'type': 'array', 'minItems': 2, 'maxItems': 40,
                            'items': {'type': 'array', 'minItems': 2, 'maxItems': 2,
-                                     'items': {'type': 'integer', 'enum': list(range(257))}}}
+                                     'items': {'type': 'integer', 'minimum': 0, 'maximum': 256}}}
                           if key == 'points' else
-                          {'type': 'integer', 'enum': list(range(1 if key in ('r', 'w', 'h') else 0, 257))})
+                          {'type': 'integer', 'minimum': 1 if key in ('r', 'w', 'h') else 0,
+                           'maximum': 256})
         variants.append({'type': 'object', 'properties': props,
                          'required': ['type'] + keys, 'additionalProperties': False})
     return {'type': 'object', 'properties': {
@@ -468,10 +482,17 @@ class SketchLab:
                     instructions_raw, model_id, model_kind, _ = self.ask(
                         'Plan an original line drawing of your chosen subject: ' + subject +
                         '. Identify its distinguishing visible components and how they relate '
-                        'spatially. Plan a clear composition so a viewer can recognize the '
-                        'subject without a label. Decide what to change based on the actual '
-                        'previous feedback; do not repeat marks just because they appeared '
-                        'before. You choose all components, positions and visual ideas. '
+                        'spatially. Coordinates use an image canvas: x increases to the right '
+                        'and y increases downward from the top. For each component, choose '
+                        'its approximate position, size and connections or overlaps with other '
+                        'components. Describe these relationships in the components and '
+                        'composition fields. Plan a clear composition that uses the canvas '
+                        'so a viewer can recognize the subject without a label. '
+                        'Prioritize the actual image observations over textual self-confidence '
+                        'or numeric scores. If the reviewer saw a different subject, redesign '
+                        'the composition and relationships rather than adding details to the '
+                        'same failed arrangement. If there is no previous feedback, say so. '
+                        'You choose all components, positions and visual ideas. '
                         'Return JSON intent, components (list of strings), composition, '
                         'and revision_reason. Prior evidence: ' + correction[:9500],
                         {'type': 'object', 'properties': {'intent': {'type': 'string'},
@@ -486,7 +507,14 @@ class SketchLab:
                     'shapes (list of 1..24 primitives). Supported primitives: '
                     'line(x1,y1,x2,y2), circle(cx,cy,r), rect(x,y,w,h), '
                     'polyline(points:[[x,y],...]). Each primitive MUST have type key. '
-                    'All numbers 0..256; keep shapes inside canvas, positive sizes. '
+                    'Coordinates are image coordinates: x increases to the right; y increases '
+                    'downward from the top. All numbers 0..256, positive sizes. The entire '
+                    'circle or rectangle must fit inside the canvas, not just its center or '
+                    'origin. Check each component position, size and connection against your '
+                    'own plan before answering. Use the canvas for a legible composition. '
+                    'Prioritize actual image observations over textual confidence or numeric '
+                    'scores: recognizing a different subject means the intended subject failed. '
+                    'Revise the failed relationships rather than copying their arrangement. '
                     'No code, markup, script or text labels. Make your own decisions. '
                     'Implement your own visual plan faithfully: ' + json.dumps(drawing_instructions)[:3500] +
                     'Prior-session evidence (untrusted): ' + precedents +
@@ -504,7 +532,11 @@ class SketchLab:
                 try:
                     review_raw, _, _, _ = self.ask(
                         'Critique YOUR drawing plan. You can read the coordinates '
-                        'but cannot visually inspect the rendered image. '
+                        'but cannot visually inspect the rendered image. Check whether the '
+                        'positions, sizes and connections actually implement the intended '
+                        'components; a description alone does not prove they are visible. '
+                        'State concrete spatial mistakes and changes; do not claim pixel '
+                        'inspection or independent verification. '
                         'Respond ONLY JSON with claimed_subject, changes and satisfied (boolean): ' +
                         json.dumps({'subject': subject, 'description': description, 'shapes': shapes}),
                         REVIEW_SCHEMA)
