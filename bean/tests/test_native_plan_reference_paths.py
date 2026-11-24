@@ -6,7 +6,7 @@ import io
 from bean.reasoning.local_llamacpp_provider import LocalLlamaCppProvider
 from bean.learning.reasoning_service import _model_response
 
-from bean.runtime.native_orchestration import _path, _validate_known_reference_paths
+from bean.runtime.native_orchestration import _path, _validate_known_reference_paths, _validate_numeric_tool_args
 
 
 class NativePlanReferencePathsTest(unittest.TestCase):
@@ -40,6 +40,25 @@ class NativePlanReferencePathsTest(unittest.TestCase):
         _validate_known_reference_paths(
             {"$step": 0, "path": ["new_field", "nested"]},
             ["extension_tool"], {})
+
+
+class NumericArgumentShapeTest(unittest.TestCase):
+    def test_rejects_reference_tokens_and_object_wrappers(self):
+        for malformed in (["$step", 0, "history"], {"ref": {"$step": 0, "path": ["history"]}}, {"$step": 0}):
+            with self.subTest(malformed=malformed):
+                with self.assertRaisesRegex(ValueError, "history must be"):
+                    _validate_numeric_tool_args("mean_sign", {"history": malformed}, ["numeric_context"], {})
+
+    def test_accepts_direct_reference_and_numeric_list(self):
+        _validate_numeric_tool_args("mean_sign", {"history": {"$step": 0, "path": ["history"]}}, ["numeric_context"], {})
+        _validate_numeric_tool_args("numeric_context", {"history": [2, 4, 6], "window": 3}, [], {})
+
+    def test_comparison_requires_scalar_not_whole_object(self):
+        args = {"left": {"$step": 0}, "right": 1, "abs_tol": 0.0001, "rel_tol": 0}
+        with self.assertRaisesRegex(ValueError, "scalar numbers"):
+            _validate_numeric_tool_args("compare_numeric", args, ["mean_sign"], {})
+        args["left"]["path"] = ["prediction"]
+        _validate_numeric_tool_args("compare_numeric", args, ["mean_sign"], {})
 
 
 class StructuredPlannerProviderTest(unittest.TestCase):
