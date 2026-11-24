@@ -14,6 +14,26 @@ CREATE TABLE IF NOT EXISTS bean_orchestration_recovery (
 MAX_PLANNER_ATTEMPTS = 3
 
 
+def _inherit_observations(evidence, prior):
+    """Keep completed outputs addressable across distinct recovery generations.
+
+    The current parent's completed map retains the original contract. Older
+    observations are indexed by actual plan ID to prevent step-number collisions.
+    No new outcome is inferred and no failed output is promoted to a success.
+    """
+    previous = prior.get("completed_by_plan", {})
+    history = dict(previous)
+    if prior.get("parent"):
+        history[prior["parent"]] = prior.get("completed", {})
+    history[evidence["parent"]] = evidence["completed"]
+    evidence["completed_by_plan"] = history
+    evidence["reference_contract"] = (
+        'Use {"$input":["__recovery","completed_by_plan",PLAN_ID,STEP_KEY,FIELD]} '
+        'with the actual plan ID and string step key. Reuse completed outputs '
+        'from any ancestor rather than executing those tools again.')
+    return evidence
+
+
 class DurableRecovery:
     def __init__(self, orchestrator):
         self.owner = orchestrator
@@ -58,7 +78,7 @@ class DurableRecovery:
                              existing["attempts"] >= MAX_PLANNER_ATTEMPTS):
                 continue
             ancestor = self.store.fetchone(
-                "SELECT depth FROM bean_orchestration_recovery WHERE child_id=?", (parent,))
+                "SELECT depth,evidence_json FROM bean_orchestration_recovery WHERE child_id=?", (parent,))
             depth = (ancestor["depth"] if ancestor else 0) + 1
             if depth > 3:
                 continue
@@ -83,6 +103,8 @@ class DurableRecovery:
                         evidence["failures"].append({
                             "tool": step.get("tool"), "output": step.get("output"),
                             "receipt": dict(run) if run else None})
+                prior = json.loads(ancestor["evidence_json"]) if ancestor else {}
+                _inherit_observations(evidence, prior)
                 self.store.execute(
                     "INSERT INTO bean_orchestration_recovery "
                     "(parent_id,child_id,depth,evidence_json,state,error) VALUES (?,?,?,?,?,?)",
