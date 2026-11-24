@@ -11,11 +11,23 @@ CREATE TABLE IF NOT EXISTS bean_orchestration_recovery (
 """
 
 
+MAX_PLANNER_ATTEMPTS = 3
+
+
 class DurableRecovery:
     def __init__(self, orchestrator):
         self.owner = orchestrator
         self.store = orchestrator.store
         self.store._conn().executescript(SCHEMA)
+        columns = {row[1] for row in self.store._conn().execute(
+            'PRAGMA table_info(bean_orchestration_recovery)')}
+        if 'attempts' not in columns:
+            self.store._conn().execute(
+                'ALTER TABLE bean_orchestration_recovery ADD COLUMN attempts INTEGER NOT NULL DEFAULT 0')
+        # Recover pre-migration failures once instead of treating them as terminal.
+        self.store._conn().execute(
+            "UPDATE bean_orchestration_recovery SET state='pending',attempts=1 "
+            "WHERE state='planner_failed' AND attempts=0")
         self.store.commit()
         self.original_poll = orchestrator.cycle.poll_due
         orchestrator.cycle.poll_due = self.poll
@@ -42,7 +54,8 @@ class DurableRecovery:
             parent = plan["id"]
             existing = self.store.fetchone(
                 "SELECT * FROM bean_orchestration_recovery WHERE parent_id=?", (parent,))
-            if existing and existing["state"] != "pending":
+            if existing and (existing["state"] != "pending" or
+                             existing["attempts"] >= MAX_PLANNER_ATTEMPTS):
                 continue
             ancestor = self.store.fetchone(
                 "SELECT depth FROM bean_orchestration_recovery WHERE child_id=?", (parent,))
@@ -71,7 +84,8 @@ class DurableRecovery:
                             "tool": step.get("tool"), "output": step.get("output"),
                             "receipt": dict(run) if run else None})
                 self.store.execute(
-                    "INSERT INTO bean_orchestration_recovery VALUES (?,?,?,?,?,?)",
+                    "INSERT INTO bean_orchestration_recovery "
+                    "(parent_id,child_id,depth,evidence_json,state,error) VALUES (?,?,?,?,?,?)",
                     (parent, child, depth, json.dumps(evidence, allow_nan=False),
                      "pending", None))
                 self.store.commit()
@@ -81,12 +95,14 @@ class DurableRecovery:
                 self.owner.submit(detail["objective"], inputs=inputs, plan_id=child,
                                   recovery_context=evidence)
             except Exception as exc:
+                # Persist failed attempts and retry on a later poll, including after restart.
                 self.store.execute(
-                    "UPDATE bean_orchestration_recovery SET state='planner_failed',error=? "
-                    "WHERE parent_id=?", (repr(exc)[:1000], parent))
+                    "UPDATE bean_orchestration_recovery SET attempts=attempts+1, "
+                    "state=CASE WHEN attempts+1>=? THEN 'planner_failed' ELSE 'pending' END, "
+                    "error=? WHERE parent_id=?", (MAX_PLANNER_ATTEMPTS, repr(exc)[:1000], parent))
             else:
                 self.store.execute(
-                    "UPDATE bean_orchestration_recovery SET state='submitted',error=NULL "
+                    "UPDATE bean_orchestration_recovery SET state='submitted',error=NULL,attempts=attempts+1 "
                     "WHERE parent_id=?", (parent,))
             self.store.commit()
             # One model recovery request per polling cycle.
@@ -103,7 +119,8 @@ class DurableRecovery:
                 break
             child = row["child_id"]
             lineage.append({"parent": parent, "child": child, "state": row["state"],
-                            "error": row["error"], "plan": self.owner.status(child)})
+                            "error": row["error"], "attempts": row["attempts"],
+                            "plan": self.owner.status(child) if row["state"] == "submitted" else None})
             parent = child
         result["recovery_lineage"] = lineage
         result["effective_status"] = (lineage[-1]["plan"]["status"]
