@@ -503,3 +503,33 @@ def test_contested_prefix_does_not_propagate_and_unknown_read_can_finish(world):
     assert result["steps"][0]["output"]["status"] == "unknown"
     assert result["steps"][0]["output"]["results"] == []
     assert len(model.calls) == 1
+
+
+def test_working_memory_reuses_old_execution_in_planner_and_preserves_session_scope(world):
+    from bean.runtime.native_orchestration import NativeOrchestrator
+    root, session, _ = world
+    model = Model(json.dumps({"steps": [{"tool": "numeric_context",
+        "args": {"history": [2, 4, 6, 8]}}]}))
+    model.adapter_name = "synthetic_fixture"
+    cycle = GoalCycle({"run_experiment": lambda goal: {"status": "unknown"}})
+    runner = NativeOrchestrator(Core(model), cycle, session_uuid=session)
+    old = runner.submit("synthetic orbital velocity context")
+    assert cycle.poll_due()[0]["status"] == "success"
+    pid = old["steps"][0]["proposal_id"]
+    memory = runner.working_memory.search("orbital velocity")
+    assert pid in memory["memories"][0]["source_ids"]
+    runner.working_memory.focus([pid])
+    get_store().close()
+    _local.conn = None
+    init_store(str(root / "bean_core.sqlite"))
+    resumed_cycle = GoalCycle({"run_experiment": lambda goal: {"status": "unknown"}})
+    resumed = NativeOrchestrator(Core(model), resumed_cycle, session_uuid=session)
+    assert resumed.working_memory.search("unrelated")["memories"][0]["focused"] is True
+    resumed.submit("use orbital velocity evidence")
+    assert "Relevant prior execution evidence" in model.calls[-1][0]
+    assert pid in model.calls[-1][0]
+    other = NativeOrchestrator(Core(model), GoalCycle({
+        "run_experiment": lambda goal: {"status": "unknown"}}), session_uuid=begin_session())
+    assert other.working_memory.search("orbital velocity")["memories"] == []
+    with pytest.raises(ValueError):
+        other.working_memory.focus([pid])
