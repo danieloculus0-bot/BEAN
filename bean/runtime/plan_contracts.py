@@ -4,6 +4,7 @@ No tool is executed by the compiler. Unresolved prior-step data is deferred
 until the actual result exists. Unknown tool contracts retain existing behavior.
 """
 import math
+import re
 
 DEFERRED = object()
 
@@ -114,3 +115,38 @@ def validate_args(tool, args):
 
 def preflight(tool, args, inputs, prior_tools):
     validate_args(tool, preview(args, inputs, prior_tools))
+
+
+def repair_unambiguous_refs(tool, args, inputs, prior_tools):
+    """Normalize only references with a unique, contract-backed interpretation.
+
+    Never invent a tool, an input value, an index or a calculation. Literal
+    user text and unknown tool contracts are left unchanged. Both the raw
+    model plan and the normalized persisted plan remain available for audit.
+    """
+    if tool not in CONTRACTS:
+        return args
+    required, optional = CONTRACTS[tool]
+    result = dict(args)
+    for key, value in args.items():
+        kind = (required | optional).get(key)
+        if kind is None:
+            continue
+        if (kind == "history" and value == "$input[0]"
+                and list(inputs) == [key]):
+            result[key] = {"$input": [key]}
+            continue
+        if kind != "number":
+            continue
+        index = None
+        if isinstance(value, str):
+            found = re.fullmatch(r"\$step:(0|[1-9][0-9]*)\.output", value)
+            if found and len(found[1]) <= 2:
+                index = int(found[1])
+        elif (isinstance(value, dict) and not set(value) - {"$step", "path"}
+              and type(value.get("$step")) is int and value.get("path", []) == []):
+            index = value["$step"]
+        if (index is not None and 0 <= index < len(prior_tools)
+                and prior_tools[index] in ("last_sign", "mean_sign")):
+            result[key] = {"$step": index, "path": ["prediction"]}
+    return result
