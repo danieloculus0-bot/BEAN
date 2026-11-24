@@ -144,14 +144,33 @@ class CompositionLearner:
     def __init__(self, bank):
         self.bank = bank
 
-    def _parents(self):
-        """Use only retained, typed, source-linked rules; no new hand-coded skill."""
+    def _parents(self, grammars=None, parent_domains=None):
+        """Scope typed search explicitly, never silently truncate candidates.
+
+        Multiple training receipts for the same domain, grammar and operation
+        describe one behavioral primitive. Preserve its original immutable ID.
+        """
         events = self.bank.journal.events()
-        rules = [e["data"] for e in events if e["kind"] == "local_rule"]
-        if len(rules) > 12:
-            # Preserve bounded search instead of silently selecting a convenient
-            # subset of memories, which would bias a claimed discovery.
-            raise ValueError("Composition search needs a scoped inventory (max 12 rules)")
+        if parent_domains is not None:
+            if (not isinstance(parent_domains, (tuple, list))
+                    or not 1 <= len(parent_domains) <= 32):
+                raise ValueError("parent_domains must contain 1..32 domains")
+            parent_domains = {_text(d, "parent domain", 100).casefold()
+                              for d in parent_domains}
+        unique = {}
+        for event in events:
+            if event["kind"] != "local_rule":
+                continue
+            rule = event["data"]
+            if grammars is not None and rule["grammar"] not in grammars:
+                continue
+            if parent_domains is not None and rule["domain"] not in parent_domains:
+                continue
+            key = (rule["domain"], rule["grammar"], rule["operation"])
+            unique.setdefault(key, rule)
+        rules = list(unique.values())
+        if len(rules) > 64:
+            raise ValueError("Composition search requires narrower explicit parent_domains (max 64 distinct typed rules)")
         return rules
 
     @staticmethod
@@ -183,7 +202,7 @@ class CompositionLearner:
                     ))
         return signatures
 
-    def compare(self, *, domain, task_ref, examples, evidence_refs):
+    def compare(self, *, domain, task_ref, examples, evidence_refs, parent_domains=None):
         """Execute matched alternatives and retain why they succeeded/failed.
 
         Only caller-provided development labels are assessed. Evidence is
@@ -211,7 +230,7 @@ class CompositionLearner:
         _, seen = _historic_evidence(events, domain)
         if seen.intersection(hashes):
             raise ValueError("Repeated questions cannot earn duplicate comparison credit")
-        parents = self._parents()
+        parents = self._parents({g for _, parsed, _ in items for g, _ in parsed}, parent_domains)
         refuted = self._refuted_program_signatures(events)
         results = []
         for a in parents:
@@ -264,7 +283,7 @@ class CompositionLearner:
                 "model_invoked": False,
                 "independent_validation": False}
 
-    def propose(self, *, domain, task_ref, query):
+    def propose(self, *, domain, task_ref, query, parent_domains=None):
         """Search plausible programs BEFORE teaching; do not treat a guess as truth."""
         domain = _text(domain, "domain", 100).casefold()
         task_ref = _text(task_ref, "task_ref", 200)
@@ -278,7 +297,7 @@ class CompositionLearner:
         events = self.bank.journal.events()
         refuted = self._refuted_program_signatures(events)
         evidence, _ = _historic_evidence(events, domain)
-        parents = self._parents()
+        parents = self._parents({g for g, _ in parsed}, parent_domains)
         pruned_by_evidence = 0
         for a in parents:
             for b in parents:
@@ -326,7 +345,7 @@ class CompositionLearner:
             "model_invoked": False, "actions_authorized": False,
         }
 
-    def learn(self, *, domain, task_ref, examples, evidence_refs):
+    def learn(self, *, domain, task_ref, examples, evidence_refs, parent_domains=None):
         domain = _text(domain, "domain", 100).casefold()
         task_ref = _text(task_ref, "task_ref", 200)
         if not isinstance(examples, list) or not 4 <= len(examples) <= 12:
@@ -345,7 +364,7 @@ class CompositionLearner:
         if len(set(hashes)) != len(hashes):
             raise ValueError("Development examples must have different question fingerprints")
 
-        parents = self._parents()
+        parents = self._parents({g for _, parsed, _ in cases for g, _ in parsed}, parent_domains)
         events = self.bank.journal.events()
         refuted = self._refuted_program_signatures(events)
         evidence, _ = _historic_evidence(events, domain)
