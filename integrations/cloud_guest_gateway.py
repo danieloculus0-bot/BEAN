@@ -40,26 +40,62 @@ def execute_guest_task(core, scratch, message, context):
             "capability_inventory",
         }
         runner.tools = {k: v for k, v in runner.tools.items() if k in permitted}
+        # GUEST-20261124-B: reuse native recovery after a failed tool step.
+        # Prior one-shot implementation: 03852e326788a0e51675d5a25d7f4a3f36102d18.
+        # Describe concrete output fields so the model can reference real values.
+        descriptions = {
+            "numeric_context": "Analyze history: {history:[numbers],window:int}; returns history (numeric list), mean (number), count, last, trend. Example prior history reference: {\"$step\":0,\"path\":[\"history\"]}",
+            "mean_sign": "Predict mean sign: {history:[numbers]}; returns prediction (integer 0 or 1), method. Reference history from numeric_context using path [\"history\"]",
+            "last_sign": "Predict last sign: {history:[numbers]}; returns prediction (integer 0 or 1), method",
+        }
+        for name, description in descriptions.items():
+            if name in runner.tools:
+                runner.tools[name] = (description, runner.tools[name][1])
+
+        def run_plan(plan_id):
+            for _ in range(8):
+                state = runner.status(plan_id)
+                if state["status"] not in ("pending", "running"):
+                    break
+                if not runner.recovery.original_poll(max_goals=1):
+                    break
+            state = runner.status(plan_id)
+            for step in state["steps"]:
+                row = store.fetchone(
+                    "SELECT error,result_json FROM bean_goal_runs WHERE proposal_id=?",
+                    (step["proposal_id"],))
+                if row:
+                    step["error"] = row["error"]
+                    if row["result_json"]:
+                        receipt = json.loads(row["result_json"])
+                        step["output_sha256"] = receipt.get("output_sha256")
+                if "output" in step and not step.get("output_sha256"):
+                    import hashlib
+                    raw = json.dumps(step["output"], sort_keys=True,
+                                     ensure_ascii=False, allow_nan=False)
+                    step["output_sha256"] = hashlib.sha256(raw.encode("utf-8")).hexdigest()
+            return state
+
         plan = runner.submit(message, inputs={"conversation": context})
         plan_id = plan["plan_id"]
-        # A guest request runs one bounded plan; production recovery remains
-        # available in the owner runtime, not across this request lifetime.
-        for _ in range(8):
-            if plan["status"] not in ("pending", "running"):
-                break
-            if not runner.recovery.original_poll(max_goals=1):
-                break
-            plan = runner.status(plan_id)
-        result = runner.status(plan_id)
-        for step in result["steps"]:
-            if "output" in step:
-                raw = json.dumps(step["output"], sort_keys=True, ensure_ascii=False,
-                                 allow_nan=False)
-                import hashlib
-                step["output_sha256"] = hashlib.sha256(raw.encode("utf-8")).hexdigest()
+        first = run_plan(plan_id)
+        result = first
+        attempts = [first]
+        if first["status"] == "failed":
+            # Existing DurableRecovery builds a new plan from actual completed
+            # outputs and errors. One recovery pass per guest request.
+            runner.recovery.advance()
+            recovery = runner.recovery.status(plan_id)
+            lineage = recovery.get("recovery_lineage", [])
+            if lineage and lineage[-1]["state"] == "submitted":
+                result = run_plan(lineage[-1]["child"])
+                attempts.append(result)
+            result = dict(result, recovery_lineage=runner.recovery.status(plan_id)
+                          .get("recovery_lineage", []))
+        result = dict(result, initial_plan_id=plan_id, attempts=attempts)
         return {
             "answer": json.dumps(result, ensure_ascii=False, indent=2, allow_nan=False),
-            "receipt_id": plan_id, "execution": result,
+            "receipt_id": result["plan_id"], "execution": result,
             "verified_outcome": False, "memory": "client_owned",
             "personal_history_retained": False,
         }
