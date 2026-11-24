@@ -137,6 +137,12 @@ class NativeOrchestrator:
         # Assimilation 2026-11-24: existing adaptive policy APIs now participate in GoalCycle.
         from bean.runtime.retained_reasoning_tools import register_retained_reasoning
         register_retained_reasoning(self)
+        # Reconcile PRs #539/#562 (2026-11-24), retaining the existing canonical compiler.
+        from bean.runtime.collaborative_reasoning import deliberate
+        self.register("collaborative_reason",
+                      "Critique and revise a solution using proposer, critic and reviser roles: "
+                      "{objective:str,observations?:object}; use actual tool outputs as observations",
+                      lambda args, ref: deliberate(self.core.model, **args))
         # Recover the existing Letta/Mem0-inspired working-memory implementation.
         from bean.runtime.working_memory import WorkingMemory
         self.working_memory = WorkingMemory(self.store, self.session_uuid)
@@ -387,12 +393,17 @@ class NativeOrchestrator:
 
     def _compile_plan(self, prompt, objective, inputs):
         raw, model, provider, _ = _model_response(
-            self.core.model, prompt, "BEAN native capability orchestration")
-        from bean.runtime.plan_contracts import compile_arguments
+            self.core.model, prompt, "BEAN native capability orchestration", json_object=True)
+        from bean.runtime.plan_contracts import compile_arguments, preview, validate_skill_selection
         try:
             steps = compile_arguments(raw, inputs, self.tools)
             proposals = []
+            prior_tools = []
             for step in steps:
+                if step["tool"] in {"learn_skill", "retained_skill_inventory", "evaluate_skill"}:
+                    validate_skill_selection(step["tool"], preview(step["args"], inputs, prior_tools),
+                                             getattr(self, "skills", None), getattr(self, "transfer", None))
+                prior_tools.append(step["tool"])
                 proposals.append(GoalProposal(
                     "orchestrate_objective", ActionType.RUN_EXPERIMENT,
                     "Execute model-selected capability", 3, ApprovalRequired.NONE,
@@ -440,8 +451,9 @@ class NativeOrchestrator:
         name = detail["tool"]
         self._validate_refs(detail["args"], plan["step"])
         args = self._resolve(detail["args"], plan, detail["inputs"])
-        from bean.runtime.plan_contracts import validate_args
+        from bean.runtime.plan_contracts import validate_args, validate_skill_selection
         validate_args(name, args)
+        validate_skill_selection(name, args, getattr(self, "skills", None), getattr(self, "transfer", None))
         try:
             output = self._read_output(pid)
         except LookupError:
