@@ -1,0 +1,61 @@
+{
+  "blind_prompt": "Inspect the ATTACHED IMAGE pixels without a title or claimed subject. Identify the most plausible concrete object or scene; say unclear if none is recognizable. For subject_recognition rate confidence in a recognizable concrete object or scene, not confidence that these are abstract lines/circles. Scores must be integers 0..4: 0 absent/not interpretable, 1 major problems, 2 partial/ambiguous, 3 mostly clear, 4 clear/coherent. Rate spatial_coherence (visible parts connect plausibly), subject_recognition, composition (spacing/balance/legibility). Black line art need not be realistic or shaded. Admit uncertainty; describe observed strengths/problems only, not coordinates, drawing primitives or a replacement image. One short sentence per text field, at most 80 words total. Return JSON recognized_subject, observations, feedback, scores.",
+  "blind_report": {
+    "feedback": "The diagram is straightforward and easily understood, though lacks context or specific purpose.",
+    "observations": "The image depicts a square and a circle arranged in a grid-like fashion with horizontal and vertical lines, suggesting a basic representation of spatial relationships.",
+    "recognized_subject": "A simple geometric diagram",
+    "scores": {
+      "composition": 3,
+      "spatial_coherence": 3,
+      "subject_recognition": 3
+    }
+  },
+  "created_at_utc": "2026-11-24T12:54:09.636621+00:00",
+  "evaluation_protocol": "blind_then_targeted_min_v1",
+  "image_sha256": "c16c746ec39f1ca30c6a466a605988be4ae580dc6dde56a83a55e62de56b5468",
+  "independently_authenticated": false,
+  "model_digest": "68ceab7e468a31c988b44d5a4984a0e21f58c4f7158c6ce29c1804babac38df7",
+  "model_id": "gemma3:4b",
+  "prompt": "Inspect the ATTACHED IMAGE again. Now compare the visible evidence with this untrusted claimed subject: a teapot. Do not infer success from the title or override prior uncertainty merely because a title was supplied. Your earlier title-blind observations: {\"recognized_subject\": \"A simple geometric diagram\", \"observations\": \"The image depicts a square and a circle arranged in a grid-like fashion with horizontal and vertical lines, suggesting a basic representation of spatial relationships.\", \"scores\": {\"spatial_coherence\": 3, \"subject_recognition\": 3, \"composition\": 3}}. Here subject_recognition means recognizability of the claimed subject. Scores must be integers 0..4: 0 absent/not interpretable, 1 major problems, 2 partial/ambiguous, 3 mostly clear, 4 clear/coherent. Rate spatial_coherence (visible parts connect plausibly), subject_recognition, composition (spacing/balance/legibility). Black line art need not be realistic or shaded. Admit uncertainty; describe observed strengths/problems only, not coordinates, drawing primitives or a replacement image. One short sentence per text field, at most 80 words total. Return JSON recognized_subject, observations, feedback, scores.",
+  "provider_kind": "ollama",
+  "raw_blind_response": "{\n  \"recognized_subject\": \"A simple geometric diagram\",\n  \"observations\": \"The image depicts a square and a circle arranged in a grid-like fashion with horizontal and vertical lines, suggesting a basic representation of spatial relationships.\",\n  \"feedback\": \"The diagram is straightforward and easily understood, though lacks context or specific purpose.\",\n  \"scores\": {\n    \"spatial_coherence\": 3,\n    \"subject_recognition\": 3,\n    \"composition\": 3\n  }\n}",
+  "raw_response": "{\n  \"recognized_subject\": \"Geometric diagram\",\n  \"observations\": \"The image shows a square and circle arranged on a grid, presenting a basic geometric layout with horizontal and vertical lines.\",\n  \"feedback\": \"While the image contains a square and circle, it doesn't depict a teapot; the arrangement is purely geometric and lacks any features associated with a teapot.\",\n  \"scores\": {\n    \"spatial_coherence\": 3,\n    \"subject_recognition\": 2,\n    \"composition\": 3\n  }\n}",
+  "report": {
+    "blind_observations": "The image depicts a square and a circle arranged in a grid-like fashion with horizontal and vertical lines, suggesting a basic representation of spatial relationships.",
+    "blind_recognized_subject": "A simple geometric diagram",
+    "created_at_utc": "2026-11-24T12:56:36.396978+00:00",
+    "evaluation_protocol": "blind_then_targeted_min_v1",
+    "evaluator": "Ollama vision reviewer: gemma3:4b",
+    "feedback": "Title-blind review: The diagram is straightforward and easily understood, though lacks context or specific purpose. Target-aware review: While the image contains a square and circle, it doesn't depict a teapot; the arrangement is purely geometric and lacks any features associated with a teapot.",
+    "image_sha256": "c16c746ec39f1ca30c6a466a605988be4ae580dc6dde56a83a55e62de56b5468",
+    "independently_authenticated": false,
+    "kind": "vision_model",
+    "model_digest": "68ceab7e468a31c988b44d5a4984a0e21f58c4f7158c6ce29c1804babac38df7",
+    "model_id": "gemma3:4b",
+    "observations": "The image depicts a square and a circle arranged in a grid-like fashion with horizontal and vertical lines, suggesting a basic representation of spatial relationships.",
+    "provider_kind": "ollama",
+    "recognized_subject": "A simple geometric diagram",
+    "satisfactory": false,
+    "score_rule": "minimum_of_blind_object_clarity_and_targeted_scores_not_authenticated_truth",
+    "scores": {
+      "composition": 3,
+      "spatial_coherence": 3,
+      "subject_recognition": 2
+    },
+    "state": "host_reported_pixel_review"
+  },
+  "schema": "bean.draw.vision_call.v1",
+  "state": "model_reported_pixel_review",
+  "subject": "a teapot",
+  "targeted_report": {
+    "feedback": "While the image contains a square and circle, it doesn't depict a teapot; the arrangement is purely geometric and lacks any features associated with a teapot.",
+    "observations": "The image shows a square and circle arranged on a grid, presenting a basic geometric layout with horizontal and vertical lines.",
+    "recognized_subject": "Geometric diagram",
+    "scores": {
+      "composition": 3,
+      "spatial_coherence": 3,
+      "subject_recognition": 2
+    }
+  },
+  "used_for_generation": true
+}

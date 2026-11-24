@@ -1,0 +1,1011 @@
+{
+  "archived_at_utc": "2026-11-24T14:19:25.581017+00:00",
+  "attempts": [
+    {
+      "attempt": 1,
+      "error": null,
+      "png_file": "attempt_01.png",
+      "source_git_sha": "bb7128d76a6c210d84234326576ef6bc7f1e2509",
+      "status": "host_reported_not_satisfactory",
+      "subject": "a teapot",
+      "subject_source": "human",
+      "svg_file": "attempt_01.svg"
+    },
+    {
+      "attempt": 2,
+      "error": null,
+      "png_file": "attempt_02.png",
+      "source_git_sha": "bb7128d76a6c210d84234326576ef6bc7f1e2509",
+      "status": "host_reported_not_satisfactory",
+      "subject": "a teapot",
+      "subject_source": "human",
+      "svg_file": "attempt_02.svg"
+    },
+    {
+      "attempt": 1,
+      "error": null,
+      "png_file": "attempt_01.png",
+      "source_git_sha": "bb7128d76a6c210d84234326576ef6bc7f1e2509",
+      "status": "host_reported_not_satisfactory",
+      "subject": "an umbrella",
+      "subject_source": "human",
+      "svg_file": "attempt_01.svg"
+    },
+    {
+      "attempt": 2,
+      "error": null,
+      "png_file": "attempt_02.png",
+      "source_git_sha": "bb7128d76a6c210d84234326576ef6bc7f1e2509",
+      "status": "host_reported_satisfactory",
+      "subject": "an umbrella",
+      "subject_source": "human",
+      "svg_file": "attempt_02.svg"
+    },
+    {
+      "attempt": 1,
+      "error": null,
+      "png_file": "attempt_01.png",
+      "source_git_sha": "bb7128d76a6c210d84234326576ef6bc7f1e2509",
+      "status": "host_reported_satisfactory",
+      "subject": "an umbrella",
+      "subject_source": "human",
+      "svg_file": "attempt_01.svg"
+    },
+    {
+      "attempt": 2,
+      "error": null,
+      "png_file": "attempt_02.png",
+      "source_git_sha": "bb7128d76a6c210d84234326576ef6bc7f1e2509",
+      "status": "host_reported_satisfactory",
+      "subject": "an umbrella",
+      "subject_source": "human",
+      "svg_file": "attempt_02.svg"
+    },
+    {
+      "attempt": 1,
+      "error": null,
+      "png_file": "attempt_01.png",
+      "source_git_sha": "bb7128d76a6c210d84234326576ef6bc7f1e2509",
+      "status": "host_reported_not_satisfactory",
+      "subject": "an umbrella",
+      "subject_source": "human",
+      "svg_file": "attempt_01.svg"
+    },
+    {
+      "attempt": 2,
+      "error": null,
+      "png_file": "attempt_02.png",
+      "source_git_sha": "bb7128d76a6c210d84234326576ef6bc7f1e2509",
+      "status": "host_reported_satisfactory",
+      "subject": "an umbrella",
+      "subject_source": "human",
+      "svg_file": "attempt_02.svg"
+    },
+    {
+      "attempt": 1,
+      "error": null,
+      "png_file": "attempt_01.png",
+      "source_git_sha": "bb7128d76a6c210d84234326576ef6bc7f1e2509",
+      "status": "host_reported_satisfactory",
+      "subject": "a bicycle",
+      "subject_source": "human",
+      "svg_file": "attempt_01.svg"
+    },
+    {
+      "attempt": 2,
+      "error": null,
+      "png_file": "attempt_02.png",
+      "source_git_sha": "bb7128d76a6c210d84234326576ef6bc7f1e2509",
+      "status": "host_reported_not_satisfactory",
+      "subject": "a bicycle",
+      "subject_source": "human",
+      "svg_file": "attempt_02.svg"
+    },
+    {
+      "attempt": 1,
+      "error": null,
+      "png_file": "attempt_01.png",
+      "source_git_sha": "bb7128d76a6c210d84234326576ef6bc7f1e2509",
+      "status": "host_reported_satisfactory",
+      "subject": "a bicycle",
+      "subject_source": "human",
+      "svg_file": "attempt_01.svg"
+    },
+    {
+      "attempt": 2,
+      "error": null,
+      "png_file": "attempt_02.png",
+      "source_git_sha": "bb7128d76a6c210d84234326576ef6bc7f1e2509",
+      "status": "host_reported_satisfactory",
+      "subject": "a bicycle",
+      "subject_source": "human",
+      "svg_file": "attempt_02.svg"
+    },
+    {
+      "attempt": 1,
+      "error": null,
+      "png_file": "attempt_01.png",
+      "source_git_sha": "bb7128d76a6c210d84234326576ef6bc7f1e2509",
+      "status": "host_reported_satisfactory",
+      "subject": "a bicycle",
+      "subject_source": "human",
+      "svg_file": "attempt_01.svg"
+    },
+    {
+      "attempt": 2,
+      "error": null,
+      "png_file": "attempt_02.png",
+      "source_git_sha": "bb7128d76a6c210d84234326576ef6bc7f1e2509",
+      "status": "host_reported_not_satisfactory",
+      "subject": "a bicycle",
+      "subject_source": "human",
+      "svg_file": "attempt_02.svg"
+    }
+  ],
+  "eligible_adaptive_frozen_contrasts": 1,
+  "journals": [
+    {
+      "archive_file": "journals/training.sqlite3.gz",
+      "chain_verified": true,
+      "compressed_bytes": 4333,
+      "compressed_sha256": "853df61df24e96fb8b92460e9fbba9ef68a10b2a668a987de8def678445bac2a",
+      "gzip_mtime": 0,
+      "online_backup_created": true,
+      "raw_backup_bytes": 32768,
+      "raw_backup_sha256": "f97dce82f12b59d9a342d91507c1d5e5a23899511dfed2e24389bd9674221147",
+      "rows": 3,
+      "source_and_backup_rows_identical": true,
+      "source_bytes": 32768,
+      "source_file": "training.sqlite3",
+      "source_sha256_after_reverification": "242db313f48fa524fd018f1fa748c790fa5d9c75a5233042c2606d87111ce184",
+      "source_sha256_before_reverification": "242db313f48fa524fd018f1fa748c790fa5d9c75a5233042c2606d87111ce184",
+      "table_row_counts": {
+        "attempts": 3,
+        "sqlite_sequence": 1
+      },
+      "tip": "2b829fe9336c151714f248b289331432adb45dab13d1aa7f5d5ea2828fde8a11"
+    },
+    {
+      "archive_file": "journals/adaptive.sqlite3.gz",
+      "chain_verified": true,
+      "compressed_bytes": 8962,
+      "compressed_sha256": "0ac00218aca95ad1dda531984210b69e9854a244c49e435379df48913967ff9a",
+      "gzip_mtime": 0,
+      "online_backup_created": true,
+      "raw_backup_bytes": 65536,
+      "raw_backup_sha256": "aaae0fc59019c31b816971c557cd75aceab694cdcf571e1d0e6748b2bfb382e7",
+      "rows": 9,
+      "source_and_backup_rows_identical": true,
+      "source_bytes": 65536,
+      "source_file": "adaptive.sqlite3",
+      "source_sha256_after_reverification": "0b3116fee201f1989e8aced1ec9968ad43e406d98af39001f1d63db2742b4cf8",
+      "source_sha256_before_reverification": "0b3116fee201f1989e8aced1ec9968ad43e406d98af39001f1d63db2742b4cf8",
+      "table_row_counts": {
+        "attempts": 9,
+        "sqlite_sequence": 1
+      },
+      "tip": "1519e37fd169af530746463b94e83ccd9dcaef6a0714de2f8e05255a9b9208fb"
+    },
+    {
+      "archive_file": "journals/frozen.sqlite3.gz",
+      "chain_verified": true,
+      "compressed_bytes": 8783,
+      "compressed_sha256": "1045cbb510d6a1dccb8e146c9716b196e587a1447fe3635f1cc6fb8596fb90f3",
+      "gzip_mtime": 0,
+      "online_backup_created": true,
+      "raw_backup_bytes": 65536,
+      "raw_backup_sha256": "76181f34d44b24907a8ffe762fc2344d6fc2e97a1ef66c784a6a66b75f5aced8",
+      "rows": 9,
+      "source_and_backup_rows_identical": true,
+      "source_bytes": 65536,
+      "source_file": "frozen.sqlite3",
+      "source_sha256_after_reverification": "9f6c56e47f1528a7afbc102ab57ee18525c735f8a414a117fcbb14ccdaab9030",
+      "source_sha256_before_reverification": "9f6c56e47f1528a7afbc102ab57ee18525c735f8a414a117fcbb14ccdaab9030",
+      "table_row_counts": {
+        "attempts": 9,
+        "sqlite_sequence": 1
+      },
+      "tip": "60ab36c983a7dd559d557e65bce04d2241db48086834b32ef3744a21c5d2c442"
+    },
+    {
+      "archive_file": "journals/none.sqlite3.gz",
+      "chain_verified": true,
+      "compressed_bytes": 6587,
+      "compressed_sha256": "d9c9c59fdd474801b1f99179e6696a22aacb59afee3dfcec27ae0c6230adaf55",
+      "gzip_mtime": 0,
+      "online_backup_created": true,
+      "raw_backup_bytes": 45056,
+      "raw_backup_sha256": "74a98e5b0f066bbfe57007bea9aae47bb19935044ab2e5d9b9dd1d85af6bfd75",
+      "rows": 6,
+      "source_and_backup_rows_identical": true,
+      "source_bytes": 45056,
+      "source_file": "none.sqlite3",
+      "source_sha256_after_reverification": "f6b9c7ee20229e41bec6d02405908a5ab9d25176cae8b252f54f74ba25a4f5a3",
+      "source_sha256_before_reverification": "f6b9c7ee20229e41bec6d02405908a5ab9d25176cae8b252f54f74ba25a4f5a3",
+      "table_row_counts": {
+        "attempts": 6,
+        "sqlite_sequence": 1
+      },
+      "tip": "22a8d1f0a00de6cde501b0f50dff6d131c9c3786c72b46bd16cddae981b15df6"
+    }
+  ],
+  "learning_improvement_verified": false,
+  "model_ratings_not_ground_truth": true,
+  "original_and_audit_copies": [
+    {
+      "archive_file": "original/execution.json",
+      "bytes": 7004,
+      "sha256": "c104dd7ce1ff0562c98ddc63237ee69b680319ab2ddc04732666189d992e2919",
+      "source_file": "recent-memory-benchmark/execution.json"
+    },
+    {
+      "archive_file": "original/frozen-memory.json",
+      "bytes": 9594,
+      "sha256": "2287b6becf496530e72c8623775ab0c3e33bba543d282ed0dfac317cb4d2fb1c",
+      "source_file": "recent-memory-benchmark/frozen-memory.json"
+    },
+    {
+      "archive_file": "original/heldout/adaptive/challenge_01/attempts/attempt_01.json",
+      "bytes": 4717,
+      "sha256": "b92194779b9a259def3ed29e1163a468877a61af134241d833199ec4eacfd1b4",
+      "source_file": "recent-memory-benchmark/heldout/adaptive/challenge_01/attempts/attempt_01.json"
+    },
+    {
+      "archive_file": "original/heldout/adaptive/challenge_01/attempts/attempt_01.png",
+      "bytes": 6517,
+      "sha256": "302164c7065d4a0a4b8401e6df5bc2965275cecea1528aae8e57b4e5d39a623d",
+      "source_file": "recent-memory-benchmark/heldout/adaptive/challenge_01/attempts/attempt_01.png"
+    },
+    {
+      "archive_file": "original/heldout/adaptive/challenge_01/attempts/attempt_01.raw.json",
+      "bytes": 9142,
+      "sha256": "59c8753c76637be19e9756d0dc40faccde086b53cd26e48324a6cf9a3b01fbab",
+      "source_file": "recent-memory-benchmark/heldout/adaptive/challenge_01/attempts/attempt_01.raw.json"
+    },
+    {
+      "archive_file": "original/heldout/adaptive/challenge_01/attempts/attempt_01.svg",
+      "bytes": 2053,
+      "sha256": "5ece2ad9544bd6557c80e2dc4e3b54784bec28e495808f453649753d90edfaca",
+      "source_file": "recent-memory-benchmark/heldout/adaptive/challenge_01/attempts/attempt_01.svg"
+    },
+    {
+      "archive_file": "original/heldout/adaptive/challenge_01/attempts/attempt_01.vision.json",
+      "bytes": 7797,
+      "sha256": "2d6383d4d237f4ea548b87af4cde3e21d5bc462eae5bc42cfcac256abf15ed14",
+      "source_file": "recent-memory-benchmark/heldout/adaptive/challenge_01/attempts/attempt_01.vision.json"
+    },
+    {
+      "archive_file": "original/heldout/adaptive/challenge_01/attempts/attempt_02.json",
+      "bytes": 4504,
+      "sha256": "a2d4afd2515ee90e86b773932b4e97a7885b6a41dda2d28149790c657c859272",
+      "source_file": "recent-memory-benchmark/heldout/adaptive/challenge_01/attempts/attempt_02.json"
+    },
+    {
+      "archive_file": "original/heldout/adaptive/challenge_01/attempts/attempt_02.png",
+      "bytes": 5595,
+      "sha256": "91a58c5fa30b8856b5400e3538de13ac4e62ab7e05824f7e81ef553cf9566d23",
+      "source_file": "recent-memory-benchmark/heldout/adaptive/challenge_01/attempts/attempt_02.png"
+    },
+    {
+      "archive_file": "original/heldout/adaptive/challenge_01/attempts/attempt_02.raw.json",
+      "bytes": 16359,
+      "sha256": "c74c27187b948290b226a090ef09db0cabc682970c907d71800aaccf54c4bbe6",
+      "source_file": "recent-memory-benchmark/heldout/adaptive/challenge_01/attempts/attempt_02.raw.json"
+    },
+    {
+      "archive_file": "original/heldout/adaptive/challenge_01/attempts/attempt_02.svg",
+      "bytes": 1772,
+      "sha256": "7e56568f3fb45c248ac6d189879a33e5731d4ed5fd74cec0dea8aba6c7c128d2",
+      "source_file": "recent-memory-benchmark/heldout/adaptive/challenge_01/attempts/attempt_02.svg"
+    },
+    {
+      "archive_file": "original/heldout/adaptive/challenge_01/attempts/attempt_02.vision.json",
+      "bytes": 6387,
+      "sha256": "b01d84a1e259aaad458654e8ce5620b8960cf562dfc689162ca68ad6ffbd3663",
+      "source_file": "recent-memory-benchmark/heldout/adaptive/challenge_01/attempts/attempt_02.vision.json"
+    },
+    {
+      "archive_file": "original/heldout/adaptive/challenge_01/attempts/model_calls.json",
+      "bytes": 35704,
+      "sha256": "1f52e86e4859d94c42a8459f3305b778ff1d4eec341837f5febaf6623f3d7b79",
+      "source_file": "recent-memory-benchmark/heldout/adaptive/challenge_01/attempts/model_calls.json"
+    },
+    {
+      "archive_file": "original/heldout/adaptive/challenge_01/attempts/progress.json",
+      "bytes": 1984,
+      "sha256": "ff2a65dea140c85264a32963f531b0b2a8945e1bd81d2dd20358c9b8f1ca32e4",
+      "source_file": "recent-memory-benchmark/heldout/adaptive/challenge_01/attempts/progress.json"
+    },
+    {
+      "archive_file": "original/heldout/adaptive/challenge_01/attempts/run.json",
+      "bytes": 6587,
+      "sha256": "c585a9f9641d3bad3b86275383b22d59be9368da023d72dd4612e04e73fdcba0",
+      "source_file": "recent-memory-benchmark/heldout/adaptive/challenge_01/attempts/run.json"
+    },
+    {
+      "archive_file": "original/heldout/adaptive/challenge_01/cell.json",
+      "bytes": 782,
+      "sha256": "fa18482714829c1fd37b6851eab990db6e39f15656f1459fd40b891bf21defdf",
+      "source_file": "recent-memory-benchmark/heldout/adaptive/challenge_01/cell.json"
+    },
+    {
+      "archive_file": "original/heldout/adaptive/challenge_01/stderr.txt",
+      "bytes": 228,
+      "sha256": "f0814c22197c48dad23357c814b4cabb8dd23ad197bc6fae6c719629e5c4df80",
+      "source_file": "recent-memory-benchmark/heldout/adaptive/challenge_01/stderr.txt"
+    },
+    {
+      "archive_file": "original/heldout/adaptive/challenge_01/stdout.txt",
+      "bytes": 2348,
+      "sha256": "8dcc07f791197f1d387075e5636778787edce41748e5f9f1ea2b8489e6e13ce6",
+      "source_file": "recent-memory-benchmark/heldout/adaptive/challenge_01/stdout.txt"
+    },
+    {
+      "archive_file": "original/heldout/adaptive/challenge_02/attempts/attempt_01.json",
+      "bytes": 4626,
+      "sha256": "9a42e3c5629a24cf1e4a023a1305a8849f6170182dfe4fea60b81643cda84d69",
+      "source_file": "recent-memory-benchmark/heldout/adaptive/challenge_02/attempts/attempt_01.json"
+    },
+    {
+      "archive_file": "original/heldout/adaptive/challenge_02/attempts/attempt_01.png",
+      "bytes": 10668,
+      "sha256": "f2109c7e7603b797e4674c59dadf9f6ddf8489a121dbbc7e1cef42a3c347c6dc",
+      "source_file": "recent-memory-benchmark/heldout/adaptive/challenge_02/attempts/attempt_01.png"
+    },
+    {
+      "archive_file": "original/heldout/adaptive/challenge_02/attempts/attempt_01.raw.json",
+      "bytes": 7870,
+      "sha256": "8f71df9c1fa6a86b0e0070e039914a1e9972181482233af0888077adc850e9ae",
+      "source_file": "recent-memory-benchmark/heldout/adaptive/challenge_02/attempts/attempt_01.raw.json"
+    },
+    {
+      "archive_file": "original/heldout/adaptive/challenge_02/attempts/attempt_01.svg",
+      "bytes": 810,
+      "sha256": "aaa5ac6557a607249746720d3d05b362a5df6128f48834a669e7130c2f4b45fc",
+      "source_file": "recent-memory-benchmark/heldout/adaptive/challenge_02/attempts/attempt_01.svg"
+    },
+    {
+      "archive_file": "original/heldout/adaptive/challenge_02/attempts/attempt_01.vision.json",
+      "bytes": 6499,
+      "sha256": "a94d22018351e878391e3dcec866bc61146498ca2cc88a266dad4dd21bf215ab",
+      "source_file": "recent-memory-benchmark/heldout/adaptive/challenge_02/attempts/attempt_01.vision.json"
+    },
+    {
+      "archive_file": "original/heldout/adaptive/challenge_02/attempts/attempt_02.json",
+      "bytes": 5331,
+      "sha256": "ed57dd83c65be607cd2e6545c78045d8791583e21ea157fc5b37236a7bb725de",
+      "source_file": "recent-memory-benchmark/heldout/adaptive/challenge_02/attempts/attempt_02.json"
+    },
+    {
+      "archive_file": "original/heldout/adaptive/challenge_02/attempts/attempt_02.png",
+      "bytes": 6857,
+      "sha256": "89ee337ebc7127d0449b72bb9b25e4523ffee75de906a0de01aa96d27249d437",
+      "source_file": "recent-memory-benchmark/heldout/adaptive/challenge_02/attempts/attempt_02.png"
+    },
+    {
+      "archive_file": "original/heldout/adaptive/challenge_02/attempts/attempt_02.raw.json",
+      "bytes": 14872,
+      "sha256": "f2baf1564ea06e860603e55180a00126392dd55ca84722042c61fd62b4e8d31c",
+      "source_file": "recent-memory-benchmark/heldout/adaptive/challenge_02/attempts/attempt_02.raw.json"
+    },
+    {
+      "archive_file": "original/heldout/adaptive/challenge_02/attempts/attempt_02.svg",
+      "bytes": 1862,
+      "sha256": "99d672cb9b8f6899a8593af90f56ae9d39416d7b0ce15a4bf782b6d164535826",
+      "source_file": "recent-memory-benchmark/heldout/adaptive/challenge_02/attempts/attempt_02.svg"
+    },
+    {
+      "archive_file": "original/heldout/adaptive/challenge_02/attempts/attempt_02.vision.json",
+      "bytes": 6660,
+      "sha256": "09a160467cfae4ab29ad554ed6e6e6180e46da74f8d9fe7c5b1b9641523d1868",
+      "source_file": "recent-memory-benchmark/heldout/adaptive/challenge_02/attempts/attempt_02.vision.json"
+    },
+    {
+      "archive_file": "original/heldout/adaptive/challenge_02/attempts/model_calls.json",
+      "bytes": 33610,
+      "sha256": "602d57c0d6f6515f7932fe311783d14867c8b479c53c6860dba992a0aa6cd593",
+      "source_file": "recent-memory-benchmark/heldout/adaptive/challenge_02/attempts/model_calls.json"
+    },
+    {
+      "archive_file": "original/heldout/adaptive/challenge_02/attempts/progress.json",
+      "bytes": 2083,
+      "sha256": "5cbe489f8dbe7144b3190cd0467d7c070b127170f8e40ce71b3b6cddf581ce1f",
+      "source_file": "recent-memory-benchmark/heldout/adaptive/challenge_02/attempts/progress.json"
+    },
+    {
+      "archive_file": "original/heldout/adaptive/challenge_02/attempts/run.json",
+      "bytes": 6732,
+      "sha256": "a3b5c56a8c4b7090617f9512ea149000fa350717613a3dd95e4af93be3c6c6a0",
+      "source_file": "recent-memory-benchmark/heldout/adaptive/challenge_02/attempts/run.json"
+    },
+    {
+      "archive_file": "original/heldout/adaptive/challenge_02/cell.json",
+      "bytes": 778,
+      "sha256": "30e5b16978a27943107125f82624731a4d4ef8ef9289f0c4d34a4510e0bf77a6",
+      "source_file": "recent-memory-benchmark/heldout/adaptive/challenge_02/cell.json"
+    },
+    {
+      "archive_file": "original/heldout/adaptive/challenge_02/stderr.txt",
+      "bytes": 228,
+      "sha256": "f0814c22197c48dad23357c814b4cabb8dd23ad197bc6fae6c719629e5c4df80",
+      "source_file": "recent-memory-benchmark/heldout/adaptive/challenge_02/stderr.txt"
+    },
+    {
+      "archive_file": "original/heldout/adaptive/challenge_02/stdout.txt",
+      "bytes": 2447,
+      "sha256": "814a8a6eff24d35f8553d5ed095ebe82141e80a7d5938bd0187066154d345e77",
+      "source_file": "recent-memory-benchmark/heldout/adaptive/challenge_02/stdout.txt"
+    },
+    {
+      "archive_file": "original/heldout/frozen/challenge_01/attempts/attempt_01.json",
+      "bytes": 4713,
+      "sha256": "e870ddb1d8b9a82db7d3e3433abf29e81e1e742ecfc09d5df01675d7f7a48120",
+      "source_file": "recent-memory-benchmark/heldout/frozen/challenge_01/attempts/attempt_01.json"
+    },
+    {
+      "archive_file": "original/heldout/frozen/challenge_01/attempts/attempt_01.png",
+      "bytes": 6517,
+      "sha256": "302164c7065d4a0a4b8401e6df5bc2965275cecea1528aae8e57b4e5d39a623d",
+      "source_file": "recent-memory-benchmark/heldout/frozen/challenge_01/attempts/attempt_01.png"
+    },
+    {
+      "archive_file": "original/heldout/frozen/challenge_01/attempts/attempt_01.raw.json",
+      "bytes": 9142,
+      "sha256": "ac2f0db1727988bdcbc0511a18be3b242192a13d858319436eafe0865d5938fd",
+      "source_file": "recent-memory-benchmark/heldout/frozen/challenge_01/attempts/attempt_01.raw.json"
+    },
+    {
+      "archive_file": "original/heldout/frozen/challenge_01/attempts/attempt_01.svg",
+      "bytes": 2053,
+      "sha256": "5ece2ad9544bd6557c80e2dc4e3b54784bec28e495808f453649753d90edfaca",
+      "source_file": "recent-memory-benchmark/heldout/frozen/challenge_01/attempts/attempt_01.svg"
+    },
+    {
+      "archive_file": "original/heldout/frozen/challenge_01/attempts/attempt_01.vision.json",
+      "bytes": 7797,
+      "sha256": "8e6b02c32a99d33a2b483ac0feab1ddf1c59be9bacc15596b06d5815f9c45ef9",
+      "source_file": "recent-memory-benchmark/heldout/frozen/challenge_01/attempts/attempt_01.vision.json"
+    },
+    {
+      "archive_file": "original/heldout/frozen/challenge_01/attempts/attempt_02.json",
+      "bytes": 4500,
+      "sha256": "4e11dfc0c846984d93494a1574c8c18e0c67d93f2b87664290b4cb8879026d0c",
+      "source_file": "recent-memory-benchmark/heldout/frozen/challenge_01/attempts/attempt_02.json"
+    },
+    {
+      "archive_file": "original/heldout/frozen/challenge_01/attempts/attempt_02.png",
+      "bytes": 5595,
+      "sha256": "91a58c5fa30b8856b5400e3538de13ac4e62ab7e05824f7e81ef553cf9566d23",
+      "source_file": "recent-memory-benchmark/heldout/frozen/challenge_01/attempts/attempt_02.png"
+    },
+    {
+      "archive_file": "original/heldout/frozen/challenge_01/attempts/attempt_02.raw.json",
+      "bytes": 16359,
+      "sha256": "453f52841d9312b0c2cf5b8c6ce0caa6f341295c77a034454092f5b39ae8ae14",
+      "source_file": "recent-memory-benchmark/heldout/frozen/challenge_01/attempts/attempt_02.raw.json"
+    },
+    {
+      "archive_file": "original/heldout/frozen/challenge_01/attempts/attempt_02.svg",
+      "bytes": 1772,
+      "sha256": "7e56568f3fb45c248ac6d189879a33e5731d4ed5fd74cec0dea8aba6c7c128d2",
+      "source_file": "recent-memory-benchmark/heldout/frozen/challenge_01/attempts/attempt_02.svg"
+    },
+    {
+      "archive_file": "original/heldout/frozen/challenge_01/attempts/attempt_02.vision.json",
+      "bytes": 6387,
+      "sha256": "1a3208a19e94a0239c252a49b31b88bf924bb9d5cfcca20167ed193b596f4bc6",
+      "source_file": "recent-memory-benchmark/heldout/frozen/challenge_01/attempts/attempt_02.vision.json"
+    },
+    {
+      "archive_file": "original/heldout/frozen/challenge_01/attempts/model_calls.json",
+      "bytes": 35556,
+      "sha256": "7ff7b6d22fe5a7a749e398d156a131f38edfd0057b6f9a4f1052824eaa97f15b",
+      "source_file": "recent-memory-benchmark/heldout/frozen/challenge_01/attempts/model_calls.json"
+    },
+    {
+      "archive_file": "original/heldout/frozen/challenge_01/attempts/progress.json",
+      "bytes": 1972,
+      "sha256": "59b203f14a23645582a02097d8893f263787f4e10c19f3859e5232eabac9ca2c",
+      "source_file": "recent-memory-benchmark/heldout/frozen/challenge_01/attempts/progress.json"
+    },
+    {
+      "archive_file": "original/heldout/frozen/challenge_01/attempts/run.json",
+      "bytes": 6431,
+      "sha256": "a2fd83e10812d9d88396d6ce7aa1e2346c88bf1946272271dbd61fb32dda05f5",
+      "source_file": "recent-memory-benchmark/heldout/frozen/challenge_01/attempts/run.json"
+    },
+    {
+      "archive_file": "original/heldout/frozen/challenge_01/cell.json",
+      "bytes": 873,
+      "sha256": "4123792e16d1be3851cf446b3ed64c5655b8e70b5c64c019e57554ed8349c875",
+      "source_file": "recent-memory-benchmark/heldout/frozen/challenge_01/cell.json"
+    },
+    {
+      "archive_file": "original/heldout/frozen/challenge_01/stderr.txt",
+      "bytes": 228,
+      "sha256": "f0814c22197c48dad23357c814b4cabb8dd23ad197bc6fae6c719629e5c4df80",
+      "source_file": "recent-memory-benchmark/heldout/frozen/challenge_01/stderr.txt"
+    },
+    {
+      "archive_file": "original/heldout/frozen/challenge_01/stdout.txt",
+      "bytes": 2334,
+      "sha256": "e7013b4831e8558a9944ac4f87491d1215928d2c28c53d9b2b2fbaca6cc5a7be",
+      "source_file": "recent-memory-benchmark/heldout/frozen/challenge_01/stdout.txt"
+    },
+    {
+      "archive_file": "original/heldout/frozen/challenge_02/attempts/attempt_01.json",
+      "bytes": 4582,
+      "sha256": "8bd74bcb13e02daea204a35f3f80641c821d8e6741c4b9ec3ea46faa80814d9c",
+      "source_file": "recent-memory-benchmark/heldout/frozen/challenge_02/attempts/attempt_01.json"
+    },
+    {
+      "archive_file": "original/heldout/frozen/challenge_02/attempts/attempt_01.png",
+      "bytes": 8143,
+      "sha256": "504140a90f85aee17eff71c53c5ee0bdd39cd45c1140d9fc0ae0382d9aa61984",
+      "source_file": "recent-memory-benchmark/heldout/frozen/challenge_02/attempts/attempt_01.png"
+    },
+    {
+      "archive_file": "original/heldout/frozen/challenge_02/attempts/attempt_01.raw.json",
+      "bytes": 8589,
+      "sha256": "774aee3d7e9ebc741cdcf2d2e10fa1ea97f0a24754b2b76832580ccd3e7ef018",
+      "source_file": "recent-memory-benchmark/heldout/frozen/challenge_02/attempts/attempt_01.raw.json"
+    },
+    {
+      "archive_file": "original/heldout/frozen/challenge_02/attempts/attempt_01.svg",
+      "bytes": 1464,
+      "sha256": "5826f665382a903aee28508a8d102589e0e3bae93058a3e3ebccd285f3f3f660",
+      "source_file": "recent-memory-benchmark/heldout/frozen/challenge_02/attempts/attempt_01.svg"
+    },
+    {
+      "archive_file": "original/heldout/frozen/challenge_02/attempts/attempt_01.vision.json",
+      "bytes": 6589,
+      "sha256": "fe0f404d325607397278fc582a8e3bc4d3b40a914cbd7d328963ec9c3a9d9c10",
+      "source_file": "recent-memory-benchmark/heldout/frozen/challenge_02/attempts/attempt_01.vision.json"
+    },
+    {
+      "archive_file": "original/heldout/frozen/challenge_02/attempts/attempt_02.json",
+      "bytes": 5020,
+      "sha256": "cd644040e141d15fcc96da8b5cf4b385b7be2f6a2c17f2016d2fae480a4ccf0c",
+      "source_file": "recent-memory-benchmark/heldout/frozen/challenge_02/attempts/attempt_02.json"
+    },
+    {
+      "archive_file": "original/heldout/frozen/challenge_02/attempts/attempt_02.png",
+      "bytes": 7897,
+      "sha256": "fa17cefcf4ff6629792515360c5c7d2123633d36f32569f053533614d71ef787",
+      "source_file": "recent-memory-benchmark/heldout/frozen/challenge_02/attempts/attempt_02.png"
+    },
+    {
+      "archive_file": "original/heldout/frozen/challenge_02/attempts/attempt_02.raw.json",
+      "bytes": 15506,
+      "sha256": "3456742974024b9c2bdce1b0589203b52074c4a54e23079cc691fb98691aeb24",
+      "source_file": "recent-memory-benchmark/heldout/frozen/challenge_02/attempts/attempt_02.raw.json"
+    },
+    {
+      "archive_file": "original/heldout/frozen/challenge_02/attempts/attempt_02.svg",
+      "bytes": 1789,
+      "sha256": "2bc2fc4b572a18e4680ee9bf6ba92ee0323591ba3835635478625f189f41584b",
+      "source_file": "recent-memory-benchmark/heldout/frozen/challenge_02/attempts/attempt_02.svg"
+    },
+    {
+      "archive_file": "original/heldout/frozen/challenge_02/attempts/attempt_02.vision.json",
+      "bytes": 6343,
+      "sha256": "0470f07cf632503ca026bfec933ecdb97ec7ecd727ca18df24201228de05cdc9",
+      "source_file": "recent-memory-benchmark/heldout/frozen/challenge_02/attempts/attempt_02.vision.json"
+    },
+    {
+      "archive_file": "original/heldout/frozen/challenge_02/attempts/model_calls.json",
+      "bytes": 34726,
+      "sha256": "0847bd4079762065b2c091c5e433f81c39f729d1c73949da5cbca2f2e6b22154",
+      "source_file": "recent-memory-benchmark/heldout/frozen/challenge_02/attempts/model_calls.json"
+    },
+    {
+      "archive_file": "original/heldout/frozen/challenge_02/attempts/progress.json",
+      "bytes": 1956,
+      "sha256": "c425a3626c793f4acd90e1ae36a2a4efee384c425c4d64d964bb8cc126e12f02",
+      "source_file": "recent-memory-benchmark/heldout/frozen/challenge_02/attempts/progress.json"
+    },
+    {
+      "archive_file": "original/heldout/frozen/challenge_02/attempts/run.json",
+      "bytes": 6618,
+      "sha256": "ff5eca4f1d32e978c7a842e38e0d31e69d39a0be948b10cf0c0ca6093570468f",
+      "source_file": "recent-memory-benchmark/heldout/frozen/challenge_02/attempts/run.json"
+    },
+    {
+      "archive_file": "original/heldout/frozen/challenge_02/cell.json",
+      "bytes": 869,
+      "sha256": "22fa7c3ef89502152e53238777aa78cf226a79f4b814b5425754732d6e122912",
+      "source_file": "recent-memory-benchmark/heldout/frozen/challenge_02/cell.json"
+    },
+    {
+      "archive_file": "original/heldout/frozen/challenge_02/stderr.txt",
+      "bytes": 228,
+      "sha256": "f0814c22197c48dad23357c814b4cabb8dd23ad197bc6fae6c719629e5c4df80",
+      "source_file": "recent-memory-benchmark/heldout/frozen/challenge_02/stderr.txt"
+    },
+    {
+      "archive_file": "original/heldout/frozen/challenge_02/stdout.txt",
+      "bytes": 2322,
+      "sha256": "5f63f0ae8cdfea59b059b532fd850495430a6c04583bc1e58c41228f60c4bf76",
+      "source_file": "recent-memory-benchmark/heldout/frozen/challenge_02/stdout.txt"
+    },
+    {
+      "archive_file": "original/heldout/none/challenge_01/attempts/attempt_01.json",
+      "bytes": 3903,
+      "sha256": "dd69c45d68a560fbe7bf59866f46333285c55fe0a345fbe2fb6b83c0f62655c0",
+      "source_file": "recent-memory-benchmark/heldout/none/challenge_01/attempts/attempt_01.json"
+    },
+    {
+      "archive_file": "original/heldout/none/challenge_01/attempts/attempt_01.png",
+      "bytes": 3831,
+      "sha256": "5b6a7483592cb4c1d28a592ce4ff749a81354c31dbaca3c13f7d74a81c311b00",
+      "source_file": "recent-memory-benchmark/heldout/none/challenge_01/attempts/attempt_01.png"
+    },
+    {
+      "archive_file": "original/heldout/none/challenge_01/attempts/attempt_01.raw.json",
+      "bytes": 4540,
+      "sha256": "e9655e305c5d62cd125e30dcbaf061bb4a3526e9b4e4837b6620d92ff00d89ec",
+      "source_file": "recent-memory-benchmark/heldout/none/challenge_01/attempts/attempt_01.raw.json"
+    },
+    {
+      "archive_file": "original/heldout/none/challenge_01/attempts/attempt_01.svg",
+      "bytes": 892,
+      "sha256": "fbe769592bebe385c0781afebe0efa7367a4d4c10674494136d1f1a9190455e5",
+      "source_file": "recent-memory-benchmark/heldout/none/challenge_01/attempts/attempt_01.svg"
+    },
+    {
+      "archive_file": "original/heldout/none/challenge_01/attempts/attempt_01.vision.json",
+      "bytes": 5746,
+      "sha256": "34d7c467c43aec975d897813e1b24b2383a8225185faae6c5f7165b404e4bb18",
+      "source_file": "recent-memory-benchmark/heldout/none/challenge_01/attempts/attempt_01.vision.json"
+    },
+    {
+      "archive_file": "original/heldout/none/challenge_01/attempts/attempt_02.json",
+      "bytes": 5215,
+      "sha256": "fb40f4252c44542336d6861d6f00cdafec61c8a3089dc0b0ce6d94be0df5e22d",
+      "source_file": "recent-memory-benchmark/heldout/none/challenge_01/attempts/attempt_02.json"
+    },
+    {
+      "archive_file": "original/heldout/none/challenge_01/attempts/attempt_02.png",
+      "bytes": 14584,
+      "sha256": "64cc780d22e7e01cb2fdcfa1d845982af919d97f0b56ff67283c0efa3d1b7b73",
+      "source_file": "recent-memory-benchmark/heldout/none/challenge_01/attempts/attempt_02.png"
+    },
+    {
+      "archive_file": "original/heldout/none/challenge_01/attempts/attempt_02.raw.json",
+      "bytes": 11243,
+      "sha256": "58a20767ea1f66f9c47e549b4c40792d0f4a107272620ff0aa72799843b5b5ae",
+      "source_file": "recent-memory-benchmark/heldout/none/challenge_01/attempts/attempt_02.raw.json"
+    },
+    {
+      "archive_file": "original/heldout/none/challenge_01/attempts/attempt_02.svg",
+      "bytes": 1640,
+      "sha256": "b303d19de0c8a5ddaf357ff29e0690316d1859c80e46c5b901f465c9bbaf4170",
+      "source_file": "recent-memory-benchmark/heldout/none/challenge_01/attempts/attempt_02.svg"
+    },
+    {
+      "archive_file": "original/heldout/none/challenge_01/attempts/attempt_02.vision.json",
+      "bytes": 7302,
+      "sha256": "b8fed56c56a71690c101064224266bb4fee7baa63ae661f4d9e4fd0d009b0968",
+      "source_file": "recent-memory-benchmark/heldout/none/challenge_01/attempts/attempt_02.vision.json"
+    },
+    {
+      "archive_file": "original/heldout/none/challenge_01/attempts/model_calls.json",
+      "bytes": 25853,
+      "sha256": "6de75c14a8dc1c2ce0738ca70751b82646ccb497d007593d52cd1645d71fe708",
+      "source_file": "recent-memory-benchmark/heldout/none/challenge_01/attempts/model_calls.json"
+    },
+    {
+      "archive_file": "original/heldout/none/challenge_01/attempts/progress.json",
+      "bytes": 1913,
+      "sha256": "675fd9d550644bcc2a634de48b89b28b7dda3e73958d565b97253e3dd64bd5fe",
+      "source_file": "recent-memory-benchmark/heldout/none/challenge_01/attempts/progress.json"
+    },
+    {
+      "archive_file": "original/heldout/none/challenge_01/attempts/run.json",
+      "bytes": 3911,
+      "sha256": "2b0919dbd96d038356db2d680b0475ab1599ea60f45dfa98456fa7f5e4222e41",
+      "source_file": "recent-memory-benchmark/heldout/none/challenge_01/attempts/run.json"
+    },
+    {
+      "archive_file": "original/heldout/none/challenge_01/cell.json",
+      "bytes": 758,
+      "sha256": "06653ab010eb1a9725598fca56bd8496aee3dbdbbc617a0901ac03854cad7967",
+      "source_file": "recent-memory-benchmark/heldout/none/challenge_01/cell.json"
+    },
+    {
+      "archive_file": "original/heldout/none/challenge_01/stderr.txt",
+      "bytes": 228,
+      "sha256": "f0814c22197c48dad23357c814b4cabb8dd23ad197bc6fae6c719629e5c4df80",
+      "source_file": "recent-memory-benchmark/heldout/none/challenge_01/stderr.txt"
+    },
+    {
+      "archive_file": "original/heldout/none/challenge_01/stdout.txt",
+      "bytes": 2273,
+      "sha256": "f010ffaeee30296c3a1853056d301da3fb5b6b93a6f88ce0d258f8a633920d89",
+      "source_file": "recent-memory-benchmark/heldout/none/challenge_01/stdout.txt"
+    },
+    {
+      "archive_file": "original/heldout/none/challenge_02/attempts/attempt_01.json",
+      "bytes": 4676,
+      "sha256": "4bc28e1b8ec7830b04bdf906ad4fd16195968ad202381370263cfd8932a18703",
+      "source_file": "recent-memory-benchmark/heldout/none/challenge_02/attempts/attempt_01.json"
+    },
+    {
+      "archive_file": "original/heldout/none/challenge_02/attempts/attempt_01.png",
+      "bytes": 16503,
+      "sha256": "5eb6f22c760212515bbc1ded7c6289d9a445d4d58f0d0710a4a701487e28a4df",
+      "source_file": "recent-memory-benchmark/heldout/none/challenge_02/attempts/attempt_01.png"
+    },
+    {
+      "archive_file": "original/heldout/none/challenge_02/attempts/attempt_01.raw.json",
+      "bytes": 5522,
+      "sha256": "d1bab753c4339e307e4117f5625301a95cd439c3b59e0d93059cca61745edd52",
+      "source_file": "recent-memory-benchmark/heldout/none/challenge_02/attempts/attempt_01.raw.json"
+    },
+    {
+      "archive_file": "original/heldout/none/challenge_02/attempts/attempt_01.svg",
+      "bytes": 1118,
+      "sha256": "a369c35072e7c9c8c2559a5bf19ae052e685d2e0a5425fd98ed355b06b5e489d",
+      "source_file": "recent-memory-benchmark/heldout/none/challenge_02/attempts/attempt_01.svg"
+    },
+    {
+      "archive_file": "original/heldout/none/challenge_02/attempts/attempt_01.vision.json",
+      "bytes": 7044,
+      "sha256": "ff4229985ba8eff513b906126b96c8cd5e38746b18717b84195b2ba78e96c4fe",
+      "source_file": "recent-memory-benchmark/heldout/none/challenge_02/attempts/attempt_01.vision.json"
+    },
+    {
+      "archive_file": "original/heldout/none/challenge_02/attempts/attempt_02.json",
+      "bytes": 4687,
+      "sha256": "9cd0755e641f2f6d5c507da0c4773896ba82b91d2cb87b503d2e61ff572d99f7",
+      "source_file": "recent-memory-benchmark/heldout/none/challenge_02/attempts/attempt_02.json"
+    },
+    {
+      "archive_file": "original/heldout/none/challenge_02/attempts/attempt_02.png",
+      "bytes": 9459,
+      "sha256": "55b58b8d8438cb4ca814dfdf72d12ec1ae494e861b144ffe232600c3e1576e53",
+      "source_file": "recent-memory-benchmark/heldout/none/challenge_02/attempts/attempt_02.png"
+    },
+    {
+      "archive_file": "original/heldout/none/challenge_02/attempts/attempt_02.raw.json",
+      "bytes": 11368,
+      "sha256": "216eedfba1e4a5dd64886fe2aa081184dbb203a7b0ba427c3606b49a959b2bf8",
+      "source_file": "recent-memory-benchmark/heldout/none/challenge_02/attempts/attempt_02.raw.json"
+    },
+    {
+      "archive_file": "original/heldout/none/challenge_02/attempts/attempt_02.svg",
+      "bytes": 1439,
+      "sha256": "673db0dabde998670f3b312e7fdbf0a2512e157e31bfc7de995a8b8de8e0ce45",
+      "source_file": "recent-memory-benchmark/heldout/none/challenge_02/attempts/attempt_02.svg"
+    },
+    {
+      "archive_file": "original/heldout/none/challenge_02/attempts/attempt_02.vision.json",
+      "bytes": 6796,
+      "sha256": "40daa0aa91b3193bce477ced0edf26c9ea0990065a6b7f1c802c9708c4ef1a9c",
+      "source_file": "recent-memory-benchmark/heldout/none/challenge_02/attempts/attempt_02.vision.json"
+    },
+    {
+      "archive_file": "original/heldout/none/challenge_02/attempts/model_calls.json",
+      "bytes": 27173,
+      "sha256": "112eadfaf443b7e05fc1b0f6a8d5f0934c3ad9adad5195dbf7f0ae0329af476f",
+      "source_file": "recent-memory-benchmark/heldout/none/challenge_02/attempts/model_calls.json"
+    },
+    {
+      "archive_file": "original/heldout/none/challenge_02/attempts/progress.json",
+      "bytes": 1949,
+      "sha256": "d11476f6c3292222cd1dfdbc0786b33cba7f84ee71d9cace0161360d1ebc554c",
+      "source_file": "recent-memory-benchmark/heldout/none/challenge_02/attempts/progress.json"
+    },
+    {
+      "archive_file": "original/heldout/none/challenge_02/attempts/run.json",
+      "bytes": 3951,
+      "sha256": "6a595bba862360efd03ad1ff7261c3918931b600bd4336d6ebe24f5f5be84e77",
+      "source_file": "recent-memory-benchmark/heldout/none/challenge_02/attempts/run.json"
+    },
+    {
+      "archive_file": "original/heldout/none/challenge_02/cell.json",
+      "bytes": 754,
+      "sha256": "bba2208794b6bf0b187d1aa11b63be7486b5ab375150364f0b8acfe38da16930",
+      "source_file": "recent-memory-benchmark/heldout/none/challenge_02/cell.json"
+    },
+    {
+      "archive_file": "original/heldout/none/challenge_02/stderr.txt",
+      "bytes": 228,
+      "sha256": "f0814c22197c48dad23357c814b4cabb8dd23ad197bc6fae6c719629e5c4df80",
+      "source_file": "recent-memory-benchmark/heldout/none/challenge_02/stderr.txt"
+    },
+    {
+      "archive_file": "original/heldout/none/challenge_02/stdout.txt",
+      "bytes": 2313,
+      "sha256": "0e843a530d81d5947276ecd384ee0573b39b019a82b9aaf2af3c4397b7c3ee08",
+      "source_file": "recent-memory-benchmark/heldout/none/challenge_02/stdout.txt"
+    },
+    {
+      "archive_file": "original/protocol.json",
+      "bytes": 621,
+      "sha256": "006bc0b79d6d1e6a62b5017fe7ef57a46dde74035fee318ea3a851ee1f3d1b1b",
+      "source_file": "recent-memory-benchmark/protocol.json"
+    },
+    {
+      "archive_file": "original/summary.json",
+      "bytes": 21577,
+      "sha256": "0ec956734f855935420e922b8605d99cb33925a946b2fdef49378946c30d25ee",
+      "source_file": "recent-memory-benchmark/summary.json"
+    },
+    {
+      "archive_file": "original/training/adaptive/challenge_01/attempts/attempt_01.json",
+      "bytes": 4339,
+      "sha256": "a81a1baaf22893582ce1d6285abc4df0820c101c47570e1648da813a6bb76ae8",
+      "source_file": "recent-memory-benchmark/training/adaptive/challenge_01/attempts/attempt_01.json"
+    },
+    {
+      "archive_file": "original/training/adaptive/challenge_01/attempts/attempt_01.png",
+      "bytes": 9092,
+      "sha256": "c16c746ec39f1ca30c6a466a605988be4ae580dc6dde56a83a55e62de56b5468",
+      "source_file": "recent-memory-benchmark/training/adaptive/challenge_01/attempts/attempt_01.png"
+    },
+    {
+      "archive_file": "original/training/adaptive/challenge_01/attempts/attempt_01.raw.json",
+      "bytes": 4559,
+      "sha256": "21dd0455522e09a43636f973ef44f0d47ab13b3b47eca55ba1866dae3ab98a73",
+      "source_file": "recent-memory-benchmark/training/adaptive/challenge_01/attempts/attempt_01.raw.json"
+    },
+    {
+      "archive_file": "original/training/adaptive/challenge_01/attempts/attempt_01.svg",
+      "bytes": 565,
+      "sha256": "c60adf5d67e295c8cbf19193d5e62b92e98ba08a50ad42ea64044244fc8c5ca4",
+      "source_file": "recent-memory-benchmark/training/adaptive/challenge_01/attempts/attempt_01.svg"
+    },
+    {
+      "archive_file": "original/training/adaptive/challenge_01/attempts/attempt_01.vision.json",
+      "bytes": 6237,
+      "sha256": "0c281e54d9fc4ba5f16804c549413bdbfa6ceb00c07360570a61ea1932823f89",
+      "source_file": "recent-memory-benchmark/training/adaptive/challenge_01/attempts/attempt_01.vision.json"
+    },
+    {
+      "archive_file": "original/training/adaptive/challenge_01/attempts/attempt_02.json",
+      "bytes": 5086,
+      "sha256": "aa2abb313dc4c5ead3cf97b40590a1e2b497b20ef514703ced114d4888dcfb21",
+      "source_file": "recent-memory-benchmark/training/adaptive/challenge_01/attempts/attempt_02.json"
+    },
+    {
+      "archive_file": "original/training/adaptive/challenge_01/attempts/attempt_02.png",
+      "bytes": 9105,
+      "sha256": "21ccb5abbddd4c37413aca9a3f1c3d0adcd97242bb3fcb44bd82a430c429e2c9",
+      "source_file": "recent-memory-benchmark/training/adaptive/challenge_01/attempts/attempt_02.png"
+    },
+    {
+      "archive_file": "original/training/adaptive/challenge_01/attempts/attempt_02.raw.json",
+      "bytes": 10173,
+      "sha256": "9e3eb15c460103241741903592ff4eddcce5208124e6f8e0f47d151180f3fa3e",
+      "source_file": "recent-memory-benchmark/training/adaptive/challenge_01/attempts/attempt_02.raw.json"
+    },
+    {
+      "archive_file": "original/training/adaptive/challenge_01/attempts/attempt_02.svg",
+      "bytes": 739,
+      "sha256": "710565ef6ef36136a7636945fd699299daa62d81f955a7c03b7ff271dcac4abc",
+      "source_file": "recent-memory-benchmark/training/adaptive/challenge_01/attempts/attempt_02.svg"
+    },
+    {
+      "archive_file": "original/training/adaptive/challenge_01/attempts/attempt_02.vision.json",
+      "bytes": 6088,
+      "sha256": "538701f32a47b910a692f9f7147e52cbfb54cdbc92619ae58069d71270f4e629",
+      "source_file": "recent-memory-benchmark/training/adaptive/challenge_01/attempts/attempt_02.vision.json"
+    },
+    {
+      "archive_file": "original/training/adaptive/challenge_01/attempts/model_calls.json",
+      "bytes": 25119,
+      "sha256": "a602c84beacd27f33ccae1f9c635acb707f60a22c25d26a01c6b044c1f9d79fc",
+      "source_file": "recent-memory-benchmark/training/adaptive/challenge_01/attempts/model_calls.json"
+    },
+    {
+      "archive_file": "original/training/adaptive/challenge_01/attempts/progress.json",
+      "bytes": 2137,
+      "sha256": "9c703aca7e7563fc7f2658cb62eb8ffe136d1f3e7269392eb754277c1a223fd2",
+      "source_file": "recent-memory-benchmark/training/adaptive/challenge_01/attempts/progress.json"
+    },
+    {
+      "archive_file": "original/training/adaptive/challenge_01/attempts/run.json",
+      "bytes": 4166,
+      "sha256": "825273a521182692caeae157c49b0bdf1fb64dca6ac69e670227f9ac123a2764",
+      "source_file": "recent-memory-benchmark/training/adaptive/challenge_01/attempts/run.json"
+    },
+    {
+      "archive_file": "original/training/adaptive/challenge_01/cell.json",
+      "bytes": 780,
+      "sha256": "b7535187853e78e0d5a28d53f53aa629798addd49a064744b81ec13ed7d831d4",
+      "source_file": "recent-memory-benchmark/training/adaptive/challenge_01/cell.json"
+    },
+    {
+      "archive_file": "original/training/adaptive/challenge_01/stderr.txt",
+      "bytes": 228,
+      "sha256": "f0814c22197c48dad23357c814b4cabb8dd23ad197bc6fae6c719629e5c4df80",
+      "source_file": "recent-memory-benchmark/training/adaptive/challenge_01/stderr.txt"
+    },
+    {
+      "archive_file": "original/training/adaptive/challenge_01/stdout.txt",
+      "bytes": 2506,
+      "sha256": "8a7f8b2e0d255e2ec1bc0869f2fa423f2fc06898adc5874aaa4135109057519f",
+      "source_file": "recent-memory-benchmark/training/adaptive/challenge_01/stdout.txt"
+    },
+    {
+      "archive_file": "recent-memory-benchmark-protocol.json",
+      "bytes": 621,
+      "sha256": "006bc0b79d6d1e6a62b5017fe7ef57a46dde74035fee318ea3a851ee1f3d1b1b",
+      "source_file": "recent-memory-benchmark-protocol.json"
+    },
+    {
+      "archive_file": "recent-memory-benchmark-preregistration.json",
+      "bytes": 1304,
+      "sha256": "075ad34742b1ca7fc6612c915fb78bcdf5e6807eeb9a5bf86eb6c43e8c0e4feb",
+      "source_file": "recent-memory-benchmark-preregistration.json"
+    },
+    {
+      "archive_file": "recent-memory-benchmark.stdout.json",
+      "bytes": 21577,
+      "sha256": "0ec956734f855935420e922b8605d99cb33925a946b2fdef49378946c30d25ee",
+      "source_file": "recent-memory-benchmark.stdout.json"
+    },
+    {
+      "archive_file": "recent-memory-benchmark.stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source_file": "recent-memory-benchmark.stderr.log"
+    },
+    {
+      "archive_file": "audit_recent_memory_run.py",
+      "bytes": 4802,
+      "sha256": "9ec4c43843e7e5b1c64c75d26ec5439ca4aad67bf0d601baec2654b763b85a7c",
+      "source_file": "audit_recent_memory_run.py"
+    },
+    {
+      "archive_file": "archive_recent_memory.py",
+      "bytes": 6152,
+      "sha256": "fbea5387c92894ae6cfb3431562502d38b69061c7929ea7f14d21ebcf936c62b",
+      "source_file": "archive_recent_memory.py"
+    },
+    {
+      "archive_file": "write_recent_visual_audit.py",
+      "bytes": 4966,
+      "sha256": "60aae7c968c7000437a1da42e41519edcf7df7da3c1438c060d56a587c5dd2e9",
+      "source_file": "write_recent_visual_audit.py"
+    },
+    {
+      "archive_file": "audit/integrity.json",
+      "bytes": 33450,
+      "sha256": "42615251b0aca9673337108b6494226149b6ad495f24bcd805d86ad1ab89bd78",
+      "source_file": "recent-memory-benchmark-host-audit/integrity.json"
+    },
+    {
+      "archive_file": "audit/final-visual-review.json",
+      "bytes": 10414,
+      "sha256": "f994733da4a928813b71e98a9c4629cffc49266d68ccec62c42ef89425ac7d07",
+      "source_file": "recent-memory-benchmark-host-audit/final-visual-review.json"
+    },
+    {
+      "archive_file": "audit/earlier-host-observations/21ccb5abbddd4c37413aca9a3f1c3d0adcd97242bb3fcb44bd82a430c429e2c9.training.adaptive.2.json",
+      "bytes": 1106,
+      "sha256": "d3596c79c02eb731633b60d615b07a9e9ce9d213c571379063ea1baf107bad2e",
+      "source_file": "recent-memory-benchmark-host-audit/images/21ccb5abbddd4c37413aca9a3f1c3d0adcd97242bb3fcb44bd82a430c429e2c9.training.adaptive.2.json"
+    },
+    {
+      "archive_file": "audit/earlier-host-observations/302164c7065d4a0a4b8401e6df5bc2965275cecea1528aae8e57b4e5d39a623d.heldout.frozen.1.1.json",
+      "bytes": 1009,
+      "sha256": "165ef470883c858cb8ef763e9a2c9c62a1d94e996650f9c5e653deff98018caf",
+      "source_file": "recent-memory-benchmark-host-audit/images/302164c7065d4a0a4b8401e6df5bc2965275cecea1528aae8e57b4e5d39a623d.heldout.frozen.1.1.json"
+    },
+    {
+      "archive_file": "audit/earlier-host-observations/c16c746ec39f1ca30c6a466a605988be4ae580dc6dde56a83a55e62de56b5468.training.adaptive.1.json",
+      "bytes": 1017,
+      "sha256": "899768713d7a555eeacfb7ad14bd0a610e716837166ab232590959bf00e085ca",
+      "source_file": "recent-memory-benchmark-host-audit/images/c16c746ec39f1ca30c6a466a605988be4ae580dc6dde56a83a55e62de56b5468.training.adaptive.1.json"
+    }
+  ],
+  "original_summary_reproduced_from_frozen_source": true,
+  "retained_learning_contrast_valid": true,
+  "schema": "bean.draw.archive.sources.v1",
+  "source_databases_unchanged": true,
+  "source_git_sha": "bb7128d76a6c210d84234326576ef6bc7f1e2509",
+  "source_root": "/workspace/bean-live-evidence/recent-memory-benchmark",
+  "weights_updated": false
+}

@@ -1,0 +1,61 @@
+{
+  "blind_prompt": "Inspect the ATTACHED IMAGE pixels without a title or claimed subject. Identify the most plausible concrete object or scene; say unclear if none is recognizable. For subject_recognition rate confidence in a recognizable concrete object or scene, not confidence that these are abstract lines/circles. Scores must be integers 0..4: 0 absent/not interpretable, 1 major problems, 2 partial/ambiguous, 3 mostly clear, 4 clear/coherent. Rate spatial_coherence (visible parts connect plausibly), subject_recognition, composition (spacing/balance/legibility). Black line art need not be realistic or shaded. Admit uncertainty; describe observed strengths/problems only, not coordinates, drawing primitives or a replacement image. One short sentence per text field, at most 80 words total. Return JSON recognized_subject, observations, feedback, scores.",
+  "blind_report": {
+    "feedback": "The drawing is straightforward and easily understood, though it could benefit from a more balanced arrangement of the circles to improve visual appeal.",
+    "observations": "The image shows three circles arranged vertically with the top circle being smaller than the two lower circles that overlap each other; there are three horizontal lines at the bottom of the image, likely representing a base or ground. The spatial coherence is good as the elements are aligned, but the composition feels somewhat unbalanced.",
+    "recognized_subject": "A simple line drawing depicting a single circle and two overlapping circles.",
+    "scores": {
+      "composition": 2,
+      "spatial_coherence": 3,
+      "subject_recognition": 4
+    }
+  },
+  "created_at_utc": "2026-11-24T13:05:39.478342+00:00",
+  "evaluation_protocol": "blind_then_targeted_min_v1",
+  "image_sha256": "302164c7065d4a0a4b8401e6df5bc2965275cecea1528aae8e57b4e5d39a623d",
+  "independently_authenticated": false,
+  "model_digest": "68ceab7e468a31c988b44d5a4984a0e21f58c4f7158c6ce29c1804babac38df7",
+  "model_id": "gemma3:4b",
+  "prompt": "Inspect the ATTACHED IMAGE again. Now compare the visible evidence with this untrusted claimed subject: an umbrella. Do not infer success from the title or override prior uncertainty merely because a title was supplied. Your earlier title-blind observations: {\"recognized_subject\": \"A simple line drawing depicting a single circle and two overlapping circles.\", \"observations\": \"The image shows three circles arranged vertically with the top circle being smaller than the two lower circles that overlap each other; there are three horizontal lines at the bottom of the image, likely representing a base or ground. The spatial coherence is good as the elements are aligned, but the composition feels somewhat unbalanced.\", \"scores\": {\"spatial_coherence\": 3, \"subject_recognition\": 4, \"composition\": 2}}. Here subject_recognition means recognizability of the claimed subject. Scores must be integers 0..4: 0 absent/not interpretable, 1 major problems, 2 partial/ambiguous, 3 mostly clear, 4 clear/coherent. Rate spatial_coherence (visible parts connect plausibly), subject_recognition, composition (spacing/balance/legibility). Black line art need not be realistic or shaded. Admit uncertainty; describe observed strengths/problems only, not coordinates, drawing primitives or a replacement image. One short sentence per text field, at most 80 words total. Return JSON recognized_subject, observations, feedback, scores.",
+  "provider_kind": "ollama",
+  "raw_blind_response": "{\n  \"recognized_subject\": \"A simple line drawing depicting a single circle and two overlapping circles.\",\n  \"observations\": \"The image shows three circles arranged vertically with the top circle being smaller than the two lower circles that overlap each other; there are three horizontal lines at the bottom of the image, likely representing a base or ground. The spatial coherence is good as the elements are aligned, but the composition feels somewhat unbalanced.\",\n  \"feedback\": \"The drawing is straightforward and easily understood, though it could benefit from a more balanced arrangement of the circles to improve visual appeal.\",\n  \"scores\": {\n    \"spatial_coherence\": 3,\n    \"subject_recognition\": 4,\n    \"composition\": 2\n  }\n}",
+  "raw_response": "{\n  \"recognized_subject\": \"A simple line drawing depicting three circles.\",\n  \"observations\": \"The image presents a minimalist drawing of three circles—one small and one larger pair overlapping—against a plain background with three horizontal lines at the bottom; the arrangement is basic but lacks context or a clear purpose.\",\n  \"feedback\": \"While the circles are recognizable, the overall composition feels incomplete without a defined subject or narrative, and the horizontal lines seem arbitrary.\",\n  \"scores\": {\n    \"spatial_coherence\": 3,\n    \"subject_recognition\": 4,\n    \"composition\": 2\n  }\n}",
+  "report": {
+    "blind_observations": "The image shows three circles arranged vertically with the top circle being smaller than the two lower circles that overlap each other; there are three horizontal lines at the bottom of the image, likely representing a base or ground. The spatial coherence is good as the elements are aligned, but the composition feels somewhat unbalanced.",
+    "blind_recognized_subject": "A simple line drawing depicting a single circle and two overlapping circles.",
+    "created_at_utc": "2026-11-24T13:08:31.593232+00:00",
+    "evaluation_protocol": "blind_then_targeted_min_v1",
+    "evaluator": "Ollama vision reviewer: gemma3:4b",
+    "feedback": "Title-blind review: The drawing is straightforward and easily understood, though it could benefit from a more balanced arrangement of the circles to improve visual appeal. Target-aware review: While the circles are recognizable, the overall composition feels incomplete without a defined subject or narrative, and the horizontal lines seem arbitrary.",
+    "image_sha256": "302164c7065d4a0a4b8401e6df5bc2965275cecea1528aae8e57b4e5d39a623d",
+    "independently_authenticated": false,
+    "kind": "vision_model",
+    "model_digest": "68ceab7e468a31c988b44d5a4984a0e21f58c4f7158c6ce29c1804babac38df7",
+    "model_id": "gemma3:4b",
+    "observations": "The image shows three circles arranged vertically with the top circle being smaller than the two lower circles that overlap each other; there are three horizontal lines at the bottom of the image, likely representing a base or ground. The spatial coherence is good as the elements are aligned, but the composition feels somewhat unbalanced.",
+    "provider_kind": "ollama",
+    "recognized_subject": "A simple line drawing depicting a single circle and two overlapping circles.",
+    "satisfactory": false,
+    "score_rule": "minimum_of_blind_object_clarity_and_targeted_scores_not_authenticated_truth",
+    "scores": {
+      "composition": 2,
+      "spatial_coherence": 3,
+      "subject_recognition": 4
+    },
+    "state": "host_reported_pixel_review"
+  },
+  "schema": "bean.draw.vision_call.v1",
+  "state": "model_reported_pixel_review",
+  "subject": "an umbrella",
+  "targeted_report": {
+    "feedback": "While the circles are recognizable, the overall composition feels incomplete without a defined subject or narrative, and the horizontal lines seem arbitrary.",
+    "observations": "The image presents a minimalist drawing of three circles—one small and one larger pair overlapping—against a plain background with three horizontal lines at the bottom; the arrangement is basic but lacks context or a clear purpose.",
+    "recognized_subject": "A simple line drawing depicting three circles.",
+    "scores": {
+      "composition": 2,
+      "spatial_coherence": 3,
+      "subject_recognition": 4
+    }
+  },
+  "used_for_generation": true
+}

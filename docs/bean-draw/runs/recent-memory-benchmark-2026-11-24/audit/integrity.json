@@ -1,0 +1,946 @@
+{
+  "attempts": [
+    {
+      "arm": "adaptive",
+      "attempt": 1,
+      "challenge": 1,
+      "model_shapes_to_svg": "exact_bytes",
+      "phase": "training",
+      "png": "c16c746ec39f1ca30c6a466a605988be4ae580dc6dde56a83a55e62de56b5468",
+      "sidecar_sha256": "a81a1baaf22893582ce1d6285abc4df0820c101c47570e1648da813a6bb76ae8",
+      "source_git_sha": "bb7128d76a6c210d84234326576ef6bc7f1e2509",
+      "status": "host_reported_not_satisfactory",
+      "subject": "a teapot",
+      "svg": "c60adf5d67e295c8cbf19193d5e62b92e98ba08a50ad42ea64044244fc8c5ca4",
+      "vision_receipt": "0c281e54d9fc4ba5f16804c549413bdbfa6ceb00c07360570a61ea1932823f89"
+    },
+    {
+      "arm": "adaptive",
+      "attempt": 2,
+      "challenge": 1,
+      "model_shapes_to_svg": "exact_bytes",
+      "phase": "training",
+      "png": "21ccb5abbddd4c37413aca9a3f1c3d0adcd97242bb3fcb44bd82a430c429e2c9",
+      "sidecar_sha256": "aa2abb313dc4c5ead3cf97b40590a1e2b497b20ef514703ced114d4888dcfb21",
+      "source_git_sha": "bb7128d76a6c210d84234326576ef6bc7f1e2509",
+      "status": "host_reported_not_satisfactory",
+      "subject": "a teapot",
+      "svg": "710565ef6ef36136a7636945fd699299daa62d81f955a7c03b7ff271dcac4abc",
+      "vision_receipt": "538701f32a47b910a692f9f7147e52cbfb54cdbc92619ae58069d71270f4e629"
+    },
+    {
+      "arm": "frozen",
+      "attempt": 1,
+      "challenge": 1,
+      "model_shapes_to_svg": "exact_bytes",
+      "phase": "heldout",
+      "png": "302164c7065d4a0a4b8401e6df5bc2965275cecea1528aae8e57b4e5d39a623d",
+      "sidecar_sha256": "e870ddb1d8b9a82db7d3e3433abf29e81e1e742ecfc09d5df01675d7f7a48120",
+      "source_git_sha": "bb7128d76a6c210d84234326576ef6bc7f1e2509",
+      "status": "host_reported_not_satisfactory",
+      "subject": "an umbrella",
+      "svg": "5ece2ad9544bd6557c80e2dc4e3b54784bec28e495808f453649753d90edfaca",
+      "vision_receipt": "8e6b02c32a99d33a2b483ac0feab1ddf1c59be9bacc15596b06d5815f9c45ef9"
+    },
+    {
+      "arm": "frozen",
+      "attempt": 2,
+      "challenge": 1,
+      "model_shapes_to_svg": "exact_bytes",
+      "phase": "heldout",
+      "png": "91a58c5fa30b8856b5400e3538de13ac4e62ab7e05824f7e81ef553cf9566d23",
+      "sidecar_sha256": "4e11dfc0c846984d93494a1574c8c18e0c67d93f2b87664290b4cb8879026d0c",
+      "source_git_sha": "bb7128d76a6c210d84234326576ef6bc7f1e2509",
+      "status": "host_reported_satisfactory",
+      "subject": "an umbrella",
+      "svg": "7e56568f3fb45c248ac6d189879a33e5731d4ed5fd74cec0dea8aba6c7c128d2",
+      "vision_receipt": "1a3208a19e94a0239c252a49b31b88bf924bb9d5cfcca20167ed193b596f4bc6"
+    },
+    {
+      "arm": "none",
+      "attempt": 1,
+      "challenge": 1,
+      "model_shapes_to_svg": "exact_bytes",
+      "phase": "heldout",
+      "png": "5b6a7483592cb4c1d28a592ce4ff749a81354c31dbaca3c13f7d74a81c311b00",
+      "sidecar_sha256": "dd69c45d68a560fbe7bf59866f46333285c55fe0a345fbe2fb6b83c0f62655c0",
+      "source_git_sha": "bb7128d76a6c210d84234326576ef6bc7f1e2509",
+      "status": "host_reported_satisfactory",
+      "subject": "an umbrella",
+      "svg": "fbe769592bebe385c0781afebe0efa7367a4d4c10674494136d1f1a9190455e5",
+      "vision_receipt": "34d7c467c43aec975d897813e1b24b2383a8225185faae6c5f7165b404e4bb18"
+    },
+    {
+      "arm": "none",
+      "attempt": 2,
+      "challenge": 1,
+      "model_shapes_to_svg": "exact_bytes",
+      "phase": "heldout",
+      "png": "64cc780d22e7e01cb2fdcfa1d845982af919d97f0b56ff67283c0efa3d1b7b73",
+      "sidecar_sha256": "fb40f4252c44542336d6861d6f00cdafec61c8a3089dc0b0ce6d94be0df5e22d",
+      "source_git_sha": "bb7128d76a6c210d84234326576ef6bc7f1e2509",
+      "status": "host_reported_satisfactory",
+      "subject": "an umbrella",
+      "svg": "b303d19de0c8a5ddaf357ff29e0690316d1859c80e46c5b901f465c9bbaf4170",
+      "vision_receipt": "b8fed56c56a71690c101064224266bb4fee7baa63ae661f4d9e4fd0d009b0968"
+    },
+    {
+      "arm": "adaptive",
+      "attempt": 1,
+      "challenge": 1,
+      "model_shapes_to_svg": "exact_bytes",
+      "phase": "heldout",
+      "png": "302164c7065d4a0a4b8401e6df5bc2965275cecea1528aae8e57b4e5d39a623d",
+      "sidecar_sha256": "b92194779b9a259def3ed29e1163a468877a61af134241d833199ec4eacfd1b4",
+      "source_git_sha": "bb7128d76a6c210d84234326576ef6bc7f1e2509",
+      "status": "host_reported_not_satisfactory",
+      "subject": "an umbrella",
+      "svg": "5ece2ad9544bd6557c80e2dc4e3b54784bec28e495808f453649753d90edfaca",
+      "vision_receipt": "2d6383d4d237f4ea548b87af4cde3e21d5bc462eae5bc42cfcac256abf15ed14"
+    },
+    {
+      "arm": "adaptive",
+      "attempt": 2,
+      "challenge": 1,
+      "model_shapes_to_svg": "exact_bytes",
+      "phase": "heldout",
+      "png": "91a58c5fa30b8856b5400e3538de13ac4e62ab7e05824f7e81ef553cf9566d23",
+      "sidecar_sha256": "a2d4afd2515ee90e86b773932b4e97a7885b6a41dda2d28149790c657c859272",
+      "source_git_sha": "bb7128d76a6c210d84234326576ef6bc7f1e2509",
+      "status": "host_reported_satisfactory",
+      "subject": "an umbrella",
+      "svg": "7e56568f3fb45c248ac6d189879a33e5731d4ed5fd74cec0dea8aba6c7c128d2",
+      "vision_receipt": "b01d84a1e259aaad458654e8ce5620b8960cf562dfc689162ca68ad6ffbd3663"
+    },
+    {
+      "arm": "none",
+      "attempt": 1,
+      "challenge": 2,
+      "model_shapes_to_svg": "exact_bytes",
+      "phase": "heldout",
+      "png": "5eb6f22c760212515bbc1ded7c6289d9a445d4d58f0d0710a4a701487e28a4df",
+      "sidecar_sha256": "4bc28e1b8ec7830b04bdf906ad4fd16195968ad202381370263cfd8932a18703",
+      "source_git_sha": "bb7128d76a6c210d84234326576ef6bc7f1e2509",
+      "status": "host_reported_satisfactory",
+      "subject": "a bicycle",
+      "svg": "a369c35072e7c9c8c2559a5bf19ae052e685d2e0a5425fd98ed355b06b5e489d",
+      "vision_receipt": "ff4229985ba8eff513b906126b96c8cd5e38746b18717b84195b2ba78e96c4fe"
+    },
+    {
+      "arm": "none",
+      "attempt": 2,
+      "challenge": 2,
+      "model_shapes_to_svg": "exact_bytes",
+      "phase": "heldout",
+      "png": "55b58b8d8438cb4ca814dfdf72d12ec1ae494e861b144ffe232600c3e1576e53",
+      "sidecar_sha256": "9cd0755e641f2f6d5c507da0c4773896ba82b91d2cb87b503d2e61ff572d99f7",
+      "source_git_sha": "bb7128d76a6c210d84234326576ef6bc7f1e2509",
+      "status": "host_reported_not_satisfactory",
+      "subject": "a bicycle",
+      "svg": "673db0dabde998670f3b312e7fdbf0a2512e157e31bfc7de995a8b8de8e0ce45",
+      "vision_receipt": "40daa0aa91b3193bce477ced0edf26c9ea0990065a6b7f1c802c9708c4ef1a9c"
+    },
+    {
+      "arm": "adaptive",
+      "attempt": 1,
+      "challenge": 2,
+      "model_shapes_to_svg": "exact_bytes",
+      "phase": "heldout",
+      "png": "f2109c7e7603b797e4674c59dadf9f6ddf8489a121dbbc7e1cef42a3c347c6dc",
+      "sidecar_sha256": "9a42e3c5629a24cf1e4a023a1305a8849f6170182dfe4fea60b81643cda84d69",
+      "source_git_sha": "bb7128d76a6c210d84234326576ef6bc7f1e2509",
+      "status": "host_reported_satisfactory",
+      "subject": "a bicycle",
+      "svg": "aaa5ac6557a607249746720d3d05b362a5df6128f48834a669e7130c2f4b45fc",
+      "vision_receipt": "a94d22018351e878391e3dcec866bc61146498ca2cc88a266dad4dd21bf215ab"
+    },
+    {
+      "arm": "adaptive",
+      "attempt": 2,
+      "challenge": 2,
+      "model_shapes_to_svg": "exact_bytes",
+      "phase": "heldout",
+      "png": "89ee337ebc7127d0449b72bb9b25e4523ffee75de906a0de01aa96d27249d437",
+      "sidecar_sha256": "ed57dd83c65be607cd2e6545c78045d8791583e21ea157fc5b37236a7bb725de",
+      "source_git_sha": "bb7128d76a6c210d84234326576ef6bc7f1e2509",
+      "status": "host_reported_satisfactory",
+      "subject": "a bicycle",
+      "svg": "99d672cb9b8f6899a8593af90f56ae9d39416d7b0ce15a4bf782b6d164535826",
+      "vision_receipt": "09a160467cfae4ab29ad554ed6e6e6180e46da74f8d9fe7c5b1b9641523d1868"
+    },
+    {
+      "arm": "frozen",
+      "attempt": 1,
+      "challenge": 2,
+      "model_shapes_to_svg": "exact_bytes",
+      "phase": "heldout",
+      "png": "504140a90f85aee17eff71c53c5ee0bdd39cd45c1140d9fc0ae0382d9aa61984",
+      "sidecar_sha256": "8bd74bcb13e02daea204a35f3f80641c821d8e6741c4b9ec3ea46faa80814d9c",
+      "source_git_sha": "bb7128d76a6c210d84234326576ef6bc7f1e2509",
+      "status": "host_reported_satisfactory",
+      "subject": "a bicycle",
+      "svg": "5826f665382a903aee28508a8d102589e0e3bae93058a3e3ebccd285f3f3f660",
+      "vision_receipt": "fe0f404d325607397278fc582a8e3bc4d3b40a914cbd7d328963ec9c3a9d9c10"
+    },
+    {
+      "arm": "frozen",
+      "attempt": 2,
+      "challenge": 2,
+      "model_shapes_to_svg": "exact_bytes",
+      "phase": "heldout",
+      "png": "fa17cefcf4ff6629792515360c5c7d2123633d36f32569f053533614d71ef787",
+      "sidecar_sha256": "cd644040e141d15fcc96da8b5cf4b385b7be2f6a2c17f2016d2fae480a4ccf0c",
+      "source_git_sha": "bb7128d76a6c210d84234326576ef6bc7f1e2509",
+      "status": "host_reported_not_satisfactory",
+      "subject": "a bicycle",
+      "svg": "2bc2fc4b572a18e4680ee9bf6ba92ee0323591ba3835635478625f189f41584b",
+      "vision_receipt": "0470f07cf632503ca026bfec933ecdb97ec7ecd727ca18df24201228de05cdc9"
+    }
+  ],
+  "independently_authenticated": false,
+  "journals": [
+    {
+      "chain": "verified",
+      "database": "training.sqlite3",
+      "last_tip": "2b829fe9336c151714f248b289331432adb45dab13d1aa7f5d5ea2828fde8a11",
+      "rows": 3,
+      "sha256": "242db313f48fa524fd018f1fa748c790fa5d9c75a5233042c2606d87111ce184"
+    },
+    {
+      "chain": "verified",
+      "database": "adaptive.sqlite3",
+      "last_tip": "1519e37fd169af530746463b94e83ccd9dcaef6a0714de2f8e05255a9b9208fb",
+      "rows": 9,
+      "sha256": "0b3116fee201f1989e8aced1ec9968ad43e406d98af39001f1d63db2742b4cf8"
+    },
+    {
+      "chain": "verified",
+      "database": "frozen.sqlite3",
+      "last_tip": "60ab36c983a7dd559d557e65bce04d2241db48086834b32ef3744a21c5d2c442",
+      "rows": 9,
+      "sha256": "9f6c56e47f1528a7afbc102ab57ee18525c735f8a414a117fcbb14ccdaab9030"
+    },
+    {
+      "chain": "verified",
+      "database": "none.sqlite3",
+      "last_tip": "22a8d1f0a00de6cde501b0f50dff6d131c9c3786c72b46bd16cddae981b15df6",
+      "rows": 6,
+      "sha256": "f6b9c7ee20229e41bec6d02405908a5ab9d25176cae8b252f54f74ba25a4f5a3"
+    }
+  ],
+  "observed_at_utc": "2026-11-24T14:17:15.963316+00:00",
+  "schema": "bean.draw.recent_memory.integrity.v1",
+  "scope": "Actual file hashes, raw-model primitives, decoded PNG pixels, linked vision receipts, Core SHA chains and delivered memory; not aesthetic correctness",
+  "source_git_sha": "bb7128d76a6c210d84234326576ef6bc7f1e2509",
+  "summary_recomputed": {
+    "distinct_recorded_png_hashes": 12,
+    "diversity_interpretation": "Per-image diversity ratings are descriptive; portfolio diversity requires a joint review bound to every final PNG; subject/hash counts are mechanics",
+    "generalization_adaptive_minus_control": {
+      "frozen": {
+        "composition": 1.0,
+        "spatial_coherence": 0.0,
+        "subject_recognition": 1.0
+      },
+      "none": {
+        "composition": 1.0,
+        "spatial_coherence": 0.5,
+        "subject_recognition": 0.0
+      }
+    },
+    "heldout_last_attempt_means": {
+      "adaptive": {
+        "composition": 3.5,
+        "diversity": null,
+        "spatial_coherence": 3.5,
+        "subject_recognition": 3.5
+      },
+      "frozen": {
+        "composition": 3.0,
+        "diversity": null,
+        "spatial_coherence": 3.5,
+        "subject_recognition": 3.0
+      },
+      "none": {
+        "composition": 2.5,
+        "diversity": null,
+        "spatial_coherence": 3.0,
+        "subject_recognition": 3.5
+      }
+    },
+    "independent_evaluation_authenticated": false,
+    "iteration_quality_last_minus_first": {
+      "adaptive": {
+        "composition": 1.0,
+        "spatial_coherence": 0.5,
+        "subject_recognition": 0.0
+      },
+      "frozen": {
+        "composition": 0.5,
+        "spatial_coherence": 0.0,
+        "subject_recognition": -1.0
+      },
+      "none": {
+        "composition": -0.5,
+        "spatial_coherence": -1.0,
+        "subject_recognition": -0.5
+      }
+    },
+    "learning_improvement_verified": false,
+    "limitations": [
+      "Null scores mean missing legitimate image review, not zero quality",
+      "No broad learning claim from this small challenge set",
+      "Memory comparisons require verified delivered feedback; initial adaptive/frozen contexts are intentionally matched",
+      "Provider determinism and review independence require external verification"
+    ],
+    "matched_heldout_comparison_counts": {
+      "frozen": {
+        "composition": 1,
+        "spatial_coherence": 1,
+        "subject_recognition": 1
+      },
+      "none": {
+        "composition": 2,
+        "spatial_coherence": 2,
+        "subject_recognition": 2
+      }
+    },
+    "memory_comparison_validity": {
+      "frozen": [
+        {
+          "adaptive_context_sha256": "88e0876867af75358cfeaf639f2c96b6f8f0a9f94b4a14826e59671e27887df6",
+          "adaptive_delivered_subjects": [
+            "a teapot"
+          ],
+          "challenge": 1,
+          "control": "frozen",
+          "control_context_sha256": "88e0876867af75358cfeaf639f2c96b6f8f0a9f94b4a14826e59671e27887df6",
+          "control_delivered_subjects": [
+            "a teapot"
+          ],
+          "eligible": false,
+          "required_adaptive_feedback_subjects": [
+            "a teapot"
+          ],
+          "state": "expected_initial_matched_baseline"
+        },
+        {
+          "adaptive_context_sha256": "2cac41fdac81bdd6fdfea7f13ea20bd5e1242f0b58280b24c07987620b2a1136",
+          "adaptive_delivered_subjects": [
+            "an umbrella"
+          ],
+          "challenge": 2,
+          "control": "frozen",
+          "control_context_sha256": "88e0876867af75358cfeaf639f2c96b6f8f0a9f94b4a14826e59671e27887df6",
+          "control_delivered_subjects": [
+            "a teapot"
+          ],
+          "eligible": true,
+          "required_adaptive_feedback_subjects": [
+            "an umbrella"
+          ],
+          "state": "verified_distinct_memory_exposure"
+        }
+      ],
+      "none": [
+        {
+          "adaptive_context_sha256": "88e0876867af75358cfeaf639f2c96b6f8f0a9f94b4a14826e59671e27887df6",
+          "adaptive_delivered_subjects": [
+            "a teapot"
+          ],
+          "challenge": 1,
+          "control": "none",
+          "control_context_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+          "control_delivered_subjects": [],
+          "eligible": true,
+          "required_adaptive_feedback_subjects": [
+            "a teapot"
+          ],
+          "state": "verified_distinct_memory_exposure"
+        },
+        {
+          "adaptive_context_sha256": "2cac41fdac81bdd6fdfea7f13ea20bd5e1242f0b58280b24c07987620b2a1136",
+          "adaptive_delivered_subjects": [
+            "an umbrella"
+          ],
+          "challenge": 2,
+          "control": "none",
+          "control_context_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+          "control_delivered_subjects": [],
+          "eligible": true,
+          "required_adaptive_feedback_subjects": [
+            "an umbrella"
+          ],
+          "state": "verified_distinct_memory_exposure"
+        }
+      ]
+    },
+    "outcomes": [
+      {
+        "arm": "adaptive",
+        "artifact_verification_error": null,
+        "attempts": [
+          {
+            "attempt": 1,
+            "evaluator_identity": [
+              "vision_model",
+              "Ollama vision reviewer: gemma3:4b",
+              "ollama",
+              "gemma3:4b",
+              "68ceab7e468a31c988b44d5a4984a0e21f58c4f7158c6ce29c1804babac38df7",
+              "blind_then_targeted_min_v1"
+            ],
+            "scores": {
+              "composition": 3,
+              "spatial_coherence": 3,
+              "subject_recognition": 2
+            },
+            "status": "host_reported_not_satisfactory"
+          },
+          {
+            "attempt": 2,
+            "evaluator_identity": [
+              "vision_model",
+              "Ollama vision reviewer: gemma3:4b",
+              "ollama",
+              "gemma3:4b",
+              "68ceab7e468a31c988b44d5a4984a0e21f58c4f7158c6ce29c1804babac38df7",
+              "blind_then_targeted_min_v1"
+            ],
+            "scores": {
+              "composition": 3,
+              "spatial_coherence": 3,
+              "subject_recognition": 1
+            },
+            "status": "host_reported_not_satisfactory"
+          }
+        ],
+        "challenge": 1,
+        "last_evaluator_identity": [
+          "vision_model",
+          "Ollama vision reviewer: gemma3:4b",
+          "ollama",
+          "gemma3:4b",
+          "68ceab7e468a31c988b44d5a4984a0e21f58c4f7158c6ce29c1804babac38df7",
+          "blind_then_targeted_min_v1"
+        ],
+        "last_minus_first_external_score": {
+          "composition": 0,
+          "spatial_coherence": 0,
+          "subject_recognition": -1
+        },
+        "last_png_sha256": "21ccb5abbddd4c37413aca9a3f1c3d0adcd97242bb3fcb44bd82a430c429e2c9",
+        "last_scores": {
+          "composition": 3,
+          "spatial_coherence": 3,
+          "subject_recognition": 1
+        },
+        "memory_delivery": {
+          "error": null,
+          "feedback_subjects": [],
+          "record_count": 0,
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+          "state": "verified_delivery",
+          "subjects": []
+        },
+        "phase": "training",
+        "process_returncode": 0,
+        "runtime_identity": [
+          "ollama",
+          "qwen2.5:3b",
+          "357c53fb659c5076de1d65ccb0b397446227b71a42be9d1603d46168015c9e4b",
+          "bb7128d76a6c210d84234326576ef6bc7f1e2509"
+        ],
+        "subject": "a teapot"
+      },
+      {
+        "arm": "frozen",
+        "artifact_verification_error": null,
+        "attempts": [
+          {
+            "attempt": 1,
+            "evaluator_identity": [
+              "vision_model",
+              "Ollama vision reviewer: gemma3:4b",
+              "ollama",
+              "gemma3:4b",
+              "68ceab7e468a31c988b44d5a4984a0e21f58c4f7158c6ce29c1804babac38df7",
+              "blind_then_targeted_min_v1"
+            ],
+            "scores": {
+              "composition": 2,
+              "spatial_coherence": 3,
+              "subject_recognition": 4
+            },
+            "status": "host_reported_not_satisfactory"
+          },
+          {
+            "attempt": 2,
+            "evaluator_identity": [
+              "vision_model",
+              "Ollama vision reviewer: gemma3:4b",
+              "ollama",
+              "gemma3:4b",
+              "68ceab7e468a31c988b44d5a4984a0e21f58c4f7158c6ce29c1804babac38df7",
+              "blind_then_targeted_min_v1"
+            ],
+            "scores": {
+              "composition": 3,
+              "spatial_coherence": 4,
+              "subject_recognition": 4
+            },
+            "status": "host_reported_satisfactory"
+          }
+        ],
+        "challenge": 1,
+        "last_evaluator_identity": [
+          "vision_model",
+          "Ollama vision reviewer: gemma3:4b",
+          "ollama",
+          "gemma3:4b",
+          "68ceab7e468a31c988b44d5a4984a0e21f58c4f7158c6ce29c1804babac38df7",
+          "blind_then_targeted_min_v1"
+        ],
+        "last_minus_first_external_score": {
+          "composition": 1,
+          "spatial_coherence": 1,
+          "subject_recognition": 0
+        },
+        "last_png_sha256": "91a58c5fa30b8856b5400e3538de13ac4e62ab7e05824f7e81ef553cf9566d23",
+        "last_scores": {
+          "composition": 3,
+          "spatial_coherence": 4,
+          "subject_recognition": 4
+        },
+        "memory_delivery": {
+          "error": null,
+          "feedback_subjects": [
+            "a teapot"
+          ],
+          "record_count": 2,
+          "sha256": "88e0876867af75358cfeaf639f2c96b6f8f0a9f94b4a14826e59671e27887df6",
+          "state": "verified_delivery",
+          "subjects": [
+            "a teapot"
+          ]
+        },
+        "phase": "heldout",
+        "process_returncode": 0,
+        "runtime_identity": [
+          "ollama",
+          "qwen2.5:3b",
+          "357c53fb659c5076de1d65ccb0b397446227b71a42be9d1603d46168015c9e4b",
+          "bb7128d76a6c210d84234326576ef6bc7f1e2509"
+        ],
+        "subject": "an umbrella"
+      },
+      {
+        "arm": "none",
+        "artifact_verification_error": null,
+        "attempts": [
+          {
+            "attempt": 1,
+            "evaluator_identity": [
+              "vision_model",
+              "Ollama vision reviewer: gemma3:4b",
+              "ollama",
+              "gemma3:4b",
+              "68ceab7e468a31c988b44d5a4984a0e21f58c4f7158c6ce29c1804babac38df7",
+              "blind_then_targeted_min_v1"
+            ],
+            "scores": {
+              "composition": 3,
+              "spatial_coherence": 4,
+              "subject_recognition": 4
+            },
+            "status": "host_reported_satisfactory"
+          },
+          {
+            "attempt": 2,
+            "evaluator_identity": [
+              "vision_model",
+              "Ollama vision reviewer: gemma3:4b",
+              "ollama",
+              "gemma3:4b",
+              "68ceab7e468a31c988b44d5a4984a0e21f58c4f7158c6ce29c1804babac38df7",
+              "blind_then_targeted_min_v1"
+            ],
+            "scores": {
+              "composition": 3,
+              "spatial_coherence": 3,
+              "subject_recognition": 4
+            },
+            "status": "host_reported_satisfactory"
+          }
+        ],
+        "challenge": 1,
+        "last_evaluator_identity": [
+          "vision_model",
+          "Ollama vision reviewer: gemma3:4b",
+          "ollama",
+          "gemma3:4b",
+          "68ceab7e468a31c988b44d5a4984a0e21f58c4f7158c6ce29c1804babac38df7",
+          "blind_then_targeted_min_v1"
+        ],
+        "last_minus_first_external_score": {
+          "composition": 0,
+          "spatial_coherence": -1,
+          "subject_recognition": 0
+        },
+        "last_png_sha256": "64cc780d22e7e01cb2fdcfa1d845982af919d97f0b56ff67283c0efa3d1b7b73",
+        "last_scores": {
+          "composition": 3,
+          "spatial_coherence": 3,
+          "subject_recognition": 4
+        },
+        "memory_delivery": {
+          "error": null,
+          "feedback_subjects": [],
+          "record_count": 0,
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+          "state": "verified_delivery",
+          "subjects": []
+        },
+        "phase": "heldout",
+        "process_returncode": 0,
+        "runtime_identity": [
+          "ollama",
+          "qwen2.5:3b",
+          "357c53fb659c5076de1d65ccb0b397446227b71a42be9d1603d46168015c9e4b",
+          "bb7128d76a6c210d84234326576ef6bc7f1e2509"
+        ],
+        "subject": "an umbrella"
+      },
+      {
+        "arm": "adaptive",
+        "artifact_verification_error": null,
+        "attempts": [
+          {
+            "attempt": 1,
+            "evaluator_identity": [
+              "vision_model",
+              "Ollama vision reviewer: gemma3:4b",
+              "ollama",
+              "gemma3:4b",
+              "68ceab7e468a31c988b44d5a4984a0e21f58c4f7158c6ce29c1804babac38df7",
+              "blind_then_targeted_min_v1"
+            ],
+            "scores": {
+              "composition": 2,
+              "spatial_coherence": 3,
+              "subject_recognition": 4
+            },
+            "status": "host_reported_not_satisfactory"
+          },
+          {
+            "attempt": 2,
+            "evaluator_identity": [
+              "vision_model",
+              "Ollama vision reviewer: gemma3:4b",
+              "ollama",
+              "gemma3:4b",
+              "68ceab7e468a31c988b44d5a4984a0e21f58c4f7158c6ce29c1804babac38df7",
+              "blind_then_targeted_min_v1"
+            ],
+            "scores": {
+              "composition": 3,
+              "spatial_coherence": 4,
+              "subject_recognition": 4
+            },
+            "status": "host_reported_satisfactory"
+          }
+        ],
+        "challenge": 1,
+        "last_evaluator_identity": [
+          "vision_model",
+          "Ollama vision reviewer: gemma3:4b",
+          "ollama",
+          "gemma3:4b",
+          "68ceab7e468a31c988b44d5a4984a0e21f58c4f7158c6ce29c1804babac38df7",
+          "blind_then_targeted_min_v1"
+        ],
+        "last_minus_first_external_score": {
+          "composition": 1,
+          "spatial_coherence": 1,
+          "subject_recognition": 0
+        },
+        "last_png_sha256": "91a58c5fa30b8856b5400e3538de13ac4e62ab7e05824f7e81ef553cf9566d23",
+        "last_scores": {
+          "composition": 3,
+          "spatial_coherence": 4,
+          "subject_recognition": 4
+        },
+        "memory_delivery": {
+          "error": null,
+          "feedback_subjects": [
+            "a teapot"
+          ],
+          "record_count": 2,
+          "sha256": "88e0876867af75358cfeaf639f2c96b6f8f0a9f94b4a14826e59671e27887df6",
+          "state": "verified_delivery",
+          "subjects": [
+            "a teapot"
+          ]
+        },
+        "phase": "heldout",
+        "process_returncode": 0,
+        "runtime_identity": [
+          "ollama",
+          "qwen2.5:3b",
+          "357c53fb659c5076de1d65ccb0b397446227b71a42be9d1603d46168015c9e4b",
+          "bb7128d76a6c210d84234326576ef6bc7f1e2509"
+        ],
+        "subject": "an umbrella"
+      },
+      {
+        "arm": "none",
+        "artifact_verification_error": null,
+        "attempts": [
+          {
+            "attempt": 1,
+            "evaluator_identity": [
+              "vision_model",
+              "Ollama vision reviewer: gemma3:4b",
+              "ollama",
+              "gemma3:4b",
+              "68ceab7e468a31c988b44d5a4984a0e21f58c4f7158c6ce29c1804babac38df7",
+              "blind_then_targeted_min_v1"
+            ],
+            "scores": {
+              "composition": 3,
+              "spatial_coherence": 4,
+              "subject_recognition": 4
+            },
+            "status": "host_reported_satisfactory"
+          },
+          {
+            "attempt": 2,
+            "evaluator_identity": [
+              "vision_model",
+              "Ollama vision reviewer: gemma3:4b",
+              "ollama",
+              "gemma3:4b",
+              "68ceab7e468a31c988b44d5a4984a0e21f58c4f7158c6ce29c1804babac38df7",
+              "blind_then_targeted_min_v1"
+            ],
+            "scores": {
+              "composition": 2,
+              "spatial_coherence": 3,
+              "subject_recognition": 3
+            },
+            "status": "host_reported_not_satisfactory"
+          }
+        ],
+        "challenge": 2,
+        "last_evaluator_identity": [
+          "vision_model",
+          "Ollama vision reviewer: gemma3:4b",
+          "ollama",
+          "gemma3:4b",
+          "68ceab7e468a31c988b44d5a4984a0e21f58c4f7158c6ce29c1804babac38df7",
+          "blind_then_targeted_min_v1"
+        ],
+        "last_minus_first_external_score": {
+          "composition": -1,
+          "spatial_coherence": -1,
+          "subject_recognition": -1
+        },
+        "last_png_sha256": "55b58b8d8438cb4ca814dfdf72d12ec1ae494e861b144ffe232600c3e1576e53",
+        "last_scores": {
+          "composition": 2,
+          "spatial_coherence": 3,
+          "subject_recognition": 3
+        },
+        "memory_delivery": {
+          "error": null,
+          "feedback_subjects": [],
+          "record_count": 0,
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+          "state": "verified_delivery",
+          "subjects": []
+        },
+        "phase": "heldout",
+        "process_returncode": 0,
+        "runtime_identity": [
+          "ollama",
+          "qwen2.5:3b",
+          "357c53fb659c5076de1d65ccb0b397446227b71a42be9d1603d46168015c9e4b",
+          "bb7128d76a6c210d84234326576ef6bc7f1e2509"
+        ],
+        "subject": "a bicycle"
+      },
+      {
+        "arm": "adaptive",
+        "artifact_verification_error": null,
+        "attempts": [
+          {
+            "attempt": 1,
+            "evaluator_identity": [
+              "vision_model",
+              "Ollama vision reviewer: gemma3:4b",
+              "ollama",
+              "gemma3:4b",
+              "68ceab7e468a31c988b44d5a4984a0e21f58c4f7158c6ce29c1804babac38df7",
+              "blind_then_targeted_min_v1"
+            ],
+            "scores": {
+              "composition": 3,
+              "spatial_coherence": 3,
+              "subject_recognition": 3
+            },
+            "status": "host_reported_satisfactory"
+          },
+          {
+            "attempt": 2,
+            "evaluator_identity": [
+              "vision_model",
+              "Ollama vision reviewer: gemma3:4b",
+              "ollama",
+              "gemma3:4b",
+              "68ceab7e468a31c988b44d5a4984a0e21f58c4f7158c6ce29c1804babac38df7",
+              "blind_then_targeted_min_v1"
+            ],
+            "scores": {
+              "composition": 4,
+              "spatial_coherence": 3,
+              "subject_recognition": 3
+            },
+            "status": "host_reported_satisfactory"
+          }
+        ],
+        "challenge": 2,
+        "last_evaluator_identity": [
+          "vision_model",
+          "Ollama vision reviewer: gemma3:4b",
+          "ollama",
+          "gemma3:4b",
+          "68ceab7e468a31c988b44d5a4984a0e21f58c4f7158c6ce29c1804babac38df7",
+          "blind_then_targeted_min_v1"
+        ],
+        "last_minus_first_external_score": {
+          "composition": 1,
+          "spatial_coherence": 0,
+          "subject_recognition": 0
+        },
+        "last_png_sha256": "89ee337ebc7127d0449b72bb9b25e4523ffee75de906a0de01aa96d27249d437",
+        "last_scores": {
+          "composition": 4,
+          "spatial_coherence": 3,
+          "subject_recognition": 3
+        },
+        "memory_delivery": {
+          "error": null,
+          "feedback_subjects": [
+            "an umbrella"
+          ],
+          "record_count": 2,
+          "sha256": "2cac41fdac81bdd6fdfea7f13ea20bd5e1242f0b58280b24c07987620b2a1136",
+          "state": "verified_delivery",
+          "subjects": [
+            "an umbrella"
+          ]
+        },
+        "phase": "heldout",
+        "process_returncode": 0,
+        "runtime_identity": [
+          "ollama",
+          "qwen2.5:3b",
+          "357c53fb659c5076de1d65ccb0b397446227b71a42be9d1603d46168015c9e4b",
+          "bb7128d76a6c210d84234326576ef6bc7f1e2509"
+        ],
+        "subject": "a bicycle"
+      },
+      {
+        "arm": "frozen",
+        "artifact_verification_error": null,
+        "attempts": [
+          {
+            "attempt": 1,
+            "evaluator_identity": [
+              "vision_model",
+              "Ollama vision reviewer: gemma3:4b",
+              "ollama",
+              "gemma3:4b",
+              "68ceab7e468a31c988b44d5a4984a0e21f58c4f7158c6ce29c1804babac38df7",
+              "blind_then_targeted_min_v1"
+            ],
+            "scores": {
+              "composition": 3,
+              "spatial_coherence": 4,
+              "subject_recognition": 4
+            },
+            "status": "host_reported_satisfactory"
+          },
+          {
+            "attempt": 2,
+            "evaluator_identity": [
+              "vision_model",
+              "Ollama vision reviewer: gemma3:4b",
+              "ollama",
+              "gemma3:4b",
+              "68ceab7e468a31c988b44d5a4984a0e21f58c4f7158c6ce29c1804babac38df7",
+              "blind_then_targeted_min_v1"
+            ],
+            "scores": {
+              "composition": 3,
+              "spatial_coherence": 3,
+              "subject_recognition": 2
+            },
+            "status": "host_reported_not_satisfactory"
+          }
+        ],
+        "challenge": 2,
+        "last_evaluator_identity": [
+          "vision_model",
+          "Ollama vision reviewer: gemma3:4b",
+          "ollama",
+          "gemma3:4b",
+          "68ceab7e468a31c988b44d5a4984a0e21f58c4f7158c6ce29c1804babac38df7",
+          "blind_then_targeted_min_v1"
+        ],
+        "last_minus_first_external_score": {
+          "composition": 0,
+          "spatial_coherence": -1,
+          "subject_recognition": -2
+        },
+        "last_png_sha256": "fa17cefcf4ff6629792515360c5c7d2123633d36f32569f053533614d71ef787",
+        "last_scores": {
+          "composition": 3,
+          "spatial_coherence": 3,
+          "subject_recognition": 2
+        },
+        "memory_delivery": {
+          "error": null,
+          "feedback_subjects": [
+            "a teapot"
+          ],
+          "record_count": 2,
+          "sha256": "88e0876867af75358cfeaf639f2c96b6f8f0a9f94b4a14826e59671e27887df6",
+          "state": "verified_delivery",
+          "subjects": [
+            "a teapot"
+          ]
+        },
+        "phase": "heldout",
+        "process_returncode": 0,
+        "runtime_identity": [
+          "ollama",
+          "qwen2.5:3b",
+          "357c53fb659c5076de1d65ccb0b397446227b71a42be9d1603d46168015c9e4b",
+          "bb7128d76a6c210d84234326576ef6bc7f1e2509"
+        ],
+        "subject": "a bicycle"
+      }
+    ],
+    "planned_distinct_heldout_subjects": 2,
+    "portfolio_diversity": {
+      "adaptive": null,
+      "frozen": null,
+      "none": null
+    },
+    "protocol_sha256": "85fef0d10c79300b4ee4cec3d0ff93a9ffce324d53282b7272826a6508a41ff7",
+    "requested_vision_model": "gemma3:4b",
+    "schema": "bean.draw.benchmark.v1",
+    "subject_source": "human_protocol",
+    "weights_updated": false
+  }
+}

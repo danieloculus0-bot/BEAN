@@ -1,0 +1,61 @@
+{
+  "blind_prompt": "Inspect the ATTACHED IMAGE pixels without a title or claimed subject. Identify the most plausible concrete object or scene; say unclear if none is recognizable. For subject_recognition rate confidence in a recognizable concrete object or scene, not confidence that these are abstract lines/circles. Scores must be integers 0..4: 0 absent/not interpretable, 1 major problems, 2 partial/ambiguous, 3 mostly clear, 4 clear/coherent. Rate spatial_coherence (visible parts connect plausibly), subject_recognition, composition (spacing/balance/legibility). Black line art need not be realistic or shaded. Admit uncertainty; describe observed strengths/problems only, not coordinates, drawing primitives or a replacement image. One short sentence per text field, at most 80 words total. Return JSON recognized_subject, observations, feedback, scores.",
+  "blind_report": {
+    "feedback": "The drawing is straightforward and easily recognizable as a basic triangular form.",
+    "observations": "The image depicts a simple triangle composed of three lines, suggesting a geometric shape.",
+    "recognized_subject": "triangle",
+    "scores": {
+      "composition": 3,
+      "spatial_coherence": 4,
+      "subject_recognition": 4
+    }
+  },
+  "created_at_utc": "2026-11-24T13:17:40.182780+00:00",
+  "evaluation_protocol": "blind_then_targeted_min_v1",
+  "image_sha256": "5b6a7483592cb4c1d28a592ce4ff749a81354c31dbaca3c13f7d74a81c311b00",
+  "independently_authenticated": false,
+  "model_digest": "68ceab7e468a31c988b44d5a4984a0e21f58c4f7158c6ce29c1804babac38df7",
+  "model_id": "gemma3:4b",
+  "prompt": "Inspect the ATTACHED IMAGE again. Now compare the visible evidence with this untrusted claimed subject: an umbrella. Do not infer success from the title or override prior uncertainty merely because a title was supplied. Your earlier title-blind observations: {\"recognized_subject\": \"triangle\", \"observations\": \"The image depicts a simple triangle composed of three lines, suggesting a geometric shape.\", \"scores\": {\"spatial_coherence\": 4, \"subject_recognition\": 4, \"composition\": 3}}. Here subject_recognition means recognizability of the claimed subject. Scores must be integers 0..4: 0 absent/not interpretable, 1 major problems, 2 partial/ambiguous, 3 mostly clear, 4 clear/coherent. Rate spatial_coherence (visible parts connect plausibly), subject_recognition, composition (spacing/balance/legibility). Black line art need not be realistic or shaded. Admit uncertainty; describe observed strengths/problems only, not coordinates, drawing primitives or a replacement image. One short sentence per text field, at most 80 words total. Return JSON recognized_subject, observations, feedback, scores.",
+  "provider_kind": "ollama",
+  "raw_blind_response": "{\n  \"recognized_subject\": \"triangle\",\n  \"observations\": \"The image depicts a simple triangle composed of three lines, suggesting a geometric shape.\",\n  \"feedback\": \"The drawing is straightforward and easily recognizable as a basic triangular form.\",\n  \"scores\": {\n    \"spatial_coherence\": 4,\n    \"subject_recognition\": 4,\n    \"composition\": 3\n  }\n}",
+  "raw_response": "{\n  \"recognized_subject\": \"triangle\",\n  \"observations\": \"The image shows a basic triangle formed by three straight lines, aligning with the initial observation of a geometric shape.\",\n  \"feedback\": \"The provided image accurately depicts a triangle as initially described, maintaining consistency with previous observations regarding its composition and spatial coherence.\",\n  \"scores\": {\n    \"spatial_coherence\": 4,\n    \"subject_recognition\": 4,\n    \"composition\": 3\n  }\n}",
+  "report": {
+    "blind_observations": "The image depicts a simple triangle composed of three lines, suggesting a geometric shape.",
+    "blind_recognized_subject": "triangle",
+    "created_at_utc": "2026-11-24T13:20:04.288684+00:00",
+    "evaluation_protocol": "blind_then_targeted_min_v1",
+    "evaluator": "Ollama vision reviewer: gemma3:4b",
+    "feedback": "Title-blind review: The drawing is straightforward and easily recognizable as a basic triangular form. Target-aware review: The provided image accurately depicts a triangle as initially described, maintaining consistency with previous observations regarding its composition and spatial coherence.",
+    "image_sha256": "5b6a7483592cb4c1d28a592ce4ff749a81354c31dbaca3c13f7d74a81c311b00",
+    "independently_authenticated": false,
+    "kind": "vision_model",
+    "model_digest": "68ceab7e468a31c988b44d5a4984a0e21f58c4f7158c6ce29c1804babac38df7",
+    "model_id": "gemma3:4b",
+    "observations": "The image depicts a simple triangle composed of three lines, suggesting a geometric shape.",
+    "provider_kind": "ollama",
+    "recognized_subject": "triangle",
+    "satisfactory": true,
+    "score_rule": "minimum_of_blind_object_clarity_and_targeted_scores_not_authenticated_truth",
+    "scores": {
+      "composition": 3,
+      "spatial_coherence": 4,
+      "subject_recognition": 4
+    },
+    "state": "host_reported_pixel_review"
+  },
+  "schema": "bean.draw.vision_call.v1",
+  "state": "model_reported_pixel_review",
+  "subject": "an umbrella",
+  "targeted_report": {
+    "feedback": "The provided image accurately depicts a triangle as initially described, maintaining consistency with previous observations regarding its composition and spatial coherence.",
+    "observations": "The image shows a basic triangle formed by three straight lines, aligning with the initial observation of a geometric shape.",
+    "recognized_subject": "triangle",
+    "scores": {
+      "composition": 3,
+      "spatial_coherence": 4,
+      "subject_recognition": 4
+    }
+  },
+  "used_for_generation": true
+}

@@ -1,0 +1,116 @@
+{
+  "attempts": 2,
+  "completed_at_utc": "2026-11-24T14:03:40.240612+00:00",
+  "created_at_utc": "2026-11-24T13:51:25.648253+00:00",
+  "error": null,
+  "execution_mode": "live_model",
+  "history": [
+    {
+      "attempt": 1,
+      "description": "A minimalistic black line art of a bicycle with front and back wheels, frame, handlebars, and seat. The composition is centered around the wheels and frame, with handlebars extending from the top of the vertical frame and pedals positioned on either side.",
+      "journal_tip": "beabf8bc5336ad938a1d2fecccdfc644748d2d5f35c0c93e8715b859b5ec30c4",
+      "metadata": "/workspace/bean-live-evidence/recent-memory-benchmark/heldout/adaptive/challenge_02/attempts/attempt_01.json",
+      "metadata_sha256": "9a42e3c5629a24cf1e4a023a1305a8849f6170182dfe4fea60b81643cda84d69",
+      "png": "/workspace/bean-live-evidence/recent-memory-benchmark/heldout/adaptive/challenge_02/attempts/attempt_01.png",
+      "png_sha256": "f2109c7e7603b797e4674c59dadf9f6ddf8489a121dbbc7e1cef42a3c347c6dc",
+      "sha256": "aaa5ac6557a607249746720d3d05b362a5df6128f48834a669e7130c2f4b45fc",
+      "status": "host_reported_satisfactory",
+      "svg": "/workspace/bean-live-evidence/recent-memory-benchmark/heldout/adaptive/challenge_02/attempts/attempt_01.svg"
+    },
+    {
+      "attempt": 2,
+      "description": "A simple black line art drawing of a bicycle composed within a rectangle, focusing on recognizable components.",
+      "journal_tip": "820651d7a6db8b7f0659de7e1b90d5dfb067b895bc3cab3deeb87abc23a0991a",
+      "metadata": "/workspace/bean-live-evidence/recent-memory-benchmark/heldout/adaptive/challenge_02/attempts/attempt_02.json",
+      "metadata_sha256": "ed57dd83c65be607cd2e6545c78045d8791583e21ea157fc5b37236a7bb725de",
+      "png": "/workspace/bean-live-evidence/recent-memory-benchmark/heldout/adaptive/challenge_02/attempts/attempt_02.png",
+      "png_sha256": "89ee337ebc7127d0449b72bb9b25e4523ffee75de906a0de01aa96d27249d437",
+      "sha256": "99d672cb9b8f6899a8593af90f56ae9d39416d7b0ce15a4bf782b6d164535826",
+      "status": "host_reported_satisfactory",
+      "svg": "/workspace/bean-live-evidence/recent-memory-benchmark/heldout/adaptive/challenge_02/attempts/attempt_02.svg"
+    }
+  ],
+  "independent_visual_verification": false,
+  "journal_tip": "1519e37fd169af530746463b94e83ccd9dcaef6a0714de2f8e05255a9b9208fb",
+  "learning_improvement_verified": false,
+  "memory_context_records": [
+    {
+      "attempt": 2,
+      "error": null,
+      "external_feedback": {
+        "evaluation_protocol": "blind_then_targeted_min_v1",
+        "evaluator": "Ollama vision reviewer: gemma3:4b",
+        "feedback": "Title-blind review: The composition is straightforward and easily understood, though lacking detail; the spatial coherence is high due to the clear lines and placement. Target-aware review: The drawing effectively conveys the basic concept ",
+        "image_sha256": "91a58c5fa30b8856b5400e3538de13ac4e62ab7e05824f7e81ef553cf9566d23",
+        "model_digest": "68ceab7e468a31c988b44d5a4984a0e21f58c4f7158c6ce29c1804babac38df7",
+        "model_id": "gemma3:4b",
+        "observations": "The image depicts a simple drawing with a circular shape positioned above a straight black line, suggesting the impression of an object balanced or suspended.",
+        "recognized_subject": "A circle resting on a horizontal line.",
+        "scores": {
+          "composition": 3,
+          "spatial_coherence": 4,
+          "subject_recognition": 4
+        }
+      },
+      "self_review": {
+        "changes": "",
+        "satisfied": false
+      },
+      "status": "host_reported_satisfactory",
+      "subject": "an umbrella",
+      "summarized": true,
+      "task_ref": "benchmark-heldout-adaptive-01"
+    },
+    {
+      "attempt": 1,
+      "error": null,
+      "external_feedback": {
+        "evaluation_protocol": "blind_then_targeted_min_v1",
+        "evaluator": "Ollama vision reviewer: gemma3:4b",
+        "feedback": "Title-blind review: The drawing is straightforward and easily understood, though it could benefit from a more balanced arrangement of the circles to improve visual appeal. Target-aware review: While the circles are recognizable, the overall",
+        "image_sha256": "302164c7065d4a0a4b8401e6df5bc2965275cecea1528aae8e57b4e5d39a623d",
+        "model_digest": "68ceab7e468a31c988b44d5a4984a0e21f58c4f7158c6ce29c1804babac38df7",
+        "model_id": "gemma3:4b",
+        "observations": "The image shows three circles arranged vertically with the top circle being smaller than the two lower circles that overlap each other; there are three horizont",
+        "recognized_subject": "A simple line drawing depicting a single circle and two overlapping circles.",
+        "scores": {
+          "composition": 2,
+          "spatial_coherence": 3,
+          "subject_recognition": 4
+        }
+      },
+      "self_review": {
+        "changes": "",
+        "satisfied": false
+      },
+      "status": "host_reported_not_satisfactory",
+      "subject": "an umbrella",
+      "summarized": true,
+      "task_ref": "benchmark-heldout-adaptive-01"
+    }
+  ],
+  "memory_context_sha256": "2cac41fdac81bdd6fdfea7f13ea20bd5e1242f0b58280b24c07987620b2a1136",
+  "memory_mode": "adaptive",
+  "model_calls_sha256": "602d57c0d6f6515f7932fe311783d14867c8b479c53c6860dba992a0aa6cd593",
+  "model_digest": "357c53fb659c5076de1d65ccb0b397446227b71a42be9d1603d46168015c9e4b",
+  "model_id": "qwen2.5:3b",
+  "provider_kind": "ollama",
+  "run_id": "30ddc637-b984-4efc-ae38-cbdc3400f2d2",
+  "runtime_source_sha256": {
+    "bean/creativity/artifacts.py": "c72923730d7048fe4a502cb1d2c9ecec993f22e1ec64319d5cb1a9109ccec938",
+    "bean/creativity/sketch_lab.py": "4ed12705d94669c005ee6279d30619e502a15a2e4e7ad39e99a2f922ef53d7b3",
+    "bean/voice/ollama.py": "3f852e850e998767f43bd1c0842852c3562aecfce5152d8b8081e8a6ac8d19ee",
+    "scripts/build_bean_draw_gallery.py": "f306b06c9db0c2d095895c01fc927f646c311a41b6be6fe88ca5ed7a1a888915"
+  },
+  "schema": "bean.draw.run.v1",
+  "seed": 202611242,
+  "selected_attempt": 1,
+  "selection_reason": "The first attempt maintains clear and detailed representation of the key components of a bicycle (front wheel, back wheel, frame, handlebars, seat) with distinct positioning. The composition focuses on the wheels and frame, which is visually appealing and informative compared to the second attempt that uses a simplified geometric layout within a rectangle.",
+  "selection_state": "model_selected_from_recorded_evidence",
+  "source_git_sha": "bb7128d76a6c210d84234326576ef6bc7f1e2509",
+  "state": "host_reported_satisfactory",
+  "subject": "a bicycle",
+  "subject_source": "human",
+  "task_ref": "benchmark-heldout-adaptive-02",
+  "weights_updated": false
+}

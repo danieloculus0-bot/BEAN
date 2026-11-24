@@ -1,0 +1,82 @@
+{
+  "attempt": 1,
+  "created_at_utc": "2026-11-24T13:32:27.559951+00:00",
+  "description": "Draw an umbrella with a base and handle using black line art. The edges should be drawn in varying patterns to avoid repetition.",
+  "domain": "sketch",
+  "drawing_instructions": {
+    "components": [
+      "base",
+      "handle",
+      "curved_edge",
+      "open_angle"
+    ],
+    "composition": "[base] [handle] [curved_edge] [open_angle]",
+    "intent": "Plan a line drawing of an umbrella without repeating previously used elements.",
+    "revision_reason": "To ensure variety and avoid repetition, I will change the style of the edges and the orientation of the open angle."
+  },
+  "error": null,
+  "execution_mode": "live_model",
+  "experiment": "bean_sketch_v1",
+  "external_feedback": {
+    "blind_observations": "The image shows three circles arranged vertically with the top circle being smaller than the two lower circles that overlap each other; there are three horizontal lines at the bottom of the image, likely representing a base or ground. The spatial coherence is good as the elements are aligned, but the composition feels somewhat unbalanced.",
+    "blind_recognized_subject": "A simple line drawing depicting a single circle and two overlapping circles.",
+    "created_at_utc": "2026-11-24T13:32:27.559612+00:00",
+    "evaluation_protocol": "blind_then_targeted_min_v1",
+    "evaluator": "Ollama vision reviewer: gemma3:4b",
+    "feedback": "Title-blind review: The drawing is straightforward and easily understood, though it could benefit from a more balanced arrangement of the circles to improve visual appeal. Target-aware review: While the circles are recognizable, the overall composition feels incomplete without a defined subject or narrative, and the horizontal lines seem arbitrary.",
+    "image_sha256": "302164c7065d4a0a4b8401e6df5bc2965275cecea1528aae8e57b4e5d39a623d",
+    "independently_authenticated": false,
+    "kind": "vision_model",
+    "model_digest": "68ceab7e468a31c988b44d5a4984a0e21f58c4f7158c6ce29c1804babac38df7",
+    "model_id": "gemma3:4b",
+    "observations": "The image shows three circles arranged vertically with the top circle being smaller than the two lower circles that overlap each other; there are three horizontal lines at the bottom of the image, likely representing a base or ground. The spatial coherence is good as the elements are aligned, but the composition feels somewhat unbalanced.",
+    "provider_kind": "ollama",
+    "recognized_subject": "A simple line drawing depicting a single circle and two overlapping circles.",
+    "review_file": "attempt_01.vision.json",
+    "review_sha256": "2d6383d4d237f4ea548b87af4cde3e21d5bc462eae5bc42cfcac256abf15ed14",
+    "satisfactory": false,
+    "score_rule": "minimum_of_blind_object_clarity_and_targeted_scores_not_authenticated_truth",
+    "scores": {
+      "composition": 2,
+      "spatial_coherence": 3,
+      "subject_recognition": 4
+    },
+    "state": "host_reported_pixel_review"
+  },
+  "independent_visual_verification": false,
+  "journal_tip": "0dfaa27e27ee789c54f61250a5def0393203d511b87001f9b343db8bf9d51695",
+  "memory_mode": "adaptive",
+  "model_digest": "357c53fb659c5076de1d65ccb0b397446227b71a42be9d1603d46168015c9e4b",
+  "model_id": "qwen2.5:3b",
+  "png_file": "attempt_01.png",
+  "png_sha256": "302164c7065d4a0a4b8401e6df5bc2965275cecea1528aae8e57b4e5d39a623d",
+  "preview_size": [
+    512,
+    512
+  ],
+  "provider_kind": "ollama",
+  "rasterizer": "CairoSVG 2.8.2",
+  "raw_file": "attempt_01.raw.json",
+  "raw_sha256": "59c8753c76637be19e9756d0dc40faccde086b53cd26e48324a6cf9a3b01fbab",
+  "reference_urls": [],
+  "research_status": "not_requested",
+  "run_id": "1ac5030e-18a4-4d0b-a173-f6c35db80501",
+  "schema": "bean.draw.attempt.v1",
+  "seed": 202611241,
+  "self_review": {
+    "changes": "",
+    "claimed_subject": "an umbrella",
+    "satisfied": false
+  },
+  "source_git_sha": "bb7128d76a6c210d84234326576ef6bc7f1e2509",
+  "status": "host_reported_not_satisfactory",
+  "subject": "an umbrella",
+  "subject_source": "human",
+  "svg_file": "attempt_01.svg",
+  "svg_sha256": "5ece2ad9544bd6557c80e2dc4e3b54784bec28e495808f453649753d90edfaca",
+  "task_ref": "benchmark-heldout-adaptive-01",
+  "verification_state": "artifacts_verified",
+  "visual_evidence_independently_verified": false,
+  "visual_feedback": "Title-blind review: The drawing is straightforward and easily understood, though it could benefit from a more balanced arrangement of the circles to improve visual appeal. Target-aware review: While the circles are recognizable, the overall composition feels incomplete without a defined subject or narrative, and the horizontal lines seem arbitrary.",
+  "weights_updated": false
+}

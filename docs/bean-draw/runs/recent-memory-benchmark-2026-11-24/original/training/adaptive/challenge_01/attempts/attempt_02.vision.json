@@ -1,0 +1,61 @@
+{
+  "blind_prompt": "Inspect the ATTACHED IMAGE pixels without a title or claimed subject. Identify the most plausible concrete object or scene; say unclear if none is recognizable. For subject_recognition rate confidence in a recognizable concrete object or scene, not confidence that these are abstract lines/circles. Scores must be integers 0..4: 0 absent/not interpretable, 1 major problems, 2 partial/ambiguous, 3 mostly clear, 4 clear/coherent. Rate spatial_coherence (visible parts connect plausibly), subject_recognition, composition (spacing/balance/legibility). Black line art need not be realistic or shaded. Admit uncertainty; describe observed strengths/problems only, not coordinates, drawing primitives or a replacement image. One short sentence per text field, at most 80 words total. Return JSON recognized_subject, observations, feedback, scores.",
+  "blind_report": {
+    "feedback": "The drawing is simple and clearly represents the basic elements of a soccer scene, though it lacks detail and shading.",
+    "observations": "The image depicts a soccer ball centered within a square, with lines extending outwards to form a goalpost on either side.",
+    "recognized_subject": "Soccer ball with a goalpost",
+    "scores": {
+      "composition": 3,
+      "spatial_coherence": 3,
+      "subject_recognition": 4
+    }
+  },
+  "created_at_utc": "2026-11-24T12:58:41.647293+00:00",
+  "evaluation_protocol": "blind_then_targeted_min_v1",
+  "image_sha256": "21ccb5abbddd4c37413aca9a3f1c3d0adcd97242bb3fcb44bd82a430c429e2c9",
+  "independently_authenticated": false,
+  "model_digest": "68ceab7e468a31c988b44d5a4984a0e21f58c4f7158c6ce29c1804babac38df7",
+  "model_id": "gemma3:4b",
+  "prompt": "Inspect the ATTACHED IMAGE again. Now compare the visible evidence with this untrusted claimed subject: a teapot. Do not infer success from the title or override prior uncertainty merely because a title was supplied. Your earlier title-blind observations: {\"recognized_subject\": \"Soccer ball with a goalpost\", \"observations\": \"The image depicts a soccer ball centered within a square, with lines extending outwards to form a goalpost on either side.\", \"scores\": {\"spatial_coherence\": 3, \"subject_recognition\": 4, \"composition\": 3}}. Here subject_recognition means recognizability of the claimed subject. Scores must be integers 0..4: 0 absent/not interpretable, 1 major problems, 2 partial/ambiguous, 3 mostly clear, 4 clear/coherent. Rate spatial_coherence (visible parts connect plausibly), subject_recognition, composition (spacing/balance/legibility). Black line art need not be realistic or shaded. Admit uncertainty; describe observed strengths/problems only, not coordinates, drawing primitives or a replacement image. One short sentence per text field, at most 80 words total. Return JSON recognized_subject, observations, feedback, scores.",
+  "provider_kind": "ollama",
+  "raw_blind_response": "{\n  \"recognized_subject\": \"Soccer ball with a goalpost\",\n  \"observations\": \"The image depicts a soccer ball centered within a square, with lines extending outwards to form a goalpost on either side.\",\n  \"feedback\": \"The drawing is simple and clearly represents the basic elements of a soccer scene, though it lacks detail and shading.\",\n  \"scores\": {\n    \"spatial_coherence\": 3,\n    \"subject_recognition\": 4,\n    \"composition\": 3\n  }\n}",
+  "raw_response": "{\"recognized_subject\": \"Soccer ball with a goalpost\", \"observations\": \"The image shows a circle within a square, connected to lines forming a goalpost structure, suggesting a soccer ball and goal setup.\", \"feedback\": \"The image does not depict a teapot; it presents a simplified drawing of a soccer ball and goalpost arrangement, differing significantly from the claimed subject.\", \"scores\": {\"spatial_coherence\": 3, \"subject_recognition\": 1, \"composition\": 3}}",
+  "report": {
+    "blind_observations": "The image depicts a soccer ball centered within a square, with lines extending outwards to form a goalpost on either side.",
+    "blind_recognized_subject": "Soccer ball with a goalpost",
+    "created_at_utc": "2026-11-24T13:01:19.436586+00:00",
+    "evaluation_protocol": "blind_then_targeted_min_v1",
+    "evaluator": "Ollama vision reviewer: gemma3:4b",
+    "feedback": "Title-blind review: The drawing is simple and clearly represents the basic elements of a soccer scene, though it lacks detail and shading. Target-aware review: The image does not depict a teapot; it presents a simplified drawing of a soccer ball and goalpost arrangement, differing significantly from the claimed subject.",
+    "image_sha256": "21ccb5abbddd4c37413aca9a3f1c3d0adcd97242bb3fcb44bd82a430c429e2c9",
+    "independently_authenticated": false,
+    "kind": "vision_model",
+    "model_digest": "68ceab7e468a31c988b44d5a4984a0e21f58c4f7158c6ce29c1804babac38df7",
+    "model_id": "gemma3:4b",
+    "observations": "The image depicts a soccer ball centered within a square, with lines extending outwards to form a goalpost on either side.",
+    "provider_kind": "ollama",
+    "recognized_subject": "Soccer ball with a goalpost",
+    "satisfactory": false,
+    "score_rule": "minimum_of_blind_object_clarity_and_targeted_scores_not_authenticated_truth",
+    "scores": {
+      "composition": 3,
+      "spatial_coherence": 3,
+      "subject_recognition": 1
+    },
+    "state": "host_reported_pixel_review"
+  },
+  "schema": "bean.draw.vision_call.v1",
+  "state": "model_reported_pixel_review",
+  "subject": "a teapot",
+  "targeted_report": {
+    "feedback": "The image does not depict a teapot; it presents a simplified drawing of a soccer ball and goalpost arrangement, differing significantly from the claimed subject.",
+    "observations": "The image shows a circle within a square, connected to lines forming a goalpost structure, suggesting a soccer ball and goal setup.",
+    "recognized_subject": "Soccer ball with a goalpost",
+    "scores": {
+      "composition": 3,
+      "spatial_coherence": 3,
+      "subject_recognition": 1
+    }
+  },
+  "used_for_generation": true
+}

@@ -25,7 +25,9 @@ Original receipts: [forest failures](runs/2026-11-19/subject-1/run.json), [mount
 1. [First matched benchmark](runs/benchmark-2026-11-20/README.md): eight genuine attempts, teapot training and sailboat held-out evaluation. Every file survived; all live visual-review requests timed out during a paused session. Original scores remain null. Separate posthoc host-model reviews were 1/0/1 in all conditions. They did not influence generation.
 2. [Automatic-review pilot](runs/pilot-vision-2026-11-24/posthoc-audit.json): a real Gemma vision model received actual dragon PNGs. With the title visible it confidently described a dragon that this host reviewer could not recognize. Both false-positive reports remain intact. Subsequent review uses a title-blind actual-image pass followed by a target-aware actual-image pass, with dimension-wise minimum ratings and both raw reports retained. This reduces one source of priming; it does not make the evaluator a truth oracle.
 3. [Two-pass matched benchmark and audit](runs/auto-vision-benchmark-2026-11-24/README.md): 14 genuine attempts, 13 SVG/PNG pairs and one retained validation failure. Its adaptive/frozen **learning-exposure comparison is invalid**: the old 2400-character oldest-first context prefix excluded fresh feedback. Actual prompts and responses were identical. Descriptive Gemma scores must not be interpreted as evidence for or against a retained-memory benefit. Independent host-model inspection still found poor subject recognition.
-4. A corrected run is in progress with whole JSON summaries selected newest first. It uses teapot training and new umbrella/bicycle held-out challenges, all three memory conditions, two attempts per cell, the same artist/evaluator/seeds/budgets, and fresh Core processes. New receipts store the actual delivered context records/hash. Comparison guards reject missing, stale, undelivered or incorrectly frozen memory. The first adaptive/frozen held-out case is an expected matched baseline, not evidence of adaptation. Results will be added after execution and audit.
+4. [Corrected retrieval benchmark](runs/recent-memory-benchmark-2026-11-24/README.md): **14 genuine attempts, 14 SVG/PNG pairs, 12 distinct PNG hashes**, with teapot training and umbrella/bicycle held-out challenges. Every cell ran in a fresh Core process. Exact prompts confirm that adaptive bicycle generation received saved umbrella feedback, frozen generation retained only teapot feedback, and no-memory generation received `[]`. Raw model primitives regenerate the exact SVG bytes; PNG pixels, receipts and all four SQLite/SHA journal chains passed the [independent file audit](runs/recent-memory-benchmark-2026-11-24/audit/integrity.json). The first adaptive/frozen held-out case is an expected matched baseline and is excluded from learning comparisons.
+
+The corrected experiment has only **one eligible adaptive/frozen challenge**. Gemma reports bicycle differences of spatial coherence **0**, subject recognition **+1**, composition **+1** on its 0–4 scale. These are evaluator reports, not independently established improvement. [Actual-image host inspection of all 14 attempts](runs/recent-memory-benchmark-2026-11-24/audit/final-visual-review.json) found no recognizable final teapot, umbrella or bicycle, and no final recognition advantage over either control. The adaptive first bicycle draft had weak wheel cues that its revision lost. Saved feedback delivery now works; retained-learning and generalization benefits remain unproven. Higher Gemma scores overstate recognition on these images.
 
 All experiments keep `weights_updated=false` and `learning_improvement_verified=false`. Changed geometry, more files, self-satisfaction and higher model scores do not establish learning. Human aesthetic evaluation is unavailable. External Codex/Gemma observations are model reports, not authenticated ground truth.
 
@@ -52,6 +54,17 @@ python -m bean.creativity.sketch_lab --db drawing-core.sqlite3 \
 
 Omit `--subject` for model subject choice; provide it only for an explicitly human-assisted challenge. Missing providers and invalid images fail honestly. Existing run directories cannot be overwritten. Publication requires an exact-byte public-safe review manifest; the curator verifies receipts/hashes and rerenders SVG to check the linked preview. See [BEAN_SKETCH_LAB.md](../BEAN_SKETCH_LAB.md) for the complete file-review protocol and benchmark commands.
 
+The corrected experiment was executed from unchanged source `bb7128d76a6c210d84234326576ef6bc7f1e2509` with this preregistered protocol (use a new output directory):
+
+```sh
+BEAN_REASONING_PROVIDER=ollama BEAN_OLLAMA_MODEL=qwen2.5:3b \
+python -m bean.creativity.drawing_benchmark \
+  --protocol docs/bean-draw/runs/recent-memory-benchmark-2026-11-24/original/protocol.json \
+  --out new-recent-memory-benchmark --vision-model gemma3:4b
+```
+
+The archived [execution receipt](runs/recent-memory-benchmark-2026-11-24/original/execution.json) preserves every original per-cell command, budget and seed. The protocol SHA-256 is `85fef0d10c79300b4ee4cec3d0ff93a9ffce324d53282b7272826a6508a41ff7`. The human-selected benchmark subjects are separate from BEAN's model-chosen gallery subjects.
+
 ## Failures and corrections are evidence
 
 - Two forest drafts repeated coordinate `260`; no picture was fabricated.
@@ -61,4 +74,15 @@ Omit `--subject` for model subject choice; provide it only for an explicitly hum
 - One posthoc host note was written prematurely, invalidated and corrected after actual image inspection. Original/correction hashes are retained in the audit archive. It was never used as BEAN's feedback.
 - Historical live-Qwen runs [43387654264](https://github.com/danieloculus0-bot/BEAN/actions/runs/43387654264) and [43391019294](https://github.com/danieloculus0-bot/BEAN/actions/runs/43391019294) failed and produced no successful original art.
 
-Relevant drawing regressions, real provider runs, artifact rerenders and Core journal checks are executed separately. Green mechanism tests do not establish artistic quality. Exact final-head CI, integration and published-file verification will be recorded with the final update.
+Relevant drawing regressions, real provider runs, artifact rerenders and Core journal checks are executed separately. The local browser check verified eight live-model cards, two separately filtered fixtures, working receipt links, no JavaScript errors and a layout that fits a 390-pixel viewport. A separate HTTP check matched 75 gallery, image and receipt files against their reviewed repository bytes. These checks establish display and artifact integrity, not artistic quality.
+
+[PR #510](https://github.com/danieloculus0-bot/BEAN/pull/510) records exact-head CI and integration status. Reproduce the drawing regression checks with:
+
+```sh
+python -m pytest bean/tests/test_sketch_lab.py \
+  bean/tests/test_bean_draw_gallery.py bean/tests/test_drawing_evidence.py \
+  bean/tests/test_drawing_benchmark.py bean/tests/test_vision_drawing_review.py \
+  bean/tests/test_drawing_memory_context.py -q -ra
+```
+
+Green mechanism tests do not establish artistic quality or retained learning. Original source SHAs remain pinned above even after integration.

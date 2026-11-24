@@ -1,0 +1,61 @@
+{
+  "blind_prompt": "Inspect the ATTACHED IMAGE pixels without a title or claimed subject. Identify the most plausible concrete object or scene; say unclear if none is recognizable. For subject_recognition rate confidence in a recognizable concrete object or scene, not confidence that these are abstract lines/circles. Scores must be integers 0..4: 0 absent/not interpretable, 1 major problems, 2 partial/ambiguous, 3 mostly clear, 4 clear/coherent. Rate spatial_coherence (visible parts connect plausibly), subject_recognition, composition (spacing/balance/legibility). Black line art need not be realistic or shaded. Admit uncertainty; describe observed strengths/problems only, not coordinates, drawing primitives or a replacement image. One short sentence per text field, at most 80 words total. Return JSON recognized_subject, observations, feedback, scores.",
+  "blind_report": {
+    "feedback": "The drawing effectively conveys the basic elements of a musical score with associated instruments, although it's a stylized and somewhat abstract depiction.",
+    "observations": "The image depicts a musical staff with five lines and four spaces, featuring a central circle representing a treble clef and smaller circles indicating other instruments like a flute, clarinet, and possibly a violin. The spatial coherence is reasonable given the simplified representation of musical notation.",
+    "recognized_subject": "Musical staff with instruments",
+    "scores": {
+      "composition": 3,
+      "spatial_coherence": 3,
+      "subject_recognition": 4
+    }
+  },
+  "created_at_utc": "2026-11-24T13:22:54.893944+00:00",
+  "evaluation_protocol": "blind_then_targeted_min_v1",
+  "image_sha256": "64cc780d22e7e01cb2fdcfa1d845982af919d97f0b56ff67283c0efa3d1b7b73",
+  "independently_authenticated": false,
+  "model_digest": "68ceab7e468a31c988b44d5a4984a0e21f58c4f7158c6ce29c1804babac38df7",
+  "model_id": "gemma3:4b",
+  "prompt": "Inspect the ATTACHED IMAGE again. Now compare the visible evidence with this untrusted claimed subject: an umbrella. Do not infer success from the title or override prior uncertainty merely because a title was supplied. Your earlier title-blind observations: {\"recognized_subject\": \"Musical staff with instruments\", \"observations\": \"The image depicts a musical staff with five lines and four spaces, featuring a central circle representing a treble clef and smaller circles indicating other instruments like a flute, clarinet, and possibly a violin. The spatial coherence is reasonable given the simplified representation of musical notation.\", \"scores\": {\"spatial_coherence\": 3, \"subject_recognition\": 4, \"composition\": 3}}. Here subject_recognition means recognizability of the claimed subject. Scores must be integers 0..4: 0 absent/not interpretable, 1 major problems, 2 partial/ambiguous, 3 mostly clear, 4 clear/coherent. Rate spatial_coherence (visible parts connect plausibly), subject_recognition, composition (spacing/balance/legibility). Black line art need not be realistic or shaded. Admit uncertainty; describe observed strengths/problems only, not coordinates, drawing primitives or a replacement image. One short sentence per text field, at most 80 words total. Return JSON recognized_subject, observations, feedback, scores.",
+  "provider_kind": "ollama",
+  "raw_blind_response": "{\n  \"recognized_subject\": \"Musical staff with instruments\",\n  \"observations\": \"The image depicts a musical staff with five lines and four spaces, featuring a central circle representing a treble clef and smaller circles indicating other instruments like a flute, clarinet, and possibly a violin. The spatial coherence is reasonable given the simplified representation of musical notation.\",\n  \"feedback\": \"The drawing effectively conveys the basic elements of a musical score with associated instruments, although it's a stylized and somewhat abstract depiction.\",\n  \"scores\": {\n    \"spatial_coherence\": 3,\n    \"subject_recognition\": 4,\n    \"composition\": 3\n  }\n}",
+  "raw_response": "{\n  \"recognized_subject\": \"Musical staff with instruments\",\n  \"observations\": \"The image shows a musical staff with several instruments depicted, including a treble clef and smaller circles representing other wind instruments, suggesting a focus on musical notation and instrumentation.\",\n  \"feedback\": \"The representation is simplified but clearly depicts musical elements, aligning with the initial observation of a musical staff with instruments.\",\n  \"scores\": {\n    \"spatial_coherence\": 3,\n    \"subject_recognition\": 4,\n    \"composition\": 3\n  }\n}",
+  "report": {
+    "blind_observations": "The image depicts a musical staff with five lines and four spaces, featuring a central circle representing a treble clef and smaller circles indicating other instruments like a flute, clarinet, and possibly a violin. The spatial coherence is reasonable given the simplified representation of musical notation.",
+    "blind_recognized_subject": "Musical staff with instruments",
+    "created_at_utc": "2026-11-24T13:25:29.385858+00:00",
+    "evaluation_protocol": "blind_then_targeted_min_v1",
+    "evaluator": "Ollama vision reviewer: gemma3:4b",
+    "feedback": "Title-blind review: The drawing effectively conveys the basic elements of a musical score with associated instruments, although it's a stylized and somewhat abstract depiction. Target-aware review: The representation is simplified but clearly depicts musical elements, aligning with the initial observation of a musical staff with instruments.",
+    "image_sha256": "64cc780d22e7e01cb2fdcfa1d845982af919d97f0b56ff67283c0efa3d1b7b73",
+    "independently_authenticated": false,
+    "kind": "vision_model",
+    "model_digest": "68ceab7e468a31c988b44d5a4984a0e21f58c4f7158c6ce29c1804babac38df7",
+    "model_id": "gemma3:4b",
+    "observations": "The image depicts a musical staff with five lines and four spaces, featuring a central circle representing a treble clef and smaller circles indicating other instruments like a flute, clarinet, and possibly a violin. The spatial coherence is reasonable given the simplified representation of musical notation.",
+    "provider_kind": "ollama",
+    "recognized_subject": "Musical staff with instruments",
+    "satisfactory": true,
+    "score_rule": "minimum_of_blind_object_clarity_and_targeted_scores_not_authenticated_truth",
+    "scores": {
+      "composition": 3,
+      "spatial_coherence": 3,
+      "subject_recognition": 4
+    },
+    "state": "host_reported_pixel_review"
+  },
+  "schema": "bean.draw.vision_call.v1",
+  "state": "model_reported_pixel_review",
+  "subject": "an umbrella",
+  "targeted_report": {
+    "feedback": "The representation is simplified but clearly depicts musical elements, aligning with the initial observation of a musical staff with instruments.",
+    "observations": "The image shows a musical staff with several instruments depicted, including a treble clef and smaller circles representing other wind instruments, suggesting a focus on musical notation and instrumentation.",
+    "recognized_subject": "Musical staff with instruments",
+    "scores": {
+      "composition": 3,
+      "spatial_coherence": 3,
+      "subject_recognition": 4
+    }
+  },
+  "used_for_generation": true
+}

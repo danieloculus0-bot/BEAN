@@ -1,0 +1,61 @@
+{
+  "attempts": 2,
+  "completed_at_utc": "2026-11-24T13:27:04.379464+00:00",
+  "created_at_utc": "2026-11-24T13:16:43.741678+00:00",
+  "error": null,
+  "execution_mode": "live_model",
+  "history": [
+    {
+      "attempt": 1,
+      "description": "Recognizable umbrella outline using black line art with various shapes.",
+      "journal_tip": "038fdc9177a7b0e875f335efa020b8e5acd1c37fc8992b5e28baea2598176747",
+      "metadata": "/workspace/bean-live-evidence/recent-memory-benchmark/heldout/none/challenge_01/attempts/attempt_01.json",
+      "metadata_sha256": "dd69c45d68a560fbe7bf59866f46333285c55fe0a345fbe2fb6b83c0f62655c0",
+      "png": "/workspace/bean-live-evidence/recent-memory-benchmark/heldout/none/challenge_01/attempts/attempt_01.png",
+      "png_sha256": "5b6a7483592cb4c1d28a592ce4ff749a81354c31dbaca3c13f7d74a81c311b00",
+      "sha256": "fbe769592bebe385c0781afebe0efa7367a4d4c10674494136d1f1a9190455e5",
+      "status": "host_reported_satisfactory",
+      "svg": "/workspace/bean-live-evidence/recent-memory-benchmark/heldout/none/challenge_01/attempts/attempt_01.svg"
+    },
+    {
+      "attempt": 2,
+      "description": "An umbrella with a rounded top section, cylindrical body, curved handle at the bottom, and two vertical ribs extending from the top to the bottom.",
+      "journal_tip": "42658954415ee2e561ec0bdead27de1c3677060cc4276ed88e16bd120434e6fb",
+      "metadata": "/workspace/bean-live-evidence/recent-memory-benchmark/heldout/none/challenge_01/attempts/attempt_02.json",
+      "metadata_sha256": "fb40f4252c44542336d6861d6f00cdafec61c8a3089dc0b0ce6d94be0df5e22d",
+      "png": "/workspace/bean-live-evidence/recent-memory-benchmark/heldout/none/challenge_01/attempts/attempt_02.png",
+      "png_sha256": "64cc780d22e7e01cb2fdcfa1d845982af919d97f0b56ff67283c0efa3d1b7b73",
+      "sha256": "b303d19de0c8a5ddaf357ff29e0690316d1859c80e46c5b901f465c9bbaf4170",
+      "status": "host_reported_satisfactory",
+      "svg": "/workspace/bean-live-evidence/recent-memory-benchmark/heldout/none/challenge_01/attempts/attempt_02.svg"
+    }
+  ],
+  "independent_visual_verification": false,
+  "journal_tip": "67dfa24a515c108831ecb65de955c578f1eda91353e324b689a630b977973c79",
+  "learning_improvement_verified": false,
+  "memory_context_records": [],
+  "memory_context_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+  "memory_mode": "none",
+  "model_calls_sha256": "6de75c14a8dc1c2ce0738ca70751b82646ccb497d007593d52cd1645d71fe708",
+  "model_digest": "357c53fb659c5076de1d65ccb0b397446227b71a42be9d1603d46168015c9e4b",
+  "model_id": "qwen2.5:3b",
+  "provider_kind": "ollama",
+  "run_id": "86cc0e82-339b-4054-bc34-818e4e193ac6",
+  "runtime_source_sha256": {
+    "bean/creativity/artifacts.py": "c72923730d7048fe4a502cb1d2c9ecec993f22e1ec64319d5cb1a9109ccec938",
+    "bean/creativity/sketch_lab.py": "4ed12705d94669c005ee6279d30619e502a15a2e4e7ad39e99a2f922ef53d7b3",
+    "bean/voice/ollama.py": "3f852e850e998767f43bd1c0842852c3562aecfce5152d8b8081e8a6ac8d19ee",
+    "scripts/build_bean_draw_gallery.py": "f306b06c9db0c2d095895c01fc927f646c311a41b6be6fe88ca5ed7a1a888915"
+  },
+  "schema": "bean.draw.run.v1",
+  "seed": 202611241,
+  "selected_attempt": 2,
+  "selection_reason": "尽管第二个绘制尝试描绘的是一个有圆顶部分、圆柱形主体、底部向下弯曲形成把手的伞，这与原始意图不符，但它更准确地代表了原定描绘的伞，并且在先前反馈的基础上进行了改进。同时，视觉反馈也表明该绘画有效地传达了音乐谱的基本元素及其关联乐器，尽管它表现出一定的抽象性。",
+  "selection_state": "model_selected_from_recorded_evidence",
+  "source_git_sha": "bb7128d76a6c210d84234326576ef6bc7f1e2509",
+  "state": "host_reported_satisfactory",
+  "subject": "an umbrella",
+  "subject_source": "human",
+  "task_ref": "benchmark-heldout-none-01",
+  "weights_updated": false
+}

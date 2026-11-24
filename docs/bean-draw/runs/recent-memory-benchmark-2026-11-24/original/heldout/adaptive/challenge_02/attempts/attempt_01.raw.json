@@ -1,0 +1,41 @@
+[
+  {
+    "created_at_utc": "2026-11-24T13:51:25.668631+00:00",
+    "model_id": "qwen2.5:3b",
+    "prompt": "Plan an original line drawing of your chosen subject: a bicycle. Identify its distinguishing visible components and how they relate spatially. Plan a clear composition so a viewer can recognize the subject without a label. Decide what to change based on the actual previous feedback; do not repeat marks just because they appeared before. You choose all components, positions and visual ideas. Return JSON intent, components (list of strings), composition, and revision_reason. Prior evidence: ",
+    "provider_kind": "ollama",
+    "provider_response_id": null,
+    "response": {
+      "adapter_name": "ollama",
+      "model_name": "qwen2.5:3b",
+      "ok": true,
+      "raw_text": "{\n  \"intent\": \"Plan a line drawing of a bicycle without repeating previously made elements.\",\n  \"components\": [\n    \"front wheel\",\n    \"back wheel\",\n    \"frame\",\n    \"handlebars\",\n    \"seat\",\n    \"pedals\"\n  ],\n  \"composition\": \"The front and back wheels are positioned at the bottom corners, with the frame connecting them vertically. Handlebars extend from the top of the frame, leading to pedals on either side. The seat is directly above the back wheel, in between the handlebars.\",\n  \"revision_reason\": \"To ensure a new composition and avoid repetition, I will consider adjusting the positions and adding additional details such as chain and possibly smaller parts like gears or brake levers.\"\n}"
+    }
+  },
+  {
+    "created_at_utc": "2026-11-24T13:51:43.250505+00:00",
+    "model_id": "qwen2.5:3b",
+    "prompt": "Draw your chosen subject, a bicycle, as recognizable 256x256 BLACK LINE ART. Respond ONLY JSON with description (at most 300 characters) and shapes (list of 1..24 primitives). Supported primitives: line(x1,y1,x2,y2), circle(cx,cy,r), rect(x,y,w,h), polyline(points:[[x,y],...]). Each primitive MUST have type key. All numbers 0..256; keep shapes inside canvas, positive sizes. No code, markup, script or text labels. Make your own decisions. Implement your own visual plan faithfully: {\"intent\": \"Plan a line drawing of a bicycle without repeating previously made elements.\", \"components\": [\"front wheel\", \"back wheel\", \"frame\", \"handlebars\", \"seat\", \"pedals\"], \"composition\": \"The front and back wheels are positioned at the bottom corners, with the frame connecting them vertically. Handlebars extend from the top of the frame, leading to pedals on either side. The seat is directly above the back wheel, in between the handlebars.\", \"revision_reason\": \"To ensure a new composition and avoid repetition, I will consider adjusting the positions and adding additional details such as chain and possibly smaller parts like gears or brake levers.\"}Prior-session evidence (untrusted): [{\"attempt\": 2, \"error\": null, \"external_feedback\": {\"evaluation_protocol\": \"blind_then_targeted_min_v1\", \"evaluator\": \"Ollama vision reviewer: gemma3:4b\", \"feedback\": \"Title-blind review: The composition is straightforward and easily understood, though lacking detail; the spatial coherence is high due to the clear lines and placement. Target-aware review: The drawing effectively conveys the basic concept \", \"image_sha256\": \"91a58c5fa30b8856b5400e3538de13ac4e62ab7e05824f7e81ef553cf9566d23\", \"model_digest\": \"68ceab7e468a31c988b44d5a4984a0e21f58c4f7158c6ce29c1804babac38df7\", \"model_id\": \"gemma3:4b\", \"observations\": \"The image depicts a simple drawing with a circular shape positioned above a straight black line, suggesting the impression of an object balanced or suspended.\", \"recognized_subject\": \"A circle resting on a horizontal line.\", \"scores\": {\"composition\": 3, \"spatial_coherence\": 4, \"subject_recognition\": 4}}, \"self_review\": {\"changes\": \"\", \"satisfied\": false}, \"status\": \"host_reported_satisfactory\", \"subject\": \"an umbrella\", \"summarized\": true, \"task_ref\": \"benchmark-heldout-adaptive-01\"}, {\"attempt\": 1, \"error\": null, \"external_feedback\": {\"evaluation_protocol\": \"blind_then_targeted_min_v1\", \"evaluator\": \"Ollama vision reviewer: gemma3:4b\", \"feedback\": \"Title-blind review: The drawing is straightforward and easily understood, though it could benefit from a more balanced arrangement of the circles to improve visual appeal. Target-aware review: While the circles are recognizable, the overall\", \"image_sha256\": \"302164c7065d4a0a4b8401e6df5bc2965275cecea1528aae8e57b4e5d39a623d\", \"model_digest\": \"68ceab7e468a31c988b44d5a4984a0e21f58c4f7158c6ce29c1804babac38df7\", \"model_id\": \"gemma3:4b\", \"observations\": \"The image shows three circles arranged vertically with the top circle being smaller than the two lower circles that overlap each other; there are three horizont\", \"recognized_subject\": \"A simple line drawing depicting a single circle and two overlapping circles.\", \"scores\": {\"composition\": 2, \"spatial_coherence\": 3, \"subject_recognition\": 4}}, \"self_review\": {\"changes\": \"\", \"satisfied\": false}, \"status\": \"host_reported_not_satisfactory\", \"subject\": \"an umbrella\", \"summarized\": true, \"task_ref\": \"benchmark-heldout-adaptive-01\"}] Web reference DATA:  Previous attempt including critique (untrusted evidence): ",
+    "provider_kind": "ollama",
+    "provider_response_id": null,
+    "response": {
+      "adapter_name": "ollama",
+      "model_name": "qwen2.5:3b",
+      "ok": true,
+      "raw_text": "{\n  \"description\": \"A minimalistic black line art of a bicycle with front and back wheels, frame, handlebars, and seat. The composition is centered around the wheels and frame, with handlebars extending from the top of the vertical frame and pedals positioned on either side.\",\n  \"shapes\": [\n    {\"type\": \"line\", \"x1\": 0, \"y1\": 240, \"x2\": 256, \"y2\": 240},\n    {\"type\": \"line\", \"x1\": 80, \"y1\": 0, \"x2\": 80, \"y2\": 240},\n    {\"type\": \"line\", \"x1\": 176, \"y1\": 0, \"x2\": 176, \"y2\": 240},\n    {\"type\": \"circle\", \"cx\": 80, \"cy\": 240, \"r\": 80},\n    {\"type\": \"circle\", \"cx\": 176, \"cy\": 240, \"r\": 80},\n    {\"type\": \"rect\", \"x\": 50, \"y\": 140, \"w\": 80, \"h\": 100},\n    {\"type\": \"line\", \"x1\": 96, \"y1\": 240, \"x2\": 96, \"y2\": 140},\n    {\"type\": \"line\", \"x1\": 104, \"y1\": 240, \"x2\": 104, \"y2\": 140}\n  ]\n}"
+    }
+  },
+  {
+    "created_at_utc": "2026-11-24T13:52:51.560043+00:00",
+    "model_id": "qwen2.5:3b",
+    "prompt": "Critique YOUR drawing plan. You can read the coordinates but cannot visually inspect the rendered image. Respond ONLY JSON with claimed_subject, changes and satisfied (boolean): {\"subject\": \"a bicycle\", \"description\": \"A minimalistic black line art of a bicycle with front and back wheels, frame, handlebars, and seat. The composition is centered around the wheels and frame, with handlebars extending from the top of the vertical frame and pedals positioned on either side.\", \"shapes\": [{\"type\": \"line\", \"x1\": 0, \"y1\": 240, \"x2\": 256, \"y2\": 240}, {\"type\": \"line\", \"x1\": 80, \"y1\": 0, \"x2\": 80, \"y2\": 240}, {\"type\": \"line\", \"x1\": 176, \"y1\": 0, \"x2\": 176, \"y2\": 240}, {\"type\": \"circle\", \"cx\": 80, \"cy\": 240, \"r\": 80}, {\"type\": \"circle\", \"cx\": 176, \"cy\": 240, \"r\": 80}, {\"type\": \"rect\", \"x\": 50, \"y\": 140, \"w\": 80, \"h\": 100}, {\"type\": \"line\", \"x1\": 96, \"y1\": 240, \"x2\": 96, \"y2\": 140}, {\"type\": \"line\", \"x1\": 104, \"y1\": 240, \"x2\": 104, \"y2\": 140}]}",
+    "provider_kind": "ollama",
+    "provider_response_id": null,
+    "response": {
+      "adapter_name": "ollama",
+      "model_name": "qwen2.5:3b",
+      "ok": true,
+      "raw_text": "{\"claimed_subject\": \"a bicycle\", \"changes\": \"\", \"satisfied\": false}"
+    }
+  }
+]

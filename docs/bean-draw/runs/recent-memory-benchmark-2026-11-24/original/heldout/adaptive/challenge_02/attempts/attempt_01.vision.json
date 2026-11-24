@@ -1,0 +1,61 @@
+{
+  "blind_prompt": "Inspect the ATTACHED IMAGE pixels without a title or claimed subject. Identify the most plausible concrete object or scene; say unclear if none is recognizable. For subject_recognition rate confidence in a recognizable concrete object or scene, not confidence that these are abstract lines/circles. Scores must be integers 0..4: 0 absent/not interpretable, 1 major problems, 2 partial/ambiguous, 3 mostly clear, 4 clear/coherent. Rate spatial_coherence (visible parts connect plausibly), subject_recognition, composition (spacing/balance/legibility). Black line art need not be realistic or shaded. Admit uncertainty; describe observed strengths/problems only, not coordinates, drawing primitives or a replacement image. One short sentence per text field, at most 80 words total. Return JSON recognized_subject, observations, feedback, scores.",
+  "blind_report": {
+    "feedback": "The drawing focuses on geometric shapes to represent the court elements, prioritizing clarity over realism.",
+    "observations": "The image depicts a simplified representation of a basketball court with key features like the center circle, free-throw lines, and three-point arc; however, it lacks detail and is highly stylized.",
+    "recognized_subject": "Basketball court",
+    "scores": {
+      "composition": 3,
+      "spatial_coherence": 3,
+      "subject_recognition": 4
+    }
+  },
+  "created_at_utc": "2026-11-24T13:53:02.948626+00:00",
+  "evaluation_protocol": "blind_then_targeted_min_v1",
+  "image_sha256": "f2109c7e7603b797e4674c59dadf9f6ddf8489a121dbbc7e1cef42a3c347c6dc",
+  "independently_authenticated": false,
+  "model_digest": "68ceab7e468a31c988b44d5a4984a0e21f58c4f7158c6ce29c1804babac38df7",
+  "model_id": "gemma3:4b",
+  "prompt": "Inspect the ATTACHED IMAGE again. Now compare the visible evidence with this untrusted claimed subject: a bicycle. Do not infer success from the title or override prior uncertainty merely because a title was supplied. Your earlier title-blind observations: {\"recognized_subject\": \"Basketball court\", \"observations\": \"The image depicts a simplified representation of a basketball court with key features like the center circle, free-throw lines, and three-point arc; however, it lacks detail and is highly stylized.\", \"scores\": {\"spatial_coherence\": 3, \"subject_recognition\": 4, \"composition\": 3}}. Here subject_recognition means recognizability of the claimed subject. Scores must be integers 0..4: 0 absent/not interpretable, 1 major problems, 2 partial/ambiguous, 3 mostly clear, 4 clear/coherent. Rate spatial_coherence (visible parts connect plausibly), subject_recognition, composition (spacing/balance/legibility). Black line art need not be realistic or shaded. Admit uncertainty; describe observed strengths/problems only, not coordinates, drawing primitives or a replacement image. One short sentence per text field, at most 80 words total. Return JSON recognized_subject, observations, feedback, scores.",
+  "provider_kind": "ollama",
+  "raw_blind_response": "{\n  \"recognized_subject\": \"Basketball court\",\n  \"observations\": \"The image depicts a simplified representation of a basketball court with key features like the center circle, free-throw lines, and three-point arc; however, it lacks detail and is highly stylized.\",\n  \"feedback\": \"The drawing focuses on geometric shapes to represent the court elements, prioritizing clarity over realism.\",\n  \"scores\": {\n    \"spatial_coherence\": 3,\n    \"subject_recognition\": 4,\n    \"composition\": 3\n  }\n}",
+  "raw_response": "{\"recognized_subject\": \"Basketball court\", \"observations\": \"The image shows a stylized depiction of a basketball court featuring circular arcs and lines suggestive of the key elements like the center circle and three-point line; however, it's an abstract representation lacking specific details.\", \"feedback\": \"While the overall shape resembles a basketball court, the simplified design makes precise identification challenging due to its abstraction.\", \"scores\": {\"spatial_coherence\": 3, \"subject_recognition\": 3, \"composition\": 3}}",
+  "report": {
+    "blind_observations": "The image depicts a simplified representation of a basketball court with key features like the center circle, free-throw lines, and three-point arc; however, it lacks detail and is highly stylized.",
+    "blind_recognized_subject": "Basketball court",
+    "created_at_utc": "2026-11-24T13:55:41.757948+00:00",
+    "evaluation_protocol": "blind_then_targeted_min_v1",
+    "evaluator": "Ollama vision reviewer: gemma3:4b",
+    "feedback": "Title-blind review: The drawing focuses on geometric shapes to represent the court elements, prioritizing clarity over realism. Target-aware review: While the overall shape resembles a basketball court, the simplified design makes precise identification challenging due to its abstraction.",
+    "image_sha256": "f2109c7e7603b797e4674c59dadf9f6ddf8489a121dbbc7e1cef42a3c347c6dc",
+    "independently_authenticated": false,
+    "kind": "vision_model",
+    "model_digest": "68ceab7e468a31c988b44d5a4984a0e21f58c4f7158c6ce29c1804babac38df7",
+    "model_id": "gemma3:4b",
+    "observations": "The image depicts a simplified representation of a basketball court with key features like the center circle, free-throw lines, and three-point arc; however, it lacks detail and is highly stylized.",
+    "provider_kind": "ollama",
+    "recognized_subject": "Basketball court",
+    "satisfactory": true,
+    "score_rule": "minimum_of_blind_object_clarity_and_targeted_scores_not_authenticated_truth",
+    "scores": {
+      "composition": 3,
+      "spatial_coherence": 3,
+      "subject_recognition": 3
+    },
+    "state": "host_reported_pixel_review"
+  },
+  "schema": "bean.draw.vision_call.v1",
+  "state": "model_reported_pixel_review",
+  "subject": "a bicycle",
+  "targeted_report": {
+    "feedback": "While the overall shape resembles a basketball court, the simplified design makes precise identification challenging due to its abstraction.",
+    "observations": "The image shows a stylized depiction of a basketball court featuring circular arcs and lines suggestive of the key elements like the center circle and three-point line; however, it's an abstract representation lacking specific details.",
+    "recognized_subject": "Basketball court",
+    "scores": {
+      "composition": 3,
+      "spatial_coherence": 3,
+      "subject_recognition": 3
+    }
+  },
+  "used_for_generation": true
+}

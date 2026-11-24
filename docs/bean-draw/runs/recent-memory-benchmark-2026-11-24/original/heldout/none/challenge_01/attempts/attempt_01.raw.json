@@ -1,0 +1,41 @@
+[
+  {
+    "created_at_utc": "2026-11-24T13:16:43.756706+00:00",
+    "model_id": "qwen2.5:3b",
+    "prompt": "Plan an original line drawing of your chosen subject: an umbrella. Identify its distinguishing visible components and how they relate spatially. Plan a clear composition so a viewer can recognize the subject without a label. Decide what to change based on the actual previous feedback; do not repeat marks just because they appeared before. You choose all components, positions and visual ideas. Return JSON intent, components (list of strings), composition, and revision_reason. Prior evidence: ",
+    "provider_kind": "ollama",
+    "provider_response_id": null,
+    "response": {
+      "adapter_name": "ollama",
+      "model_name": "qwen2.5:3b",
+      "ok": true,
+      "raw_text": "{\n    \"intent\": \"Plan a line drawing of an umbrella without repeating previously used elements.\",\n    \"components\": [\n        \"base\",\n        \"handle\",\n        \"curved_edge\",\n        \"open_angle\"\n    ],\n    \"composition\": \"[base] [handle] [curved_edge] [open_angle]\",\n    \"revision_reason\": \"To ensure variety and avoid repetition, I will change the style of the edges and the orientation of the open angle.\"\n}"
+    }
+  },
+  {
+    "created_at_utc": "2026-11-24T13:16:56.373458+00:00",
+    "model_id": "qwen2.5:3b",
+    "prompt": "Draw your chosen subject, an umbrella, as recognizable 256x256 BLACK LINE ART. Respond ONLY JSON with description (at most 300 characters) and shapes (list of 1..24 primitives). Supported primitives: line(x1,y1,x2,y2), circle(cx,cy,r), rect(x,y,w,h), polyline(points:[[x,y],...]). Each primitive MUST have type key. All numbers 0..256; keep shapes inside canvas, positive sizes. No code, markup, script or text labels. Make your own decisions. Implement your own visual plan faithfully: {\"intent\": \"Plan a line drawing of an umbrella without repeating previously used elements.\", \"components\": [\"base\", \"handle\", \"curved_edge\", \"open_angle\"], \"composition\": \"[base] [handle] [curved_edge] [open_angle]\", \"revision_reason\": \"To ensure variety and avoid repetition, I will change the style of the edges and the orientation of the open angle.\"}Prior-session evidence (untrusted): [] Web reference DATA:  Previous attempt including critique (untrusted evidence): ",
+    "provider_kind": "ollama",
+    "provider_response_id": null,
+    "response": {
+      "adapter_name": "ollama",
+      "model_name": "qwen2.5:3b",
+      "ok": true,
+      "raw_text": "{\"description\":\"Recognizable umbrella outline using black line art with various shapes.\",\"shapes\":[{\"type\":\"line\",\"x1\":20,\"y1\":45,\"x2\":80,\"y2\":35},{\"type\":\"line\",\"x1\":60,\"y1\":60,\"x2\":70,\"y2\":70},{\"type\":\"line\",\"x1\":50,\"y1\":90,\"x2\":60,\"y2\":95},{\"type\":\"line\",\"x1\":70,\"y1\":85,\"x2\":80,\"y2\":90},{\"type\":\"line\",\"x1\":40,\"y1\":100,\"x2\":30,\"y2\":110},{\"type\":\"line\",\"x1\":60,\"y1\":110,\"x2\":70,\"y2\":120},{\"type\":\"line\",\"x1\":50,\"y1\":95,\"x2\":40,\"y2\":85},{\"type\":\"line\",\"x1\":70,\"y1\":80,\"x2\":60,\"y2\":70},{\"type\":\"line\",\"x1\":55,\"y1\":85,\"x2\":50,\"y2\":95}]}"
+    }
+  },
+  {
+    "created_at_utc": "2026-11-24T13:17:29.033770+00:00",
+    "model_id": "qwen2.5:3b",
+    "prompt": "Critique YOUR drawing plan. You can read the coordinates but cannot visually inspect the rendered image. Respond ONLY JSON with claimed_subject, changes and satisfied (boolean): {\"subject\": \"an umbrella\", \"description\": \"Recognizable umbrella outline using black line art with various shapes.\", \"shapes\": [{\"type\": \"line\", \"x1\": 20, \"y1\": 45, \"x2\": 80, \"y2\": 35}, {\"type\": \"line\", \"x1\": 60, \"y1\": 60, \"x2\": 70, \"y2\": 70}, {\"type\": \"line\", \"x1\": 50, \"y1\": 90, \"x2\": 60, \"y2\": 95}, {\"type\": \"line\", \"x1\": 70, \"y1\": 85, \"x2\": 80, \"y2\": 90}, {\"type\": \"line\", \"x1\": 40, \"y1\": 100, \"x2\": 30, \"y2\": 110}, {\"type\": \"line\", \"x1\": 60, \"y1\": 110, \"x2\": 70, \"y2\": 120}, {\"type\": \"line\", \"x1\": 50, \"y1\": 95, \"x2\": 40, \"y2\": 85}, {\"type\": \"line\", \"x1\": 70, \"y1\": 80, \"x2\": 60, \"y2\": 70}, {\"type\": \"line\", \"x1\": 55, \"y1\": 85, \"x2\": 50, \"y2\": 95}]}",
+    "provider_kind": "ollama",
+    "provider_response_id": null,
+    "response": {
+      "adapter_name": "ollama",
+      "model_name": "qwen2.5:3b",
+      "ok": true,
+      "raw_text": "{\n  \"claimed_subject\": \"an umbrella\",\n  \"changes\": \"\",\n  \"satisfied\": false\n}"
+    }
+  }
+]

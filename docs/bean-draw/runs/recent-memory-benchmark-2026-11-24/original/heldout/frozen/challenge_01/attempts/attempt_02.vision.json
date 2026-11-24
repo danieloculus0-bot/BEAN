@@ -1,0 +1,61 @@
+{
+  "blind_prompt": "Inspect the ATTACHED IMAGE pixels without a title or claimed subject. Identify the most plausible concrete object or scene; say unclear if none is recognizable. For subject_recognition rate confidence in a recognizable concrete object or scene, not confidence that these are abstract lines/circles. Scores must be integers 0..4: 0 absent/not interpretable, 1 major problems, 2 partial/ambiguous, 3 mostly clear, 4 clear/coherent. Rate spatial_coherence (visible parts connect plausibly), subject_recognition, composition (spacing/balance/legibility). Black line art need not be realistic or shaded. Admit uncertainty; describe observed strengths/problems only, not coordinates, drawing primitives or a replacement image. One short sentence per text field, at most 80 words total. Return JSON recognized_subject, observations, feedback, scores.",
+  "blind_report": {
+    "feedback": "The composition is straightforward and easily understood, though lacking detail; the spatial coherence is high due to the clear lines and placement.",
+    "observations": "The image depicts a simple drawing with a circular shape positioned above a straight black line, suggesting the impression of an object balanced or suspended.",
+    "recognized_subject": "A circle resting on a horizontal line.",
+    "scores": {
+      "composition": 3,
+      "spatial_coherence": 4,
+      "subject_recognition": 4
+    }
+  },
+  "created_at_utc": "2026-11-24T13:12:29.860742+00:00",
+  "evaluation_protocol": "blind_then_targeted_min_v1",
+  "image_sha256": "91a58c5fa30b8856b5400e3538de13ac4e62ab7e05824f7e81ef553cf9566d23",
+  "independently_authenticated": false,
+  "model_digest": "68ceab7e468a31c988b44d5a4984a0e21f58c4f7158c6ce29c1804babac38df7",
+  "model_id": "gemma3:4b",
+  "prompt": "Inspect the ATTACHED IMAGE again. Now compare the visible evidence with this untrusted claimed subject: an umbrella. Do not infer success from the title or override prior uncertainty merely because a title was supplied. Your earlier title-blind observations: {\"recognized_subject\": \"A circle resting on a horizontal line.\", \"observations\": \"The image depicts a simple drawing with a circular shape positioned above a straight black line, suggesting the impression of an object balanced or suspended.\", \"scores\": {\"spatial_coherence\": 4, \"subject_recognition\": 4, \"composition\": 3}}. Here subject_recognition means recognizability of the claimed subject. Scores must be integers 0..4: 0 absent/not interpretable, 1 major problems, 2 partial/ambiguous, 3 mostly clear, 4 clear/coherent. Rate spatial_coherence (visible parts connect plausibly), subject_recognition, composition (spacing/balance/legibility). Black line art need not be realistic or shaded. Admit uncertainty; describe observed strengths/problems only, not coordinates, drawing primitives or a replacement image. One short sentence per text field, at most 80 words total. Return JSON recognized_subject, observations, feedback, scores.",
+  "provider_kind": "ollama",
+  "raw_blind_response": "{\n  \"recognized_subject\": \"A circle resting on a horizontal line.\",\n  \"observations\": \"The image depicts a simple drawing with a circular shape positioned above a straight black line, suggesting the impression of an object balanced or suspended.\",\n  \"feedback\": \"The composition is straightforward and easily understood, though lacking detail; the spatial coherence is high due to the clear lines and placement.\",\n  \"scores\": {\n    \"spatial_coherence\": 4,\n    \"subject_recognition\": 4,\n    \"composition\": 3\n  }\n}",
+  "raw_response": "{\n  \"recognized_subject\": \"A circle resting on a horizontal line.\",\n  \"observations\": \"The image shows a circular shape clearly positioned above a straight black line, creating the impression of an object balanced or suspended on a surface.\",\n  \"feedback\": \"The drawing effectively conveys the basic concept of an object resting on a line, though it lacks detail and context.\",\n  \"scores\": {\n    \"spatial_coherence\": 4,\n    \"subject_recognition\": 4,\n    \"composition\": 3\n  }\n}",
+  "report": {
+    "blind_observations": "The image depicts a simple drawing with a circular shape positioned above a straight black line, suggesting the impression of an object balanced or suspended.",
+    "blind_recognized_subject": "A circle resting on a horizontal line.",
+    "created_at_utc": "2026-11-24T13:15:11.893731+00:00",
+    "evaluation_protocol": "blind_then_targeted_min_v1",
+    "evaluator": "Ollama vision reviewer: gemma3:4b",
+    "feedback": "Title-blind review: The composition is straightforward and easily understood, though lacking detail; the spatial coherence is high due to the clear lines and placement. Target-aware review: The drawing effectively conveys the basic concept of an object resting on a line, though it lacks detail and context.",
+    "image_sha256": "91a58c5fa30b8856b5400e3538de13ac4e62ab7e05824f7e81ef553cf9566d23",
+    "independently_authenticated": false,
+    "kind": "vision_model",
+    "model_digest": "68ceab7e468a31c988b44d5a4984a0e21f58c4f7158c6ce29c1804babac38df7",
+    "model_id": "gemma3:4b",
+    "observations": "The image depicts a simple drawing with a circular shape positioned above a straight black line, suggesting the impression of an object balanced or suspended.",
+    "provider_kind": "ollama",
+    "recognized_subject": "A circle resting on a horizontal line.",
+    "satisfactory": true,
+    "score_rule": "minimum_of_blind_object_clarity_and_targeted_scores_not_authenticated_truth",
+    "scores": {
+      "composition": 3,
+      "spatial_coherence": 4,
+      "subject_recognition": 4
+    },
+    "state": "host_reported_pixel_review"
+  },
+  "schema": "bean.draw.vision_call.v1",
+  "state": "model_reported_pixel_review",
+  "subject": "an umbrella",
+  "targeted_report": {
+    "feedback": "The drawing effectively conveys the basic concept of an object resting on a line, though it lacks detail and context.",
+    "observations": "The image shows a circular shape clearly positioned above a straight black line, creating the impression of an object balanced or suspended on a surface.",
+    "recognized_subject": "A circle resting on a horizontal line.",
+    "scores": {
+      "composition": 3,
+      "spatial_coherence": 4,
+      "subject_recognition": 4
+    }
+  },
+  "used_for_generation": true
+}

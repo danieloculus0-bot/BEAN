@@ -1,0 +1,116 @@
+{
+  "attempts": 2,
+  "completed_at_utc": "2026-11-24T13:40:51.746037+00:00",
+  "created_at_utc": "2026-11-24T13:27:04.563569+00:00",
+  "error": null,
+  "execution_mode": "live_model",
+  "history": [
+    {
+      "attempt": 1,
+      "description": "Draw an umbrella with a base and handle using black line art. The edges should be drawn in varying patterns to avoid repetition.",
+      "journal_tip": "0dfaa27e27ee789c54f61250a5def0393203d511b87001f9b343db8bf9d51695",
+      "metadata": "/workspace/bean-live-evidence/recent-memory-benchmark/heldout/adaptive/challenge_01/attempts/attempt_01.json",
+      "metadata_sha256": "b92194779b9a259def3ed29e1163a468877a61af134241d833199ec4eacfd1b4",
+      "png": "/workspace/bean-live-evidence/recent-memory-benchmark/heldout/adaptive/challenge_01/attempts/attempt_01.png",
+      "png_sha256": "302164c7065d4a0a4b8401e6df5bc2965275cecea1528aae8e57b4e5d39a623d",
+      "sha256": "5ece2ad9544bd6557c80e2dc4e3b54784bec28e495808f453649753d90edfaca",
+      "status": "host_reported_not_satisfactory",
+      "svg": "/workspace/bean-live-evidence/recent-memory-benchmark/heldout/adaptive/challenge_01/attempts/attempt_01.svg"
+    },
+    {
+      "attempt": 2,
+      "description": "A large circle with a smaller central circle to represent the umbrella's handle, framed by two vertical lines for depth and balance.",
+      "journal_tip": "541d4b39970a56901893db7a716c9b5983f01b83d78a5804c1e8e34c3f505b43",
+      "metadata": "/workspace/bean-live-evidence/recent-memory-benchmark/heldout/adaptive/challenge_01/attempts/attempt_02.json",
+      "metadata_sha256": "a2d4afd2515ee90e86b773932b4e97a7885b6a41dda2d28149790c657c859272",
+      "png": "/workspace/bean-live-evidence/recent-memory-benchmark/heldout/adaptive/challenge_01/attempts/attempt_02.png",
+      "png_sha256": "91a58c5fa30b8856b5400e3538de13ac4e62ab7e05824f7e81ef553cf9566d23",
+      "sha256": "7e56568f3fb45c248ac6d189879a33e5731d4ed5fd74cec0dea8aba6c7c128d2",
+      "status": "host_reported_satisfactory",
+      "svg": "/workspace/bean-live-evidence/recent-memory-benchmark/heldout/adaptive/challenge_01/attempts/attempt_02.svg"
+    }
+  ],
+  "independent_visual_verification": false,
+  "journal_tip": "c284db76dfed5aab24543457f6a81ce18c15be0d1d4f3689bfc0fc865a4e5dea",
+  "learning_improvement_verified": false,
+  "memory_context_records": [
+    {
+      "attempt": 2,
+      "error": null,
+      "external_feedback": {
+        "evaluation_protocol": "blind_then_targeted_min_v1",
+        "evaluator": "Ollama vision reviewer: gemma3:4b",
+        "feedback": "Title-blind review: The drawing is simple and clearly represents the basic elements of a soccer scene, though it lacks detail and shading. Target-aware review: The image does not depict a teapot; it presents a simplified drawing of a soccer",
+        "image_sha256": "21ccb5abbddd4c37413aca9a3f1c3d0adcd97242bb3fcb44bd82a430c429e2c9",
+        "model_digest": "68ceab7e468a31c988b44d5a4984a0e21f58c4f7158c6ce29c1804babac38df7",
+        "model_id": "gemma3:4b",
+        "observations": "The image depicts a soccer ball centered within a square, with lines extending outwards to form a goalpost on either side.",
+        "recognized_subject": "Soccer ball with a goalpost",
+        "scores": {
+          "composition": 3,
+          "spatial_coherence": 3,
+          "subject_recognition": 1
+        }
+      },
+      "self_review": {
+        "changes": "",
+        "satisfied": false
+      },
+      "status": "host_reported_not_satisfactory",
+      "subject": "a teapot",
+      "summarized": true,
+      "task_ref": "benchmark-training-adaptive-01"
+    },
+    {
+      "attempt": 1,
+      "error": null,
+      "external_feedback": {
+        "evaluation_protocol": "blind_then_targeted_min_v1",
+        "evaluator": "Ollama vision reviewer: gemma3:4b",
+        "feedback": "Title-blind review: The diagram is straightforward and easily understood, though lacks context or specific purpose. Target-aware review: While the image contains a square and circle, it doesn't depict a teapot; the arrangement is purely geo",
+        "image_sha256": "c16c746ec39f1ca30c6a466a605988be4ae580dc6dde56a83a55e62de56b5468",
+        "model_digest": "68ceab7e468a31c988b44d5a4984a0e21f58c4f7158c6ce29c1804babac38df7",
+        "model_id": "gemma3:4b",
+        "observations": "The image depicts a square and a circle arranged in a grid-like fashion with horizontal and vertical lines, suggesting a basic representation of spatial relatio",
+        "recognized_subject": "A simple geometric diagram",
+        "scores": {
+          "composition": 3,
+          "spatial_coherence": 3,
+          "subject_recognition": 2
+        }
+      },
+      "self_review": {
+        "changes": "",
+        "satisfied": false
+      },
+      "status": "host_reported_not_satisfactory",
+      "subject": "a teapot",
+      "summarized": true,
+      "task_ref": "benchmark-training-adaptive-01"
+    }
+  ],
+  "memory_context_sha256": "88e0876867af75358cfeaf639f2c96b6f8f0a9f94b4a14826e59671e27887df6",
+  "memory_mode": "adaptive",
+  "model_calls_sha256": "1f52e86e4859d94c42a8459f3305b778ff1d4eec341837f5febaf6623f3d7b79",
+  "model_digest": "357c53fb659c5076de1d65ccb0b397446227b71a42be9d1603d46168015c9e4b",
+  "model_id": "qwen2.5:3b",
+  "provider_kind": "ollama",
+  "run_id": "1ac5030e-18a4-4d0b-a173-f6c35db80501",
+  "runtime_source_sha256": {
+    "bean/creativity/artifacts.py": "c72923730d7048fe4a502cb1d2c9ecec993f22e1ec64319d5cb1a9109ccec938",
+    "bean/creativity/sketch_lab.py": "4ed12705d94669c005ee6279d30619e502a15a2e4e7ad39e99a2f922ef53d7b3",
+    "bean/voice/ollama.py": "3f852e850e998767f43bd1c0842852c3562aecfce5152d8b8081e8a6ac8d19ee",
+    "scripts/build_bean_draw_gallery.py": "f306b06c9db0c2d095895c01fc927f646c311a41b6be6fe88ca5ed7a1a888915"
+  },
+  "schema": "bean.draw.run.v1",
+  "seed": 202611241,
+  "selected_attempt": 2,
+  "selection_reason": "The second attempt (attempt 2) received a satisfactory rating from the vision reviewer with scores of 3 for composition and 4 for spatial coherence. The visual feedback indicated that it is straightforward and easily understood, with high spatial coherence due to clear lines and placement. Despite lacking detail and context, the overall composition feels balanced and complete compared to the first attempt.",
+  "selection_state": "model_selected_from_recorded_evidence",
+  "source_git_sha": "bb7128d76a6c210d84234326576ef6bc7f1e2509",
+  "state": "host_reported_satisfactory",
+  "subject": "an umbrella",
+  "subject_source": "human",
+  "task_ref": "benchmark-heldout-adaptive-01",
+  "weights_updated": false
+}

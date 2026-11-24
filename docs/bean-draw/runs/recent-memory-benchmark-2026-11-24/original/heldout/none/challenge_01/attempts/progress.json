@@ -1,0 +1,29 @@
+{
+  "history": [
+    {
+      "attempt": 1,
+      "description": "Recognizable umbrella outline using black line art with various shapes.",
+      "journal_tip": "038fdc9177a7b0e875f335efa020b8e5acd1c37fc8992b5e28baea2598176747",
+      "metadata": "/workspace/bean-live-evidence/recent-memory-benchmark/heldout/none/challenge_01/attempts/attempt_01.json",
+      "metadata_sha256": "dd69c45d68a560fbe7bf59866f46333285c55fe0a345fbe2fb6b83c0f62655c0",
+      "png": "/workspace/bean-live-evidence/recent-memory-benchmark/heldout/none/challenge_01/attempts/attempt_01.png",
+      "png_sha256": "5b6a7483592cb4c1d28a592ce4ff749a81354c31dbaca3c13f7d74a81c311b00",
+      "sha256": "fbe769592bebe385c0781afebe0efa7367a4d4c10674494136d1f1a9190455e5",
+      "status": "host_reported_satisfactory",
+      "svg": "/workspace/bean-live-evidence/recent-memory-benchmark/heldout/none/challenge_01/attempts/attempt_01.svg"
+    },
+    {
+      "attempt": 2,
+      "description": "An umbrella with a rounded top section, cylindrical body, curved handle at the bottom, and two vertical ribs extending from the top to the bottom.",
+      "journal_tip": "42658954415ee2e561ec0bdead27de1c3677060cc4276ed88e16bd120434e6fb",
+      "metadata": "/workspace/bean-live-evidence/recent-memory-benchmark/heldout/none/challenge_01/attempts/attempt_02.json",
+      "metadata_sha256": "fb40f4252c44542336d6861d6f00cdafec61c8a3089dc0b0ce6d94be0df5e22d",
+      "png": "/workspace/bean-live-evidence/recent-memory-benchmark/heldout/none/challenge_01/attempts/attempt_02.png",
+      "png_sha256": "64cc780d22e7e01cb2fdcfa1d845982af919d97f0b56ff67283c0efa3d1b7b73",
+      "sha256": "b303d19de0c8a5ddaf357ff29e0690316d1859c80e46c5b901f465c9bbaf4170",
+      "status": "host_reported_satisfactory",
+      "svg": "/workspace/bean-live-evidence/recent-memory-benchmark/heldout/none/challenge_01/attempts/attempt_02.svg"
+    }
+  ],
+  "subject": "an umbrella"
+}

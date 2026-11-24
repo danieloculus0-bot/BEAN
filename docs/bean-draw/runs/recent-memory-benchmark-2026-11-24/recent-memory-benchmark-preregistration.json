@@ -1,0 +1,23 @@
+{
+  "artist": "qwen2.5:3b",
+  "artist_digest": "357c53fb659c5076de1d65ccb0b397446227b71a42be9d1603d46168015c9e4b",
+  "created_at_utc": "2026-11-24T12:52:28.706389+00:00",
+  "evaluation_protocol": "blind_then_targeted_min_v1",
+  "evaluator": "gemma3:4b",
+  "evaluator_digest": "68ceab7e468a31c988b44d5a4984a0e21f58c4f7158c6ce29c1804babac38df7",
+  "independent_quality_verified": false,
+  "phase": "before_any_new_provider_calls",
+  "protocol_sha256": "85fef0d10c79300b4ee4cec3d0ff93a9ffce324d53282b7272826a6508a41ff7",
+  "required_observations": [
+    "valid complete memory_context_records andSHA appearactualDrawprompts",
+    "adaptivecase2 actuallyincludesumbrella feedback; frozenremains trainingonly; noneempty",
+    "firstadaptive/frozencomparison isexpected matchedbaseline, notlearningadvantage",
+    "allSVG/PNG/raw/visionreceipthashes verified",
+    "allfailedattemptsretained andexcludeincompletecell",
+    "no quality/learningclaim frommodelconfidencealone"
+  ],
+  "schema": "bean.draw.recent_memory.preregistration.v1",
+  "source_git_sha": "bb7128d76a6c210d84234326576ef6bc7f1e2509",
+  "weights_updated": false,
+  "why_rerun": "Prior01090ba experiment did not deliver newer adaptive feedback due serialized-prefix truncation. Original data preserved as invalid memory-exposure comparison."
+}

@@ -1,0 +1,61 @@
+{
+  "blind_prompt": "Inspect the ATTACHED IMAGE pixels without a title or claimed subject. Identify the most plausible concrete object or scene; say unclear if none is recognizable. For subject_recognition rate confidence in a recognizable concrete object or scene, not confidence that these are abstract lines/circles. Scores must be integers 0..4: 0 absent/not interpretable, 1 major problems, 2 partial/ambiguous, 3 mostly clear, 4 clear/coherent. Rate spatial_coherence (visible parts connect plausibly), subject_recognition, composition (spacing/balance/legibility). Black line art need not be realistic or shaded. Admit uncertainty; describe observed strengths/problems only, not coordinates, drawing primitives or a replacement image. One short sentence per text field, at most 80 words total. Return JSON recognized_subject, observations, feedback, scores.",
+  "blind_report": {
+    "feedback": "The diagram's clarity relies on its simplicity, and the circles are clearly delineated, though their purpose isn’t specified.",
+    "observations": "The image depicts a basic geometric diagram consisting of a rectangle and a series of circles arranged along a horizontal line; the spatial arrangement is straightforward and easy to understand.",
+    "recognized_subject": "A simple diagram with a rectangular box and several circles.",
+    "scores": {
+      "composition": 4,
+      "spatial_coherence": 4,
+      "subject_recognition": 3
+    }
+  },
+  "created_at_utc": "2026-11-24T13:59:22.436861+00:00",
+  "evaluation_protocol": "blind_then_targeted_min_v1",
+  "image_sha256": "89ee337ebc7127d0449b72bb9b25e4523ffee75de906a0de01aa96d27249d437",
+  "independently_authenticated": false,
+  "model_digest": "68ceab7e468a31c988b44d5a4984a0e21f58c4f7158c6ce29c1804babac38df7",
+  "model_id": "gemma3:4b",
+  "prompt": "Inspect the ATTACHED IMAGE again. Now compare the visible evidence with this untrusted claimed subject: a bicycle. Do not infer success from the title or override prior uncertainty merely because a title was supplied. Your earlier title-blind observations: {\"recognized_subject\": \"A simple diagram with a rectangular box and several circles.\", \"observations\": \"The image depicts a basic geometric diagram consisting of a rectangle and a series of circles arranged along a horizontal line; the spatial arrangement is straightforward and easy to understand.\", \"scores\": {\"spatial_coherence\": 4, \"subject_recognition\": 3, \"composition\": 4}}. Here subject_recognition means recognizability of the claimed subject. Scores must be integers 0..4: 0 absent/not interpretable, 1 major problems, 2 partial/ambiguous, 3 mostly clear, 4 clear/coherent. Rate spatial_coherence (visible parts connect plausibly), subject_recognition, composition (spacing/balance/legibility). Black line art need not be realistic or shaded. Admit uncertainty; describe observed strengths/problems only, not coordinates, drawing primitives or a replacement image. One short sentence per text field, at most 80 words total. Return JSON recognized_subject, observations, feedback, scores.",
+  "provider_kind": "ollama",
+  "raw_blind_response": "{\n  \"recognized_subject\": \"A simple diagram with a rectangular box and several circles.\",\n  \"observations\": \"The image depicts a basic geometric diagram consisting of a rectangle and a series of circles arranged along a horizontal line; the spatial arrangement is straightforward and easy to understand.\",\n  \"feedback\": \"The diagram's clarity relies on its simplicity, and the circles are clearly delineated, though their purpose isn’t specified.\",\n  \"scores\": {\n    \"spatial_coherence\": 4,\n    \"subject_recognition\": 3,\n    \"composition\": 4\n  }\n}",
+  "raw_response": "{\n  \"recognized_subject\": \"Diagram\",\n  \"observations\": \"The image presents a diagrammatic representation featuring a rectangular shape and multiple circles aligned horizontally, suggesting a simple visual arrangement.\",\n  \"feedback\": \"While the diagram is recognizable as a geometric form, it doesn't directly depict a bicycle; its elements are arranged in a general schematic manner.\",\n  \"scores\": {\n    \"spatial_coherence\": 3,\n    \"subject_recognition\": 3,\n    \"composition\": 4\n  }\n}",
+  "report": {
+    "blind_observations": "The image depicts a basic geometric diagram consisting of a rectangle and a series of circles arranged along a horizontal line; the spatial arrangement is straightforward and easy to understand.",
+    "blind_recognized_subject": "A simple diagram with a rectangular box and several circles.",
+    "created_at_utc": "2026-11-24T14:01:57.235292+00:00",
+    "evaluation_protocol": "blind_then_targeted_min_v1",
+    "evaluator": "Ollama vision reviewer: gemma3:4b",
+    "feedback": "Title-blind review: The diagram's clarity relies on its simplicity, and the circles are clearly delineated, though their purpose isn’t specified. Target-aware review: While the diagram is recognizable as a geometric form, it doesn't directly depict a bicycle; its elements are arranged in a general schematic manner.",
+    "image_sha256": "89ee337ebc7127d0449b72bb9b25e4523ffee75de906a0de01aa96d27249d437",
+    "independently_authenticated": false,
+    "kind": "vision_model",
+    "model_digest": "68ceab7e468a31c988b44d5a4984a0e21f58c4f7158c6ce29c1804babac38df7",
+    "model_id": "gemma3:4b",
+    "observations": "The image depicts a basic geometric diagram consisting of a rectangle and a series of circles arranged along a horizontal line; the spatial arrangement is straightforward and easy to understand.",
+    "provider_kind": "ollama",
+    "recognized_subject": "A simple diagram with a rectangular box and several circles.",
+    "satisfactory": true,
+    "score_rule": "minimum_of_blind_object_clarity_and_targeted_scores_not_authenticated_truth",
+    "scores": {
+      "composition": 4,
+      "spatial_coherence": 3,
+      "subject_recognition": 3
+    },
+    "state": "host_reported_pixel_review"
+  },
+  "schema": "bean.draw.vision_call.v1",
+  "state": "model_reported_pixel_review",
+  "subject": "a bicycle",
+  "targeted_report": {
+    "feedback": "While the diagram is recognizable as a geometric form, it doesn't directly depict a bicycle; its elements are arranged in a general schematic manner.",
+    "observations": "The image presents a diagrammatic representation featuring a rectangular shape and multiple circles aligned horizontally, suggesting a simple visual arrangement.",
+    "recognized_subject": "Diagram",
+    "scores": {
+      "composition": 4,
+      "spatial_coherence": 3,
+      "subject_recognition": 3
+    }
+  },
+  "used_for_generation": true
+}

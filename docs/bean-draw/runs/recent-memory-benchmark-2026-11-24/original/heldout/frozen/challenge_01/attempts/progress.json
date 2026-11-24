@@ -1,0 +1,29 @@
+{
+  "history": [
+    {
+      "attempt": 1,
+      "description": "Draw an umbrella with a base and handle using black line art. The edges should be drawn in varying patterns to avoid repetition.",
+      "journal_tip": "dd82695e3499356fb9bdcf17947999673bff66ed34fba94264df4b0f489b89ab",
+      "metadata": "/workspace/bean-live-evidence/recent-memory-benchmark/heldout/frozen/challenge_01/attempts/attempt_01.json",
+      "metadata_sha256": "e870ddb1d8b9a82db7d3e3433abf29e81e1e742ecfc09d5df01675d7f7a48120",
+      "png": "/workspace/bean-live-evidence/recent-memory-benchmark/heldout/frozen/challenge_01/attempts/attempt_01.png",
+      "png_sha256": "302164c7065d4a0a4b8401e6df5bc2965275cecea1528aae8e57b4e5d39a623d",
+      "sha256": "5ece2ad9544bd6557c80e2dc4e3b54784bec28e495808f453649753d90edfaca",
+      "status": "host_reported_not_satisfactory",
+      "svg": "/workspace/bean-live-evidence/recent-memory-benchmark/heldout/frozen/challenge_01/attempts/attempt_01.svg"
+    },
+    {
+      "attempt": 2,
+      "description": "A large circle with a smaller central circle to represent the umbrella's handle, framed by two vertical lines for depth and balance.",
+      "journal_tip": "07aa8da432069b0b27523fdf56ce6ec2720f4736c71412ca02498d8353489de1",
+      "metadata": "/workspace/bean-live-evidence/recent-memory-benchmark/heldout/frozen/challenge_01/attempts/attempt_02.json",
+      "metadata_sha256": "4e11dfc0c846984d93494a1574c8c18e0c67d93f2b87664290b4cb8879026d0c",
+      "png": "/workspace/bean-live-evidence/recent-memory-benchmark/heldout/frozen/challenge_01/attempts/attempt_02.png",
+      "png_sha256": "91a58c5fa30b8856b5400e3538de13ac4e62ab7e05824f7e81ef553cf9566d23",
+      "sha256": "7e56568f3fb45c248ac6d189879a33e5731d4ed5fd74cec0dea8aba6c7c128d2",
+      "status": "host_reported_satisfactory",
+      "svg": "/workspace/bean-live-evidence/recent-memory-benchmark/heldout/frozen/challenge_01/attempts/attempt_02.svg"
+    }
+  ],
+  "subject": "an umbrella"
+}

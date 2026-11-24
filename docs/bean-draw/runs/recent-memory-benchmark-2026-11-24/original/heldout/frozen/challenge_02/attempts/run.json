@@ -1,0 +1,116 @@
+{
+  "attempts": 2,
+  "completed_at_utc": "2026-11-24T14:16:44.071177+00:00",
+  "created_at_utc": "2026-11-24T14:03:40.442038+00:00",
+  "error": null,
+  "execution_mode": "live_model",
+  "history": [
+    {
+      "attempt": 1,
+      "description": "Bicycle frame with front and back wheels, handlebars extending upwards, seat positioned above the back wheel.",
+      "journal_tip": "31be1516e1ceefc06f69d01ab3d4f498d2cae413fd4ced50d2e2c5b13a7f0d1b",
+      "metadata": "/workspace/bean-live-evidence/recent-memory-benchmark/heldout/frozen/challenge_02/attempts/attempt_01.json",
+      "metadata_sha256": "8bd74bcb13e02daea204a35f3f80641c821d8e6741c4b9ec3ea46faa80814d9c",
+      "png": "/workspace/bean-live-evidence/recent-memory-benchmark/heldout/frozen/challenge_02/attempts/attempt_01.png",
+      "png_sha256": "504140a90f85aee17eff71c53c5ee0bdd39cd45c1140d9fc0ae0382d9aa61984",
+      "sha256": "5826f665382a903aee28508a8d102589e0e3bae93058a3e3ebccd285f3f3f660",
+      "status": "host_reported_satisfactory",
+      "svg": "/workspace/bean-live-evidence/recent-memory-benchmark/heldout/frozen/challenge_02/attempts/attempt_01.svg"
+    },
+    {
+      "attempt": 2,
+      "description": "A clear and recognizable bicycle composed of several key components: front wheel, rear wheel, frame, handlebars, seat, pedals, and chain.",
+      "journal_tip": "0a8b73126e0e1a8fa68f4642fccc5f8664269b6a53ad07e41de4de73f723c311",
+      "metadata": "/workspace/bean-live-evidence/recent-memory-benchmark/heldout/frozen/challenge_02/attempts/attempt_02.json",
+      "metadata_sha256": "cd644040e141d15fcc96da8b5cf4b385b7be2f6a2c17f2016d2fae480a4ccf0c",
+      "png": "/workspace/bean-live-evidence/recent-memory-benchmark/heldout/frozen/challenge_02/attempts/attempt_02.png",
+      "png_sha256": "fa17cefcf4ff6629792515360c5c7d2123633d36f32569f053533614d71ef787",
+      "sha256": "2bc2fc4b572a18e4680ee9bf6ba92ee0323591ba3835635478625f189f41584b",
+      "status": "host_reported_not_satisfactory",
+      "svg": "/workspace/bean-live-evidence/recent-memory-benchmark/heldout/frozen/challenge_02/attempts/attempt_02.svg"
+    }
+  ],
+  "independent_visual_verification": false,
+  "journal_tip": "60ab36c983a7dd559d557e65bce04d2241db48086834b32ef3744a21c5d2c442",
+  "learning_improvement_verified": false,
+  "memory_context_records": [
+    {
+      "attempt": 2,
+      "error": null,
+      "external_feedback": {
+        "evaluation_protocol": "blind_then_targeted_min_v1",
+        "evaluator": "Ollama vision reviewer: gemma3:4b",
+        "feedback": "Title-blind review: The drawing is simple and clearly represents the basic elements of a soccer scene, though it lacks detail and shading. Target-aware review: The image does not depict a teapot; it presents a simplified drawing of a soccer",
+        "image_sha256": "21ccb5abbddd4c37413aca9a3f1c3d0adcd97242bb3fcb44bd82a430c429e2c9",
+        "model_digest": "68ceab7e468a31c988b44d5a4984a0e21f58c4f7158c6ce29c1804babac38df7",
+        "model_id": "gemma3:4b",
+        "observations": "The image depicts a soccer ball centered within a square, with lines extending outwards to form a goalpost on either side.",
+        "recognized_subject": "Soccer ball with a goalpost",
+        "scores": {
+          "composition": 3,
+          "spatial_coherence": 3,
+          "subject_recognition": 1
+        }
+      },
+      "self_review": {
+        "changes": "",
+        "satisfied": false
+      },
+      "status": "host_reported_not_satisfactory",
+      "subject": "a teapot",
+      "summarized": true,
+      "task_ref": "benchmark-training-adaptive-01"
+    },
+    {
+      "attempt": 1,
+      "error": null,
+      "external_feedback": {
+        "evaluation_protocol": "blind_then_targeted_min_v1",
+        "evaluator": "Ollama vision reviewer: gemma3:4b",
+        "feedback": "Title-blind review: The diagram is straightforward and easily understood, though lacks context or specific purpose. Target-aware review: While the image contains a square and circle, it doesn't depict a teapot; the arrangement is purely geo",
+        "image_sha256": "c16c746ec39f1ca30c6a466a605988be4ae580dc6dde56a83a55e62de56b5468",
+        "model_digest": "68ceab7e468a31c988b44d5a4984a0e21f58c4f7158c6ce29c1804babac38df7",
+        "model_id": "gemma3:4b",
+        "observations": "The image depicts a square and a circle arranged in a grid-like fashion with horizontal and vertical lines, suggesting a basic representation of spatial relatio",
+        "recognized_subject": "A simple geometric diagram",
+        "scores": {
+          "composition": 3,
+          "spatial_coherence": 3,
+          "subject_recognition": 2
+        }
+      },
+      "self_review": {
+        "changes": "",
+        "satisfied": false
+      },
+      "status": "host_reported_not_satisfactory",
+      "subject": "a teapot",
+      "summarized": true,
+      "task_ref": "benchmark-training-adaptive-01"
+    }
+  ],
+  "memory_context_sha256": "88e0876867af75358cfeaf639f2c96b6f8f0a9f94b4a14826e59671e27887df6",
+  "memory_mode": "frozen",
+  "model_calls_sha256": "0847bd4079762065b2c091c5e433f81c39f729d1c73949da5cbca2f2e6b22154",
+  "model_digest": "357c53fb659c5076de1d65ccb0b397446227b71a42be9d1603d46168015c9e4b",
+  "model_id": "qwen2.5:3b",
+  "provider_kind": "ollama",
+  "run_id": "ab135f29-cbdf-4480-81c3-1863d667b7db",
+  "runtime_source_sha256": {
+    "bean/creativity/artifacts.py": "c72923730d7048fe4a502cb1d2c9ecec993f22e1ec64319d5cb1a9109ccec938",
+    "bean/creativity/sketch_lab.py": "4ed12705d94669c005ee6279d30619e502a15a2e4e7ad39e99a2f922ef53d7b3",
+    "bean/voice/ollama.py": "3f852e850e998767f43bd1c0842852c3562aecfce5152d8b8081e8a6ac8d19ee",
+    "scripts/build_bean_draw_gallery.py": "f306b06c9db0c2d095895c01fc927f646c311a41b6be6fe88ca5ed7a1a888915"
+  },
+  "schema": "bean.draw.run.v1",
+  "seed": 202611242,
+  "selected_attempt": 2,
+  "selection_reason": "The external feedback for attempt 2 indicates that the subject (a bicycle) is not accurately represented. The image depicts a schematic representation of an electrical circuit, which does not correspond to the task of drawing a bicycle. In contrast, attempt 1 was incorrectly identified as depicting a musical staff, which aligns with the provided description and domain of 'sketch'. Attempt 2's feedback suggests it lacks clarity in representing the intended subject.",
+  "selection_state": "model_selected_from_recorded_evidence",
+  "source_git_sha": "bb7128d76a6c210d84234326576ef6bc7f1e2509",
+  "state": "host_reported_not_satisfactory",
+  "subject": "a bicycle",
+  "subject_source": "human",
+  "task_ref": "benchmark-heldout-frozen-02",
+  "weights_updated": false
+}

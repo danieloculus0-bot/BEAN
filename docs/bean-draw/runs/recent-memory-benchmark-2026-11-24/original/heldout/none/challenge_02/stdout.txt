@@ -1,0 +1,37 @@
+{
+  "subject_chosen_by_BEAN_model": null,
+  "subject": "a bicycle",
+  "subject_source": "human",
+  "history": [
+    {
+      "attempt": 1,
+      "status": "host_reported_satisfactory",
+      "svg": "/workspace/bean-live-evidence/recent-memory-benchmark/heldout/none/challenge_02/attempts/attempt_01.svg",
+      "sha256": "a369c35072e7c9c8c2559a5bf19ae052e685d2e0a5425fd98ed355b06b5e489d",
+      "png": "/workspace/bean-live-evidence/recent-memory-benchmark/heldout/none/challenge_02/attempts/attempt_01.png",
+      "png_sha256": "5eb6f22c760212515bbc1ded7c6289d9a445d4d58f0d0710a4a701487e28a4df",
+      "journal_tip": "88d7bddd10803cb7b881cb6183440bacdb3c586767efc95e27cb819bdf11fc05",
+      "metadata": "/workspace/bean-live-evidence/recent-memory-benchmark/heldout/none/challenge_02/attempts/attempt_01.json",
+      "metadata_sha256": "4bc28e1b8ec7830b04bdf906ad4fd16195968ad202381370263cfd8932a18703",
+      "description": "A unique black line art of a bicycle with new composition, no repetition."
+    },
+    {
+      "attempt": 2,
+      "status": "host_reported_not_satisfactory",
+      "svg": "/workspace/bean-live-evidence/recent-memory-benchmark/heldout/none/challenge_02/attempts/attempt_02.svg",
+      "sha256": "673db0dabde998670f3b312e7fdbf0a2512e157e31bfc7de995a8b8de8e0ce45",
+      "png": "/workspace/bean-live-evidence/recent-memory-benchmark/heldout/none/challenge_02/attempts/attempt_02.png",
+      "png_sha256": "55b58b8d8438cb4ca814dfdf72d12ec1ae494e861b144ffe232600c3e1576e53",
+      "journal_tip": "aac4e03f6f7db6d207790f20f856985fb2ca32d18c43bc1a63bd30c0f0435b1b",
+      "metadata": "/workspace/bean-live-evidence/recent-memory-benchmark/heldout/none/challenge_02/attempts/attempt_02.json",
+      "metadata_sha256": "9cd0755e641f2f6d5c507da0c4773896ba82b91d2cb87b503d2e61ff572d99f7",
+      "description": "Recognizable bicycle components in black line art: wheels (circular), frame (rectangles), handlebars (lines), seat (ellipse), pedals (lines), and chain (line between two points)."
+    }
+  ],
+  "research_status": "not_requested",
+  "references": [],
+  "final_status": "host_reported_not_satisfactory",
+  "attempts": 2,
+  "run_receipt": "/workspace/bean-live-evidence/recent-memory-benchmark/heldout/none/challenge_02/attempts/run.json",
+  "visual_success_independently_verified": false
+}

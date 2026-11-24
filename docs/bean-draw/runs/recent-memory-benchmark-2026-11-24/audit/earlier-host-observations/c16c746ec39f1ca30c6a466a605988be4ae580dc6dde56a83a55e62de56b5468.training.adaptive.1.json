@@ -1,0 +1,24 @@
+{
+  "arm": "adaptive",
+  "attempt": 1,
+  "blinded": false,
+  "challenge": 1,
+  "created_at_utc": "2026-11-24T12:54:34.879898+00:00",
+  "evaluator": "Codex recent-memory visual observer",
+  "image_file": "/workspace/bean-live-evidence/recent-memory-benchmark/training/adaptive/challenge_01/attempts/attempt_01.png",
+  "image_sha256": "c16c746ec39f1ca30c6a466a605988be4ae580dc6dde56a83a55e62de56b5468",
+  "independently_authenticated": false,
+  "inspection_method": "view_image result returned before this report was written",
+  "kind": "vision_model",
+  "observations": "A large outlined rectangle and a circle intersect with long vertical and horizontal lines. The marks are clean and uncluttered, but I cannot reliably recognize a teapot or a coherent vessel silhouette.",
+  "phase": "training",
+  "posthoc": true,
+  "schema": "bean.draw.host_image_audit.v1",
+  "scores": {
+    "composition": 2,
+    "spatial_coherence": 1,
+    "subject_recognition": 0
+  },
+  "subject": "a teapot",
+  "used_for_generation": false
+}

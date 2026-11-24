@@ -1,0 +1,83 @@
+{
+  "runs": [
+    {
+      "folder": "training/adaptive/challenge_01",
+      "recorded_modules_match_git_blobs": true,
+      "runtime_source_sha256": {
+        "bean/creativity/artifacts.py": "c72923730d7048fe4a502cb1d2c9ecec993f22e1ec64319d5cb1a9109ccec938",
+        "bean/creativity/sketch_lab.py": "4ed12705d94669c005ee6279d30619e502a15a2e4e7ad39e99a2f922ef53d7b3",
+        "bean/voice/ollama.py": "3f852e850e998767f43bd1c0842852c3562aecfce5152d8b8081e8a6ac8d19ee",
+        "scripts/build_bean_draw_gallery.py": "f306b06c9db0c2d095895c01fc927f646c311a41b6be6fe88ca5ed7a1a888915"
+      },
+      "source_git_sha": "bb7128d76a6c210d84234326576ef6bc7f1e2509"
+    },
+    {
+      "folder": "heldout/frozen/challenge_01",
+      "recorded_modules_match_git_blobs": true,
+      "runtime_source_sha256": {
+        "bean/creativity/artifacts.py": "c72923730d7048fe4a502cb1d2c9ecec993f22e1ec64319d5cb1a9109ccec938",
+        "bean/creativity/sketch_lab.py": "4ed12705d94669c005ee6279d30619e502a15a2e4e7ad39e99a2f922ef53d7b3",
+        "bean/voice/ollama.py": "3f852e850e998767f43bd1c0842852c3562aecfce5152d8b8081e8a6ac8d19ee",
+        "scripts/build_bean_draw_gallery.py": "f306b06c9db0c2d095895c01fc927f646c311a41b6be6fe88ca5ed7a1a888915"
+      },
+      "source_git_sha": "bb7128d76a6c210d84234326576ef6bc7f1e2509"
+    },
+    {
+      "folder": "heldout/none/challenge_01",
+      "recorded_modules_match_git_blobs": true,
+      "runtime_source_sha256": {
+        "bean/creativity/artifacts.py": "c72923730d7048fe4a502cb1d2c9ecec993f22e1ec64319d5cb1a9109ccec938",
+        "bean/creativity/sketch_lab.py": "4ed12705d94669c005ee6279d30619e502a15a2e4e7ad39e99a2f922ef53d7b3",
+        "bean/voice/ollama.py": "3f852e850e998767f43bd1c0842852c3562aecfce5152d8b8081e8a6ac8d19ee",
+        "scripts/build_bean_draw_gallery.py": "f306b06c9db0c2d095895c01fc927f646c311a41b6be6fe88ca5ed7a1a888915"
+      },
+      "source_git_sha": "bb7128d76a6c210d84234326576ef6bc7f1e2509"
+    },
+    {
+      "folder": "heldout/adaptive/challenge_01",
+      "recorded_modules_match_git_blobs": true,
+      "runtime_source_sha256": {
+        "bean/creativity/artifacts.py": "c72923730d7048fe4a502cb1d2c9ecec993f22e1ec64319d5cb1a9109ccec938",
+        "bean/creativity/sketch_lab.py": "4ed12705d94669c005ee6279d30619e502a15a2e4e7ad39e99a2f922ef53d7b3",
+        "bean/voice/ollama.py": "3f852e850e998767f43bd1c0842852c3562aecfce5152d8b8081e8a6ac8d19ee",
+        "scripts/build_bean_draw_gallery.py": "f306b06c9db0c2d095895c01fc927f646c311a41b6be6fe88ca5ed7a1a888915"
+      },
+      "source_git_sha": "bb7128d76a6c210d84234326576ef6bc7f1e2509"
+    },
+    {
+      "folder": "heldout/none/challenge_02",
+      "recorded_modules_match_git_blobs": true,
+      "runtime_source_sha256": {
+        "bean/creativity/artifacts.py": "c72923730d7048fe4a502cb1d2c9ecec993f22e1ec64319d5cb1a9109ccec938",
+        "bean/creativity/sketch_lab.py": "4ed12705d94669c005ee6279d30619e502a15a2e4e7ad39e99a2f922ef53d7b3",
+        "bean/voice/ollama.py": "3f852e850e998767f43bd1c0842852c3562aecfce5152d8b8081e8a6ac8d19ee",
+        "scripts/build_bean_draw_gallery.py": "f306b06c9db0c2d095895c01fc927f646c311a41b6be6fe88ca5ed7a1a888915"
+      },
+      "source_git_sha": "bb7128d76a6c210d84234326576ef6bc7f1e2509"
+    },
+    {
+      "folder": "heldout/adaptive/challenge_02",
+      "recorded_modules_match_git_blobs": true,
+      "runtime_source_sha256": {
+        "bean/creativity/artifacts.py": "c72923730d7048fe4a502cb1d2c9ecec993f22e1ec64319d5cb1a9109ccec938",
+        "bean/creativity/sketch_lab.py": "4ed12705d94669c005ee6279d30619e502a15a2e4e7ad39e99a2f922ef53d7b3",
+        "bean/voice/ollama.py": "3f852e850e998767f43bd1c0842852c3562aecfce5152d8b8081e8a6ac8d19ee",
+        "scripts/build_bean_draw_gallery.py": "f306b06c9db0c2d095895c01fc927f646c311a41b6be6fe88ca5ed7a1a888915"
+      },
+      "source_git_sha": "bb7128d76a6c210d84234326576ef6bc7f1e2509"
+    },
+    {
+      "folder": "heldout/frozen/challenge_02",
+      "recorded_modules_match_git_blobs": true,
+      "runtime_source_sha256": {
+        "bean/creativity/artifacts.py": "c72923730d7048fe4a502cb1d2c9ecec993f22e1ec64319d5cb1a9109ccec938",
+        "bean/creativity/sketch_lab.py": "4ed12705d94669c005ee6279d30619e502a15a2e4e7ad39e99a2f922ef53d7b3",
+        "bean/voice/ollama.py": "3f852e850e998767f43bd1c0842852c3562aecfce5152d8b8081e8a6ac8d19ee",
+        "scripts/build_bean_draw_gallery.py": "f306b06c9db0c2d095895c01fc927f646c311a41b6be6fe88ca5ed7a1a888915"
+      },
+      "source_git_sha": "bb7128d76a6c210d84234326576ef6bc7f1e2509"
+    }
+  ],
+  "scope": "recorded runtime module hashes match pinned Git blobs and unchanged execution worktree; not provider authentication",
+  "source_git_sha": "bb7128d76a6c210d84234326576ef6bc7f1e2509"
+}
