@@ -1,0 +1,15 @@
+# Supply BEAN_PUBLIC_HOST in the Caddy service environment.
+# The hostname must resolve to this host. Caddy manages TLS automatically.
+{$BEAN_PUBLIC_HOST} {
+    @bean path /api/health /api/chat /api/orbit
+    handle @bean {
+        reverse_proxy 127.0.0.1:8765 {
+            transport http {
+                response_header_timeout 210s
+            }
+        }
+    }
+    handle {
+        respond "Not found" 404
+    }
+}
