@@ -58,7 +58,7 @@ jobs:
       - name: Install pinned tokenizer tooling
         run: python -m pip install transformers==4.46.3 huggingface_hub==0.26.5
       - name: Verify harness
-        run: python -m unittest bench.longmemeval.test_runner -v
+        run: python -m unittest bench.longmemeval.test_runner bench.longmemeval.test_freeze_dataset bench.longmemeval.test_accounting -v
       - name: Verify and freeze benchmark inputs
         shell: bash
         env:
@@ -112,5 +112,6 @@ jobs:
           path: |
             lme-output/ids.json
             lme-output/study.json
+            lme-output/accounting.json
             lme-output/results.jsonl
           if-no-files-found: warn
