@@ -71,7 +71,7 @@ class NativeOrchestrator:
                       self._builtin(builtin.memory_recall))
         self.register("drive_status", "Read current drives: {}",
                       self._builtin(builtin.evaluate_drives))
-        self.register("reason", "Core reasoning: {domain:str,query:str}",
+        self.register("reason", "Core reasoning: {domain:str,query:str,context:optional prior output}",
                       self._reason)
         self.register("reason_local", "Native symbolic reasoning: {domain:str,query:str}",
                       self._reason_local)
@@ -111,8 +111,11 @@ class NativeOrchestrator:
         return lambda args, task_ref: fn(args, {"session_uuid": self.session_uuid})
 
     def _reason(self, args, task_ref):
+        query = args["query"]
+        if "context" in args:
+            query += "\nPrior tool observations: " + _json(args["context"])
         return self.core.reason(domain=args["domain"], task_ref=task_ref,
-                                query=args["query"])
+                                query=query)
 
     def _reason_local(self, args, task_ref):
         return self.core.reason_local(domain=args["domain"], task_ref=task_ref,
@@ -281,3 +284,56 @@ def register_orchestration_handlers(inbox, orchestrator):
         plan_id=msg.args.get("plan_id")))
     inbox.register("cognition_plan_status", lambda msg, session:
                    orchestrator.status(msg.args["plan_id"]))
+
+
+def main():
+    """Local operator entry point: queue objectives or inspect durable output."""
+    import argparse
+    import sqlite3
+    from bean.runtime.inbox import CommandInbox
+
+    parser = argparse.ArgumentParser(description="BEAN native orchestration")
+    sub = parser.add_subparsers(dest="command", required=True)
+    submit = sub.add_parser("submit")
+    submit.add_argument("objective")
+    submit.add_argument("--inputs", default="{}")
+    submit.add_argument("--inbox", default="bean/runtime/inbox_drop")
+    submit.add_argument("--plan-id")
+    status = sub.add_parser("status")
+    status.add_argument("plan_id")
+    status.add_argument("--db", type=Path, required=True)
+    args = parser.parse_args()
+    if args.command == "submit":
+        plan_id = args.plan_id or "workflow:" + uuid.uuid4().hex
+        path = CommandInbox(args.inbox).drop("cognition_plan", {
+            "objective": args.objective, "inputs": json.loads(args.inputs),
+            "plan_id": plan_id})
+        print(json.dumps({"plan_id": plan_id, "queued": str(path)}))
+        return
+    rows = []
+    conn = sqlite3.connect(args.db.resolve().as_uri() + "?mode=ro", uri=True)
+    conn.row_factory = sqlite3.Row
+    try:
+        for index in range(8):
+            pid = plan_proposal_id(args.plan_id, index)
+            row = conn.execute(
+                "SELECT p.status,p.action_detail,r.error,o.output_json,o.output_sha256 "
+                "FROM cognition_goal_proposals p "
+                "LEFT JOIN bean_goal_runs r ON r.proposal_id=p.proposal_id "
+                "LEFT JOIN bean_orchestration_outputs o ON o.proposal_id=p.proposal_id "
+                "WHERE p.proposal_id=?", (pid,)).fetchone()
+            if row is None:
+                break
+            detail = json.loads(row["action_detail"])
+            raw = row["output_json"]
+            rows.append({"step": index, "status": row["status"],
+                         "tool": detail.get("tool"), "error": row["error"],
+                         "output": json.loads(raw) if raw is not None else None,
+                         "output_sha256": row["output_sha256"]})
+    finally:
+        conn.close()
+    print(json.dumps({"plan_id": args.plan_id, "steps": rows}, indent=2))
+
+
+if __name__ == "__main__":
+    main()
