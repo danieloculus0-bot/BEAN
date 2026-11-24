@@ -200,3 +200,38 @@ def test_comment_only_holdout_is_not_independent(tmp_path):
         incubate_skill(**args)
     assert writer.calls == 0
     assert not args["journal_path"].exists()
+
+
+def test_distinct_repairs_of_same_target_survive_restart(tmp_path):
+    args = setup(tmp_path, Writer(GOOD))
+    first = incubate_skill(**args)
+    # Equivalent behavior, distinct implementation and independently changed task.
+    other_code = "def double(value):\n    return value + value\n"
+    second_args = {**args, "provider": Writer(other_code),
+                   "task": "Implement doubling with addition rather than multiplication"}
+    second = incubate_skill(**second_args)
+    assert first["objective"] != second["objective"]
+    assert first["validated_path"] != second["validated_path"]
+    assert Path(first["validated_path"]).read_text() == GOOD
+    assert Path(second["validated_path"]).read_text() == other_code
+    again = incubate_skill(**args)
+    assert again["status"] == "previously_validated_in_memory"
+    assert again["accepted_source"] == first["accepted_source"]
+    assert again["tests_passed"] == first["tests_passed"]
+    assert again["holdout_tests_passed"] == first["holdout_tests_passed"]
+    assert args["provider"].calls == 1
+
+
+def test_legacy_archive_recovers_without_overwriting_other_objective(tmp_path):
+    args = setup(tmp_path, Writer(GOOD))
+    first = incubate_skill(**args)
+    path = Path(first["validated_path"])
+    legacy = args["output"] / "validated/bean/skills/double.py"
+    legacy.parent.mkdir(parents=True, exist_ok=True)
+    legacy.write_text("def double(value): return -1\n")
+    path.unlink()
+    recovered = incubate_skill(**args)
+    assert recovered["recovered_from_archive"] is True
+    assert path.read_text() == GOOD
+    assert legacy.read_text() == "def double(value): return -1\n"
+    assert recovered["holdout_passed"] is True
