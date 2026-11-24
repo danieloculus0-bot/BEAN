@@ -93,11 +93,15 @@ def transfer_candidates(conn, inputs, candidates, *, limit=8):
     return list(found.values())
 
 
-def select_transfer(objective, inputs, options, ask):
+def select_transfer(objective, inputs, options, ask, *, tool_descriptions=None):
     """Ask the existing local model to discriminate, not to approve learning."""
     if not options:
         return None
     payload = {"objective": objective, "input_shape": input_shape(inputs),
+               "current_inputs": inputs,
+               "tool_contracts": {name: description for name, description in
+                   (tool_descriptions or {}).items() if any(
+                       step["tool"] == name for option in options for step in option["graph"])},
                "candidates": [{"id": i, **item} for i, item in enumerate(options)]}
     prompt = (
         "Select a previously verified procedure ONLY if its actual tool graph "
