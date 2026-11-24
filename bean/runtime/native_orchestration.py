@@ -98,6 +98,48 @@ def _validate_known_reference_paths(value, previous_tools, inputs):
                 _validate_known_reference_paths(item, previous_tools, inputs)
 
 
+# Reference type checking uses only known tool return shapes, not their values.
+_UNKNOWN_SHAPE = object()
+
+
+def _argument_shape(value, previous_tools, inputs):
+    if isinstance(value, dict):
+        if "$input" in value:
+            return _path(inputs, value["$input"])
+        if "$step" in value:
+            sample = _PLAN_OUTPUT_EXAMPLES.get(previous_tools[value["$step"]], _UNKNOWN_SHAPE)
+            for part in value.get("path", []):
+                if sample is _UNKNOWN_SHAPE:
+                    break
+                sample = sample[0] if isinstance(sample, list) else _path(sample, [part])
+            return sample
+        return {k: _argument_shape(v, previous_tools, inputs) for k, v in value.items()}
+    if isinstance(value, list):
+        return [_argument_shape(v, previous_tools, inputs) for v in value]
+    return value
+
+
+def _validate_numeric_tool_args(tool, args, previous_tools, inputs):
+    if tool not in ("numeric_context", "mean_sign", "last_sign", "compare_numeric"):
+        return
+    resolved = _argument_shape(args, previous_tools, inputs)
+    def number(v):
+        return v is _UNKNOWN_SHAPE or (type(v) in (int, float) and math.isfinite(v))
+    if tool == "compare_numeric":
+        fields = {"left", "right", "abs_tol", "rel_tol"}
+        if set(resolved) != fields or not all(number(resolved[k]) for k in fields):
+            raise ValueError("compare_numeric requires four scalar numbers; use a direct reference object with path [\"prediction\"] for a prior prediction")
+        return
+    fields = {"history", "window"} if tool == "numeric_context" else {"history"}
+    if set(resolved) - fields or "history" not in resolved:
+        raise ValueError(tool + " requires a history argument")
+    history = resolved["history"]
+    if history is not _UNKNOWN_SHAPE and (not isinstance(history, list) or not all(number(v) for v in history)):
+        raise ValueError(tool + ' history must be a numeric list or a direct reference object, e.g. {"history":{"$step":0,"path":["history"]}}; never a string, object wrapper, or list of reference tokens')
+    if "window" in resolved and resolved["window"] is not _UNKNOWN_SHAPE and type(resolved["window"]) is not int:
+        raise ValueError("numeric_context window must be an integer")
+
+
 class NativeOrchestrator:
     """Plan with the configured model, execute with GoalCycle, reuse outputs."""
 
@@ -358,6 +400,8 @@ class NativeOrchestrator:
             "use input data with {\"$input\":[\"field\"]}. "
             "References may point only to earlier steps. A whole prior result uses "
             "an empty path. A scalar field is terminal: do not append another field or index. "
+            "A reference replaces the entire argument value, not a string or a list of tokens. "
+            "For example: {\"tool\":\"mean_sign\",\"args\":{\"history\":{\"$step\":0,\"path\":[\"history\"]}}}. "
             "Object keys are strings, list indices are integers. For example, numeric_context "
             "mean uses path [\"mean\"], and mean_sign prediction uses path [\"prediction\"]. "
             "Do not invent tool names or observations. "
@@ -419,7 +463,13 @@ class NativeOrchestrator:
                     step["tool"] not in self.tools or not isinstance(step["args"], dict)):
                 raise ValueError("invalid model-selected tool step")
             self._validate_refs(step["args"], index)
-            _validate_known_reference_paths(step["args"], [s["tool"] for s in steps[:index]], inputs)
+            try:
+                previous_tools = [s["tool"] for s in steps[:index]]
+                _validate_known_reference_paths(step["args"], previous_tools, inputs)
+                _validate_numeric_tool_args(step["tool"], step["args"], previous_tools, inputs)
+            except (ValueError, KeyError, TypeError, IndexError) as exc:
+                exc.planner_raw = raw
+                raise
             proposals.append(GoalProposal(
                 "orchestrate_objective", ActionType.RUN_EXPERIMENT,
                 "Execute model-selected capability", 3, ApprovalRequired.NONE,
