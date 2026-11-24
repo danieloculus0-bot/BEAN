@@ -149,34 +149,33 @@ class VerifiedWorkflows:
         self.store.commit()
         return {"passed":passed,"graph_sha":row[2],"input_sha":row[4],"checks":outcomes}
 
-    def candidates(self,family):
+    def candidates(self,family,*,minimum=2):
+        if minimum not in (1,2):raise ValueError('invalid evidence threshold')
         rows=self.store._conn().execute(
             "SELECT graph_sha,graph_json,COUNT(DISTINCT CASE WHEN passed=1 THEN input_sha END),SUM(CASE WHEN passed=0 THEN 1 ELSE 0 END) FROM bean_verified_workflow_trials WHERE family=? AND json_extract(evidence_json,\'$.parameterization_version\')=2 GROUP BY graph_sha,graph_json ORDER BY 3 DESC,graph_sha",(family,)).fetchall()
-        return [{"graph_sha":r[0],"graph":json.loads(r[1]),"distinct_verified_inputs":r[2],"failures":r[3]} for r in rows if r[2]>=2 and r[3]==0 and digest(json.loads(r[1]))==r[0]]
+        return [{"graph_sha":r[0],"graph":json.loads(r[1]),"distinct_verified_inputs":r[2],"failures":r[3]} for r in rows if r[2]>=minimum and r[3]==0 and digest(json.loads(r[1]))==r[0]]
 
-    def reuse(self,*,family,inputs,plan_id,graph_sha=None):
+    def reuse(self,*,family,inputs,plan_id,graph_sha=None,validation=False):
         if not isinstance(inputs,dict):raise ValueError("inputs object required")
-        chosen=[r for r in self.candidates(family) if graph_sha is None or r["graph_sha"]==graph_sha]
+        chosen=[r for r in self.candidates(family,minimum=1 if validation else 2) if graph_sha is None or r["graph_sha"]==graph_sha]
         if len(chosen)!=1:return {"status":"abstain","reason":"no uniquely verified workflow"}
         row=chosen[0];graph=row["graph"];proposals=[]
         referenced_input_digest(graph,inputs)
-        # Validate tool contracts and input paths before queueing immutable goals.
-        def validate(value):
-            if isinstance(value,dict):
-                if "$input" in value:at_path(inputs,value["$input"])
-                elif "$step" not in value:
-                    for x in value.values():validate(x)
-            elif isinstance(value,list):
-                for x in value:validate(x)
+        # Reuse the canonical native preflight for retained graphs too.
+        # Prior PR #564 validated only reference presence, not argument contracts.
+        from bean.runtime.plan_contracts import preflight
+        prior_tools = []
         for i,step in enumerate(graph):
             if step["tool"] not in SAFE_TOOLS or step["tool"] not in self.owner.tools:
                 raise ValueError("tool unavailable")
-            self.owner._validate_refs(step["args"],i);validate(step["args"])
+            self.owner._validate_refs(step["args"],i)
+            preflight(step["tool"], step["args"], inputs, prior_tools)
+            prior_tools.append(step["tool"])
             proposals.append(GoalProposal("orchestrate_objective",ActionType.RUN_EXPERIMENT,
                 "Execute independently checked retained procedure",3,ApprovalRequired.NONE,
                 {"capability":CAPABILITY,"tool":step["tool"],"args":step["args"],
                  "objective":"Verified workflow reuse: "+family,"inputs":inputs,
-                 "planner_model":None,"planner_provider":"verified_workflow",
+                 "planner_model":None,"planner_provider":"candidate_validation" if validation else "verified_workflow",
                  "workflow_sha":row["graph_sha"],"learning_context":"workflow:"+family},
                 "orchestration"))
         self.owner.engine.propose_plan(self.owner.session_uuid,plan_id,proposals)
@@ -186,5 +185,7 @@ class VerifiedWorkflows:
 def register_verified_workflows(inbox,owner):
     memory=VerifiedWorkflows(owner)
     inbox.register("cognition_workflow_feedback",lambda msg,session:memory.feedback(**msg.args))
-    inbox.register("cognition_workflow_reuse",lambda msg,session:memory.reuse(**msg.args))
+    inbox.register("cognition_workflow_reuse",lambda msg,session:memory.reuse(**{k:v for k,v in msg.args.items() if k!="validation"}))
+    inbox.register("cognition_workflow_validate",lambda msg,session:memory.reuse(**{k:v for k,v in msg.args.items() if k!="validation"},validation=True))
+    owner.verified_workflows=memory
     inbox.register("cognition_workflow_inventory",lambda msg,session:{"candidates":memory.candidates(msg.args["family"])})
