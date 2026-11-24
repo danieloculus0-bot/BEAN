@@ -589,7 +589,9 @@ def main():
         command.add_argument("--inputs", default="{}")
         command.add_argument("--inbox", default="bean/runtime/inbox_drop")
         command.add_argument("--plan-id")
-        command.add_argument("--family", help="Prefer independently verified workflows for this task family; otherwise plan fresh")
+        memory = command.add_mutually_exclusive_group()
+        memory.add_argument("--family", help="Prefer independently verified workflows for this task family")
+        memory.add_argument("--memory", action="store_true", help="Recall a verified workflow from the original objective; otherwise plan fresh")
         if name == "run":
             command.add_argument("--db", type=Path, required=True)
             command.add_argument("--timeout", type=float, default=120)
@@ -612,10 +614,11 @@ def main():
                 parser.error("plan ID already exists; use status or a fresh ID")
         payload = {"objective": args.objective, "inputs": inputs, "plan_id": plan_id}
         inbox_command = "cognition_plan"
-        if args.family is not None:
-            if not 1 <= len(args.family) <= 100:
-                parser.error("family must contain 1..100 characters")
-            payload["family"] = args.family
+        if args.family is not None or args.memory:
+            if args.family is not None:
+                if not 1 <= len(args.family) <= 100:
+                    parser.error("family must contain 1..100 characters")
+                payload["family"] = args.family
             inbox_command = "cognition_plan_with_memory"
         path = CommandInbox(args.inbox).drop(inbox_command, payload)
         if args.command == "submit":
