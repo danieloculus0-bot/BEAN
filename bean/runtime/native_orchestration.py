@@ -23,7 +23,7 @@ from bean.engineering.spaceflight import (
 from bean.memory.store import get_store
 from bean.learning.reasoning_service import _model_response
 from bean.modules import builtin
-from bean.optimization.skill_incubator import evaluate_retained_skill
+from bean.optimization.skill_incubator import evaluate_retained_skill, list_retained_skills
 
 CAPABILITY = "native_orchestration_step"
 
@@ -156,6 +156,9 @@ class NativeOrchestrator:
                           "Acquire/reuse retained source: {skill_id:str}; choices: " +
                           _json({key: item["objective"] for key, item in skills.items()}),
                           self._learn)
+            self.register("retained_skill_inventory",
+                          "Discover verified source and exact objective hashes: {skill_id:str}; choices: " +
+                          _json(sorted(self.skills)), self._retained_inventory)
             if self.transfer:
                 self.register("evaluate_skill",
                               "Execute retained skill on host transfer project: "
@@ -238,6 +241,14 @@ class NativeOrchestrator:
             "capability": "native_skill_incubator", "skill_id": args["skill_id"]}})
         return result
 
+    def _retained_inventory(self, args, task_ref):
+        if set(args) != {"skill_id"}:
+            raise ValueError("retained_skill_inventory requires skill_id")
+        key = args["skill_id"]
+        rows = list_retained_skills(self.skill_db, name=self.skills[key]["name"])
+        return {"skill_id": key, "count": len(rows), "skills": rows,
+                "transfer_available": key in self.transfer}
+
     def _reuse(self, args, task_ref):
         key = args["skill_id"]
         return evaluate_retained_skill(
@@ -302,6 +313,8 @@ class NativeOrchestrator:
             "use input data with {\"$input\":[\"field\"]}. "
             "References may point only to earlier steps. A whole prior result uses "
             "an empty path. Do not invent tool names or observations. "
+            "When reusing a previously acquired skill, use retained_skill_inventory "
+            "to retrieve its exact objective_sha256; never guess hashes. "
             "Use the final reason tool if synthesis is needed.\n"
             "Tools: " + _json({k: v[0] for k, v in self.tools.items()}) +
             "\nObjective: " + objective + "\nInputs: " + _json(inputs)
