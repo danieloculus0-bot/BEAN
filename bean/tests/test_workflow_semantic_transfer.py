@@ -82,3 +82,17 @@ class TransferTests(unittest.TestCase):
         def ask(prompt):
             self.fail("model called with no candidates")
         self.assertIsNone(select_transfer("New task", self.inputs, [], ask))
+
+    def test_selector_receives_current_conditions_and_relevant_contracts(self):
+        self.add("mean", "Compute weighted average", "weighted_mean")
+        observed = []
+        def ask(prompt):
+            observed.append(json.loads(prompt.split("\n", 1)[1]))
+            return '{"candidate":0}', "model", "local"
+        current = {"values":[99, 200, 301], "weights":[3, 4, 5]}
+        select_transfer("Estimate", current, self.options(current), ask,
+                        tool_descriptions={"weighted_mean":"weighted estimate",
+                                           "unrelated":"unrelated action"})
+        self.assertEqual(observed[0]["current_inputs"], current)
+        self.assertEqual(observed[0]["tool_contracts"], {"weighted_mean":"weighted estimate"})
+        self.assertNotIn("inputs", observed[0]["candidates"][0])
