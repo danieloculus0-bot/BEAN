@@ -400,11 +400,17 @@ class NativeOrchestrator:
 
     def _compile_plan(self, prompt, objective, inputs):
         raw, model, provider, _ = _model_response(
-            self.core.model, prompt, "BEAN native capability orchestration")
+            self.core.model, prompt, "BEAN native capability orchestration", json_object=True)
         if raw.startswith(chr(96) * 3):
             raw = "\n".join(raw.splitlines()[1:-1]).strip()
-        plan = json.loads(raw)
-        steps = plan["steps"]
+        try:
+            plan = json.loads(raw)
+            if not isinstance(plan, dict):
+                raise ValueError("planner must return a JSON object")
+            steps = plan["steps"]
+        except (ValueError, KeyError) as exc:
+            exc.planner_raw = raw
+            raise
         if not isinstance(steps, list) or not 1 <= len(steps) <= 8:
             raise ValueError("model must return one to eight steps")
         proposals = []
