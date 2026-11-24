@@ -49,8 +49,53 @@ def _path(value, parts):
     if not isinstance(parts, list):
         raise ValueError("reference path must be a list")
     for part in parts:
+        if isinstance(value, dict):
+            if not isinstance(part, str) or part not in value:
+                raise ValueError(f"reference requires an existing object field, got {part!r}")
+        elif isinstance(value, list):
+            if type(part) is not int or not 0 <= part < len(value):
+                raise ValueError(f"reference requires a valid zero-based list index, got {part!r}")
+        else:
+            raise ValueError(f"reference cannot index scalar {value!r}; stop at its containing field")
         value = value[part]
     return value
+
+
+# Documented output examples for tools whose return shapes are stable.
+# Values are placeholders for shape checking, never execution results.
+_PLAN_OUTPUT_EXAMPLES = {
+    "numeric_context": {"count": 1, "history": [0.0], "last": 0.0, "mean": 0.0, "trend": "up"},
+    "mean_sign": {"method": "", "prediction": 0},
+    "last_sign": {"method": "", "prediction": 0},
+    "compare_numeric": {"status": "", "matched": False, "left": 0.0, "right": 0.0,
+                        "absolute_difference": 0.0, "abs_tol": 0.0, "rel_tol": 0.0,
+                        "independently_validated": False},
+}
+
+
+def _validate_known_reference_paths(value, previous_tools, inputs):
+    """Reject impossible reference paths before queueing any native steps."""
+    if isinstance(value, list):
+        for item in value:
+            _validate_known_reference_paths(item, previous_tools, inputs)
+    elif isinstance(value, dict):
+        if "$input" in value:
+            _path(inputs, value["$input"])
+        elif "$step" in value:
+            tool = previous_tools[value["$step"]]
+            if tool in _PLAN_OUTPUT_EXAMPLES:
+                sample = _PLAN_OUTPUT_EXAMPLES[tool]
+                for part in value.get("path", []):
+                    # List length is runtime-dependent; only validate index type.
+                    if isinstance(sample, list):
+                        if type(part) is not int or part < 0:
+                            raise ValueError("reference list index must be a nonnegative integer")
+                        sample = sample[0]
+                    else:
+                        sample = _path(sample, [part])
+        else:
+            for item in value.values():
+                _validate_known_reference_paths(item, previous_tools, inputs)
 
 
 class NativeOrchestrator:
@@ -312,7 +357,10 @@ class NativeOrchestrator:
             "Use a prior result with {\"$step\":0,\"path\":[\"field\"]}; "
             "use input data with {\"$input\":[\"field\"]}. "
             "References may point only to earlier steps. A whole prior result uses "
-            "an empty path. Do not invent tool names or observations. "
+            "an empty path. A scalar field is terminal: do not append another field or index. "
+            "Object keys are strings, list indices are integers. For example, numeric_context "
+            "mean uses path [\"mean\"], and mean_sign prediction uses path [\"prediction\"]. "
+            "Do not invent tool names or observations. "
             "When reusing a previously acquired skill, use retained_skill_inventory "
             "to retrieve its exact objective_sha256; never guess hashes. "
             "Use the final reason tool if synthesis is needed.\n"
@@ -321,7 +369,9 @@ class NativeOrchestrator:
         )
         prompt += "\nRecent execution feedback (not independent correctness evidence): " + _json(feedback)[:6000]
         if recovery_context is not None:
-            prompt += "\nPrior execution evidence (reuse completed outputs via $input; correct the failure): " + _json(recovery_context)
+            prompt += "\nPrior execution evidence (reuse completed outputs via $input; correct the failure). "
+            prompt += "Example: {\"$input\":[\"__recovery\",\"completed\",\"0\",\"mean\"]}. "
+            prompt += "Completed step keys are strings, not list indices. Do not rerun successful steps unnecessarily. " + _json(recovery_context)
         # Repair malformed plans before submitting any action. Keep each attempt
         # in the existing SQLite store so failures survive restart.
         self.store._conn().execute("""CREATE TABLE IF NOT EXISTS bean_planner_attempts (
@@ -363,6 +413,7 @@ class NativeOrchestrator:
                     step["tool"] not in self.tools or not isinstance(step["args"], dict)):
                 raise ValueError("invalid model-selected tool step")
             self._validate_refs(step["args"], index)
+            _validate_known_reference_paths(step["args"], [s["tool"] for s in steps[:index]], inputs)
             proposals.append(GoalProposal(
                 "orchestrate_objective", ActionType.RUN_EXPERIMENT,
                 "Execute model-selected capability", 3, ApprovalRequired.NONE,
