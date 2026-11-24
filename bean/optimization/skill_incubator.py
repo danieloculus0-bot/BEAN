@@ -199,7 +199,76 @@ def incubate_skill(*, project, name, task, journal_path, output, provider,
     return report
 
 
+def list_verified_skills(database):
+    """Discover retained executable skills without modifying the existing store."""
+    uri = Path(database).resolve(strict=True).as_uri() + "?mode=ro"
+    with closing(sqlite3.connect(uri, uri=True)) as db:
+        rows = db.execute(
+            "SELECT name, objective, sha256 FROM verified_skills ORDER BY name, objective"
+        ).fetchall()
+    return [{"name": name, "objective": objective, "source_sha256": digest}
+            for name, objective, digest in rows]
+
+
+def replay_verified_skills(database, evaluation_projects, *, timeout=30):
+    """Run retained skills against fresh host-authored projects, without a model.
+
+    The mapping keys are (name, objective) pairs; each value is a distinct
+    trusted evaluation project. Run inside the existing isolated skill lab.
+    Missing projects are reported rather than counted as passes.
+    """
+    results = []
+    for skill in list_verified_skills(database):
+        key = (skill["name"], skill["objective"])
+        project = evaluation_projects.get(key)
+        if project is None:
+            results.append({**skill, "status": "not_evaluated", "passed": False})
+            continue
+        try:
+            outcome = evaluate_retained_skill(
+                database, name=key[0], objective=key[1],
+                evaluation_project=project, timeout=timeout)
+        except (ValueError, LookupError, OSError, sqlite3.Error) as exc:
+            outcome = {"status": "error", "passed": False,
+                       "error": type(exc).__name__ + ": " + str(exc)}
+        results.append({**skill, **outcome})
+    return {"schema": "bean.retained_skill_replay.v1",
+            "retained": len(results),
+            "passed": sum(row["passed"] for row in results),
+            "failed": sum(row["status"] in ("failed", "timeout", "error") for row in results),
+            "not_evaluated": sum(row["status"] == "not_evaluated" for row in results),
+            "model_calls": 0, "results": results}
+
+
+def _retained_cli(argv):
+    parser = argparse.ArgumentParser(description="Discover and replay BEAN retained skills")
+    parser.add_argument("command", choices=("list-retained", "replay-retained"))
+    parser.add_argument("--skill-db", type=Path, required=True)
+    parser.add_argument("--evaluation-manifest", type=Path)
+    parser.add_argument("--timeout", type=int, default=30)
+    args = parser.parse_args(argv)
+    if args.command == "list-retained":
+        print(json.dumps(list_verified_skills(args.skill_db), indent=2))
+        return
+    if args.evaluation_manifest is None:
+        parser.error("replay-retained requires --evaluation-manifest")
+    manifest = args.evaluation_manifest.resolve(strict=True)
+    entries = json.loads(manifest.read_text(encoding="utf-8"))
+    projects = {}
+    for entry in entries:
+        key = (entry["name"], entry["objective"])
+        if key in projects:
+            parser.error("duplicate evaluation manifest entry")
+        projects[key] = (manifest.parent / entry["project"]).resolve(strict=True)
+    report = replay_verified_skills(args.skill_db, projects, timeout=args.timeout)
+    print(json.dumps(report, indent=2))
+    if not report["retained"] or report["failed"] or report["not_evaluated"]:
+        raise SystemExit(2)
+
+
 def main():
+    if len(sys.argv) > 1 and sys.argv[1] in ('list-retained', 'replay-retained'):
+        return _retained_cli(sys.argv[1:])
     parser = argparse.ArgumentParser(description="BEAN model-authored skill incubation")
     parser.add_argument("--project", type=Path, required=True)
     parser.add_argument("--holdout-project", type=Path, default=None)
