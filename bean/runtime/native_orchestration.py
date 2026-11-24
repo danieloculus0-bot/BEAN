@@ -60,6 +60,8 @@ class NativeOrchestrator:
         self.store._conn().executescript(OUTPUT_SCHEMA)
         self.store.commit()
         self.engine = GoalStateEngine()
+        from bean.runtime.orchestration_recovery import DurableRecovery
+        self.recovery = DurableRecovery(self)
         self.tools = {}
         self.register("numeric_context", "Analyze history: {history:[numbers],window:int}",
                       self._builtin(builtin.numeric_context))
@@ -151,7 +153,7 @@ class NativeOrchestrator:
             for item in value:
                 self._validate_refs(item, step)
 
-    def submit(self, objective, *, inputs=None, plan_id=None):
+    def submit(self, objective, *, inputs=None, plan_id=None, recovery_context=None):
         """The real Core model selects the tools and their data dependencies."""
         if not isinstance(objective, str) or not objective.strip():
             raise ValueError("objective is required")
@@ -181,6 +183,8 @@ class NativeOrchestrator:
             "Tools: " + _json({k: v[0] for k, v in self.tools.items()}) +
             "\nObjective: " + objective + "\nInputs: " + _json(inputs)
         )
+        if recovery_context is not None:
+            prompt += "\nPrior execution evidence (reuse completed outputs via $input; correct the failure): " + _json(recovery_context)
         raw, model, provider, _ = _model_response(
             self.core.model, prompt, "BEAN native capability orchestration")
         if raw.startswith(chr(96) * 3):
@@ -283,7 +287,7 @@ def register_orchestration_handlers(inbox, orchestrator):
         msg.args["objective"], inputs=msg.args.get("inputs"),
         plan_id=msg.args.get("plan_id")))
     inbox.register("cognition_plan_status", lambda msg, session:
-                   orchestrator.status(msg.args["plan_id"]))
+                   orchestrator.recovery.status(msg.args["plan_id"]))
 
 
 def main():
