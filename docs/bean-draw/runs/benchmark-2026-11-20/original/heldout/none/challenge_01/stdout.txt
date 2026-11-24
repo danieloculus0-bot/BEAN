@@ -1,0 +1,37 @@
+{
+  "subject_chosen_by_BEAN_model": null,
+  "subject": "a sailboat",
+  "subject_source": "human",
+  "history": [
+    {
+      "attempt": 1,
+      "status": "unverified",
+      "svg": "/workspace/bean-live-evidence/benchmark/heldout/none/challenge_01/attempts/attempt_01.svg",
+      "sha256": "42772aa31ec44d9578e657c8bc33d0f939555fce326fc96a8c7c53d51f367f83",
+      "png": "/workspace/bean-live-evidence/benchmark/heldout/none/challenge_01/attempts/attempt_01.png",
+      "png_sha256": "9470ed3ee2b3360b577c5fc66c5db4b37ed6d3c0f91a8c5a80339a11d3f16011",
+      "journal_tip": "36c84fe58ac24a3ba434d38088897284b135ac4c7d382c04ac55d36319986e98",
+      "metadata": "/workspace/bean-live-evidence/benchmark/heldout/none/challenge_01/attempts/attempt_01.json",
+      "metadata_sha256": "43885f8101fdce7fa5af55f03e6f92856e691055c8edeb6e3798f9d17dfc9363",
+      "description": "A sailboat with distinct bow and stern, mast, rigging, sail, hull, deck, and canvas. The boat is placed horizontally, with the bow at the top and the stern at the bottom. Additional details like waves are added for dynamism."
+    },
+    {
+      "attempt": 2,
+      "status": "unverified",
+      "svg": "/workspace/bean-live-evidence/benchmark/heldout/none/challenge_01/attempts/attempt_02.svg",
+      "sha256": "0204d883106a3cb5c0b78b5a509c1d6ad0a32a38ef0ab88f6b4d3a7a7e30b864",
+      "png": "/workspace/bean-live-evidence/benchmark/heldout/none/challenge_01/attempts/attempt_02.png",
+      "png_sha256": "08b1577217a49d1d3a8974f038481b0066a039aa27ee3f175eb9e763c08b861c",
+      "journal_tip": "23710a2b21b20d5096b49fc258d26840e8e17186ab8b05b8f5625688e172fcc7",
+      "metadata": "/workspace/bean-live-evidence/benchmark/heldout/none/challenge_01/attempts/attempt_02.json",
+      "metadata_sha256": "c87ab54e147bc06c6b1b258896d453179baaffcba61c8fabb0af167926e5db10",
+      "description": "A simplified line drawing of a sailboat, focusing on the main components and their spatial arrangement for clarity."
+    }
+  ],
+  "research_status": "not_requested",
+  "references": [],
+  "final_status": "unverified",
+  "attempts": 2,
+  "run_receipt": "/workspace/bean-live-evidence/benchmark/heldout/none/challenge_01/attempts/run.json",
+  "visual_success_independently_verified": false
+}

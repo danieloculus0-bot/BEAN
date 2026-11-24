@@ -1,0 +1,37 @@
+{
+  "subject_chosen_by_BEAN_model": null,
+  "subject": "a sailboat",
+  "subject_source": "human",
+  "history": [
+    {
+      "attempt": 1,
+      "status": "unverified",
+      "svg": "/workspace/bean-live-evidence/benchmark/heldout/adaptive/challenge_01/attempts/attempt_01.svg",
+      "sha256": "02c26823afaf1c6644165ab4449f0adb94b43bbbcbb8202590a138a03a6d65db",
+      "png": "/workspace/bean-live-evidence/benchmark/heldout/adaptive/challenge_01/attempts/attempt_01.png",
+      "png_sha256": "91f450301555bf58dba86509b33fc6139f8b2c67ab7793e353dc46cef7e05c25",
+      "journal_tip": "6b1921adacafee47e6af245e29ba55e982bb61c1b246323ebf3ff9d9942bcd8a",
+      "metadata": "/workspace/bean-live-evidence/benchmark/heldout/adaptive/challenge_01/attempts/attempt_01.json",
+      "metadata_sha256": "d39e15d2cd47bcf8089ef67073d3d9542a53457b122d1c0ef321f84a70f72ffb",
+      "description": "A recognizable sailboat with key features like a mast, sail, hull, bow, and stern depicted in black line art. The composition is horizontal with the bow at the top and the stern at the bottom."
+    },
+    {
+      "attempt": 2,
+      "status": "unverified",
+      "svg": "/workspace/bean-live-evidence/benchmark/heldout/adaptive/challenge_01/attempts/attempt_02.svg",
+      "sha256": "afaa7ed5dffab2c1e39b77b70210e88a7807e5a1d40a1356640aa213402b49a8",
+      "png": "/workspace/bean-live-evidence/benchmark/heldout/adaptive/challenge_01/attempts/attempt_02.png",
+      "png_sha256": "1d43be5b7d616db00b10762572a18b1ebd954bd61ec89132d0bd39cfcd8efdbb",
+      "journal_tip": "07c41bd967d93aa1422bf6c817b55ff8ba992acbcce8b6f93446f492e16597a4",
+      "metadata": "/workspace/bean-live-evidence/benchmark/heldout/adaptive/challenge_01/attempts/attempt_02.json",
+      "metadata_sha256": "a292804345bc1015c06fc215e59c317075dc1a613aa84f8a187c185cb83d916b",
+      "description": "A clear sailboat composition with key visible components including a furled main sail, mast, rigging line, hull, anchor, fenders, and a partially visible propeller."
+    }
+  ],
+  "research_status": "not_requested",
+  "references": [],
+  "final_status": "unverified",
+  "attempts": 2,
+  "run_receipt": "/workspace/bean-live-evidence/benchmark/heldout/adaptive/challenge_01/attempts/run.json",
+  "visual_success_independently_verified": false
+}

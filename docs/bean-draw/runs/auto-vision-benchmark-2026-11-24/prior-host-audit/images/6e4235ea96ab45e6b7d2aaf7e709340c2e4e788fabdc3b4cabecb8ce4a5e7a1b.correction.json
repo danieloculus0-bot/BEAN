@@ -1,0 +1,29 @@
+{
+  "arm": "adaptive",
+  "attempt": 2,
+  "blinded": false,
+  "challenge": 1,
+  "correction_reason": "The initial note was written in the same tool call as image display, before the displayed output had been inspected; its reference to crossing/parallel lines was inaccurate. This corrected observation follows actual image inspection. The original note remains retained as invalidated evidence.",
+  "created_at_utc": "2026-11-24T03:59:26.296507+00:00",
+  "evaluator": "Codex independent host visual inspection (experiment agent)",
+  "feedback": "One long rising diagonal and a small cluster of three circles are visible. I cannot recognize a teapot vessel or connected spout and handle. The image is simpler than the first draft, but recognizable depiction did not improve.",
+  "image": "training/adaptive/challenge_01/attempts/attempt_02.png",
+  "image_sha256": "6e4235ea96ab45e6b7d2aaf7e709340c2e4e788fabdc3b4cabecb8ce4a5e7a1b",
+  "independently_authenticated": false,
+  "initial_report_status": "invalidated_observation",
+  "kind": "vision_model",
+  "phase": "training",
+  "posthoc": true,
+  "satisfactory": false,
+  "schema": "bean.draw.host_pixel_inspection.v1",
+  "scores": {
+    "composition": 1,
+    "spatial_coherence": 1,
+    "subject_recognition": 0
+  },
+  "subject": "a teapot",
+  "supersedes_report": "6e4235ea96ab45e6b7d2aaf7e709340c2e4e788fabdc3b4cabecb8ce4a5e7a1b.json",
+  "supersedes_report_sha256": "04c6e373feb98e5d4aaf9ef2aacc7062ddd6d7660775b278626b92ddebfb1cfc",
+  "timing": "Corrected after actual displayed PNG inspection; not supplied to the artist or automatic evaluator",
+  "used_for_generation": false
+}

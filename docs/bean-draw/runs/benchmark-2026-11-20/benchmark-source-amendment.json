@@ -1,0 +1,18 @@
+{
+  "causal_limit": "Changes compared with other subjects do not establish a planning-stage treatment effect.",
+  "change": "BEAN model authors drawing composition/components/intent before coordinate generation; CPU provider timeout 600 seconds.",
+  "created_at_utc": "2026-11-19T21:29:26.496952+00:00",
+  "fixed_conditions": [
+    "training subject a teapot",
+    "heldout subject a sailboat",
+    "protocol seed 20261130",
+    "two retained attempts",
+    "same source/provider/model across all cells",
+    "previously frozen external visual rubric"
+  ],
+  "previous_source_git_sha": "99394af7cb409577faa40bb0e2de7a5a8df1bd71",
+  "protocol_sha256": "fa0041e153552d9c9a709ab3ece1af8c48491c8c95a99f395280205331b42c78",
+  "provider_calls_before_amendment": 0,
+  "schema": "bean.draw.benchmark_source_amendment.v1",
+  "source_git_sha": "3fc06f4"
+}

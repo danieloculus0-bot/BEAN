@@ -1,0 +1,26 @@
+{
+  "attempt_receipts": [
+    "training/adaptive/challenge_01/attempts/attempt_02.json"
+  ],
+  "blinded": false,
+  "created_at_utc": "2026-11-24T12:41:46.400989+00:00",
+  "evaluator": "Codex final-experiment visual audit agent",
+  "feedback": "One long rising diagonal and a small cluster of three circles beside a short horizontal line dominate the image. No coherent teapot is recognizable to me; the apparent simplification does not establish better depiction.",
+  "human_evaluation": null,
+  "image_file": "training/adaptive/challenge_01/attempts/attempt_02.png",
+  "image_sha256": "6e4235ea96ab45e6b7d2aaf7e709340c2e4e788fabdc3b4cabecb8ce4a5e7a1b",
+  "independently_authenticated": false,
+  "inspection_method": "Actual PNG opened with view_image; report written in a separate later tool call after displayed pixels were inspected",
+  "kind": "vision_model",
+  "model_identity_limit": "Exact host assistant model digest is not exposed by the image inspection tool",
+  "posthoc": true,
+  "satisfactory": false,
+  "schema": "bean.draw.final_host_visual_audit.v1",
+  "scores": {
+    "composition": 1,
+    "spatial_coherence": 1,
+    "subject_recognition": 0
+  },
+  "subject": "a teapot",
+  "used_for_generation": false
+}

@@ -1,0 +1,26 @@
+{
+  "attempt_receipts": [
+    "heldout/none/challenge_01/attempts/attempt_02.json"
+  ],
+  "blinded": false,
+  "created_at_utc": "2026-11-24T12:41:46.400174+00:00",
+  "evaluator": "Codex final-experiment visual audit agent",
+  "feedback": "A repeated row of overlapping circles makes a clear middle band with a baseline; additional larger circles overlap below and at the clipped right edge. The repeated band offers some compositional order, but I cannot recognize a cat.",
+  "human_evaluation": null,
+  "image_file": "heldout/none/challenge_01/attempts/attempt_02.png",
+  "image_sha256": "8d9ad786996d0403eb7c806229d49ca7c0916f454a8751f6e277ba75517a1ba8",
+  "independently_authenticated": false,
+  "inspection_method": "Actual PNG opened with view_image; report written in a separate later tool call after displayed pixels were inspected",
+  "kind": "vision_model",
+  "model_identity_limit": "Exact host assistant model digest is not exposed by the image inspection tool",
+  "posthoc": true,
+  "satisfactory": false,
+  "schema": "bean.draw.final_host_visual_audit.v1",
+  "scores": {
+    "composition": 2,
+    "spatial_coherence": 1,
+    "subject_recognition": 0
+  },
+  "subject": "a cat",
+  "used_for_generation": false
+}

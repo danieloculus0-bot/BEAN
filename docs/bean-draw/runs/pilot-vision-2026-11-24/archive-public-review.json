@@ -1,0 +1,25 @@
+{
+  "files": {
+    "attempt_01.json": "c3ff4b00e3070d594ae7a55901cfe7c49f5277aa379c663d41995a9b60c468a3",
+    "attempt_01.png": "eebf972be08a43c15f7af8eb774c0efa9b97f0389f6ddab9da668167d7d1405e",
+    "attempt_01.raw.json": "881f0550a23299fa3219f6dc32a147b1ba7dd2810c73bffe9499630514f7ed03",
+    "attempt_01.svg": "34fe731667d49883db0183267ef5f406c472656fcabc6d73bace5e6236c2ecc6",
+    "attempt_01.vision.json": "950868b2d9454d15ce4d31d546901719b09558aeed2e75820b0361b370210b94",
+    "attempt_02.json": "1565a5373ffdfd3e225bf4129f5c26c5d4a98c4653377fd50141cb2813b8c75e",
+    "attempt_02.png": "cafd277a3e82e30f19dd602f3e9d4cb8cf400e33bccf2cffef50ec947156475e",
+    "attempt_02.raw.json": "11d98df8e87a61704f3568a7e3a1c7be87bbb88ad9393a1d6d65baddd9220305",
+    "attempt_02.svg": "b26ec981e89b848fe495f5a78ad6e89a61d7cc9ad15d90819b6a0fc38f722f70",
+    "attempt_02.vision.json": "e5cfd8db4c2924026776f1d2b48002797c2afacf8894a17542767cc72c73510f",
+    "core-integrity.json": "3cc3807acfb908a6223c2417dde36282a250f944cf9813932bd0663c6f32a688",
+    "core.sqlite3.gz": "afbe8ffeecaf0b7cc1f41a56473925bccfba9ac851f0954ead3442c96a280564",
+    "model_calls.json": "fe8432f169766c0018dc1959dcde1f951db8eb9c50045269cde0878f44491e42",
+    "posthoc-audit.json": "ca524b42ea6a2cf872401f3e4ab3d4fbc35198d2cd1b9ca38b323e8af67d4355",
+    "progress.json": "9db74dfcb242af4d3c504f54ddaab6c1f5ebb1f14f42c781148916457f9d7420",
+    "public-review.json": "60c2fd872e7772fd96a882d8c13c16b24133035b99f9f25b3ae3706f7af617a0",
+    "run.json": "d9911ee3f6e4046d9e8489eaf66701e8e9fe8f9e4a63de4ce8b447e9253ca026"
+  },
+  "public_safe": true,
+  "reviewed_at_utc": "2026-11-24T12:57:42.758071+00:00",
+  "reviewer": "Codex public-safe content/artifact review; not human aesthetic evaluation",
+  "schema": "bean.draw.public-review.v1"
+}

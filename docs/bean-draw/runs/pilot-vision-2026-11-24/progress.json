@@ -1,0 +1,29 @@
+{
+  "history": [
+    {
+      "attempt": 1,
+      "description": "Whimsical flying dragon with expressive wings, elongated snout, large eyes, gradient feathers, forked tail, horns, and a jewel on one wing.",
+      "journal_tip": "d8f26cf1a4b1dca131c3eac130ea6063b7b81255aaf2657562f29387afd0e8ea",
+      "metadata": "/workspace/bean-live-evidence/subject-5-auto-vision/attempt_01.json",
+      "metadata_sha256": "c3ff4b00e3070d594ae7a55901cfe7c49f5277aa379c663d41995a9b60c468a3",
+      "png": "/workspace/bean-live-evidence/subject-5-auto-vision/attempt_01.png",
+      "png_sha256": "eebf972be08a43c15f7af8eb774c0efa9b97f0389f6ddab9da668167d7d1405e",
+      "sha256": "34fe731667d49883db0183267ef5f406c472656fcabc6d73bace5e6236c2ecc6",
+      "status": "host_reported_not_satisfactory",
+      "svg": "/workspace/bean-live-evidence/subject-5-auto-vision/attempt_01.svg"
+    },
+    {
+      "attempt": 2,
+      "description": "A whimsical flying dragon with a large, curved body line for the main part, two smaller wings extending diagonally from either side of the body, a head represented by a circle at the top, and several small circles along the body line to depict scales.",
+      "journal_tip": "5cad732d2ae8725e5b43bcf2810691a1700d307b30c2ff15dabc4b5181a7326c",
+      "metadata": "/workspace/bean-live-evidence/subject-5-auto-vision/attempt_02.json",
+      "metadata_sha256": "1565a5373ffdfd3e225bf4129f5c26c5d4a98c4653377fd50141cb2813b8c75e",
+      "png": "/workspace/bean-live-evidence/subject-5-auto-vision/attempt_02.png",
+      "png_sha256": "cafd277a3e82e30f19dd602f3e9d4cb8cf400e33bccf2cffef50ec947156475e",
+      "sha256": "b26ec981e89b848fe495f5a78ad6e89a61d7cc9ad15d90819b6a0fc38f722f70",
+      "status": "host_reported_satisfactory",
+      "svg": "/workspace/bean-live-evidence/subject-5-auto-vision/attempt_02.svg"
+    }
+  ],
+  "subject": "A whimsical flying dragon"
+}

@@ -1,0 +1,60 @@
+{
+  "attempts": 2,
+  "completed_at_utc": "2026-11-24T03:46:58.038487+00:00",
+  "created_at_utc": "2026-11-24T03:36:18.392910+00:00",
+  "error": null,
+  "execution_mode": "live_model",
+  "history": [
+    {
+      "attempt": 1,
+      "description": "Whimsical flying dragon with expressive wings, elongated snout, large eyes, gradient feathers, forked tail, horns, and a jewel on one wing.",
+      "journal_tip": "d8f26cf1a4b1dca131c3eac130ea6063b7b81255aaf2657562f29387afd0e8ea",
+      "metadata": "/workspace/bean-live-evidence/subject-5-auto-vision/attempt_01.json",
+      "metadata_sha256": "c3ff4b00e3070d594ae7a55901cfe7c49f5277aa379c663d41995a9b60c468a3",
+      "png": "/workspace/bean-live-evidence/subject-5-auto-vision/attempt_01.png",
+      "png_sha256": "eebf972be08a43c15f7af8eb774c0efa9b97f0389f6ddab9da668167d7d1405e",
+      "sha256": "34fe731667d49883db0183267ef5f406c472656fcabc6d73bace5e6236c2ecc6",
+      "status": "host_reported_not_satisfactory",
+      "svg": "/workspace/bean-live-evidence/subject-5-auto-vision/attempt_01.svg"
+    },
+    {
+      "attempt": 2,
+      "description": "A whimsical flying dragon with a large, curved body line for the main part, two smaller wings extending diagonally from either side of the body, a head represented by a circle at the top, and several small circles along the body line to depict scales.",
+      "journal_tip": "5cad732d2ae8725e5b43bcf2810691a1700d307b30c2ff15dabc4b5181a7326c",
+      "metadata": "/workspace/bean-live-evidence/subject-5-auto-vision/attempt_02.json",
+      "metadata_sha256": "1565a5373ffdfd3e225bf4129f5c26c5d4a98c4653377fd50141cb2813b8c75e",
+      "png": "/workspace/bean-live-evidence/subject-5-auto-vision/attempt_02.png",
+      "png_sha256": "cafd277a3e82e30f19dd602f3e9d4cb8cf400e33bccf2cffef50ec947156475e",
+      "sha256": "b26ec981e89b848fe495f5a78ad6e89a61d7cc9ad15d90819b6a0fc38f722f70",
+      "status": "host_reported_satisfactory",
+      "svg": "/workspace/bean-live-evidence/subject-5-auto-vision/attempt_02.svg"
+    }
+  ],
+  "independent_visual_verification": false,
+  "journal_tip": "37f888742d646ed0a6e4d3e03ce854d63c779118588ca6289bd9c06f293052da",
+  "learning_improvement_verified": false,
+  "memory_context_sha256": "e368979647f82aec5fde561f8d7eee65b014849f92ff38641ba0de18873489c1",
+  "memory_mode": "adaptive",
+  "model_calls_sha256": "fe8432f169766c0018dc1959dcde1f951db8eb9c50045269cde0878f44491e42",
+  "model_digest": "357c53fb659c5076de1d65ccb0b397446227b71a42be9d1603d46168015c9e4b",
+  "model_id": "qwen2.5:3b",
+  "provider_kind": "ollama",
+  "run_id": "8251826f-c23d-4ada-a969-2af711f9b981",
+  "runtime_source_sha256": {
+    "bean/creativity/artifacts.py": "4863048c0cd48c9e2d7869ef236277fdb41e3e62f88020c19b0b28acf8dd59a4",
+    "bean/creativity/sketch_lab.py": "1adffa9ac57e91724cadddfa51cbb27393a945c7773233845fd47925ed9ede98",
+    "bean/voice/ollama.py": "3f852e850e998767f43bd1c0842852c3562aecfce5152d8b8081e8a6ac8d19ee",
+    "scripts/build_bean_draw_gallery.py": "f306b06c9db0c2d095895c01fc927f646c311a41b6be6fe88ca5ed7a1a888915"
+  },
+  "schema": "bean.draw.run.v1",
+  "seed": 20261124,
+  "selected_attempt": 2,
+  "selection_reason": "The second attempt was marked as satisfactory by independent reviewers with a moderate spatial coherence score. The drawing lacks detail compared to the first attempt, which had ambiguous composition despite having more distinct elements, but it is still clear in recognizing the subject (a whimsical flying dragon). Given the limited feedback and the fact that this attempt was deemed satisfactory, it is chosen as the strongest retained drawing attempt.",
+  "selection_state": "model_selected_from_recorded_evidence",
+  "source_git_sha": "ccd40b022cb1d6ad2646758f3ed53ac10de1b68f",
+  "state": "host_reported_satisfactory",
+  "subject": "A whimsical flying dragon",
+  "subject_source": "autonomous",
+  "task_ref": "original-subject-5-auto-vision",
+  "weights_updated": false
+}

@@ -1,0 +1,43 @@
+{
+  "blinded": false,
+  "created_at_utc": "2026-11-24T03:31:05.626236+00:00",
+  "evaluator": "Codex posthoc visual reviewer",
+  "feedback": "Several long diagonal strokes run from upper left to lower right through a small rectangle and a dense group of overlapping circles. There is no reliably recognizable sailboat or interpretable hull-and-sail relationship.",
+  "human_evaluation": "unavailable",
+  "image_sha256": "91f450301555bf58dba86509b33fc6139f8b2c67ab7793e353dc46cef7e05c25",
+  "independently_authenticated": false,
+  "inspection_method": "Actual PNG opened with view_image before rating; no subject-label/string comparison used as a substitute for pixels",
+  "kind": "vision_model",
+  "model_identity": "Unavailable for the host reviewer; do not infer an evaluator model digest",
+  "original_runs": [
+    {
+      "arm": "frozen",
+      "attempt": 1,
+      "phase": "heldout",
+      "run_id": "1f69b84d-d74b-46c8-acaf-02160af88dd0",
+      "run_path": "heldout/frozen/challenge_01/attempts/run.json",
+      "run_sha256": "71bd8b7c7ffe1fca6864928aab6d0b005493c9a768333d8be94f5e54d305afe8",
+      "sidecar_sha256": "647a879c86302c7289c65ee9639ea45361b5400c25d8d1e6b96ddc1eecefa00c"
+    },
+    {
+      "arm": "adaptive",
+      "attempt": 1,
+      "phase": "heldout",
+      "run_id": "411202ab-bd3e-4eb8-8d7b-5ee73af2a27a",
+      "run_path": "heldout/adaptive/challenge_01/attempts/run.json",
+      "run_sha256": "85c128895472fbed6716b6b405db8831237728c61297328b12c11b0f6cd9c380",
+      "sidecar_sha256": "d39e15d2cd47bcf8089ef67073d3d9542a53457b122d1c0ef321f84a70f72ffb"
+    }
+  ],
+  "posthoc": true,
+  "rubric_sha256": "aa5f8360b6314c4c9942a1371918bc8eb1f0e966c18b9310910cdae6a5a90e8e",
+  "satisfactory": false,
+  "schema": "bean.draw.posthoc.visual_review.v1",
+  "scores": {
+    "composition": 1,
+    "spatial_coherence": 1,
+    "subject_recognition": 0
+  },
+  "subject": "a sailboat",
+  "used_for_generation": false
+}

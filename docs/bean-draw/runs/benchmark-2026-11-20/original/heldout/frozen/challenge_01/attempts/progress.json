@@ -1,0 +1,29 @@
+{
+  "history": [
+    {
+      "attempt": 1,
+      "description": "A recognizable sailboat with key features like a mast, sail, hull, bow, and stern depicted in black line art. The composition is horizontal with the bow at the top and the stern at the bottom.",
+      "journal_tip": "e1a1386e0b856c284709f251990d032523e145697540a4c7d2616466c42efbbe",
+      "metadata": "/workspace/bean-live-evidence/benchmark/heldout/frozen/challenge_01/attempts/attempt_01.json",
+      "metadata_sha256": "647a879c86302c7289c65ee9639ea45361b5400c25d8d1e6b96ddc1eecefa00c",
+      "png": "/workspace/bean-live-evidence/benchmark/heldout/frozen/challenge_01/attempts/attempt_01.png",
+      "png_sha256": "91f450301555bf58dba86509b33fc6139f8b2c67ab7793e353dc46cef7e05c25",
+      "sha256": "02c26823afaf1c6644165ab4449f0adb94b43bbbcbb8202590a138a03a6d65db",
+      "status": "unverified",
+      "svg": "/workspace/bean-live-evidence/benchmark/heldout/frozen/challenge_01/attempts/attempt_01.svg"
+    },
+    {
+      "attempt": 2,
+      "description": "A clear sailboat composition with key visible components including a furled main sail, mast, rigging line, hull, anchor, fenders, and a partially visible propeller.",
+      "journal_tip": "b89fac4ed39de52c5ef68b7f07e36037391ebcf8a074e8e4f5d3b5be50cba679",
+      "metadata": "/workspace/bean-live-evidence/benchmark/heldout/frozen/challenge_01/attempts/attempt_02.json",
+      "metadata_sha256": "0930faec9ed07c59faea0830fe4b3af5c37b7602732952570adf059ef3638ba8",
+      "png": "/workspace/bean-live-evidence/benchmark/heldout/frozen/challenge_01/attempts/attempt_02.png",
+      "png_sha256": "1d43be5b7d616db00b10762572a18b1ebd954bd61ec89132d0bd39cfcd8efdbb",
+      "sha256": "afaa7ed5dffab2c1e39b77b70210e88a7807e5a1d40a1356640aa213402b49a8",
+      "status": "unverified",
+      "svg": "/workspace/bean-live-evidence/benchmark/heldout/frozen/challenge_01/attempts/attempt_02.svg"
+    }
+  ],
+  "subject": "a sailboat"
+}

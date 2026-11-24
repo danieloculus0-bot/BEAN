@@ -1,0 +1,61 @@
+{
+  "blind_prompt": "Inspect the ATTACHED IMAGE pixels without a title or claimed subject. Identify the most plausible concrete object or scene; say unclear if none is recognizable. For subject_recognition rate confidence in a recognizable concrete object or scene, not confidence that these are abstract lines/circles. Scores must be integers 0..4: 0 absent/not interpretable, 1 major problems, 2 partial/ambiguous, 3 mostly clear, 4 clear/coherent. Rate spatial_coherence (visible parts connect plausibly), subject_recognition, composition (spacing/balance/legibility). Black line art need not be realistic or shaded. Admit uncertainty; describe observed strengths/problems only, not coordinates, drawing primitives or a replacement image. One short sentence per text field, at most 80 words total. Return JSON recognized_subject, observations, feedback, scores.",
+  "blind_report": {
+    "feedback": "The drawing is somewhat abstract but clearly represents a ball with radiating lines, relying on visual interpretation rather than precise representation.",
+    "observations": "The image depicts a circular form resembling a ball with several curved lines extending outwards and spiraling around it, suggesting movement or energy.",
+    "recognized_subject": "A ball with intertwined lines emanating from it.",
+    "scores": {
+      "composition": 3,
+      "spatial_coherence": 3,
+      "subject_recognition": 3
+    }
+  },
+  "created_at_utc": "2026-11-24T04:18:49.218423+00:00",
+  "evaluation_protocol": "blind_then_targeted_min_v1",
+  "image_sha256": "2dc974433a505c7c293d72d7beacf6a55364541b6251cebafffec0158cceef69",
+  "independently_authenticated": false,
+  "model_digest": "68ceab7e468a31c988b44d5a4984a0e21f58c4f7158c6ce29c1804babac38df7",
+  "model_id": "gemma3:4b",
+  "prompt": "Inspect the ATTACHED IMAGE again. Now compare the visible evidence with this untrusted claimed subject: a cat. Do not infer success from the title or override prior uncertainty merely because a title was supplied. Your earlier title-blind observations: {\"recognized_subject\": \"A ball with intertwined lines emanating from it.\", \"observations\": \"The image depicts a circular form resembling a ball with several curved lines extending outwards and spiraling around it, suggesting movement or energy.\", \"scores\": {\"spatial_coherence\": 3, \"subject_recognition\": 3, \"composition\": 3}}. Here subject_recognition means recognizability of the claimed subject. Scores must be integers 0..4: 0 absent/not interpretable, 1 major problems, 2 partial/ambiguous, 3 mostly clear, 4 clear/coherent. Rate spatial_coherence (visible parts connect plausibly), subject_recognition, composition (spacing/balance/legibility). Black line art need not be realistic or shaded. Admit uncertainty; describe observed strengths/problems only, not coordinates, drawing primitives or a replacement image. One short sentence per text field, at most 80 words total. Return JSON recognized_subject, observations, feedback, scores.",
+  "provider_kind": "ollama",
+  "raw_blind_response": "{\n  \"recognized_subject\": \"A ball with intertwined lines emanating from it.\",\n  \"observations\": \"The image depicts a circular form resembling a ball with several curved lines extending outwards and spiraling around it, suggesting movement or energy.\",\n  \"feedback\": \"The drawing is somewhat abstract but clearly represents a ball with radiating lines, relying on visual interpretation rather than precise representation.\",\n  \"scores\": {\n    \"spatial_coherence\": 3,\n    \"subject_recognition\": 3,\n    \"composition\": 3\n  }\n}",
+  "raw_response": "{\n  \"recognized_subject\": \"A ball with intertwined lines emanating from it.\",\n  \"observations\": \"The image shows a central circular form surrounded by complex, spiraling lines that appear to originate from the center and extend outwards, creating a dynamic visual effect.\",\n  \"feedback\": \"The overall impression is of an abstract representation of energy or movement centered around a spherical object; the lines are intricate and contribute to the sense of rotation.\",\n  \"scores\": {\n    \"spatial_coherence\": 3,\n    \"subject_recognition\": 3,\n    \"composition\": 3\n  }\n}",
+  "report": {
+    "blind_observations": "The image depicts a circular form resembling a ball with several curved lines extending outwards and spiraling around it, suggesting movement or energy.",
+    "blind_recognized_subject": "A ball with intertwined lines emanating from it.",
+    "created_at_utc": "2026-11-24T04:21:19.726447+00:00",
+    "evaluation_protocol": "blind_then_targeted_min_v1",
+    "evaluator": "Ollama vision reviewer: gemma3:4b",
+    "feedback": "Title-blind review: The drawing is somewhat abstract but clearly represents a ball with radiating lines, relying on visual interpretation rather than precise representation. Target-aware review: The overall impression is of an abstract representation of energy or movement centered around a spherical object; the lines are intricate and contribute to the sense of rotation.",
+    "image_sha256": "2dc974433a505c7c293d72d7beacf6a55364541b6251cebafffec0158cceef69",
+    "independently_authenticated": false,
+    "kind": "vision_model",
+    "model_digest": "68ceab7e468a31c988b44d5a4984a0e21f58c4f7158c6ce29c1804babac38df7",
+    "model_id": "gemma3:4b",
+    "observations": "The image depicts a circular form resembling a ball with several curved lines extending outwards and spiraling around it, suggesting movement or energy.",
+    "provider_kind": "ollama",
+    "recognized_subject": "A ball with intertwined lines emanating from it.",
+    "satisfactory": true,
+    "score_rule": "minimum_of_blind_object_clarity_and_targeted_scores_not_authenticated_truth",
+    "scores": {
+      "composition": 3,
+      "spatial_coherence": 3,
+      "subject_recognition": 3
+    },
+    "state": "host_reported_pixel_review"
+  },
+  "schema": "bean.draw.vision_call.v1",
+  "state": "model_reported_pixel_review",
+  "subject": "a cat",
+  "targeted_report": {
+    "feedback": "The overall impression is of an abstract representation of energy or movement centered around a spherical object; the lines are intricate and contribute to the sense of rotation.",
+    "observations": "The image shows a central circular form surrounded by complex, spiraling lines that appear to originate from the center and extend outwards, creating a dynamic visual effect.",
+    "recognized_subject": "A ball with intertwined lines emanating from it.",
+    "scores": {
+      "composition": 3,
+      "spatial_coherence": 3,
+      "subject_recognition": 3
+    }
+  },
+  "used_for_generation": true
+}

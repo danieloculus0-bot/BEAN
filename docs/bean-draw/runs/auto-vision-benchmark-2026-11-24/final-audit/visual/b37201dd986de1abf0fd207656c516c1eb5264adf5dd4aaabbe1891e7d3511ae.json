@@ -1,0 +1,26 @@
+{
+  "attempt_receipts": [
+    "heldout/none/challenge_02/attempts/attempt_01.json"
+  ],
+  "blinded": false,
+  "created_at_utc": "2026-11-24T12:41:46.400521+00:00",
+  "evaluator": "Codex final-experiment visual audit agent",
+  "feedback": "A long rising diagonal crosses a vertical line; a circle and small right-angle strokes occupy the lower-right area. The components do not form a reliably recognizable sailboat to me.",
+  "human_evaluation": null,
+  "image_file": "heldout/none/challenge_02/attempts/attempt_01.png",
+  "image_sha256": "b37201dd986de1abf0fd207656c516c1eb5264adf5dd4aaabbe1891e7d3511ae",
+  "independently_authenticated": false,
+  "inspection_method": "Actual PNG opened with view_image; report written in a separate later tool call after displayed pixels were inspected",
+  "kind": "vision_model",
+  "model_identity_limit": "Exact host assistant model digest is not exposed by the image inspection tool",
+  "posthoc": true,
+  "satisfactory": false,
+  "schema": "bean.draw.final_host_visual_audit.v1",
+  "scores": {
+    "composition": 1,
+    "spatial_coherence": 1,
+    "subject_recognition": 0
+  },
+  "subject": "a sailboat",
+  "used_for_generation": false
+}

@@ -1,0 +1,78 @@
+{
+  "a1e252c2525072dd78cd49e2599a7831c9d9ccc88289819fb81ce7f672a6b599": {
+    "path": "/workspace/bean-live-evidence/benchmark/training/adaptive/challenge_01/attempts/attempt_01.png",
+    "subject": "a teapot",
+    "uses": [
+      {
+        "phase": "training",
+        "arm": "adaptive",
+        "attempt": 1
+      }
+    ]
+  },
+  "e83f54fbdb967b4f738f8c0b75e5c37bd0d5ce6178005236776c3662f677111b": {
+    "path": "/workspace/bean-live-evidence/benchmark/training/adaptive/challenge_01/attempts/attempt_02.png",
+    "subject": "a teapot",
+    "uses": [
+      {
+        "phase": "training",
+        "arm": "adaptive",
+        "attempt": 2
+      }
+    ]
+  },
+  "91f450301555bf58dba86509b33fc6139f8b2c67ab7793e353dc46cef7e05c25": {
+    "path": "/workspace/bean-live-evidence/benchmark/heldout/frozen/challenge_01/attempts/attempt_01.png",
+    "subject": "a sailboat",
+    "uses": [
+      {
+        "phase": "heldout",
+        "arm": "frozen",
+        "attempt": 1
+      },
+      {
+        "phase": "heldout",
+        "arm": "adaptive",
+        "attempt": 1
+      }
+    ]
+  },
+  "1d43be5b7d616db00b10762572a18b1ebd954bd61ec89132d0bd39cfcd8efdbb": {
+    "path": "/workspace/bean-live-evidence/benchmark/heldout/frozen/challenge_01/attempts/attempt_02.png",
+    "subject": "a sailboat",
+    "uses": [
+      {
+        "phase": "heldout",
+        "arm": "frozen",
+        "attempt": 2
+      },
+      {
+        "phase": "heldout",
+        "arm": "adaptive",
+        "attempt": 2
+      }
+    ]
+  },
+  "9470ed3ee2b3360b577c5fc66c5db4b37ed6d3c0f91a8c5a80339a11d3f16011": {
+    "path": "/workspace/bean-live-evidence/benchmark/heldout/none/challenge_01/attempts/attempt_01.png",
+    "subject": "a sailboat",
+    "uses": [
+      {
+        "phase": "heldout",
+        "arm": "none",
+        "attempt": 1
+      }
+    ]
+  },
+  "08b1577217a49d1d3a8974f038481b0066a039aa27ee3f175eb9e763c08b861c": {
+    "path": "/workspace/bean-live-evidence/benchmark/heldout/none/challenge_01/attempts/attempt_02.png",
+    "subject": "a sailboat",
+    "uses": [
+      {
+        "phase": "heldout",
+        "arm": "none",
+        "attempt": 2
+      }
+    ]
+  }
+}

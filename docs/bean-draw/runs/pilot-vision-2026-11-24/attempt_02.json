@@ -1,0 +1,81 @@
+{
+  "attempt": 2,
+  "created_at_utc": "2026-11-24T03:45:09.285051+00:00",
+  "description": "A whimsical flying dragon with a large, curved body line for the main part, two smaller wings extending diagonally from either side of the body, a head represented by a circle at the top, and several small circles along the body line to depict scales.",
+  "domain": "sketch",
+  "drawing_instructions": {
+    "components": [
+      "A large, curved, horizontal line representing the body of the dragon",
+      "Two smaller, vertical lines on either side of the main line for wings",
+      "A circle at the top of the body for the head",
+      "Several small circles along the main body line to represent scales or segments",
+      "A semi-circular shape extending from one side of the body to suggest a tail",
+      "A pair of short, diagonal lines intersecting near the bottom of the drawing to depict feet (or legs if the dragon is standing)",
+      "Several smaller dots or circles for eyes and facial features"
+    ],
+    "composition": "The composition will start with the head at the top, followed by a curved body line. Two wings will be depicted on either side of the body, extending diagonally downward from the sides of the body. A tail will be shown as a semi-circular shape at the bottom. The dragon's feet (or legs) can be represented by two short, diagonal lines at the bottom of the body. Multiple small circles and dots will be used to represent scales, eyes, and other features.",
+    "intent": "Plan an original line drawing of a whimsical flying dragon. Identify its distinguishing visible components and how they relate spatially to create a clear composition without labels.",
+    "revision_reason": "The previous line drawing lacked detail and shading, making it difficult to recognize a clear subject without a label. The new plan aims to incorporate more distinct elements like wings, a tail, and detailed body segments to create a clearer depiction of the whimsical flying dragon."
+  },
+  "error": null,
+  "execution_mode": "live_model",
+  "experiment": "bean_sketch_v1",
+  "external_feedback": {
+    "created_at_utc": "2026-11-24T03:45:09.284751+00:00",
+    "evaluator": "Ollama vision reviewer: gemma3:4b",
+    "feedback": "The spatial coherence is moderate due to the simplified representation of the dragon; however, the overall composition is somewhat balanced, though the drawing lacks detail. The subject recognition is plausible given the iconic imagery of a dragon, but the execution is basic and relies heavily on symbolic representation.",
+    "image_sha256": "cafd277a3e82e30f19dd602f3e9d4cb8cf400e33bccf2cffef50ec947156475e",
+    "independently_authenticated": false,
+    "kind": "vision_model",
+    "model_digest": "68ceab7e468a31c988b44d5a4984a0e21f58c4f7158c6ce29c1804babac38df7",
+    "model_id": "gemma3:4b",
+    "observations": "The image depicts a stylized dragon with two circles representing eyes and a curved line suggesting wings, alongside a horizontal line likely intended as the ground.",
+    "provider_kind": "ollama",
+    "recognized_subject": "whimsical flying dragon",
+    "review_file": "attempt_02.vision.json",
+    "review_sha256": "e5cfd8db4c2924026776f1d2b48002797c2afacf8894a17542767cc72c73510f",
+    "satisfactory": true,
+    "scores": {
+      "composition": 3,
+      "spatial_coherence": 3,
+      "subject_recognition": 3
+    },
+    "state": "host_reported_pixel_review"
+  },
+  "independent_visual_verification": false,
+  "journal_tip": "5cad732d2ae8725e5b43bcf2810691a1700d307b30c2ff15dabc4b5181a7326c",
+  "memory_mode": "adaptive",
+  "model_digest": "357c53fb659c5076de1d65ccb0b397446227b71a42be9d1603d46168015c9e4b",
+  "model_id": "qwen2.5:3b",
+  "png_file": "attempt_02.png",
+  "png_sha256": "cafd277a3e82e30f19dd602f3e9d4cb8cf400e33bccf2cffef50ec947156475e",
+  "preview_size": [
+    512,
+    512
+  ],
+  "provider_kind": "ollama",
+  "rasterizer": "CairoSVG 2.8.2",
+  "raw_file": "attempt_02.raw.json",
+  "raw_sha256": "11d98df8e87a61704f3568a7e3a1c7be87bbb88ad9393a1d6d65baddd9220305",
+  "reference_urls": [],
+  "research_status": "not_requested",
+  "run_id": "8251826f-c23d-4ada-a969-2af711f9b981",
+  "schema": "bean.draw.attempt.v1",
+  "seed": 20261124,
+  "self_review": {
+    "changes": "",
+    "claimed_subject": "A whimsical flying dragon",
+    "satisfied": false
+  },
+  "source_git_sha": "ccd40b022cb1d6ad2646758f3ed53ac10de1b68f",
+  "status": "host_reported_satisfactory",
+  "subject": "A whimsical flying dragon",
+  "subject_source": "autonomous",
+  "svg_file": "attempt_02.svg",
+  "svg_sha256": "b26ec981e89b848fe495f5a78ad6e89a61d7cc9ad15d90819b6a0fc38f722f70",
+  "task_ref": "original-subject-5-auto-vision",
+  "verification_state": "artifacts_verified",
+  "visual_evidence_independently_verified": false,
+  "visual_feedback": "The spatial coherence is moderate due to the simplified representation of the dragon; however, the overall composition is somewhat balanced, though the drawing lacks detail. The subject recognition is plausible given the iconic imagery of a dragon, but the execution is basic and relies heavily on symbolic representation.",
+  "weights_updated": false
+}

@@ -1,0 +1,42 @@
+{
+  "contexts": {
+    "adaptive": {
+      "characters": 2400,
+      "complete_json": false,
+      "contains_new_cat_subject_field": false,
+      "context_sha256": "23d530b18043e2f16f7131e923437c4dc201abf2710c615db5e1b8c46d102931",
+      "model_call_index": 1,
+      "model_calls_sha256": "49601e9d87b9c2eb06560941531fd93cf1567ce3980a96196d01f4bb0d857d03",
+      "visible_subject_fields": [
+        "a teapot",
+        "a teapot"
+      ]
+    },
+    "frozen": {
+      "characters": 2400,
+      "complete_json": false,
+      "contains_new_cat_subject_field": false,
+      "context_sha256": "23d530b18043e2f16f7131e923437c4dc201abf2710c615db5e1b8c46d102931",
+      "model_call_index": 1,
+      "model_calls_sha256": "f4c016e626da591a7955173a0d769310b31557e08f5b4dd25e9442bfee8b41a4",
+      "visible_subject_fields": [
+        "a teapot",
+        "a teapot"
+      ]
+    },
+    "none": {
+      "characters": 2,
+      "complete_json": true,
+      "contains_new_cat_subject_field": false,
+      "context_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "model_call_index": 1,
+      "model_calls_sha256": "58486c5acb61cffce1adbe0c33510e34dede500aeb2bab82a78aa6e2c166cedb",
+      "visible_subject_fields": []
+    }
+  },
+  "no_memory_contrast": "None context is empty; one final sailboat attempt failed. Ratings alone do not establish retained learning.",
+  "observed_at_utc": "2026-11-24T12:44:34.830673+00:00",
+  "original_summary_unchanged": true,
+  "retained_learning_comparison": "INVALID: newer cat feedback was truncated, so intended adaptive/frozen exposure difference never reached the model",
+  "schema": "bean.draw.archive.context_audit.v1"
+}

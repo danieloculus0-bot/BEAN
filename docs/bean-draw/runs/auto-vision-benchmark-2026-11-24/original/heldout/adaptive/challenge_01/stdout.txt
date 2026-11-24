@@ -1,0 +1,37 @@
+{
+  "subject_chosen_by_BEAN_model": null,
+  "subject": "a cat",
+  "subject_source": "human",
+  "history": [
+    {
+      "attempt": 1,
+      "status": "host_reported_not_satisfactory",
+      "svg": "/workspace/bean-live-evidence/auto-vision-benchmark/heldout/adaptive/challenge_01/attempts/attempt_01.svg",
+      "sha256": "2d03bd2133d43f010e4a757b6c8365c473de41eed6534df7fc6a527efd6f3ad4",
+      "png": "/workspace/bean-live-evidence/auto-vision-benchmark/heldout/adaptive/challenge_01/attempts/attempt_01.png",
+      "png_sha256": "29ff58275ec51c5f9c2ea6c5cd00b4eee1516ec35ab89bc38c3eebd3d6128d54",
+      "journal_tip": "aa73e0724655b554f820232d642bf844c1868e32a3e9278f02da703012b3edd1",
+      "metadata": "/workspace/bean-live-evidence/auto-vision-benchmark/heldout/adaptive/challenge_01/attempts/attempt_01.json",
+      "metadata_sha256": "71521b0aa47ac416ebbc2198a5bf4a255653c7aa4422a1e2fba90837bd21f02d",
+      "description": "A distinctive black line art of a cat with clear ears, eyes, nose, mouth, and body outline. The tail is long and the paws are distinct."
+    },
+    {
+      "attempt": 2,
+      "status": "host_reported_not_satisfactory",
+      "svg": "/workspace/bean-live-evidence/auto-vision-benchmark/heldout/adaptive/challenge_01/attempts/attempt_02.svg",
+      "sha256": "b42b125d3ba09a3561f89944c1ee25588c53eee116d5ae9637c4ccd3f0077ebc",
+      "png": "/workspace/bean-live-evidence/auto-vision-benchmark/heldout/adaptive/challenge_01/attempts/attempt_02.png",
+      "png_sha256": "00a049c302c8bc4a2d4f8c08c86113812306b13199aff98bf66871eafe83a0a9",
+      "journal_tip": "51947a7d9f5a2d02e7ee8f13bc06435f292ead6cb0de2e1ffde6446fa141328b",
+      "metadata": "/workspace/bean-live-evidence/auto-vision-benchmark/heldout/adaptive/challenge_01/attempts/attempt_02.json",
+      "metadata_sha256": "3fb44c881eb5bf42359703fecf1479a6e5fa7c90c27bfcb8271e5ae066e1d11f",
+      "description": "A recognizable black and white line art of a cat, with distinct features like ears, eyes, whiskers, and a tail."
+    }
+  ],
+  "research_status": "not_requested",
+  "references": [],
+  "final_status": "host_reported_not_satisfactory",
+  "attempts": 2,
+  "run_receipt": "/workspace/bean-live-evidence/auto-vision-benchmark/heldout/adaptive/challenge_01/attempts/run.json",
+  "visual_success_independently_verified": false
+}

@@ -1,0 +1,64 @@
+{
+  "attempt": 2,
+  "created_at_utc": "2026-11-20T14:20:52.019988+00:00",
+  "description": "A clear sailboat composition with key visible components including a furled main sail, mast, rigging line, hull, anchor, fenders, and a partially visible propeller.",
+  "domain": "sketch",
+  "drawing_instructions": {
+    "components": [
+      "sail",
+      "rigging",
+      "hull",
+      "mast",
+      "deck",
+      "anchor",
+      "fenders",
+      "propeller"
+    ],
+    "composition": "The sailboat will be centered on the canvas, with the main sail furled and partly visible. The mast will stand vertically in the center, supported by a boom extending horizontally to the left. A rigging line will drape from the top of the mast to the deck. The hull will be rectangular and positioned below the mast, with the stern slightly more prominent than the bow. An anchor will hang off the starboard side of the boat, and fenders will be attached to the sides for protection. The propeller on the right side will be partially visible, with its blades rotating in a clockwise direction as if the boat were underway.",
+    "intent": "Plan a clear composition of a sailboat, including its distinguishing visible components and their spatial relationships. The previous shapes should be considered but not repeated in the new plan.",
+    "revision_reason": "The previous shapes do not include all key components of a sailboat (sail, mast, rigging, hull, anchor, fenders, and propeller). The revised plan aims to provide a more comprehensive representation that can be recognized without labels. The existing lines are considered but not repeated; instead, new lines are created to highlight the specific features of the sailboat."
+  },
+  "error": null,
+  "execution_mode": "live_model",
+  "experiment": "bean_sketch_v1",
+  "external_feedback": {
+    "reason": "No external pixel evaluator report",
+    "state": "unavailable"
+  },
+  "independent_visual_verification": false,
+  "journal_tip": "07c41bd967d93aa1422bf6c817b55ff8ba992acbcce8b6f93446f492e16597a4",
+  "memory_mode": "adaptive",
+  "model_digest": "357c53fb659c5076de1d65ccb0b397446227b71a42be9d1603d46168015c9e4b",
+  "model_id": "qwen2.5:3b",
+  "png_file": "attempt_02.png",
+  "png_sha256": "1d43be5b7d616db00b10762572a18b1ebd954bd61ec89132d0bd39cfcd8efdbb",
+  "preview_size": [
+    512,
+    512
+  ],
+  "provider_kind": "ollama",
+  "rasterizer": "CairoSVG 2.8.2",
+  "raw_file": "attempt_02.raw.json",
+  "raw_sha256": "9560c202876960c7de56d7fe8915f4aa1fba7b1d730bc3dcfc1e0ee00f971ad3",
+  "reference_urls": [],
+  "research_status": "not_requested",
+  "run_id": "411202ab-bd3e-4eb8-8d7b-5ee73af2a27a",
+  "schema": "bean.draw.attempt.v1",
+  "seed": 20261131,
+  "self_review": {
+    "changes": "",
+    "claimed_subject": "a sailboat",
+    "satisfied": false
+  },
+  "source_git_sha": "3fc06f4777a68b492928d6a08a0dd251977af895",
+  "status": "unverified",
+  "subject": "a sailboat",
+  "subject_source": "human",
+  "svg_file": "attempt_02.svg",
+  "svg_sha256": "afaa7ed5dffab2c1e39b77b70210e88a7807e5a1d40a1356640aa213402b49a8",
+  "task_ref": "benchmark-heldout-adaptive-01",
+  "verification_state": "artifacts_verified",
+  "visual_evidence_independently_verified": false,
+  "visual_feedback": null,
+  "weights_updated": false
+}

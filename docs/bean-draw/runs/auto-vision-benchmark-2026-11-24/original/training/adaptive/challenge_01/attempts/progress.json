@@ -1,0 +1,29 @@
+{
+  "history": [
+    {
+      "attempt": 1,
+      "description": "A recognizable black line art teapot with a unique spout, detailed lid, and handle.",
+      "journal_tip": "cfcbb2d8b97e5ad79bec934185973a3557eda4444bcabf6fa41e73d4336f3f9b",
+      "metadata": "/workspace/bean-live-evidence/auto-vision-benchmark/training/adaptive/challenge_01/attempts/attempt_01.json",
+      "metadata_sha256": "33c931acb10ccb40c11a423b19b249f6a9d36a7469dbcb5a70bc9cb96b7c8692",
+      "png": "/workspace/bean-live-evidence/auto-vision-benchmark/training/adaptive/challenge_01/attempts/attempt_01.png",
+      "png_sha256": "3c421e7071e42db86827d41370646c2d617d3a09ae0a921f6e95b120c9b912df",
+      "sha256": "f9c20877b32f46b599c2200f5dfe70746d8cabc26479905e0321a9667c9a4034",
+      "status": "host_reported_not_satisfactory",
+      "svg": "/workspace/bean-live-evidence/auto-vision-benchmark/training/adaptive/challenge_01/attempts/attempt_01.svg"
+    },
+    {
+      "attempt": 2,
+      "description": "A teapot depicted as recognizable black line art. The body is a cylinder with a spout extending upwards from one side and a handle connecting to the top of the cylinder at an angle. A small opening for tea or water is at the top, and the base has a slightly flared outwards shape.",
+      "journal_tip": "b17048109fd537eeb8ea666ed9f04ae61926288f26f27c0dd7e0b29c16b11940",
+      "metadata": "/workspace/bean-live-evidence/auto-vision-benchmark/training/adaptive/challenge_01/attempts/attempt_02.json",
+      "metadata_sha256": "060ed3de61e1449412d3fe14703a51ae413623fa214e4fbc63c4f8e9d033ea78",
+      "png": "/workspace/bean-live-evidence/auto-vision-benchmark/training/adaptive/challenge_01/attempts/attempt_02.png",
+      "png_sha256": "6e4235ea96ab45e6b7d2aaf7e709340c2e4e788fabdc3b4cabecb8ce4a5e7a1b",
+      "sha256": "a673bda11757d6fa7ed99266b9d135508b84f767d91b4f3e9b994a032da0163b",
+      "status": "host_reported_satisfactory",
+      "svg": "/workspace/bean-live-evidence/auto-vision-benchmark/training/adaptive/challenge_01/attempts/attempt_02.svg"
+    }
+  ],
+  "subject": "a teapot"
+}

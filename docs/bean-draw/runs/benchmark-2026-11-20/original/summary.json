@@ -1,0 +1,216 @@
+{
+  "distinct_recorded_png_hashes": 6,
+  "diversity_interpretation": "Per-image diversity ratings are descriptive; portfolio diversity requires a joint review bound to every final PNG; subject/hash counts are mechanics",
+  "generalization_adaptive_minus_control": {
+    "frozen": {
+      "composition": null,
+      "spatial_coherence": null,
+      "subject_recognition": null
+    },
+    "none": {
+      "composition": null,
+      "spatial_coherence": null,
+      "subject_recognition": null
+    }
+  },
+  "heldout_last_attempt_means": {
+    "adaptive": {
+      "composition": null,
+      "diversity": null,
+      "spatial_coherence": null,
+      "subject_recognition": null
+    },
+    "frozen": {
+      "composition": null,
+      "diversity": null,
+      "spatial_coherence": null,
+      "subject_recognition": null
+    },
+    "none": {
+      "composition": null,
+      "diversity": null,
+      "spatial_coherence": null,
+      "subject_recognition": null
+    }
+  },
+  "independent_evaluation_authenticated": false,
+  "iteration_quality_last_minus_first": {
+    "adaptive": {
+      "composition": null,
+      "spatial_coherence": null,
+      "subject_recognition": null
+    },
+    "frozen": {
+      "composition": null,
+      "spatial_coherence": null,
+      "subject_recognition": null
+    },
+    "none": {
+      "composition": null,
+      "spatial_coherence": null,
+      "subject_recognition": null
+    }
+  },
+  "learning_improvement_verified": false,
+  "limitations": [
+    "Null scores mean missing legitimate image review, not zero quality",
+    "No broad learning claim from this small challenge set",
+    "Provider determinism and review independence require external verification"
+  ],
+  "matched_heldout_comparison_counts": {
+    "frozen": {
+      "composition": 0,
+      "spatial_coherence": 0,
+      "subject_recognition": 0
+    },
+    "none": {
+      "composition": 0,
+      "spatial_coherence": 0,
+      "subject_recognition": 0
+    }
+  },
+  "outcomes": [
+    {
+      "arm": "adaptive",
+      "artifact_verification_error": null,
+      "attempts": [
+        {
+          "attempt": 1,
+          "scores": null,
+          "status": "unverified"
+        },
+        {
+          "attempt": 2,
+          "scores": null,
+          "status": "unverified"
+        }
+      ],
+      "challenge": 1,
+      "last_minus_first_external_score": {
+        "composition": null,
+        "spatial_coherence": null,
+        "subject_recognition": null
+      },
+      "last_png_sha256": "e83f54fbdb967b4f738f8c0b75e5c37bd0d5ce6178005236776c3662f677111b",
+      "last_scores": null,
+      "phase": "training",
+      "process_returncode": 0,
+      "runtime_identity": [
+        "ollama",
+        "qwen2.5:3b",
+        "357c53fb659c5076de1d65ccb0b397446227b71a42be9d1603d46168015c9e4b",
+        "3fc06f4777a68b492928d6a08a0dd251977af895"
+      ],
+      "subject": "a teapot"
+    },
+    {
+      "arm": "frozen",
+      "artifact_verification_error": null,
+      "attempts": [
+        {
+          "attempt": 1,
+          "scores": null,
+          "status": "unverified"
+        },
+        {
+          "attempt": 2,
+          "scores": null,
+          "status": "unverified"
+        }
+      ],
+      "challenge": 1,
+      "last_minus_first_external_score": {
+        "composition": null,
+        "spatial_coherence": null,
+        "subject_recognition": null
+      },
+      "last_png_sha256": "1d43be5b7d616db00b10762572a18b1ebd954bd61ec89132d0bd39cfcd8efdbb",
+      "last_scores": null,
+      "phase": "heldout",
+      "process_returncode": 0,
+      "runtime_identity": [
+        "ollama",
+        "qwen2.5:3b",
+        "357c53fb659c5076de1d65ccb0b397446227b71a42be9d1603d46168015c9e4b",
+        "3fc06f4777a68b492928d6a08a0dd251977af895"
+      ],
+      "subject": "a sailboat"
+    },
+    {
+      "arm": "none",
+      "artifact_verification_error": null,
+      "attempts": [
+        {
+          "attempt": 1,
+          "scores": null,
+          "status": "unverified"
+        },
+        {
+          "attempt": 2,
+          "scores": null,
+          "status": "unverified"
+        }
+      ],
+      "challenge": 1,
+      "last_minus_first_external_score": {
+        "composition": null,
+        "spatial_coherence": null,
+        "subject_recognition": null
+      },
+      "last_png_sha256": "08b1577217a49d1d3a8974f038481b0066a039aa27ee3f175eb9e763c08b861c",
+      "last_scores": null,
+      "phase": "heldout",
+      "process_returncode": 0,
+      "runtime_identity": [
+        "ollama",
+        "qwen2.5:3b",
+        "357c53fb659c5076de1d65ccb0b397446227b71a42be9d1603d46168015c9e4b",
+        "3fc06f4777a68b492928d6a08a0dd251977af895"
+      ],
+      "subject": "a sailboat"
+    },
+    {
+      "arm": "adaptive",
+      "artifact_verification_error": null,
+      "attempts": [
+        {
+          "attempt": 1,
+          "scores": null,
+          "status": "unverified"
+        },
+        {
+          "attempt": 2,
+          "scores": null,
+          "status": "unverified"
+        }
+      ],
+      "challenge": 1,
+      "last_minus_first_external_score": {
+        "composition": null,
+        "spatial_coherence": null,
+        "subject_recognition": null
+      },
+      "last_png_sha256": "1d43be5b7d616db00b10762572a18b1ebd954bd61ec89132d0bd39cfcd8efdbb",
+      "last_scores": null,
+      "phase": "heldout",
+      "process_returncode": 0,
+      "runtime_identity": [
+        "ollama",
+        "qwen2.5:3b",
+        "357c53fb659c5076de1d65ccb0b397446227b71a42be9d1603d46168015c9e4b",
+        "3fc06f4777a68b492928d6a08a0dd251977af895"
+      ],
+      "subject": "a sailboat"
+    }
+  ],
+  "planned_distinct_heldout_subjects": 1,
+  "portfolio_diversity": {
+    "adaptive": null,
+    "frozen": null,
+    "none": null
+  },
+  "protocol_sha256": "fa0041e153552d9c9a709ab3ece1af8c48491c8c95a99f395280205331b42c78",
+  "schema": "bean.draw.benchmark.v1",
+  "subject_source": "human_protocol",
+  "weights_updated": false
+}

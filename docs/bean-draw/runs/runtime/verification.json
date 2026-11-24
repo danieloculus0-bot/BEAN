@@ -1,0 +1,46 @@
+{
+  "journal_gzip_sha256": "01cba8a964d2961df6dac47afe206337e86f1baf8cf1fe6c69a47f02bbeb3dc0",
+  "journal_raw_sha256": "629fbb3b5ef645f67b7d656d46889f203154b35d21f1f9fcebde42602f2e1d8f",
+  "journal_rows": 13,
+  "observed_at_utc": "2026-11-20T12:35:48.954530+00:00",
+  "runs": [
+    {
+      "attempts": 2,
+      "run_id": "b49f818a-3970-440c-8149-209822777d59",
+      "selected_attempt": null,
+      "source_git_sha": "f0aa5ba64614d1ef5c0fcbc9a851e505ec96d1d8",
+      "source_run_sha256": "f220d665fc00f8f81521a0d519378ee769a73e05435e72776a7bd16cae96f5e5",
+      "subject": "A mysterious underwater forest",
+      "valid_svg_png_pairs": 0
+    },
+    {
+      "attempts": 2,
+      "run_id": "82cd4d1b-c73c-420b-845a-6ea345598b1f",
+      "selected_attempt": 1,
+      "source_git_sha": "2db4f232ef6f2385375a79bd87c3df77501999ec",
+      "source_run_sha256": "0a0c941d8d0f275b2aafb0a2ea71495b427bfa6ea9f58cc2f4f9739250b7fec6",
+      "subject": "A magnificent snow-covered mountain range",
+      "valid_svg_png_pairs": 2
+    },
+    {
+      "attempts": 2,
+      "run_id": "0836c4ee-0955-4c19-a2d9-e8e41fe3d863",
+      "selected_attempt": 2,
+      "source_git_sha": "3fc06f4777a68b492928d6a08a0dd251977af895",
+      "source_run_sha256": "87492395615f2a6c9cdefabbc783876852db6f21666be9889f88664dba70f658",
+      "subject": "A vibrant sunflower field in a gentle breeze",
+      "valid_svg_png_pairs": 2
+    },
+    {
+      "attempts": 2,
+      "run_id": "9df57048-59c5-4219-91f3-4818e2d818b3",
+      "selected_attempt": 1,
+      "source_git_sha": "3fc06f4777a68b492928d6a08a0dd251977af895",
+      "source_run_sha256": "15f18d6836aa714986b576302220e495ec3d023982a5c8dab7e332d601182cce",
+      "subject": "A whimsical flying dragon",
+      "valid_svg_png_pairs": 2
+    }
+  ],
+  "schema": "bean.draw.observed-verification.v1",
+  "scope": "actual artifact bytes and SHA-chained Core journal bindings; not authenticated aesthetic quality"
+}

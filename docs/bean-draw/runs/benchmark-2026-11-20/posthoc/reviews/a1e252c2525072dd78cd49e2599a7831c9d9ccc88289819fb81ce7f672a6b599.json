@@ -1,0 +1,34 @@
+{
+  "blinded": false,
+  "created_at_utc": "2026-11-24T03:31:05.626236+00:00",
+  "evaluator": "Codex posthoc visual reviewer",
+  "feedback": "A large central circle overlaps an upper-left rectangle, several near-vertical strokes and a small lower cluster of circles. The parts do not form a reliably recognizable teapot; their joins and object roles are ambiguous.",
+  "human_evaluation": "unavailable",
+  "image_sha256": "a1e252c2525072dd78cd49e2599a7831c9d9ccc88289819fb81ce7f672a6b599",
+  "independently_authenticated": false,
+  "inspection_method": "Actual PNG opened with view_image before rating; no subject-label/string comparison used as a substitute for pixels",
+  "kind": "vision_model",
+  "model_identity": "Unavailable for the host reviewer; do not infer an evaluator model digest",
+  "original_runs": [
+    {
+      "arm": "adaptive",
+      "attempt": 1,
+      "phase": "training",
+      "run_id": "02238a50-6e5a-4179-960c-a2e5b7d6da99",
+      "run_path": "training/adaptive/challenge_01/attempts/run.json",
+      "run_sha256": "8da9292da6a259aa029245ba6d0476b91c477f9c2325657e4751bd0413193136",
+      "sidecar_sha256": "e86846a03c7af1f9b5c65291a9cb6f59ac814b8116c11a0216481e9e3cfe8033"
+    }
+  ],
+  "posthoc": true,
+  "rubric_sha256": "aa5f8360b6314c4c9942a1371918bc8eb1f0e966c18b9310910cdae6a5a90e8e",
+  "satisfactory": false,
+  "schema": "bean.draw.posthoc.visual_review.v1",
+  "scores": {
+    "composition": 1,
+    "spatial_coherence": 1,
+    "subject_recognition": 0
+  },
+  "subject": "a teapot",
+  "used_for_generation": false
+}

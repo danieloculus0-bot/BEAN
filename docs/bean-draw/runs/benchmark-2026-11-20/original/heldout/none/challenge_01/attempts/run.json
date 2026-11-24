@@ -1,0 +1,60 @@
+{
+  "attempts": 2,
+  "completed_at_utc": "2026-11-20T13:54:15.060086+00:00",
+  "created_at_utc": "2026-11-20T13:27:57.838985+00:00",
+  "error": null,
+  "execution_mode": "live_model",
+  "history": [
+    {
+      "attempt": 1,
+      "description": "A sailboat with distinct bow and stern, mast, rigging, sail, hull, deck, and canvas. The boat is placed horizontally, with the bow at the top and the stern at the bottom. Additional details like waves are added for dynamism.",
+      "journal_tip": "36c84fe58ac24a3ba434d38088897284b135ac4c7d382c04ac55d36319986e98",
+      "metadata": "/workspace/bean-live-evidence/benchmark/heldout/none/challenge_01/attempts/attempt_01.json",
+      "metadata_sha256": "43885f8101fdce7fa5af55f03e6f92856e691055c8edeb6e3798f9d17dfc9363",
+      "png": "/workspace/bean-live-evidence/benchmark/heldout/none/challenge_01/attempts/attempt_01.png",
+      "png_sha256": "9470ed3ee2b3360b577c5fc66c5db4b37ed6d3c0f91a8c5a80339a11d3f16011",
+      "sha256": "42772aa31ec44d9578e657c8bc33d0f939555fce326fc96a8c7c53d51f367f83",
+      "status": "unverified",
+      "svg": "/workspace/bean-live-evidence/benchmark/heldout/none/challenge_01/attempts/attempt_01.svg"
+    },
+    {
+      "attempt": 2,
+      "description": "A simplified line drawing of a sailboat, focusing on the main components and their spatial arrangement for clarity.",
+      "journal_tip": "23710a2b21b20d5096b49fc258d26840e8e17186ab8b05b8f5625688e172fcc7",
+      "metadata": "/workspace/bean-live-evidence/benchmark/heldout/none/challenge_01/attempts/attempt_02.json",
+      "metadata_sha256": "c87ab54e147bc06c6b1b258896d453179baaffcba61c8fabb0af167926e5db10",
+      "png": "/workspace/bean-live-evidence/benchmark/heldout/none/challenge_01/attempts/attempt_02.png",
+      "png_sha256": "08b1577217a49d1d3a8974f038481b0066a039aa27ee3f175eb9e763c08b861c",
+      "sha256": "0204d883106a3cb5c0b78b5a509c1d6ad0a32a38ef0ab88f6b4d3a7a7e30b864",
+      "status": "unverified",
+      "svg": "/workspace/bean-live-evidence/benchmark/heldout/none/challenge_01/attempts/attempt_02.svg"
+    }
+  ],
+  "independent_visual_verification": false,
+  "journal_tip": "a28606e1b34e9c7602a0e3e25e432a02200fffb174f653750f418b3500f3ea02",
+  "learning_improvement_verified": false,
+  "memory_context_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+  "memory_mode": "none",
+  "model_calls_sha256": "5305a4727078c2836e94113a6934e77469394dbe3833b6dac85b07fa03afeef8",
+  "model_digest": "357c53fb659c5076de1d65ccb0b397446227b71a42be9d1603d46168015c9e4b",
+  "model_id": "qwen2.5:3b",
+  "provider_kind": "ollama",
+  "run_id": "c1fa3416-1647-4134-8b1e-7ebfbb4fbff6",
+  "runtime_source_sha256": {
+    "bean/creativity/artifacts.py": "129106aefab02ea7d299e44ed74da0ab617d4cbec091f7e2acf3ad53c518bb41",
+    "bean/creativity/sketch_lab.py": "7d69b3fbe4fa3824132b150f1d6d5606d59385fdf58cc0aca57ece1045ab43f4",
+    "bean/voice/ollama.py": "3f852e850e998767f43bd1c0842852c3562aecfce5152d8b8081e8a6ac8d19ee",
+    "scripts/build_bean_draw_gallery.py": "42d7b37089775b56acf7512d2e6ce6c6be098813e709d2c9644def51c58e18a1"
+  },
+  "schema": "bean.draw.run.v1",
+  "seed": 20261131,
+  "selected_attempt": 2,
+  "selection_reason": "The second attempt provides a simplified line drawing of the sailboat with clear focus on the main components and spatial arrangement. The composition includes simpler lines for the boat's hull, mast, sails, deck, and rudder, which helps in creating a more recognizable depiction without overcrowding details. This makes it a stronger candidate compared to the first attempt.",
+  "selection_state": "model_selected_from_recorded_evidence",
+  "source_git_sha": "3fc06f4777a68b492928d6a08a0dd251977af895",
+  "state": "unverified",
+  "subject": "a sailboat",
+  "subject_source": "human",
+  "task_ref": "benchmark-heldout-none-01",
+  "weights_updated": false
+}

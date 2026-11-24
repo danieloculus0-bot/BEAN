@@ -1,0 +1,60 @@
+{
+  "attempts": 2,
+  "completed_at_utc": "2026-11-24T05:12:40.591525+00:00",
+  "created_at_utc": "2026-11-24T05:01:39.226906+00:00",
+  "error": null,
+  "execution_mode": "live_model",
+  "history": [
+    {
+      "attempt": 1,
+      "description": "A sailboat with a prominent sail on the top right, a vertical mast in the center left, a bow centered below, a keel extending downward, and a hull following the bottom edge. Simple rigging is depicted around the mast and sail.",
+      "journal_tip": "327a409c417e0282d2ef062103d7458f8b5d5e11b10f1224efeaf9a65d1c5a2b",
+      "metadata": "/workspace/bean-live-evidence/auto-vision-benchmark/heldout/frozen/challenge_02/attempts/attempt_01.json",
+      "metadata_sha256": "1f0a7de95f14eb21f1d274716b47026c8a1b2ae3ca6d73327b7d5fe42248ee52",
+      "png": "/workspace/bean-live-evidence/auto-vision-benchmark/heldout/frozen/challenge_02/attempts/attempt_01.png",
+      "png_sha256": "8dcbf8949e70da5fafe931a3f77571c51a71483af7b8aa6a94211916c3612b58",
+      "sha256": "b675f31dd4ed7bbbfb1372e4da6c73876dc85af46ef1ee222e5608133b36f5d1",
+      "status": "host_reported_not_satisfactory",
+      "svg": "/workspace/bean-live-evidence/auto-vision-benchmark/heldout/frozen/challenge_02/attempts/attempt_01.svg"
+    },
+    {
+      "attempt": 2,
+      "description": "A sailboat composed of key components such as a mast, sails, rudder, hull shape, and deck to ensure easy recognition.",
+      "journal_tip": "e35d6fe4e92d295d4b2677dbe1149e3d4ae19008c7fa61366afa470a27939b96",
+      "metadata": "/workspace/bean-live-evidence/auto-vision-benchmark/heldout/frozen/challenge_02/attempts/attempt_02.json",
+      "metadata_sha256": "508108d47388f28626ab178cd9e7541d136b54d651a16e7569dcce59dd45af16",
+      "png": "/workspace/bean-live-evidence/auto-vision-benchmark/heldout/frozen/challenge_02/attempts/attempt_02.png",
+      "png_sha256": "6b0639d85888552add0bf98df37758cadc517c1ae76dda77cf0946b8db74ef77",
+      "sha256": "51628e4e434fece89578e44dbf9ae57514b62a10cd673120ccbad6d37e287f6a",
+      "status": "host_reported_not_satisfactory",
+      "svg": "/workspace/bean-live-evidence/auto-vision-benchmark/heldout/frozen/challenge_02/attempts/attempt_02.svg"
+    }
+  ],
+  "independent_visual_verification": false,
+  "journal_tip": "683c08c14ea1c4fa85de059e25be04d89d119bdf38966d8c736fc991ba0856f5",
+  "learning_improvement_verified": false,
+  "memory_context_sha256": "23d530b18043e2f16f7131e923437c4dc201abf2710c615db5e1b8c46d102931",
+  "memory_mode": "frozen",
+  "model_calls_sha256": "f4c016e626da591a7955173a0d769310b31557e08f5b4dd25e9442bfee8b41a4",
+  "model_digest": "357c53fb659c5076de1d65ccb0b397446227b71a42be9d1603d46168015c9e4b",
+  "model_id": "qwen2.5:3b",
+  "provider_kind": "ollama",
+  "run_id": "298e8810-36af-4e5d-b8db-d15f75410f6d",
+  "runtime_source_sha256": {
+    "bean/creativity/artifacts.py": "19154ead40bd59df1205278820cc4e99316ce4295acfcaa017541b5daf0893fa",
+    "bean/creativity/sketch_lab.py": "945268eaed3329716e8a62e036a579109089a5c9a83a3f8b852c666fb83d20fd",
+    "bean/voice/ollama.py": "3f852e850e998767f43bd1c0842852c3562aecfce5152d8b8081e8a6ac8d19ee",
+    "scripts/build_bean_draw_gallery.py": "f306b06c9db0c2d095895c01fc927f646c311a41b6be6fe88ca5ed7a1a888915"
+  },
+  "schema": "bean.draw.run.v1",
+  "seed": 20261126,
+  "selected_attempt": 1,
+  "selection_reason": "The selected attempt (attempt 1) has a higher score for subject recognition (4 out of 5), composition (4 out of 5), and spatial coherence (3 out of 5) compared to the other attempts. Although it still lacks detail, the clear depiction of the sailboat's key components such as the mast, sails, bow, keel, hull, and rigging ensures better clarity and recognition.",
+  "selection_state": "model_selected_from_recorded_evidence",
+  "source_git_sha": "01090ba7c8c97855a7e3d352c3e9003e7278e972",
+  "state": "host_reported_not_satisfactory",
+  "subject": "a sailboat",
+  "subject_source": "human",
+  "task_ref": "benchmark-heldout-frozen-02",
+  "weights_updated": false
+}

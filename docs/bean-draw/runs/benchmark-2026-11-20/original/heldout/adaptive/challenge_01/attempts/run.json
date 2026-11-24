@@ -1,0 +1,60 @@
+{
+  "attempts": 2,
+  "completed_at_utc": "2026-11-20T14:22:09.464252+00:00",
+  "created_at_utc": "2026-11-20T13:54:15.253926+00:00",
+  "error": null,
+  "execution_mode": "live_model",
+  "history": [
+    {
+      "attempt": 1,
+      "description": "A recognizable sailboat with key features like a mast, sail, hull, bow, and stern depicted in black line art. The composition is horizontal with the bow at the top and the stern at the bottom.",
+      "journal_tip": "6b1921adacafee47e6af245e29ba55e982bb61c1b246323ebf3ff9d9942bcd8a",
+      "metadata": "/workspace/bean-live-evidence/benchmark/heldout/adaptive/challenge_01/attempts/attempt_01.json",
+      "metadata_sha256": "d39e15d2cd47bcf8089ef67073d3d9542a53457b122d1c0ef321f84a70f72ffb",
+      "png": "/workspace/bean-live-evidence/benchmark/heldout/adaptive/challenge_01/attempts/attempt_01.png",
+      "png_sha256": "91f450301555bf58dba86509b33fc6139f8b2c67ab7793e353dc46cef7e05c25",
+      "sha256": "02c26823afaf1c6644165ab4449f0adb94b43bbbcbb8202590a138a03a6d65db",
+      "status": "unverified",
+      "svg": "/workspace/bean-live-evidence/benchmark/heldout/adaptive/challenge_01/attempts/attempt_01.svg"
+    },
+    {
+      "attempt": 2,
+      "description": "A clear sailboat composition with key visible components including a furled main sail, mast, rigging line, hull, anchor, fenders, and a partially visible propeller.",
+      "journal_tip": "07c41bd967d93aa1422bf6c817b55ff8ba992acbcce8b6f93446f492e16597a4",
+      "metadata": "/workspace/bean-live-evidence/benchmark/heldout/adaptive/challenge_01/attempts/attempt_02.json",
+      "metadata_sha256": "a292804345bc1015c06fc215e59c317075dc1a613aa84f8a187c185cb83d916b",
+      "png": "/workspace/bean-live-evidence/benchmark/heldout/adaptive/challenge_01/attempts/attempt_02.png",
+      "png_sha256": "1d43be5b7d616db00b10762572a18b1ebd954bd61ec89132d0bd39cfcd8efdbb",
+      "sha256": "afaa7ed5dffab2c1e39b77b70210e88a7807e5a1d40a1356640aa213402b49a8",
+      "status": "unverified",
+      "svg": "/workspace/bean-live-evidence/benchmark/heldout/adaptive/challenge_01/attempts/attempt_02.svg"
+    }
+  ],
+  "independent_visual_verification": false,
+  "journal_tip": "e98a7d70f9ea53bccae6e82ec9514f219750f0218b912d6707712e20d27c4195",
+  "learning_improvement_verified": false,
+  "memory_context_sha256": "dba28833169f244a1666af32cc4cd96e95176a96591f4134e9344b0c77551d10",
+  "memory_mode": "adaptive",
+  "model_calls_sha256": "59d5cb755f5530aa68487f4bdd0daafa76bb7b49286c4105b656e21871bb6c64",
+  "model_digest": "357c53fb659c5076de1d65ccb0b397446227b71a42be9d1603d46168015c9e4b",
+  "model_id": "qwen2.5:3b",
+  "provider_kind": "ollama",
+  "run_id": "411202ab-bd3e-4eb8-8d7b-5ee73af2a27a",
+  "runtime_source_sha256": {
+    "bean/creativity/artifacts.py": "129106aefab02ea7d299e44ed74da0ab617d4cbec091f7e2acf3ad53c518bb41",
+    "bean/creativity/sketch_lab.py": "7d69b3fbe4fa3824132b150f1d6d5606d59385fdf58cc0aca57ece1045ab43f4",
+    "bean/voice/ollama.py": "3f852e850e998767f43bd1c0842852c3562aecfce5152d8b8081e8a6ac8d19ee",
+    "scripts/build_bean_draw_gallery.py": "42d7b37089775b56acf7512d2e6ce6c6be098813e709d2c9644def51c58e18a1"
+  },
+  "schema": "bean.draw.run.v1",
+  "seed": 20261131,
+  "selected_attempt": 2,
+  "selection_reason": "The second attempt provides a clear and comprehensive composition of the sailboat with all key visible components (sail, mast, rigging, hull, anchor, fenders, and propeller) clearly depicted. The previous attempt was more focused on recognizable features like the mast and sail but did not include as many elements. This makes the second attempt stronger for a full depiction of the sailboat.",
+  "selection_state": "model_selected_from_recorded_evidence",
+  "source_git_sha": "3fc06f4777a68b492928d6a08a0dd251977af895",
+  "state": "unverified",
+  "subject": "a sailboat",
+  "subject_source": "human",
+  "task_ref": "benchmark-heldout-adaptive-01",
+  "weights_updated": false
+}

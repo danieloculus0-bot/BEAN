@@ -1,0 +1,37 @@
+[
+  {
+    "run": "heldout/adaptive/challenge_01/attempts/run.json",
+    "source_git_sha": "01090ba7c8c97855a7e3d352c3e9003e7278e972",
+    "runtime_source_hashes_match_frozen_checkout": true
+  },
+  {
+    "run": "heldout/adaptive/challenge_02/attempts/run.json",
+    "source_git_sha": "01090ba7c8c97855a7e3d352c3e9003e7278e972",
+    "runtime_source_hashes_match_frozen_checkout": true
+  },
+  {
+    "run": "heldout/frozen/challenge_01/attempts/run.json",
+    "source_git_sha": "01090ba7c8c97855a7e3d352c3e9003e7278e972",
+    "runtime_source_hashes_match_frozen_checkout": true
+  },
+  {
+    "run": "heldout/frozen/challenge_02/attempts/run.json",
+    "source_git_sha": "01090ba7c8c97855a7e3d352c3e9003e7278e972",
+    "runtime_source_hashes_match_frozen_checkout": true
+  },
+  {
+    "run": "heldout/none/challenge_01/attempts/run.json",
+    "source_git_sha": "01090ba7c8c97855a7e3d352c3e9003e7278e972",
+    "runtime_source_hashes_match_frozen_checkout": true
+  },
+  {
+    "run": "heldout/none/challenge_02/attempts/run.json",
+    "source_git_sha": "01090ba7c8c97855a7e3d352c3e9003e7278e972",
+    "runtime_source_hashes_match_frozen_checkout": true
+  },
+  {
+    "run": "training/adaptive/challenge_01/attempts/run.json",
+    "source_git_sha": "01090ba7c8c97855a7e3d352c3e9003e7278e972",
+    "runtime_source_hashes_match_frozen_checkout": true
+  }
+]

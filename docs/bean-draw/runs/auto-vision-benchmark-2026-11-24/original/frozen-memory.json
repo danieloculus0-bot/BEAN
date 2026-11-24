@@ -1,0 +1,162 @@
+[
+  {
+    "attempt": 1,
+    "created_at_utc": "2026-11-24T03:54:38.129423+00:00",
+    "description": "A recognizable black line art teapot with a unique spout, detailed lid, and handle.",
+    "domain": "sketch",
+    "drawing_instructions": {
+      "components": [
+        "teapot_body",
+        "spout",
+        "lid_with_handle",
+        "base"
+      ],
+      "composition": "The teapot will be placed in a horizontal orientation, with the body at the bottom. The spout will be positioned to the right of the body and connected directly to it. The lid will sit on top of the body and have a handle extending from its side towards the viewer. The base will be located at the bottom center of the composition.",
+      "intent": "Plan a clear line drawing of a teapot without repeating previous feedback.",
+      "revision_reason": "To avoid repetition, I am changing the shape of the spout slightly and adding more detail to the lid and handle."
+    },
+    "error": null,
+    "execution_mode": "live_model",
+    "experiment": "bean_sketch_v1",
+    "external_feedback": {
+      "blind_observations": "The image depicts a schematic representation of an electrical circuit with components like a circle (likely a source), resistors, and wires connecting them vertically.",
+      "blind_recognized_subject": "Electrical circuit diagram",
+      "created_at_utc": "2026-11-24T03:54:38.129151+00:00",
+      "evaluation_protocol": "blind_then_targeted_min_v1",
+      "evaluator": "Ollama vision reviewer: gemma3:4b",
+      "feedback": "Title-blind review: The diagram is relatively clear in its layout, showing connections between different parts of the circuit, though some details are simplified for clarity. Target-aware review: While the diagram appears to be an electrical circuit, it doesn't contain a teapot or any elements suggesting one, highlighting a significant mismatch between the depicted subject and the claimed subject.",
+      "image_sha256": "3c421e7071e42db86827d41370646c2d617d3a09ae0a921f6e95b120c9b912df",
+      "independently_authenticated": false,
+      "kind": "vision_model",
+      "model_digest": "68ceab7e468a31c988b44d5a4984a0e21f58c4f7158c6ce29c1804babac38df7",
+      "model_id": "gemma3:4b",
+      "observations": "The image depicts a schematic representation of an electrical circuit with components like a circle (likely a source), resistors, and wires connecting them vertically.",
+      "provider_kind": "ollama",
+      "recognized_subject": "Electrical circuit diagram",
+      "review_file": "attempt_01.vision.json",
+      "review_sha256": "abd14935c0605a0181b1a80957e42660f12c6ea9324c8bce96b675fd5d9c4c14",
+      "satisfactory": false,
+      "score_rule": "minimum_of_blind_object_clarity_and_targeted_scores_not_authenticated_truth",
+      "scores": {
+        "composition": 3,
+        "spatial_coherence": 2,
+        "subject_recognition": 1
+      },
+      "state": "host_reported_pixel_review"
+    },
+    "independent_visual_verification": false,
+    "memory_mode": "adaptive",
+    "model_digest": "357c53fb659c5076de1d65ccb0b397446227b71a42be9d1603d46168015c9e4b",
+    "model_id": "qwen2.5:3b",
+    "png_file": "attempt_01.png",
+    "png_sha256": "3c421e7071e42db86827d41370646c2d617d3a09ae0a921f6e95b120c9b912df",
+    "preview_size": [
+      512,
+      512
+    ],
+    "provider_kind": "ollama",
+    "rasterizer": "CairoSVG 2.8.2",
+    "raw_file": "attempt_01.raw.json",
+    "raw_sha256": "520a386324b43668bdf00b69b873c7d9c0c187594b19dea913e1bee245e02b0c",
+    "reference_urls": [],
+    "research_status": "not_requested",
+    "run_id": "bfb5e519-21c1-4918-aa16-10229e14a45e",
+    "schema": "bean.adaptive_lab026.v1",
+    "seed": 20261125,
+    "self_review": {
+      "changes": "",
+      "claimed_subject": "a teapot",
+      "satisfied": false
+    },
+    "source_git_sha": "01090ba7c8c97855a7e3d352c3e9003e7278e972",
+    "status": "host_reported_not_satisfactory",
+    "subject": "a teapot",
+    "subject_source": "human",
+    "svg_file": "attempt_01.svg",
+    "svg_sha256": "f9c20877b32f46b599c2200f5dfe70746d8cabc26479905e0321a9667c9a4034",
+    "task_ref": "benchmark-training-adaptive-01",
+    "verification_state": "artifacts_verified",
+    "visual_evidence_independently_verified": false,
+    "visual_feedback": "Title-blind review: The diagram is relatively clear in its layout, showing connections between different parts of the circuit, though some details are simplified for clarity. Target-aware review: While the diagram appears to be an electrical circuit, it doesn't contain a teapot or any elements suggesting one, highlighting a significant mismatch between the depicted subject and the claimed subject.",
+    "weights_updated": false
+  },
+  {
+    "attempt": 2,
+    "created_at_utc": "2026-11-24T04:01:18.139296+00:00",
+    "description": "A teapot depicted as recognizable black line art. The body is a cylinder with a spout extending upwards from one side and a handle connecting to the top of the cylinder at an angle. A small opening for tea or water is at the top, and the base has a slightly flared outwards shape.",
+    "domain": "sketch",
+    "drawing_instructions": {
+      "components": [
+        "circle",
+        "line"
+      ],
+      "composition": "A teapot with a cylindrical body, a spout, and a handle will be depicted. The spout will extend upwards from one side of the cylinder, and the handle will connect to it at an angle. The top of the cylinder will have a small opening for tea or water. The base of the cylinder will be wider than the top, with the bottom part slightly flared outwards. The body of the teapot will not be overly detailed, focusing on key features such as the spout and handle to avoid confusion with electrical circuit elements.",
+      "intent": "Plan an original line drawing of a teapot. Identify its distinguishing visible components and how they relate spatially. Plan a clear composition so a viewer can recognize the subject without a label. Decide what to change based on the actual previous feedback; do not repeat marks just because they appeared before.",
+      "revision_reason": "Based on the previous feedback, the main issues were a mismatch between the claimed subject (teapot) and the actual subject depicted (electrical circuit). Therefore, I have removed all lines and circles representing electrical components and replaced them with a teapot that has the following features: A cylindrical body, a spout extending upwards from one side of the cylinder, a handle connecting to the top of the cylinder at an angle, a small opening for tea or water at the top of the cylinder, and a slightly flared base. I have also simplified the composition by focusing on key teapot features without adding unnecessary details that might confuse viewers."
+    },
+    "error": null,
+    "execution_mode": "live_model",
+    "experiment": "bean_sketch_v1",
+    "external_feedback": {
+      "blind_observations": "The image presents two straight lines that intersect at an angle, with a small, looped shape positioned near the intersection point; the composition is minimalistic and focuses on basic shapes.",
+      "blind_recognized_subject": "A simple geometric drawing of two intersecting lines and a looped shape.",
+      "created_at_utc": "2026-11-24T04:01:18.138666+00:00",
+      "evaluation_protocol": "blind_then_targeted_min_v1",
+      "evaluator": "Ollama vision reviewer: gemma3:4b",
+      "feedback": "Title-blind review: The drawing's clarity relies heavily on the simplicity of its elements, and the spatial coherence is good given the nature of the drawing. Target-aware review: While the subject is clearly geometric shapes, the looped shape doesn't strongly suggest a teapot, though it could be interpreted as a stylized spout or handle.",
+      "image_sha256": "6e4235ea96ab45e6b7d2aaf7e709340c2e4e788fabdc3b4cabecb8ce4a5e7a1b",
+      "independently_authenticated": false,
+      "kind": "vision_model",
+      "model_digest": "68ceab7e468a31c988b44d5a4984a0e21f58c4f7158c6ce29c1804babac38df7",
+      "model_id": "gemma3:4b",
+      "observations": "The image presents two straight lines that intersect at an angle, with a small, looped shape positioned near the intersection point; the composition is minimalistic and focuses on basic shapes.",
+      "provider_kind": "ollama",
+      "recognized_subject": "A simple geometric drawing of two intersecting lines and a looped shape.",
+      "review_file": "attempt_02.vision.json",
+      "review_sha256": "7018d220a53e7bba34a4842e056b4e81dceca7ed58a43a0c7600219f6bfeab9b",
+      "satisfactory": true,
+      "score_rule": "minimum_of_blind_object_clarity_and_targeted_scores_not_authenticated_truth",
+      "scores": {
+        "composition": 4,
+        "spatial_coherence": 4,
+        "subject_recognition": 3
+      },
+      "state": "host_reported_pixel_review"
+    },
+    "independent_visual_verification": false,
+    "memory_mode": "adaptive",
+    "model_digest": "357c53fb659c5076de1d65ccb0b397446227b71a42be9d1603d46168015c9e4b",
+    "model_id": "qwen2.5:3b",
+    "png_file": "attempt_02.png",
+    "png_sha256": "6e4235ea96ab45e6b7d2aaf7e709340c2e4e788fabdc3b4cabecb8ce4a5e7a1b",
+    "preview_size": [
+      512,
+      512
+    ],
+    "provider_kind": "ollama",
+    "rasterizer": "CairoSVG 2.8.2",
+    "raw_file": "attempt_02.raw.json",
+    "raw_sha256": "87fe3b74b5e42e37477e6d93fbc567064b0870ae91c86641fbd025a60a5b3bf1",
+    "reference_urls": [],
+    "research_status": "not_requested",
+    "run_id": "bfb5e519-21c1-4918-aa16-10229e14a45e",
+    "schema": "bean.adaptive_lab026.v1",
+    "seed": 20261125,
+    "self_review": {
+      "changes": "",
+      "claimed_subject": "a teapot",
+      "satisfied": false
+    },
+    "source_git_sha": "01090ba7c8c97855a7e3d352c3e9003e7278e972",
+    "status": "host_reported_satisfactory",
+    "subject": "a teapot",
+    "subject_source": "human",
+    "svg_file": "attempt_02.svg",
+    "svg_sha256": "a673bda11757d6fa7ed99266b9d135508b84f767d91b4f3e9b994a032da0163b",
+    "task_ref": "benchmark-training-adaptive-01",
+    "verification_state": "artifacts_verified",
+    "visual_evidence_independently_verified": false,
+    "visual_feedback": "Title-blind review: The drawing's clarity relies heavily on the simplicity of its elements, and the spatial coherence is good given the nature of the drawing. Target-aware review: While the subject is clearly geometric shapes, the looped shape doesn't strongly suggest a teapot, though it could be interpreted as a stylized spout or handle.",
+    "weights_updated": false
+  }
+]

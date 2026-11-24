@@ -1,0 +1,24 @@
+{
+  "benchmark_provider_calls_before_amendment": 0,
+  "created_at_utc": "2026-11-24T03:49:30.171874+00:00",
+  "evaluation_protocol": "blind_then_targeted_min_v1",
+  "limitations": [
+    "Conservative model ratings are not independent truth.",
+    "Two heldout subjects provide narrow evidence only.",
+    "No weights updated."
+  ],
+  "previous_source_git_sha": "ccd40b022cb1d6ad2646758f3ed53ac10de1b68f",
+  "protocol_sha256": "d8a7c99d4be1fe8813b1ab8d309c930cb5170ffa6a8787dfe3a35915e2d87e7e",
+  "reason": "Separate autonomous pilot exposed title-biased false-positive recognition from Gemma; retain pilot, use blind-first actual-image review with per-dimension minimum for benchmark. Validate evaluator receipt identity/protocol and raw score derivation.",
+  "schema": "bean.draw.benchmark.source_amendment.v1",
+  "score_rule": "min(blind[metric],targeted[metric]) separately for each metric; blind subject_recognition is concrete-object clarity",
+  "source_git_sha": "01090ba7c8c97855a7e3d352c3e9003e7278e972",
+  "unchanged": [
+    "artist qwen2.5:3b",
+    "evaluator gemma3:4b",
+    "protocol subjects",
+    "seeds",
+    "attempt budgets",
+    "memory controls"
+  ]
+}

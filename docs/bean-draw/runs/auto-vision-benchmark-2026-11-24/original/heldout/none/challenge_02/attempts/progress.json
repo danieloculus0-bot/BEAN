@@ -1,0 +1,29 @@
+{
+  "history": [
+    {
+      "attempt": 1,
+      "description": "A clear, simplified line drawing of a sailboat with a prominent sail at the top right, a vertical mast, a centered bow below the sail and mast, a keel extending downward beneath the bow, and a simple pattern of rigging around the main components.",
+      "journal_tip": "25a40728ec58131035d02139f862ad68d05bbc8c2a66a0ca4e7ab455355f07b5",
+      "metadata": "/workspace/bean-live-evidence/auto-vision-benchmark/heldout/none/challenge_02/attempts/attempt_01.json",
+      "metadata_sha256": "eda1f141c6dc2cad7577bb3c727b80969e2339225220e13c29abd0d2cdd87eb3",
+      "png": "/workspace/bean-live-evidence/auto-vision-benchmark/heldout/none/challenge_02/attempts/attempt_01.png",
+      "png_sha256": "b37201dd986de1abf0fd207656c516c1eb5264adf5dd4aaabbe1891e7d3511ae",
+      "sha256": "c5ef631139ceada88fc6a21fc8601a3104eacdf79988cd950f5f8152caaf963c",
+      "status": "host_reported_not_satisfactory",
+      "svg": "/workspace/bean-live-evidence/auto-vision-benchmark/heldout/none/challenge_02/attempts/attempt_01.svg"
+    },
+    {
+      "attempt": 2,
+      "description": null,
+      "journal_tip": "443005bdd3678bc9af437627cb0298875ce658b37cbb7b4f9d6815b06da74f05",
+      "metadata": "/workspace/bean-live-evidence/auto-vision-benchmark/heldout/none/challenge_02/attempts/attempt_02.json",
+      "metadata_sha256": "faae6a62848b03d447ff79c7faffca45035fc19c85a2fb9bfae6561f6e7d3804",
+      "png": null,
+      "png_sha256": null,
+      "sha256": null,
+      "status": "attempt_failed_ValueError",
+      "svg": null
+    }
+  ],
+  "subject": "a sailboat"
+}

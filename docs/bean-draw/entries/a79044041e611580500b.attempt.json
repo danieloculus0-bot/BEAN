@@ -1,0 +1,74 @@
+{
+  "attempt": 2,
+  "created_at_utc": "2026-11-20T12:32:39.913972+00:00",
+  "description": "A whimsical flying dragon with a large, curved tail, two elongated wings, a head with a snout and teeth, legs with feathers/scales for flight, and circular eyes/pupils.",
+  "domain": "sketch",
+  "drawing_instructions": {
+    "components": [
+      "A large, curved, upward-pointing tail extending from the back of the dragon",
+      "Two elongated, pointed wings, one on each side of the body, with intricate details such as feathers or scales",
+      "A head with a long snout and sharp teeth (visible from the top)",
+      "Feathers or scales on the legs and feet, allowing for flight-like movement",
+      "Circular shapes representing eyes, pupils, and possibly internal structures like the chest cavity",
+      "Small circles symbolizing scales or patches of fur/feather covering the body",
+      "A series of small, interconnected arcs above the dragon's head to depict clouds or an atmosphere"
+    ],
+    "composition": "The composition should have the dragon flying across the canvas from left to right. The large tail and wings dominate the upper half, with the head and legs positioned towards the bottom center. The circular components (eyes, pupils, internal structures) are placed close to the eyes for clarity. The small arcs above depict clouds or an atmosphere behind the dragon.",
+    "intent": "Create a whimsical flying dragon with clear composition and recognizable components.",
+    "revision_reason": "The previous line drawing did not clearly represent a whimsical flying dragon. The revised composition will include distinct elements like wings, head, and tails, with detailed internal features (eyes and pupils) to enhance recognition and create a more visually appealing and coherent composition."
+  },
+  "error": null,
+  "execution_mode": "live_model",
+  "experiment": "bean_sketch_v1",
+  "external_feedback": {
+    "created_at_utc": "2026-11-20T12:32:39.913435+00:00",
+    "evaluator": "Codex visual reviewer (live_remaining agent)",
+    "feedback": "I inspected the actual second PNG. It has fewer crossing strokes than the first, a long horizontal line near the top, an isolated upper circle, and clustered circles near the bottom. The marks still do not make a recognizable flying dragon: there is no legible connected animal silhouette and the spatial relationships remain ambiguous. Reduced clutter is visible, but subject recognition has not improved. This is image observation, not a human evaluation.",
+    "image_sha256": "ee7ec0ded017791be70e12779bf2bc5d0a22855ae5dcf28d75cfc9245856c9d9",
+    "independently_authenticated": false,
+    "kind": "vision_model",
+    "satisfactory": false,
+    "scores": {
+      "composition": 1,
+      "spatial_coherence": 1,
+      "subject_recognition": 0
+    },
+    "state": "host_reported_pixel_review"
+  },
+  "independent_visual_verification": false,
+  "journal_tip": "456310355a413a8bd0323bde65e8683ec4a72d4a838e20a9819fd310f0eba7c7",
+  "memory_mode": "adaptive",
+  "model_digest": "357c53fb659c5076de1d65ccb0b397446227b71a42be9d1603d46168015c9e4b",
+  "model_id": "qwen2.5:3b",
+  "png_file": "attempt_02.png",
+  "png_sha256": "ee7ec0ded017791be70e12779bf2bc5d0a22855ae5dcf28d75cfc9245856c9d9",
+  "preview_size": [
+    512,
+    512
+  ],
+  "provider_kind": "ollama",
+  "rasterizer": "CairoSVG 2.8.2",
+  "raw_file": "attempt_02.raw.json",
+  "raw_sha256": "4177d4330266ab25eb8ab55d82270661e1003771890c2e940ab9c61f922b1ca7",
+  "reference_urls": [],
+  "research_status": "not_requested",
+  "run_id": "9df57048-59c5-4219-91f3-4818e2d818b3",
+  "schema": "bean.draw.attempt.v1",
+  "seed": 20261122,
+  "self_review": {
+    "changes": "",
+    "claimed_subject": "A whimsical flying dragon",
+    "satisfied": false
+  },
+  "source_git_sha": "3fc06f4777a68b492928d6a08a0dd251977af895",
+  "status": "host_reported_not_satisfactory",
+  "subject": "A whimsical flying dragon",
+  "subject_source": "autonomous",
+  "svg_file": "attempt_02.svg",
+  "svg_sha256": "717728ceeb672b2baaaff9b5dc7c4da67e7b9751c09eea6c6881beaf7e575a57",
+  "task_ref": "original-subject-4",
+  "verification_state": "artifacts_verified",
+  "visual_evidence_independently_verified": false,
+  "visual_feedback": "I inspected the actual second PNG. It has fewer crossing strokes than the first, a long horizontal line near the top, an isolated upper circle, and clustered circles near the bottom. The marks still do not make a recognizable flying dragon: there is no legible connected animal silhouette and the spatial relationships remain ambiguous. Reduced clutter is visible, but subject recognition has not improved. This is image observation, not a human evaluation.",
+  "weights_updated": false
+}

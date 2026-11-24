@@ -1,0 +1,29 @@
+{
+  "artist": "qwen2.5:3b",
+  "comparisons": [
+    "adaptive",
+    "frozen",
+    "none"
+  ],
+  "created_at_utc": "2026-11-24T03:36:19.588760+00:00",
+  "evaluator": "gemma3:4b",
+  "evaluator_digest": "68ceab7e468a31c988b44d5a4984a0e21f58c4f7158c6ce29c1804babac38df7",
+  "heldout_subjects": [
+    "a cat",
+    "a sailboat"
+  ],
+  "learning_improvement_verified": false,
+  "notes": [
+    "All arms share source/provider/model/seed/budget/evaluator.",
+    "Automatic evaluator receives actual PNG bytes.",
+    "Heldout evaluation is2subjects; limited, unblinded model judgment.",
+    "Training and evaluation in fresh Core processes; no weight updates.",
+    "Earlier Nov20 dataset has only posthoc review and remains distinct."
+  ],
+  "phase": "before_any_benchmark_generation",
+  "protocol_sha256": "d8a7c99d4be1fe8813b1ab8d309c930cb5170ffa6a8787dfe3a35915e2d87e7e",
+  "rubric": "same0..4metrics in prior benchmark-rubric.json; model-reported scores require independent image audit",
+  "schema": "bean.draw.vision_benchmark.preregistration.v1",
+  "source_git_sha": "ccd40b0",
+  "subject_source": "human_protocol"
+}

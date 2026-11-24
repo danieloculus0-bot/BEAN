@@ -121,7 +121,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
 <div id="detail-origin" class="pill">Attempt</div>
 <p id="detail-description"></p>
 <p><strong>BEAN's text self-critique (coordinates only)</strong><span id="detail-critique" style="display:block"></span></p>
-<p><strong>External image review</strong><span id="detail-feedback" style="display:block"></span></p>
+<p><strong>External image review (reported quality, unverified)</strong><span id="detail-feedback" style="display:block"></span></p>
 <p><strong>Human evaluation</strong><span id="detail-human" style="display:block"></span></p><dl id="detail-meta"></dl>
 <div class="actions"><a id="raw" class="btn primary" href="#" download>Download SVG</a><a id="receipt" class="btn" href="#" target="_blank" rel="noopener noreferrer">Review metadata</a><a id="png" class="btn" href="#" download hidden>PNG preview</a><a id="attempt-receipt" class="btn" href="#" target="_blank" rel="noopener noreferrer" hidden>Original attempt receipt</a><a id="run-receipt" class="btn" href="#" target="_blank" rel="noopener noreferrer" hidden>Run receipt</a><a id="public-review" class="btn" href="#" target="_blank" rel="noopener noreferrer" hidden>Public-safe review</a><a id="review-link" class="btn" href="#" target="_blank" rel="noopener noreferrer">Submit human review</a></div>
 </div></div>
@@ -178,6 +178,7 @@ matched.forEach(function(e){
 var card=document.createElement("button");card.className="card";card.type="button";card.setAttribute("aria-label","Open drawing: "+(e.title||"Untitled"));
 var art=textEl("div","art","");var img=document.createElement("img");img.src=asset(e.png,"png")||e.svg;img.alt="";img.loading="lazy";art.appendChild(img);card.appendChild(art);
 var cap=textEl("div","caption","");cap.appendChild(textEl("span","pill"+(e.origin==="synthetic_fixture"?" fixture":""),labelFor(e)));
+if(e.origin!=="synthetic_fixture")cap.appendChild(textEl("span","pill",e.subject_source==="autonomous"?"MODEL-CHOSEN SUBJECT":e.subject_source==="human"?"HUMAN SUBJECT CHALLENGE":"SUBJECT SOURCE UNRECORDED"));
 cap.appendChild(textEl("span","title",e.title||"Untitled"));cap.appendChild(textEl("div","sub","Attempt "+e.attempt+" · "+(e.status||"unverified")));card.appendChild(cap);
 card.addEventListener("click",function(){openDetails(e)});gallery.appendChild(card);
 });

@@ -1,0 +1,53 @@
+{
+  "attempt": 2,
+  "created_at_utc": "2026-11-24T04:49:27.475068+00:00",
+  "description": null,
+  "domain": "sketch",
+  "drawing_instructions": {
+    "components": [
+      "A large curved line representing the sail",
+      "Two parallel horizontal lines for the boat hull",
+      "A smaller vertical line at the bow of the boat",
+      "Two intersecting lines for the mast and a triangular sail",
+      "A circle for the boat's wheel or steering mechanism",
+      "Small circles to represent sails",
+      "Horizontal and diagonal lines for waves"
+    ],
+    "composition": "The sailboat is positioned centrally in the composition with the sail at the top, the hull below it, and the mast and wheels on either side. The sail is tilted slightly to the left, creating a dynamic and engaging visual. Waves are depicted near the bottom of the canvas.",
+    "intent": "Create a sailboat drawing that is distinct from previous shapes, focusing on its distinguishing visible components and their spatial relation.",
+    "revision_reason": "Based on previous feedback, the new design will incorporate more visible components specific to a sailboat (such as sails, hull, mast, wheel), and add more complex elements like waves for depth and movement. The composition will also be adjusted to better highlight these features without relying solely on geometric or abstract shapes."
+  },
+  "error": "ValueError: Required bounded text",
+  "execution_mode": "live_model",
+  "experiment": "bean_sketch_v1",
+  "external_feedback": {
+    "reason": "No pixel evaluator configured",
+    "state": "unavailable"
+  },
+  "independent_visual_verification": false,
+  "journal_tip": "443005bdd3678bc9af437627cb0298875ce658b37cbb7b4f9d6815b06da74f05",
+  "memory_mode": "none",
+  "model_digest": "357c53fb659c5076de1d65ccb0b397446227b71a42be9d1603d46168015c9e4b",
+  "model_id": "qwen2.5:3b",
+  "png_file": null,
+  "provider_kind": "ollama",
+  "raw_file": "attempt_02.raw.json",
+  "raw_sha256": "21df1af0f01f01714edecc69f9b3bf5cc4f483dae2647fd62b5051e73d35944f",
+  "reference_urls": [],
+  "research_status": "not_requested",
+  "run_id": "c2f50160-ee17-452c-a604-032e5ba7ca66",
+  "schema": "bean.draw.attempt.v1",
+  "seed": 20261126,
+  "self_review": {},
+  "source_git_sha": "01090ba7c8c97855a7e3d352c3e9003e7278e972",
+  "status": "attempt_failed_ValueError",
+  "subject": "a sailboat",
+  "subject_source": "human",
+  "svg_file": null,
+  "svg_sha256": null,
+  "task_ref": "benchmark-heldout-none-02",
+  "verification_state": "incomplete",
+  "visual_evidence_independently_verified": false,
+  "visual_feedback": null,
+  "weights_updated": false
+}

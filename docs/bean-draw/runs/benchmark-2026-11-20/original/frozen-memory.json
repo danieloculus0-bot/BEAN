@@ -1,0 +1,120 @@
+[
+  {
+    "attempt": 1,
+    "created_at_utc": "2026-11-20T12:46:46.160473+00:00",
+    "description": "A teapot with a lid, body, spout, and handle centered in the canvas. The lid is a smaller circle at the top. The body widens from the center, forming height. The spout extends downward from one side of the body, connecting to the handle on the other side.",
+    "domain": "sketch",
+    "drawing_instructions": {
+      "components": [
+        "Top",
+        "Body",
+        "Spout",
+        "Handle"
+      ],
+      "composition": "The teapot is centered in the composition. The top is at the very top with a smaller circle representing the lid or opening. Below it, the body of the teapot starts from the center and gradually widens to give an appearance of height. The spout extends downward from one side of the body, connecting smoothly into the handle which connects the other side of the body to form a stable structure.",
+      "intent": "Create an original line drawing of a teapot without repeating previous elements, ensuring clarity and distinctiveness.",
+      "revision_reason": "To avoid repeating previous elements, I have altered the proportions and added more details such as the lid or opening on top, and changed the position of the spout and handle. The overall composition has been adjusted for better clarity and viewer recognition."
+    },
+    "error": null,
+    "execution_mode": "live_model",
+    "experiment": "bean_sketch_v1",
+    "external_feedback": {
+      "reason": "No external pixel evaluator report",
+      "state": "unavailable"
+    },
+    "independent_visual_verification": false,
+    "memory_mode": "adaptive",
+    "model_digest": "357c53fb659c5076de1d65ccb0b397446227b71a42be9d1603d46168015c9e4b",
+    "model_id": "qwen2.5:3b",
+    "png_file": "attempt_01.png",
+    "png_sha256": "a1e252c2525072dd78cd49e2599a7831c9d9ccc88289819fb81ce7f672a6b599",
+    "preview_size": [
+      512,
+      512
+    ],
+    "provider_kind": "ollama",
+    "rasterizer": "CairoSVG 2.8.2",
+    "raw_file": "attempt_01.raw.json",
+    "raw_sha256": "3da8730e8cd3afb54d52413ca248c932eeff777af146ea5b95199823293ea54e",
+    "reference_urls": [],
+    "research_status": "not_requested",
+    "run_id": "02238a50-6e5a-4179-960c-a2e5b7d6da99",
+    "schema": "bean.adaptive_lab026.v1",
+    "seed": 20261131,
+    "self_review": {
+      "changes": "",
+      "claimed_subject": "a teapot",
+      "satisfied": false
+    },
+    "source_git_sha": "3fc06f4777a68b492928d6a08a0dd251977af895",
+    "status": "unverified",
+    "subject": "a teapot",
+    "subject_source": "human",
+    "svg_file": "attempt_01.svg",
+    "svg_sha256": "1bbfa8bdcb8cde9acd0218286120a440d2a1f173dc799061280ef289c39cf714",
+    "task_ref": "benchmark-training-adaptive-01",
+    "verification_state": "artifacts_verified",
+    "visual_evidence_independently_verified": false,
+    "visual_feedback": null,
+    "weights_updated": false
+  },
+  {
+    "attempt": 2,
+    "created_at_utc": "2026-11-20T12:59:16.789593+00:00",
+    "description": "A clear composition of a recognizable teapot, with improved visibility and spatial arrangement of key elements.",
+    "domain": "sketch",
+    "drawing_instructions": {
+      "components": [
+        "oval (teapot body)",
+        "circle (lid)",
+        "rectangle (handle)",
+        "line (spout)"
+      ],
+      "composition": "The teapot is centered in the composition. The oval represents the main body of the teapot, with the circle above it representing the lid. A rectangle positioned towards the top right corner represents the handle, extending from near the center of the bottom of the teapot body. The spout is a line connecting the lower part of the teapot body to the handle. The orientation and spacing of these components are adjusted for clarity and recognition.",
+      "intent": "Plan a clear composition of a teapot, ensuring its distinguishing visible components and spatial relationships are accurately represented. The subject should be recognizable without labels, with improved visual elements compared to the previous feedback.",
+      "revision_reason": "The previous composition was not clear in representing the key elements of a teapot: the lid, body, handle, and spout. This revision focuses on improving the visibility and spatial arrangement of these elements to ensure they can be easily identified without labels."
+    },
+    "error": null,
+    "execution_mode": "live_model",
+    "experiment": "bean_sketch_v1",
+    "external_feedback": {
+      "reason": "No external pixel evaluator report",
+      "state": "unavailable"
+    },
+    "independent_visual_verification": false,
+    "memory_mode": "adaptive",
+    "model_digest": "357c53fb659c5076de1d65ccb0b397446227b71a42be9d1603d46168015c9e4b",
+    "model_id": "qwen2.5:3b",
+    "png_file": "attempt_02.png",
+    "png_sha256": "e83f54fbdb967b4f738f8c0b75e5c37bd0d5ce6178005236776c3662f677111b",
+    "preview_size": [
+      512,
+      512
+    ],
+    "provider_kind": "ollama",
+    "rasterizer": "CairoSVG 2.8.2",
+    "raw_file": "attempt_02.raw.json",
+    "raw_sha256": "abfd759a1926dbc6be103f972ac036dca2889fa74756c352b4db4c21e31dd1ad",
+    "reference_urls": [],
+    "research_status": "not_requested",
+    "run_id": "02238a50-6e5a-4179-960c-a2e5b7d6da99",
+    "schema": "bean.adaptive_lab026.v1",
+    "seed": 20261131,
+    "self_review": {
+      "changes": "The original drawing plan had a clear composition of a recognizable teapot with improved visibility and spatial arrangement. However, the provided shapes do not fully represent all key elements of a teapot as they seem to focus on the handle and spout more than the body of the teapot. Consider adding or adjusting shapes for the body, lid, and possibly the base of the teapot.",
+      "claimed_subject": "a teapot",
+      "satisfied": false
+    },
+    "source_git_sha": "3fc06f4777a68b492928d6a08a0dd251977af895",
+    "status": "unverified",
+    "subject": "a teapot",
+    "subject_source": "human",
+    "svg_file": "attempt_02.svg",
+    "svg_sha256": "4abed9e774604e1c5042c88b313287f647cce99472e8f4a4f20c190387d56ca0",
+    "task_ref": "benchmark-training-adaptive-01",
+    "verification_state": "artifacts_verified",
+    "visual_evidence_independently_verified": false,
+    "visual_feedback": null,
+    "weights_updated": false
+  }
+]

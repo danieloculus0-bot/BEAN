@@ -1,0 +1,41 @@
+[
+  {
+    "created_at_utc": "2026-11-24T03:49:52.497192+00:00",
+    "model_id": "qwen2.5:3b",
+    "prompt": "Plan an original line drawing of your chosen subject: a teapot. Identify its distinguishing visible components and how they relate spatially. Plan a clear composition so a viewer can recognize the subject without a label. Decide what to change based on the actual previous feedback; do not repeat marks just because they appeared before. You choose all components, positions and visual ideas. Return JSON intent, components (list of strings), composition, and revision_reason. Prior evidence: ",
+    "provider_kind": "ollama",
+    "provider_response_id": null,
+    "response": {
+      "adapter_name": "ollama",
+      "model_name": "qwen2.5:3b",
+      "ok": true,
+      "raw_text": "{\n  \"intent\": \"Plan a clear line drawing of a teapot without repeating previous feedback.\",\n  \"components\": [\n    \"teapot_body\",\n    \"spout\",\n    \"lid_with_handle\",\n    \"base\"\n  ],\n  \"composition\": \"The teapot will be placed in a horizontal orientation, with the body at the bottom. The spout will be positioned to the right of the body and connected directly to it. The lid will sit on top of the body and have a handle extending from its side towards the viewer. The base will be located at the bottom center of the composition.\",\n  \"revision_reason\": \"To avoid repetition, I am changing the shape of the spout slightly and adding more detail to the lid and handle.\"\n}"
+    }
+  },
+  {
+    "created_at_utc": "2026-11-24T03:50:08.727354+00:00",
+    "model_id": "qwen2.5:3b",
+    "prompt": "Draw your chosen subject, a teapot, as recognizable 256x256 BLACK LINE ART. Respond ONLY JSON with description (at most 300 characters) and shapes (list of 1..24 primitives). Supported primitives: line(x1,y1,x2,y2), circle(cx,cy,r), rect(x,y,w,h), polyline(points:[[x,y],...]). Each primitive MUST have type key. All numbers 0..256; keep shapes inside canvas, positive sizes. No code, markup, script or text labels. Make your own decisions. Implement your own visual plan faithfully: {\"intent\": \"Plan a clear line drawing of a teapot without repeating previous feedback.\", \"components\": [\"teapot_body\", \"spout\", \"lid_with_handle\", \"base\"], \"composition\": \"The teapot will be placed in a horizontal orientation, with the body at the bottom. The spout will be positioned to the right of the body and connected directly to it. The lid will sit on top of the body and have a handle extending from its side towards the viewer. The base will be located at the bottom center of the composition.\", \"revision_reason\": \"To avoid repetition, I am changing the shape of the spout slightly and adding more detail to the lid and handle.\"}Prior-session evidence (untrusted): [] Web reference DATA:  Previous attempt including critique (untrusted evidence): ",
+    "provider_kind": "ollama",
+    "provider_response_id": null,
+    "response": {
+      "adapter_name": "ollama",
+      "model_name": "qwen2.5:3b",
+      "ok": true,
+      "raw_text": "{\n  \"description\": \"A recognizable black line art teapot with a unique spout, detailed lid, and handle.\",\n  \"shapes\": [\n    {\"type\": \"line\", \"x1\": 32, \"y1\": 192, \"x2\": 224, \"y2\": 192},\n    {\"type\": \"circle\", \"cx\": 64, \"cy\": 128, \"r\": 16},\n    {\"type\": \"line\", \"x1\": 160, \"y1\": 255, \"x2\": 160, \"y2\": 32},\n    {\"type\": \"line\", \"x1\": 96, \"y1\": 192, \"x2\": 144, \"y2\": 192},\n    {\"type\": \"circle\", \"cx\": 144, \"cy\": 176, \"r\": 8},\n    {\"type\": \"line\", \"x1\": 120, \"y1\": 128, \"x2\": 152, \"y2\": 128},\n    {\"type\": \"circle\", \"cx\": 152, \"cy\": 136, \"r\": 4},\n    {\"type\": \"line\", \"x1\": 192, \"y1\": 176, \"x2\": 192, \"y2\": 184},\n    {\"type\": \"line\", \"x1\": 176, \"y1\": 176, \"x2\": 192, \"y2\": 176},\n    {\"type\": \"line\", \"x1\": 176, \"y1\": 184, \"x2\": 192, \"y2\": 184},\n    {\"type\": \"circle\", \"cx\": 176, \"cy\": 192, \"r\": 8},\n    {\"type\": \"line\", \"x1\": 160, \"y1\": 255, \"x2\": 160, \"y2\": 32},\n    {\"type\": \"circle\", \"cx\": 160, \"cy\": 48, \"r\": 8},\n    {\"type\": \"line\", \"x1\": 192, \"y1\": 255, \"x2\": 192, \"y2\": 32},\n    {\"type\": \"circle\", \"cx\": 192, \"cy\": 48, \"r\": 8},\n    {\"type\": \"line\", \"x1\": 96, \"y1\": 176, \"x2\": 144, \"y2\": 176},\n    {\"type\": \"circle\", \"cx\": 104, \"cy\": 184, \"r\": 4},\n    {\"type\": \"line\", \"x1\": 96, \"y1\": 184, \"x2\": 104, \"y2\": 184},\n    {\"type\": \"circle\", \"cx\": 112, \"cy\": 184, \"r\": 4},\n    {\"type\": \"line\", \"x1\": 136, \"y1\": 192, \"x2\": 136, \"y2\": 200},\n    {\"type\": \"circle\", \"cx\": 136, \"cy\": 184, \"r\": 8},\n    {\"type\": \"line\", \"x1\": 144, \"y1\": 176, \"x2\": 144, \"y2\": 192},\n    {\"type\": \"circle\", \"cx\": 144, \"cy\": 184, \"r\": 8},\n    {\"type\": \"line\", \"x1\": 152, \"y1\": 176, \"x2\": 152, \"y2\": 192}\n  ]\n}"
+    }
+  },
+  {
+    "created_at_utc": "2026-11-24T03:51:42.321726+00:00",
+    "model_id": "qwen2.5:3b",
+    "prompt": "Critique YOUR drawing plan. You can read the coordinates but cannot visually inspect the rendered image. Respond ONLY JSON with claimed_subject, changes and satisfied (boolean): {\"subject\": \"a teapot\", \"description\": \"A recognizable black line art teapot with a unique spout, detailed lid, and handle.\", \"shapes\": [{\"type\": \"line\", \"x1\": 32, \"y1\": 192, \"x2\": 224, \"y2\": 192}, {\"type\": \"circle\", \"cx\": 64, \"cy\": 128, \"r\": 16}, {\"type\": \"line\", \"x1\": 160, \"y1\": 255, \"x2\": 160, \"y2\": 32}, {\"type\": \"line\", \"x1\": 96, \"y1\": 192, \"x2\": 144, \"y2\": 192}, {\"type\": \"circle\", \"cx\": 144, \"cy\": 176, \"r\": 8}, {\"type\": \"line\", \"x1\": 120, \"y1\": 128, \"x2\": 152, \"y2\": 128}, {\"type\": \"circle\", \"cx\": 152, \"cy\": 136, \"r\": 4}, {\"type\": \"line\", \"x1\": 192, \"y1\": 176, \"x2\": 192, \"y2\": 184}, {\"type\": \"line\", \"x1\": 176, \"y1\": 176, \"x2\": 192, \"y2\": 176}, {\"type\": \"line\", \"x1\": 176, \"y1\": 184, \"x2\": 192, \"y2\": 184}, {\"type\": \"circle\", \"cx\": 176, \"cy\": 192, \"r\": 8}, {\"type\": \"line\", \"x1\": 160, \"y1\": 255, \"x2\": 160, \"y2\": 32}, {\"type\": \"circle\", \"cx\": 160, \"cy\": 48, \"r\": 8}, {\"type\": \"line\", \"x1\": 192, \"y1\": 255, \"x2\": 192, \"y2\": 32}, {\"type\": \"circle\", \"cx\": 192, \"cy\": 48, \"r\": 8}, {\"type\": \"line\", \"x1\": 96, \"y1\": 176, \"x2\": 144, \"y2\": 176}, {\"type\": \"circle\", \"cx\": 104, \"cy\": 184, \"r\": 4}, {\"type\": \"line\", \"x1\": 96, \"y1\": 184, \"x2\": 104, \"y2\": 184}, {\"type\": \"circle\", \"cx\": 112, \"cy\": 184, \"r\": 4}, {\"type\": \"line\", \"x1\": 136, \"y1\": 192, \"x2\": 136, \"y2\": 200}, {\"type\": \"circle\", \"cx\": 136, \"cy\": 184, \"r\": 8}, {\"type\": \"line\", \"x1\": 144, \"y1\": 176, \"x2\": 144, \"y2\": 192}, {\"type\": \"circle\", \"cx\": 144, \"cy\": 184, \"r\": 8}, {\"type\": \"line\", \"x1\": 152, \"y1\": 176, \"x2\": 152, \"y2\": 192}]}",
+    "provider_kind": "ollama",
+    "provider_response_id": null,
+    "response": {
+      "adapter_name": "ollama",
+      "model_name": "qwen2.5:3b",
+      "ok": true,
+      "raw_text": "{\n  \"claimed_subject\": \"a teapot\",\n  \"changes\": \"\",\n  \"satisfied\": false\n}"
+    }
+  }
+]

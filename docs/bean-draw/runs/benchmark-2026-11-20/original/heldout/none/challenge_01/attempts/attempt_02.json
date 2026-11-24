@@ -1,0 +1,62 @@
+{
+  "attempt": 2,
+  "created_at_utc": "2026-11-20T13:53:02.100016+00:00",
+  "description": "A simplified line drawing of a sailboat, focusing on the main components and their spatial arrangement for clarity.",
+  "domain": "sketch",
+  "drawing_instructions": {
+    "components": [
+      "A large rectangle representing the boat's hull",
+      "Two parallel lines for the boat's mast and two smaller lines for the boom attached to the mast",
+      "Two larger sails, one on either side of the boat, with curved lines indicating the shape of the sailcloth",
+      "Three horizontal lines at different heights across the middle section of the drawing to represent the deck or waterline",
+      "Four small circles representing the eyes of the crew members (optional, can be omitted if preferred)",
+      "Two diagonal lines for the rudder on the side of the boat"
+    ],
+    "composition": "The sailboat is centered in the composition with the mast and sails prominently visible. The deck lines help define the shape and size of the boat. The rudder is positioned to the right of the main sail, providing balance to the drawing. The eyes of the crew members are placed on either side of the mast for an added detail without overcrowding.",
+    "intent": "Create a simplified line drawing of a sailboat, focusing on the main components and their spatial arrangement to ensure clarity. The new composition should be different from previous attempts.",
+    "revision_reason": "The previous shapes were too complex and similar in nature. The new composition includes simplified lines for the boat's hull, mast, sails, deck, and rudder, with a few key details like eyes to ensure clarity and distinguishability."
+  },
+  "error": null,
+  "execution_mode": "live_model",
+  "experiment": "bean_sketch_v1",
+  "external_feedback": {
+    "reason": "No external pixel evaluator report",
+    "state": "unavailable"
+  },
+  "independent_visual_verification": false,
+  "journal_tip": "23710a2b21b20d5096b49fc258d26840e8e17186ab8b05b8f5625688e172fcc7",
+  "memory_mode": "none",
+  "model_digest": "357c53fb659c5076de1d65ccb0b397446227b71a42be9d1603d46168015c9e4b",
+  "model_id": "qwen2.5:3b",
+  "png_file": "attempt_02.png",
+  "png_sha256": "08b1577217a49d1d3a8974f038481b0066a039aa27ee3f175eb9e763c08b861c",
+  "preview_size": [
+    512,
+    512
+  ],
+  "provider_kind": "ollama",
+  "rasterizer": "CairoSVG 2.8.2",
+  "raw_file": "attempt_02.raw.json",
+  "raw_sha256": "876a17543f43bfa0a1dc6a08a4ecbfdbdd5531052d988ec64c8f12a6df02519e",
+  "reference_urls": [],
+  "research_status": "not_requested",
+  "run_id": "c1fa3416-1647-4134-8b1e-7ebfbb4fbff6",
+  "schema": "bean.draw.attempt.v1",
+  "seed": 20261131,
+  "self_review": {
+    "changes": "",
+    "claimed_subject": "a sailboat",
+    "satisfied": false
+  },
+  "source_git_sha": "3fc06f4777a68b492928d6a08a0dd251977af895",
+  "status": "unverified",
+  "subject": "a sailboat",
+  "subject_source": "human",
+  "svg_file": "attempt_02.svg",
+  "svg_sha256": "0204d883106a3cb5c0b78b5a509c1d6ad0a32a38ef0ab88f6b4d3a7a7e30b864",
+  "task_ref": "benchmark-heldout-none-01",
+  "verification_state": "artifacts_verified",
+  "visual_evidence_independently_verified": false,
+  "visual_feedback": null,
+  "weights_updated": false
+}

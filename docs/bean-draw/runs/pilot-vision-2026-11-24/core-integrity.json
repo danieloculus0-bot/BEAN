@@ -1,0 +1,8 @@
+{
+  "created_at_utc": "2026-11-24T12:57:42.757805+00:00",
+  "gzip_sha256": "afbe8ffeecaf0b7cc1f41a56473925bccfba9ac851f0954ead3442c96a280564",
+  "rows": 17,
+  "schema": "bean.draw.core.snapshot.v1",
+  "scope": "fresh public-safe drawing experiment only; not owner private checkpoints",
+  "snapshot_sha256": "1747902dbc59329e0b5f830f479f80743d3358cb0a9a709052b1cde8790e6617"
+}

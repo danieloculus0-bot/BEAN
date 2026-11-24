@@ -1,0 +1,82 @@
+{
+  "attempt": 1,
+  "created_at_utc": "2026-11-24T03:54:38.129423+00:00",
+  "description": "A recognizable black line art teapot with a unique spout, detailed lid, and handle.",
+  "domain": "sketch",
+  "drawing_instructions": {
+    "components": [
+      "teapot_body",
+      "spout",
+      "lid_with_handle",
+      "base"
+    ],
+    "composition": "The teapot will be placed in a horizontal orientation, with the body at the bottom. The spout will be positioned to the right of the body and connected directly to it. The lid will sit on top of the body and have a handle extending from its side towards the viewer. The base will be located at the bottom center of the composition.",
+    "intent": "Plan a clear line drawing of a teapot without repeating previous feedback.",
+    "revision_reason": "To avoid repetition, I am changing the shape of the spout slightly and adding more detail to the lid and handle."
+  },
+  "error": null,
+  "execution_mode": "live_model",
+  "experiment": "bean_sketch_v1",
+  "external_feedback": {
+    "blind_observations": "The image depicts a schematic representation of an electrical circuit with components like a circle (likely a source), resistors, and wires connecting them vertically.",
+    "blind_recognized_subject": "Electrical circuit diagram",
+    "created_at_utc": "2026-11-24T03:54:38.129151+00:00",
+    "evaluation_protocol": "blind_then_targeted_min_v1",
+    "evaluator": "Ollama vision reviewer: gemma3:4b",
+    "feedback": "Title-blind review: The diagram is relatively clear in its layout, showing connections between different parts of the circuit, though some details are simplified for clarity. Target-aware review: While the diagram appears to be an electrical circuit, it doesn't contain a teapot or any elements suggesting one, highlighting a significant mismatch between the depicted subject and the claimed subject.",
+    "image_sha256": "3c421e7071e42db86827d41370646c2d617d3a09ae0a921f6e95b120c9b912df",
+    "independently_authenticated": false,
+    "kind": "vision_model",
+    "model_digest": "68ceab7e468a31c988b44d5a4984a0e21f58c4f7158c6ce29c1804babac38df7",
+    "model_id": "gemma3:4b",
+    "observations": "The image depicts a schematic representation of an electrical circuit with components like a circle (likely a source), resistors, and wires connecting them vertically.",
+    "provider_kind": "ollama",
+    "recognized_subject": "Electrical circuit diagram",
+    "review_file": "attempt_01.vision.json",
+    "review_sha256": "abd14935c0605a0181b1a80957e42660f12c6ea9324c8bce96b675fd5d9c4c14",
+    "satisfactory": false,
+    "score_rule": "minimum_of_blind_object_clarity_and_targeted_scores_not_authenticated_truth",
+    "scores": {
+      "composition": 3,
+      "spatial_coherence": 2,
+      "subject_recognition": 1
+    },
+    "state": "host_reported_pixel_review"
+  },
+  "independent_visual_verification": false,
+  "journal_tip": "cfcbb2d8b97e5ad79bec934185973a3557eda4444bcabf6fa41e73d4336f3f9b",
+  "memory_mode": "adaptive",
+  "model_digest": "357c53fb659c5076de1d65ccb0b397446227b71a42be9d1603d46168015c9e4b",
+  "model_id": "qwen2.5:3b",
+  "png_file": "attempt_01.png",
+  "png_sha256": "3c421e7071e42db86827d41370646c2d617d3a09ae0a921f6e95b120c9b912df",
+  "preview_size": [
+    512,
+    512
+  ],
+  "provider_kind": "ollama",
+  "rasterizer": "CairoSVG 2.8.2",
+  "raw_file": "attempt_01.raw.json",
+  "raw_sha256": "520a386324b43668bdf00b69b873c7d9c0c187594b19dea913e1bee245e02b0c",
+  "reference_urls": [],
+  "research_status": "not_requested",
+  "run_id": "bfb5e519-21c1-4918-aa16-10229e14a45e",
+  "schema": "bean.draw.attempt.v1",
+  "seed": 20261125,
+  "self_review": {
+    "changes": "",
+    "claimed_subject": "a teapot",
+    "satisfied": false
+  },
+  "source_git_sha": "01090ba7c8c97855a7e3d352c3e9003e7278e972",
+  "status": "host_reported_not_satisfactory",
+  "subject": "a teapot",
+  "subject_source": "human",
+  "svg_file": "attempt_01.svg",
+  "svg_sha256": "f9c20877b32f46b599c2200f5dfe70746d8cabc26479905e0321a9667c9a4034",
+  "task_ref": "benchmark-training-adaptive-01",
+  "verification_state": "artifacts_verified",
+  "visual_evidence_independently_verified": false,
+  "visual_feedback": "Title-blind review: The diagram is relatively clear in its layout, showing connections between different parts of the circuit, though some details are simplified for clarity. Target-aware review: While the diagram appears to be an electrical circuit, it doesn't contain a teapot or any elements suggesting one, highlighting a significant mismatch between the depicted subject and the claimed subject.",
+  "weights_updated": false
+}

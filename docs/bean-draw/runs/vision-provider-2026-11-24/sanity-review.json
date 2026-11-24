@@ -1,0 +1,22 @@
+{
+  "actual_image_sent": true,
+  "artwork_generated": false,
+  "image_sha256": "d37c455317b933c47dbe34496f01ba27a76ae735768ed63305af3e961f14c304",
+  "independently_authenticated": false,
+  "model": "gemma3:4b",
+  "model_digest": "68ceab7e468a31c988b44d5a4984a0e21f58c4f7158c6ce29c1804babac38df7",
+  "provider": "ollama",
+  "raw_response_sha256": "2b5b9c5c0de9df3e13c0f70413fa73acc35b66816e7c56b937cafc948a8650aa",
+  "report": {
+    "observations": [
+      "Several straight lines converge towards a central point.",
+      "There are three circles, two are larger and one is smaller.",
+      "The smaller circle is surrounded by a complex, intertwined pattern of lines.",
+      "The lines extend outwards from the circles and converge at the central point."
+    ],
+    "recognized_subject": "unclear",
+    "uncertainty": "high"
+  },
+  "schema": "bean.vision.sanity.review.v1",
+  "utc": "2026-11-24T03:32:43.933178+00:00"
+}

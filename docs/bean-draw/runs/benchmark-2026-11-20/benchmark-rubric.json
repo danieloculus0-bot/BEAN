@@ -1,0 +1,26 @@
+{
+  "blinded": false,
+  "diversity": "Unavailable for a singleton heldout portfolio.",
+  "evaluator": "Codex visual reviewer (benchmark agent)",
+  "feedback_boundary": "Describe observed image strengths and problems; no geometry or scripted drawing answer supplied.",
+  "kind": "vision_model",
+  "limitations": [
+    "Evaluator sees the subject and arm path.",
+    "Subjective model visual review, no human evaluation or authenticated independent oracle.",
+    "Single heldout subject cannot establish generalization."
+  ],
+  "metrics": {
+    "composition": "Canvas balance, spacing, legibility and use of the frame.",
+    "spatial_coherence": "Visible parts relate consistently as an object or scene; overlaps and connections are interpretable.",
+    "subject_recognition": "Recognizability of requested subject from actual pixels, with ambiguity recorded."
+  },
+  "satisfactory_rule": "All three observed metric scores at least 3; this remains a host-reported judgment.",
+  "scale": {
+    "0": "Absent or not interpretable",
+    "1": "Major visible problems",
+    "2": "Partly successful with substantial ambiguity or conflicts",
+    "3": "Mostly successful with minor visible problems",
+    "4": "Clear, coherent, deliberate result"
+  },
+  "schema": "bean.draw.visual_rubric.v1"
+}

@@ -1,0 +1,9 @@
+{
+  "schema": "bean.vision.disk-preparation.v1",
+  "utc": "2026-11-24T03:29:29.804759+00:00",
+  "removed_file": "/workspace/tools/ollama.tar.zst",
+  "reason": "Verified disposable public download; extracted provider retained; space needed for real vision model",
+  "sha256": "87bfafb2acbc89b2e6a1be0a9043de6aa75fb450696f86bc426e65fc448f788d",
+  "bytes": 1545767640,
+  "original_artist_model_preserved": true
+}

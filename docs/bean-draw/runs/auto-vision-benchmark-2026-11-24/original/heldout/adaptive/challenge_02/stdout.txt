@@ -1,0 +1,37 @@
+{
+  "subject_chosen_by_BEAN_model": null,
+  "subject": "a sailboat",
+  "subject_source": "human",
+  "history": [
+    {
+      "attempt": 1,
+      "status": "host_reported_not_satisfactory",
+      "svg": "/workspace/bean-live-evidence/auto-vision-benchmark/heldout/adaptive/challenge_02/attempts/attempt_01.svg",
+      "sha256": "b675f31dd4ed7bbbfb1372e4da6c73876dc85af46ef1ee222e5608133b36f5d1",
+      "png": "/workspace/bean-live-evidence/auto-vision-benchmark/heldout/adaptive/challenge_02/attempts/attempt_01.png",
+      "png_sha256": "8dcbf8949e70da5fafe931a3f77571c51a71483af7b8aa6a94211916c3612b58",
+      "journal_tip": "54b623edb0bb17dd6387e52e8165fc8f451fbabf08560e840dc0967ed806ee73",
+      "metadata": "/workspace/bean-live-evidence/auto-vision-benchmark/heldout/adaptive/challenge_02/attempts/attempt_01.json",
+      "metadata_sha256": "433efff8d9b06373ab25e0f9c8ddf665ab13f7b65872ba94a985ed1a57393929",
+      "description": "A sailboat with a prominent sail on the top right, a vertical mast in the center left, a bow centered below, a keel extending downward, and a hull following the bottom edge. Simple rigging is depicted around the mast and sail."
+    },
+    {
+      "attempt": 2,
+      "status": "host_reported_not_satisfactory",
+      "svg": "/workspace/bean-live-evidence/auto-vision-benchmark/heldout/adaptive/challenge_02/attempts/attempt_02.svg",
+      "sha256": "51628e4e434fece89578e44dbf9ae57514b62a10cd673120ccbad6d37e287f6a",
+      "png": "/workspace/bean-live-evidence/auto-vision-benchmark/heldout/adaptive/challenge_02/attempts/attempt_02.png",
+      "png_sha256": "6b0639d85888552add0bf98df37758cadc517c1ae76dda77cf0946b8db74ef77",
+      "journal_tip": "6e9b64235deb76b07eeba4bb097738f7ea02281cd21b2a51f31812db5454bf1c",
+      "metadata": "/workspace/bean-live-evidence/auto-vision-benchmark/heldout/adaptive/challenge_02/attempts/attempt_02.json",
+      "metadata_sha256": "c7af0ec587972b2a88e37d2db54cf96d7252eba199fc92113bc38263fe1d3e2d",
+      "description": "A sailboat composed of key components such as a mast, sails, rudder, hull shape, and deck to ensure easy recognition."
+    }
+  ],
+  "research_status": "not_requested",
+  "references": [],
+  "final_status": "host_reported_not_satisfactory",
+  "attempts": 2,
+  "run_receipt": "/workspace/bean-live-evidence/auto-vision-benchmark/heldout/adaptive/challenge_02/attempts/run.json",
+  "visual_success_independently_verified": false
+}

@@ -1,0 +1,27 @@
+{
+  "attempt_receipts": [
+    "heldout/adaptive/challenge_02/attempts/attempt_01.json",
+    "heldout/frozen/challenge_02/attempts/attempt_01.json"
+  ],
+  "blinded": false,
+  "created_at_utc": "2026-11-24T12:41:46.399627+00:00",
+  "evaluator": "Codex final-experiment visual audit agent",
+  "feedback": "An outlined rectangle is crossed by diagonals; an angular zigzag sits above it, a large circle is clipped at the left edge, and a small lower circle and detached bottom line remain. These marks do not form a reliably recognizable sailboat to me.",
+  "human_evaluation": null,
+  "image_file": "heldout/adaptive/challenge_02/attempts/attempt_01.png",
+  "image_sha256": "8dcbf8949e70da5fafe931a3f77571c51a71483af7b8aa6a94211916c3612b58",
+  "independently_authenticated": false,
+  "inspection_method": "Actual PNG opened with view_image; report written in a separate later tool call after displayed pixels were inspected",
+  "kind": "vision_model",
+  "model_identity_limit": "Exact host assistant model digest is not exposed by the image inspection tool",
+  "posthoc": true,
+  "satisfactory": false,
+  "schema": "bean.draw.final_host_visual_audit.v1",
+  "scores": {
+    "composition": 1,
+    "spatial_coherence": 1,
+    "subject_recognition": 0
+  },
+  "subject": "a sailboat",
+  "used_for_generation": false
+}

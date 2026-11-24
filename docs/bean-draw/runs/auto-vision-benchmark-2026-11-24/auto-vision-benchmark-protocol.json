@@ -1,0 +1,30 @@
+{
+  "arms": [
+    "adaptive",
+    "frozen",
+    "none"
+  ],
+  "attempts": 2,
+  "design": "shared_training_then_matched_heldout_separate_processes",
+  "heldout_subjects": [
+    "a cat",
+    "a sailboat"
+  ],
+  "metrics": [
+    "spatial_coherence",
+    "subject_recognition",
+    "composition"
+  ],
+  "protocol_sha256": "d8a7c99d4be1fe8813b1ab8d309c930cb5170ffa6a8787dfe3a35915e2d87e7e",
+  "schema": "bean.draw.benchmark.v1",
+  "score_scale": {
+    "maximum": 4,
+    "minimum": 0
+  },
+  "seed": 20261124,
+  "subject_source": "human_protocol",
+  "training_subjects": [
+    "a teapot"
+  ],
+  "weights_updated": false
+}

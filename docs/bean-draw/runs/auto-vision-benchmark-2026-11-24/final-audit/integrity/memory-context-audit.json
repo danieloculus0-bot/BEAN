@@ -1,0 +1,175 @@
+{
+  "consequence": "No effective adaptive-vs-frozen memory treatment reached these model drawing prompts. Their zero difference cannot establish memory usefulness or absence of learning capacity.",
+  "contexts": [
+    {
+      "attempt": 1,
+      "cell": "training/adaptive/challenge_01",
+      "contains_cat_subject": false,
+      "context_characters": 2,
+      "drawing_prompt_sha256": "c5618b6824478b63039b3f2467ccf633ed6732a7d59a538154e066cd5267d41e",
+      "ends_with": "[]",
+      "memory_context_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "saved_context": "training-adaptive-01-01.memory-context.txt"
+    },
+    {
+      "attempt": 2,
+      "cell": "training/adaptive/challenge_01",
+      "contains_cat_subject": false,
+      "context_characters": 2,
+      "drawing_prompt_sha256": "57de0a9eab6557fab42c1affa9d65dd635616667e4c743658cdef75fee176ddf",
+      "ends_with": "[]",
+      "memory_context_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "saved_context": "training-adaptive-01-02.memory-context.txt"
+    },
+    {
+      "attempt": 1,
+      "cell": "heldout/frozen/challenge_01",
+      "contains_cat_subject": false,
+      "context_characters": 2400,
+      "drawing_prompt_sha256": "5b46a6bc5194c18408725644040ebdac21f041ab5a86e5ff46550141c0c7799b",
+      "ends_with": " lines and a looped shape.\", \"observations\": \"The image presents two straight lines that intersect at an angle, with a small, looped shape p",
+      "memory_context_sha256": "23d530b18043e2f16f7131e923437c4dc201abf2710c615db5e1b8c46d102931",
+      "saved_context": "heldout-frozen-01-01.memory-context.txt"
+    },
+    {
+      "attempt": 2,
+      "cell": "heldout/frozen/challenge_01",
+      "contains_cat_subject": false,
+      "context_characters": 2400,
+      "drawing_prompt_sha256": "5566e30af295c9f0bb2e7bffa91ae02327be0c0e6b1999f6e1184f3d3b53ac8a",
+      "ends_with": " lines and a looped shape.\", \"observations\": \"The image presents two straight lines that intersect at an angle, with a small, looped shape p",
+      "memory_context_sha256": "23d530b18043e2f16f7131e923437c4dc201abf2710c615db5e1b8c46d102931",
+      "saved_context": "heldout-frozen-01-02.memory-context.txt"
+    },
+    {
+      "attempt": 1,
+      "cell": "heldout/none/challenge_01",
+      "contains_cat_subject": false,
+      "context_characters": 2,
+      "drawing_prompt_sha256": "c219621e302bd233cd074bbe95a88967ac6dd7a075b239c031944e000c3dea10",
+      "ends_with": "[]",
+      "memory_context_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "saved_context": "heldout-none-01-01.memory-context.txt"
+    },
+    {
+      "attempt": 2,
+      "cell": "heldout/none/challenge_01",
+      "contains_cat_subject": false,
+      "context_characters": 2,
+      "drawing_prompt_sha256": "3f838f32042a20d4ea8b508b61eeb8c4ce5a967b1ddd65b5d4547e620a0600f2",
+      "ends_with": "[]",
+      "memory_context_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "saved_context": "heldout-none-01-02.memory-context.txt"
+    },
+    {
+      "attempt": 1,
+      "cell": "heldout/adaptive/challenge_01",
+      "contains_cat_subject": false,
+      "context_characters": 2400,
+      "drawing_prompt_sha256": "5b46a6bc5194c18408725644040ebdac21f041ab5a86e5ff46550141c0c7799b",
+      "ends_with": " lines and a looped shape.\", \"observations\": \"The image presents two straight lines that intersect at an angle, with a small, looped shape p",
+      "memory_context_sha256": "23d530b18043e2f16f7131e923437c4dc201abf2710c615db5e1b8c46d102931",
+      "saved_context": "heldout-adaptive-01-01.memory-context.txt"
+    },
+    {
+      "attempt": 2,
+      "cell": "heldout/adaptive/challenge_01",
+      "contains_cat_subject": false,
+      "context_characters": 2400,
+      "drawing_prompt_sha256": "5566e30af295c9f0bb2e7bffa91ae02327be0c0e6b1999f6e1184f3d3b53ac8a",
+      "ends_with": " lines and a looped shape.\", \"observations\": \"The image presents two straight lines that intersect at an angle, with a small, looped shape p",
+      "memory_context_sha256": "23d530b18043e2f16f7131e923437c4dc201abf2710c615db5e1b8c46d102931",
+      "saved_context": "heldout-adaptive-01-02.memory-context.txt"
+    },
+    {
+      "attempt": 1,
+      "cell": "heldout/none/challenge_02",
+      "contains_cat_subject": false,
+      "context_characters": 2,
+      "drawing_prompt_sha256": "e32180b018792f5b9e5f42fc5327a51e11bceb4528d67f7529e6bf57b486e1af",
+      "ends_with": "[]",
+      "memory_context_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "saved_context": "heldout-none-02-01.memory-context.txt"
+    },
+    {
+      "attempt": 2,
+      "cell": "heldout/none/challenge_02",
+      "contains_cat_subject": false,
+      "context_characters": 2,
+      "drawing_prompt_sha256": "9d102a0c4ce73174a1d10b2aed34444239c191cd1d3964cb93371546bcdd0a89",
+      "ends_with": "[]",
+      "memory_context_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "saved_context": "heldout-none-02-02.memory-context.txt"
+    },
+    {
+      "attempt": 1,
+      "cell": "heldout/adaptive/challenge_02",
+      "contains_cat_subject": false,
+      "context_characters": 2400,
+      "drawing_prompt_sha256": "35e9735a5613efdc930cf01f57b101c08dd240672ebe456db09e8d82a9681c87",
+      "ends_with": " lines and a looped shape.\", \"observations\": \"The image presents two straight lines that intersect at an angle, with a small, looped shape p",
+      "memory_context_sha256": "23d530b18043e2f16f7131e923437c4dc201abf2710c615db5e1b8c46d102931",
+      "saved_context": "heldout-adaptive-02-01.memory-context.txt"
+    },
+    {
+      "attempt": 2,
+      "cell": "heldout/adaptive/challenge_02",
+      "contains_cat_subject": false,
+      "context_characters": 2400,
+      "drawing_prompt_sha256": "64690df0305de5132894d5b908b6630cbf16ee29e2863fbd5a42bbce47f617ae",
+      "ends_with": " lines and a looped shape.\", \"observations\": \"The image presents two straight lines that intersect at an angle, with a small, looped shape p",
+      "memory_context_sha256": "23d530b18043e2f16f7131e923437c4dc201abf2710c615db5e1b8c46d102931",
+      "saved_context": "heldout-adaptive-02-02.memory-context.txt"
+    },
+    {
+      "attempt": 1,
+      "cell": "heldout/frozen/challenge_02",
+      "contains_cat_subject": false,
+      "context_characters": 2400,
+      "drawing_prompt_sha256": "35e9735a5613efdc930cf01f57b101c08dd240672ebe456db09e8d82a9681c87",
+      "ends_with": " lines and a looped shape.\", \"observations\": \"The image presents two straight lines that intersect at an angle, with a small, looped shape p",
+      "memory_context_sha256": "23d530b18043e2f16f7131e923437c4dc201abf2710c615db5e1b8c46d102931",
+      "saved_context": "heldout-frozen-02-01.memory-context.txt"
+    },
+    {
+      "attempt": 2,
+      "cell": "heldout/frozen/challenge_02",
+      "contains_cat_subject": false,
+      "context_characters": 2400,
+      "drawing_prompt_sha256": "64690df0305de5132894d5b908b6630cbf16ee29e2863fbd5a42bbce47f617ae",
+      "ends_with": " lines and a looped shape.\", \"observations\": \"The image presents two straight lines that intersect at an angle, with a small, looped shape p",
+      "memory_context_sha256": "23d530b18043e2f16f7131e923437c4dc201abf2710c615db5e1b8c46d102931",
+      "saved_context": "heldout-frozen-02-02.memory-context.txt"
+    }
+  ],
+  "finding": "All adaptive and frozen heldout drawing prompts are byte-identical for each matched attempt. Both receive the same2400-character oldest-first truncated training-context prefix; adaptive fresh cat feedback is stored but absent from the sailboat prompt.",
+  "matched_pairs": [
+    {
+      "attempt": 1,
+      "challenge": 1,
+      "drawing_prompts_byte_identical": true,
+      "drawing_response_byte_identical": true
+    },
+    {
+      "attempt": 2,
+      "challenge": 1,
+      "drawing_prompts_byte_identical": true,
+      "drawing_response_byte_identical": true
+    },
+    {
+      "attempt": 1,
+      "challenge": 2,
+      "drawing_prompts_byte_identical": true,
+      "drawing_response_byte_identical": true
+    },
+    {
+      "attempt": 2,
+      "challenge": 2,
+      "drawing_prompts_byte_identical": true,
+      "drawing_response_byte_identical": true
+    }
+  ],
+  "raw_evidence_retained": true,
+  "schema": "bean.draw.memory_context_audit.v1",
+  "source_mechanism": "json.dumps(prior[-6:])[:2400] retains oldest selected entries first and truncates mid-record."
+}

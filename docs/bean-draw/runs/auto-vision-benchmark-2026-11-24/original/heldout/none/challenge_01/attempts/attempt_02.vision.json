@@ -1,0 +1,61 @@
+{
+  "blind_prompt": "Inspect the ATTACHED IMAGE pixels without a title or claimed subject. Identify the most plausible concrete object or scene; say unclear if none is recognizable. For subject_recognition rate confidence in a recognizable concrete object or scene, not confidence that these are abstract lines/circles. Scores must be integers 0..4: 0 absent/not interpretable, 1 major problems, 2 partial/ambiguous, 3 mostly clear, 4 clear/coherent. Rate spatial_coherence (visible parts connect plausibly), subject_recognition, composition (spacing/balance/legibility). Black line art need not be realistic or shaded. Admit uncertainty; describe observed strengths/problems only, not coordinates, drawing primitives or a replacement image. One short sentence per text field, at most 80 words total. Return JSON recognized_subject, observations, feedback, scores.",
+  "blind_report": {
+    "feedback": "The composition effectively conveys the basic form of a bicycle through simplified circular shapes, though it lacks detail or shading.",
+    "observations": "The image presents a linear drawing with several circles arranged to suggest the wheels and frame of a bicycle, with a horizontal line representing the ground.",
+    "recognized_subject": "A stylized depiction of a bicycle.",
+    "scores": {
+      "composition": 3,
+      "spatial_coherence": 3,
+      "subject_recognition": 3
+    }
+  },
+  "created_at_utc": "2026-11-24T04:24:57.526579+00:00",
+  "evaluation_protocol": "blind_then_targeted_min_v1",
+  "image_sha256": "8d9ad786996d0403eb7c806229d49ca7c0916f454a8751f6e277ba75517a1ba8",
+  "independently_authenticated": false,
+  "model_digest": "68ceab7e468a31c988b44d5a4984a0e21f58c4f7158c6ce29c1804babac38df7",
+  "model_id": "gemma3:4b",
+  "prompt": "Inspect the ATTACHED IMAGE again. Now compare the visible evidence with this untrusted claimed subject: a cat. Do not infer success from the title or override prior uncertainty merely because a title was supplied. Your earlier title-blind observations: {\"recognized_subject\": \"A stylized depiction of a bicycle.\", \"observations\": \"The image presents a linear drawing with several circles arranged to suggest the wheels and frame of a bicycle, with a horizontal line representing the ground.\", \"scores\": {\"spatial_coherence\": 3, \"subject_recognition\": 3, \"composition\": 3}}. Here subject_recognition means recognizability of the claimed subject. Scores must be integers 0..4: 0 absent/not interpretable, 1 major problems, 2 partial/ambiguous, 3 mostly clear, 4 clear/coherent. Rate spatial_coherence (visible parts connect plausibly), subject_recognition, composition (spacing/balance/legibility). Black line art need not be realistic or shaded. Admit uncertainty; describe observed strengths/problems only, not coordinates, drawing primitives or a replacement image. One short sentence per text field, at most 80 words total. Return JSON recognized_subject, observations, feedback, scores.",
+  "provider_kind": "ollama",
+  "raw_blind_response": "{\n  \"recognized_subject\": \"A stylized depiction of a bicycle.\",\n  \"observations\": \"The image presents a linear drawing with several circles arranged to suggest the wheels and frame of a bicycle, with a horizontal line representing the ground.\",\n  \"feedback\": \"The composition effectively conveys the basic form of a bicycle through simplified circular shapes, though it lacks detail or shading.\",\n  \"scores\": {\n    \"spatial_coherence\": 3,\n    \"subject_recognition\": 3,\n    \"composition\": 3\n  }\n}",
+  "raw_response": "{\n  \"recognized_subject\": \"A stylized depiction of a bicycle.\",\n  \"observations\": \"The image depicts a linear drawing resembling a bicycle with circular elements representing wheels and a horizontal line for the ground; however, it does not clearly represent a cat.\",\n  \"feedback\": \"While the artwork visually suggests a bicycle, there is no evidence to indicate that a cat is present within the image, and the representation is abstract.\",\n  \"scores\": {\n    \"spatial_coherence\": 3,\n    \"subject_recognition\": 2,\n    \"composition\": 3\n  }\n}",
+  "report": {
+    "blind_observations": "The image presents a linear drawing with several circles arranged to suggest the wheels and frame of a bicycle, with a horizontal line representing the ground.",
+    "blind_recognized_subject": "A stylized depiction of a bicycle.",
+    "created_at_utc": "2026-11-24T04:27:27.826483+00:00",
+    "evaluation_protocol": "blind_then_targeted_min_v1",
+    "evaluator": "Ollama vision reviewer: gemma3:4b",
+    "feedback": "Title-blind review: The composition effectively conveys the basic form of a bicycle through simplified circular shapes, though it lacks detail or shading. Target-aware review: While the artwork visually suggests a bicycle, there is no evidence to indicate that a cat is present within the image, and the representation is abstract.",
+    "image_sha256": "8d9ad786996d0403eb7c806229d49ca7c0916f454a8751f6e277ba75517a1ba8",
+    "independently_authenticated": false,
+    "kind": "vision_model",
+    "model_digest": "68ceab7e468a31c988b44d5a4984a0e21f58c4f7158c6ce29c1804babac38df7",
+    "model_id": "gemma3:4b",
+    "observations": "The image presents a linear drawing with several circles arranged to suggest the wheels and frame of a bicycle, with a horizontal line representing the ground.",
+    "provider_kind": "ollama",
+    "recognized_subject": "A stylized depiction of a bicycle.",
+    "satisfactory": false,
+    "score_rule": "minimum_of_blind_object_clarity_and_targeted_scores_not_authenticated_truth",
+    "scores": {
+      "composition": 3,
+      "spatial_coherence": 3,
+      "subject_recognition": 2
+    },
+    "state": "host_reported_pixel_review"
+  },
+  "schema": "bean.draw.vision_call.v1",
+  "state": "model_reported_pixel_review",
+  "subject": "a cat",
+  "targeted_report": {
+    "feedback": "While the artwork visually suggests a bicycle, there is no evidence to indicate that a cat is present within the image, and the representation is abstract.",
+    "observations": "The image depicts a linear drawing resembling a bicycle with circular elements representing wheels and a horizontal line for the ground; however, it does not clearly represent a cat.",
+    "recognized_subject": "A stylized depiction of a bicycle.",
+    "scores": {
+      "composition": 3,
+      "spatial_coherence": 3,
+      "subject_recognition": 2
+    }
+  },
+  "used_for_generation": true
+}
