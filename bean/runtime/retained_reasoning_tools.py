@@ -80,6 +80,28 @@ def register_retained_reasoning(orchestrator):
                 transfer_receipt_id=args["receipt_id"], sensors=args["sensors"])
         raise ValueError("unrecognized retained policy kind")
 
+    # Recover the actual Hyperon/Omega-inspired implementation from PR #536.
+    from bean.learning.relational_grounding import infer_relations
+    from bean.cognition.typed_relations import TypedRelations
+    from bean.memory.focused_recall import recall_focused_claims
+    from bean.memory.store import get_store
+
+    orchestrator.register("infer_relations",
+        "Join supplied evidence-linked triples with shared variables: "
+        "{facts:[[subject,predicate,object,evidence_id]],patterns:[[s,p,o]],"
+        "conclusion:[s,p,o]}; variables start with ?; returns grounded inferences",
+        lambda args, task_ref: infer_relations(**args))
+    orchestrator.register("query_world_relations",
+        "Retrieve source-linked canonical world relations and transitive proofs: "
+        "{subject:str,predicate:is_a|part_of|located_in|related_to,target?:str,max_hops?:int}; "
+        "unknown and contested evidence must remain visible",
+        lambda args, task_ref: TypedRelations().query(**args))
+    orchestrator.register("focused_world_memory",
+        "Retrieve relevant persistent claims with prior revision and source evidence: "
+        "{query:str,limit?:int}",
+        lambda args, task_ref: {"claims": recall_focused_claims(get_store()._conn(), **args),
+                                "world_truth_verified": False})
+
     orchestrator.register("reason_auto",
         "BEAN symbolic reasoning then existing local inference if available: {domain:str,query:str}; no external provider authorization",
         automatic)
