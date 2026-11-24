@@ -48,9 +48,8 @@ def _digest(raw):
 def _path(value, parts):
     if not isinstance(parts, list):
         raise ValueError("reference path must be a list")
-    for part in parts:
-        value = value[part]
-    return value
+    from bean.runtime.plan_contracts import read_path
+    return read_path(value, parts)
 
 
 class NativeOrchestrator:
@@ -389,12 +388,20 @@ class NativeOrchestrator:
         steps = plan["steps"]
         if not isinstance(steps, list) or not 1 <= len(steps) <= 8:
             raise ValueError("model must return one to eight steps")
+        from bean.runtime.plan_contracts import preflight
         proposals = []
+        prior_tools = []
         for index, step in enumerate(steps):
             if (not isinstance(step, dict) or set(step) != {"tool", "args"} or
                     step["tool"] not in self.tools or not isinstance(step["args"], dict)):
                 raise ValueError("invalid model-selected tool step")
             self._validate_refs(step["args"], index)
+            try:
+                preflight(step["tool"], step["args"], inputs, prior_tools)
+            except (ValueError, TypeError, KeyError, IndexError) as exc:
+                exc.planner_raw = raw
+                raise
+            prior_tools.append(step["tool"])
             proposals.append(GoalProposal(
                 "orchestrate_objective", ActionType.RUN_EXPERIMENT,
                 "Execute model-selected capability", 3, ApprovalRequired.NONE,
@@ -439,6 +446,8 @@ class NativeOrchestrator:
         name = detail["tool"]
         self._validate_refs(detail["args"], plan["step"])
         args = self._resolve(detail["args"], plan, detail["inputs"])
+        from bean.runtime.plan_contracts import validate_args
+        validate_args(name, args)
         try:
             output = self._read_output(pid)
         except LookupError:
