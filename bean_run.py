@@ -396,6 +396,10 @@ def main():
                 if retained_socket:
                     from bean.runtime.retained_lab import register_retained_lab
                     register_retained_lab(orchestrator, inbox, retained_socket)
+                catalog_socket = os.environ.get("BEAN_RETAINED_CATALOG_SOCKET")
+                if catalog_socket:
+                    from bean.runtime.retained_catalog_client import register_skill_catalog
+                    register_skill_catalog(orchestrator, inbox, catalog_socket)
                 register_orchestration_handlers(inbox, orchestrator)
                 ctx["native_orchestrator"] = orchestrator
                 if skill_catalog_path:
